@@ -222,11 +222,11 @@ export namespace API {
             //     seasonId
             //     data
             // }
-
+            
             const form = await db.addObject<Form>(Collections.Forms, new Form(data.name, data.data));
             const season = await db.findObjectById<Season>(Collections.Seasons, new ObjectId(data.seasonId));
 
-            season.forms.push(form._id as string);
+            season.forms.push(String(form._id));
             await db.updateObjectById(Collections.Seasons, new ObjectId(season._id), {forms: season.forms})
         
             return res.status(200).send(form);

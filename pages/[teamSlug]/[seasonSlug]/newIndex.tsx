@@ -2,6 +2,7 @@ import ClientAPI from "@/lib/client/ClientAPI"
 import { useEffect, useState } from "react";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
+import { Form } from "@/lib/Types";
 
 const api = new ClientAPI();
 
@@ -12,10 +13,22 @@ export default function Home(props: ResolvedUrlData) {
 
     const[selection, setSelection] = useState(1)
 
+    const[forms, setForms] = useState<Form[]>([]);
+
+    useEffect(() => {
+       const loadForms = async () => {
+        var newForms: Form[] = []
+        season?.forms.forEach(async (id) => {
+          newForms.push(await api.findFormById(id));
+        })
+        setForms(newForms)
+       }
+
+       loadForms();
+    }, [])
+
 
     const Forms = () => {
-
-      const[forms, setForms] = useState<Form[]>([]);
 
       return <div className="card w-5/6 bg-base-200 shadow-xl">
             <div className="card-body">
@@ -24,16 +37,17 @@ export default function Home(props: ResolvedUrlData) {
 
                 <h3>No Forms? <a className="text-accent" href={`/${team.slug}/${season?.slug}/formEditor`}>Create a new one</a></h3>
                 <div className="divider"></div>
-
                 {
-                  forms?.map((form) => <div className="card w-5/6 bg-base-300">
+                  forms.map((form) => <div className="card w-5/6 bg-base-300" key={form._id}>
                     <div className="card-body">
                       
                       <h1 className="card-title">{form.name}</h1>
 
+                      <h2>{form.data.length} Question(s)</h2>
+
                       <div className="card-actions justify-end">
-                          <button className="btn btn-info normal-case">Edit</button>
-                          <button className="btn btn-error normal-case">Delete</button>
+                          <a href={`/${team.slug}/${season?.slug}/formEditor?id=${form._id}`}><button className="btn btn-info normal-case">Edit</button></a>
+                          <button className="btn btn-error normal-case" disabled>Delete</button>
                       </div>
                     </div>
                   </div>)

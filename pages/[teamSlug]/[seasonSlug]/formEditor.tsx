@@ -102,17 +102,20 @@ export default function Home(props: ResolvedUrlData) {
   const {id} = router.query;
 
   const[name, setName] = useState("New Form");
-  const[formId, setFormId] = useState<string | undefined>();
+  const[formId, setFormId] = useState<string | undefined>(undefined);
   const[saveStatus, setSaveStatus] = useState("Saved")
 
   const[elements, setElements] = useState<FormElement[]>([defaultElement]);
 
   useEffect(() => {
     const getForm = async () => {
-      setFormId((await api.findFormById(id as string))._id)
+      const f = await api.findFormById(id as string);
+      setFormId(f._id);
+      setName(f.name);
+      setElements(f.data);
     }
 
-    if(id) {
+    if(id !== undefined) {
       getForm();
     }
   }, [])
@@ -144,23 +147,27 @@ export default function Home(props: ResolvedUrlData) {
   const saveForm = async() => {
     setSaveStatus("Saving...");
 
-    if(formId) {
-      setFormId((await api.createForm(name, elements, season?._id))._id);
+    if(formId === undefined) {
+      const id = (await api.createForm(name, elements, season?._id))._id;
+      setFormId(id);
+      
+      var url = new URL(location.href);
+      url.searchParams.append("id", id);
+      document.location = url.href;
+
+      // change form URL
     } else {
       await api.updateForm({name: name, data: elements}, formId);
     }
 
     setSaveStatus("Saved")
   }
-  
 
-  useEffect(() => {
-    saveForm()
-  }, [name, elements]);
 
   return <div className="ml-10 flex flex-col w-5/6">
       <h1 className="text-4xl card-title mb-2">Form Editor</h1>
       <input type="text" placeholder="Form Name" value={name} onChange={(e) =>{setName(e.target.value)}} className="input input-bordered w-full max-w-xs" />
+      <button onClick={saveForm} className="btn btn-info w-1/4 text-white">Save</button>
       <div className="divider"></div>
 
       <div className="flex flex-row">
