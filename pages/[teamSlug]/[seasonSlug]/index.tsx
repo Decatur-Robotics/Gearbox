@@ -2,7 +2,8 @@ import ClientAPI from "@/lib/client/ClientAPI"
 import { useEffect, useState } from "react";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
-import { Form } from "@/lib/Types";
+import { Competition, Form } from "@/lib/Types";
+import { MonthString } from "@/lib/client/FormatTime";
 
 const api = new ClientAPI();
 
@@ -14,6 +15,7 @@ export default function Home(props: ResolvedUrlData) {
     const[selection, setSelection] = useState(1)
 
     const[forms, setForms] = useState<Form[]>([]);
+    const[comps, setComps] = useState<Competition[]>([]);
 
     useEffect(() => {
        const loadForms = async () => {
@@ -24,7 +26,16 @@ export default function Home(props: ResolvedUrlData) {
         setForms(newForms)
        }
 
+       const loadComps = async () => {
+        var newComps: Competition[] = []
+        season?.competitions.forEach(async (id) => {
+          newComps.push(await api.findCompetitionById(id));
+        })
+        setComps(newComps)
+       }
+
        loadForms();
+       loadComps();
     }, [])
 
 
@@ -55,6 +66,29 @@ export default function Home(props: ResolvedUrlData) {
             </div>
       </div>
     }
+
+    const Overview = () => {
+      return <div className="card w-5/6 bg-base-200 shadow-xl">
+      <div className="card-body">
+          <h2 className="card-title text-2xl">Overview</h2>
+          <h1 className="text-xl">See your upcoming competitions</h1>
+
+          <h3>No Competitions? <a className="text-accent" href={`/${team.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>
+          <div className="divider"></div>
+          {
+            comps.map((comp) => <a href={`/${team.slug}/${season?.slug}/${comp.slug}`}><div className="card w-5/6 bg-base-300" key={comp._id}>
+              <div className="card-body">
+                
+                <h1 className="card-title">{comp.name}</h1>
+
+                <h1>{MonthString(comp.start)} - {MonthString(comp.end)}</h1>
+              </div>
+            </div>
+            </a>)
+          }
+      </div>
+</div>
+    }
   
     return <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
           <div className="card w-5/6 bg-base-200 shadow-xl">
@@ -62,6 +96,11 @@ export default function Home(props: ResolvedUrlData) {
               <div className="card-body">
                   <h2 className="card-title text-4xl">{season?.name} </h2>
                   <h1 className="text-2xl">The <span className="text-accent">{season?.year}</span>  Season</h1>
+
+                  <div className="card-action space-x-2">
+                        {team.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
+                        <div className="badge badge-secondary">FIRST FRC</div>
+                  </div>
           </div>
     </div>
 
@@ -73,7 +112,9 @@ export default function Home(props: ResolvedUrlData) {
         </div>
     </div>
 
-    {<Forms></Forms>}
+    {selection === 1 ? <Overview></Overview>: <></>}
+    {selection === 2 ? <Forms></Forms>: <></>}
+    {selection === 3 ? <></>:<></>}
 </div>
 }
 

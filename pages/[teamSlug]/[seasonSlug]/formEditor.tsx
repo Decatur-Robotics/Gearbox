@@ -103,7 +103,7 @@ export default function Home(props: ResolvedUrlData) {
 
   const[name, setName] = useState("New Form");
   const[formId, setFormId] = useState<string | undefined>(undefined);
-  const[saveStatus, setSaveStatus] = useState("Saved")
+  const[saveStatus, setSaveStatus] = useState("Not Saved")
 
   const[elements, setElements] = useState<FormElement[]>([defaultElement]);
 
@@ -113,6 +113,7 @@ export default function Home(props: ResolvedUrlData) {
       setFormId(f._id);
       setName(f.name);
       setElements(f.data);
+      setSaveStatus("Saved");
     }
 
     if(id !== undefined) {
