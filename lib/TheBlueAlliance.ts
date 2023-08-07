@@ -148,11 +148,7 @@ export namespace TheBlueAlliance {
             this.req = new Request();
             this.db = GetDatabase();
 
-            /*
-            this.loadCompetitionPairings().then(() => {
-                this.searchCompetitionByName("Lake Superior Regional")
-            });
-            */
+            this.loadCompetitionPairings();
         }
         
 

@@ -1,6 +1,6 @@
 // think of this as JAI but "better"
 
-import { Competition, Season, Team, User, Match, Form, FormElement } from "../Types";
+import { Competition, Season, Team, User, Match, Form, FormElement, CompetitonNameIdPair } from "../Types";
 
 export enum ClientRequestMethod {
     POST="POST",
@@ -94,12 +94,12 @@ export default class ClientAPI {
         return await this.request("/createForm", {name: name, data: data, seasonId: seasonId})
     }
 
-    async createCompetition(name: string, tbaId: string | undefined, start: number, end: number, seasonId: string) {
+    async createCompetition(name: string, tbaId: string | undefined, start: number, end: number, seasonId: string | undefined) {
         return await this.request("/createCompetiton", {name: name, tbaId: tbaId, start: start, end: end, seasonId: seasonId});
     }
 
-    async searchCompetitionByName(name: string | undefined) {
-        return await this.request("/seachCompetitionByName", {name: name});
+    async searchCompetitionByName(name: string | undefined): Promise<{value: number, pair: CompetitonNameIdPair}[]> {
+        return await this.request("/searchCompetitionByName", {name: name});
     }
 
 
