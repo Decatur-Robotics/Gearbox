@@ -1,6 +1,6 @@
 import stringSimilarity from "string-similarity-js";
 import { GetDatabase, MongoDBInterface } from "./MongoDB";
-import { Competition, Match, Team, CompetitonNameIdPair } from "./Types";
+import { Competition, Match, Team, CompetitonNameIdPair, MatchType } from "./Types";
 
 export namespace TheBlueAlliance {
 
@@ -148,7 +148,22 @@ export namespace TheBlueAlliance {
             this.req = new Request();
             this.db = GetDatabase();
 
-            this.loadCompetitionPairings();
+            this.loadCompetitionPairings();+96
+
+        }
+
+        competitionLevelToMatchType(matchType: CompetitionLevel): MatchType {
+            if(matchType === CompetitionLevel.QM) {
+                return MatchType.Qualifying
+            } if(matchType === CompetitionLevel.EF) {
+                return MatchType.Qualifying;
+            } if(matchType === CompetitionLevel.QF) {
+                return MatchType.Quarterfinals
+            } if(matchType === CompetitionLevel.SF) {
+                return MatchType.Semifinals
+            } else {
+                return MatchType.Finals;
+            }
         }
         
 
@@ -171,7 +186,12 @@ export namespace TheBlueAlliance {
 
         async getMatchAutofillData(tbaId: string): Promise<Match> {
             let data = await this.req.getMatch(tbaId);
-            return new Match(data.match_number, undefined, data.key, data.time);
+            return new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level));
+        }
+
+        async getCompetitionMatches(tbaId: string): Promise<Match[]> {
+            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level)));
+            return matches;
         }
 
         async getMatchAndReportsAutofillData() {

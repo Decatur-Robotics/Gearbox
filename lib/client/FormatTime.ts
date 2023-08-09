@@ -9,3 +9,7 @@ export function MonthString(timestamp: number): string {
     const day = d.getDay() > 0 ? ` ${d.getDay()}` : ""
     return `${MonthNames[d.getMonth()]}${day}, ${d.getFullYear()}`
 }
+
+export function TimeString(timestamp: number): string {
+    return new Date(timestamp).toLocaleTimeString();
+}

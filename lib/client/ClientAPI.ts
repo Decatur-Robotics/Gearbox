@@ -69,10 +69,13 @@ export default class ClientAPI {
         return await this.request("/competitionAutofill", {tbaId: tbaId});
     }
 
+    async getCompetitionMatches(tbaId: string | undefined): Promise<Match[]> {
+        return await this.request("/competitionMatches", {tbaId: tbaId});
+    }
+
     async getMatchAutofillData(tbaId: string): Promise<Competition> {
         return await this.request("/matchAutofill", {tbaId: tbaId});
     }
-
 
     async teamRequest(userId: string | undefined, teamId: string | undefined) {
         return await this.request("/teamRequest", {userId: userId, teamId: teamId});

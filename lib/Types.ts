@@ -1,3 +1,4 @@
+
 import { Account as NextAuthAccount, Session as NextAuthSession, User as NextAuthUser} from "next-auth";
 
 export interface Account extends NextAuthAccount {
@@ -132,28 +133,55 @@ export enum WinningAlliance {
 
 export type Alliance = [number]
 
+export enum MatchType {
+    Qualifying="Qualifying",
+    Quarterfinals="Quarterfinals",
+    Semifinals="Semifinals",
+    Finals="Finals"
+}
+
 // add more fields
 export class Match {
     _id: string | undefined;
     slug: string | undefined;
     tbaId: string | undefined;
 
+    type: MatchType;
     number: number;
 
     time: number; // time the match begins
 
     reports: string[];
 
-    constructor(number: number, slug: string | undefined, tbaId: string | undefined,  time: number,  reports: string[]=[]) {
+    constructor(number: number, slug: string | undefined, tbaId: string | undefined,  time: number, type: MatchType,  reports: string[]=[]) {
         this.number = number;
         this.tbaId = tbaId;
         this.time = time;
+        this.type = type;
         this.reports = reports;
     }
 }
 
-// THIS STILL NEEDS TO BE DONE
-export class Report {}
+export class Report {
+    _id: string | undefined;
+
+    timestamp: number | undefined; // time it was initially submitted
+    user: string | undefined; // id of user who submitted
+
+    form: string; // id of form;
+
+    robotNumber: number; // number of robot to be reported
+    match: string; // id of match
+
+    constructor(timestamp: number | undefined, user: string | undefined, form: string, robotNumber: number, match: string) {
+        this.timestamp = timestamp;
+        this.user = user;
+        this.form = form;
+        this.robotNumber = robotNumber;
+        this.match = match;
+    }
+
+}
 
 export interface CompetitonNameIdPair {
     name: string,

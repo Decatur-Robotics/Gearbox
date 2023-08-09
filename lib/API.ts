@@ -172,6 +172,13 @@ export namespace API {
             return res.status(200).send(await tba.getCompetitionAutofillData(data.tbaId));
         },
 
+        "competitionMatches": async (req, res, {tba, data}) => {
+            // {
+            //     tbaId
+            // }
+            return res.status(200).send(await tba.getCompetitionMatches(data.tbaId));
+        },
+
         "matchAutofill": async (req, res, {tba, data}) => {
             // {
             //    tbaId
@@ -257,8 +264,9 @@ export namespace API {
             //     tbaId?
             //     number
             //     time
+            //     type
             // }
-            var match = await db.addObject<Match>(Collections.Matches, new Match(data.number, await GenerateSlug(Collections.Matches, data.number.toString()), data.tbaId, data.time));
+            var match = await db.addObject<Match>(Collections.Matches, new Match(data.number, await GenerateSlug(Collections.Matches, data.number.toString()), data.tbaId, data.time, data.type));
             return res.status(200).send(match);
         },
 

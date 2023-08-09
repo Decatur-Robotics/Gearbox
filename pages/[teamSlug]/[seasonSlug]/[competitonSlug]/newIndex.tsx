@@ -1,64 +1,95 @@
-import UrlResolver from "@/lib/UrlResolver";
+import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 
 // linked icon, for everything with tbaId!!!!!!!
 import ClientAPI from "@/lib/client/ClientAPI"
-import Navbar from "@/components/Navbar";
-import Link from "next/link";
+import { GetServerSideProps } from "next";
+import { MonthString, TimeString } from "@/lib/client/FormatTime";
+import { Match, MatchType } from "@/lib/Types";
+
 
 const api = new ClientAPI();
 
 
-export default function Home(props) {
+export default function Home(props: ResolvedUrlData) {
   const team = props.team;
   const season = props.season;
   const comp = props.competition;
 
-  const { data: session, status } = useSession();
 
-  const[matches, setMatches] = useState([])
+  const[qualMatches, setQualMatches] = useState<Match[]>([]);
+  const[semiMatches, setSemiMatches] = useState<Match[]>([]);
+  const[finalMatches, setFinalMatches] = useState<Match[]>([]);
 
   useEffect(() => {
-    
-    async function loadMatches() {
-      var newMatches = []
-      comp.matches.forEach(async (id) => {
-        newMatches.push(await api.findMatchById(id))
+    const loadAutoMatches = async() => {
+      const matches = await api.getCompetitionMatches(comp?.tbaId);
+      
+      matches.sort((a, b) => {
+        if(a.number < b.number) {
+          return -1
+        } if(a.number > b.number) {
+          return 1
+        }
+
+        return 0
       })
 
-      setMatches(newMatches)
+      setQualMatches(matches.filter((match) => match.type === MatchType.Qualifying));
+      setSemiMatches(matches.filter((match) => match.type === MatchType.Semifinals));    
+      setFinalMatches(matches.filter((match) => match.type === MatchType.Finals));
     }
 
-    return loadMatches
-  }, [comp])
+    loadAutoMatches();
+  }, [])
 
-  return <div className="w-full h-screen bg-slate-200">
-    <Navbar status={status} user={session?.user}></Navbar>
-    <div className="w-full h-5/6 flex flex-col items-center justify-center ml-4">
+  if(!comp) {
+    return <></>
+  }
 
-      <div className="border-2 border-gray-400 rounded-lg w-2/3 h-5/6 bg-slate-300">
-        <div className="ml-4 mt-4">
-          <h1 className="text-3xl font-bold">{comp.name}</h1>
-          <h2 className="text-2xl ">{new Date(comp.start).toLocaleDateString()} - {new Date(comp.end).toLocaleDateString()}</h2>
+  return <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+          <div className="card w-5/6 bg-base-200 shadow-xl">
+              <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
+              <div className="card-body">
+                  <h2 className="card-title text-4xl">{comp.name} </h2>
+                  <h1 className="text-2xl">{MonthString(comp.start)} - {MonthString(comp.end)}</h1>
 
-
-          <h2 className="text-2xl bold mt-10">Matches: ({matches.length})</h2>
-          {
-            matches.length !== 0 ? <>{matches.forEach((match) => <Link href={"/"}>Match {match.number}</Link>)}</> : <div>
-              
-              </div>
-          }
+                  <div className="card-action space-x-2">
+                        {team.tbaId ? <a href={`https://www.thebluealliance.com/event/${comp.tbaId}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
+                        <div className="badge badge-secondary">FIRST FRC</div>
+                  </div>
+          </div>
         </div>
-        
 
-      </div>
+        <div className="card w-5/6 bg-base-200 shadow-xl">
+              <div className="card-body">
+                  <h2 className="card-title text-4xl">Matches</h2>
+                  <h1 className="text-2xl">Generate Matches</h1>
 
-    </div>
-  </div>
+                  <p>Qualifying Matches</p>
+                  <li className="overflow-auto max-h-64">
+                  {qualMatches.map((match) => <li>{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
+                  </li>
+
+                  <div className="divider"></div>
+
+                  <p>Semifinal Matches</p>
+                  <li className="overflow-auto max-h-64">
+                  {semiMatches.map((match) => <li>{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
+                  </li>
+
+                  <div className="divider"></div>
+
+                  <p>Final Matches</p>
+                  <li className="overflow-auto max-h-64">
+                  {finalMatches.map((match) => <li>{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
+                  </li>
+          </div>
+        </div>
+</div>
 }
 
-export const getServerSideProps = async ({req, res, resolvedUrl}) => {
+export const getServerSideProps: GetServerSideProps = async ({req, res, resolvedUrl}) => {
   return {
     props: await UrlResolver(resolvedUrl),
   }
