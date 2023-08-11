@@ -17,6 +17,7 @@ export default function Home(props: ResolvedUrlData) {
   const comp = props.competition;
 
 
+  const[allMatches, setAllMatches] = useState<Match[]>([]);
   const[qualMatches, setQualMatches] = useState<Match[]>([]);
   const[semiMatches, setSemiMatches] = useState<Match[]>([]);
   const[finalMatches, setFinalMatches] = useState<Match[]>([]);
@@ -34,6 +35,8 @@ export default function Home(props: ResolvedUrlData) {
 
         return 0
       })
+
+      setAllMatches(matches);
 
       setQualMatches(matches.filter((match) => match.type === MatchType.Qualifying));
       setSemiMatches(matches.filter((match) => match.type === MatchType.Semifinals));    
@@ -61,29 +64,50 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
 
+      {/*
         <div className="card w-5/6 bg-base-200 shadow-xl">
               <div className="card-body">
                   <h2 className="card-title text-4xl">Matches</h2>
                   <h1 className="text-2xl">Generate Matches</h1>
 
                   <p>Qualifying Matches</p>
-                  <li className="overflow-auto max-h-64">
-                  {qualMatches.map((match) => <li>{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
-                  </li>
+                  <div className="overflow-auto max-h-64">
+                  {qualMatches.map((match) => <li>Match #{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
+                  </div>
 
                   <div className="divider"></div>
 
                   <p>Semifinal Matches</p>
-                  <li className="overflow-auto max-h-64">
+                  <ol className="overflow-auto max-h-64">
                   {semiMatches.map((match) => <li>{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
-                  </li>
+                  </ol>
 
                   <div className="divider"></div>
 
                   <p>Final Matches</p>
-                  <li className="overflow-auto max-h-64">
+                  <ol className="overflow-auto max-h-64">
                   {finalMatches.map((match) => <li>{match.number} ({match.type}) - {TimeString(match.time)}</li>)}
-                  </li>
+                  </ol>
+          </div>
+        </div>
+        */}
+
+        <div className="card w-5/6 bg-base-200 shadow-xl">
+              <div className="card-body">
+                  <h2 className="card-title text-4xl">Matches</h2>
+                  <h1 className="text-2xl">Matches</h1>
+
+                  <div>
+                    {
+                      allMatches.map((match) => <div className="mt-2">
+                        <h1>{match.type} #{match.number}</h1>
+
+                        <h2 className="opacity-50 italic">Approx: {TimeString(match.time)}</h2>
+                        <h1><span className="text-info">{match.blueAlliance.join(" ")}</span> vs. <span className="text-error">{match.redAlliance.join(" ")}</span></h1>
+                        </div>)
+                    }
+                  </div>
+                  
           </div>
         </div>
 </div>

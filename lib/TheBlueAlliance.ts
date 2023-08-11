@@ -1,6 +1,6 @@
 import stringSimilarity from "string-similarity-js";
 import { GetDatabase, MongoDBInterface } from "./MongoDB";
-import { Competition, Match, Team, CompetitonNameIdPair, MatchType } from "./Types";
+import { Competition, Match, Team, CompetitonNameIdPair, MatchType, Alliance } from "./Types";
 
 export namespace TheBlueAlliance {
 
@@ -44,11 +44,11 @@ export namespace TheBlueAlliance {
     }
 
     export interface Alliances {
-        red: Alliance,
-        blue: Alliance,
+        red: TbaAlliance,
+        blue: TbaAlliance,
     }
 
-    export interface Alliance {
+    export interface TbaAlliance {
         score: number,
         team_keys: string[],
         surrogate_team_keys: string[],
@@ -165,6 +165,11 @@ export namespace TheBlueAlliance {
                 return MatchType.Finals;
             }
         }
+
+        tbaIdsToTeamNumbers(tbaIds: string[]): Alliance {
+            //@ts-ignore
+            return tbaIds.map((id) => parseInt(id.match(/\d+/g)[0]));
+        }
         
 
         async getTeamAutofillData(teamNumber: number): Promise<Team> {
@@ -186,11 +191,11 @@ export namespace TheBlueAlliance {
 
         async getMatchAutofillData(tbaId: string): Promise<Match> {
             let data = await this.req.getMatch(tbaId);
-            return new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level));
+            return new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys));
         }
 
         async getCompetitionMatches(tbaId: string): Promise<Match[]> {
-            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level)));
+            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys)));
             return matches;
         }
 

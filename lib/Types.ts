@@ -125,13 +125,8 @@ export class Competition {
     }
 }
 
-export enum WinningAlliance {
-    Red,
-    Blue,
-    None,
-}
 
-export type Alliance = [number]
+export type Alliance = []
 
 export enum MatchType {
     Qualifying="Qualifying",
@@ -149,16 +144,24 @@ export class Match {
     type: MatchType;
     number: number;
 
+    blueAlliance: Alliance;
+    redAlliance: Alliance;
+
     time: number; // time the match begins
 
+    scouters: string[];
     reports: string[];
 
-    constructor(number: number, slug: string | undefined, tbaId: string | undefined,  time: number, type: MatchType,  reports: string[]=[]) {
+    constructor(number: number, slug: string | undefined, tbaId: string | undefined,  time: number, type: MatchType, blueAlliance: Alliance, redAlliance: Alliance,  reports: string[]=[], scouters: string[]=[]) {
         this.number = number;
         this.tbaId = tbaId;
         this.time = time;
         this.type = type;
+
+        this.blueAlliance = blueAlliance;
+        this.redAlliance = redAlliance;
         this.reports = reports;
+        this.scouters = scouters;
     }
 }
 

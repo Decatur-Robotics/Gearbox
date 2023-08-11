@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Competition, Form, Match, Season, Team, User } from "./Types";
+import { Alliance, Competition, Form, Match, Season, Team, User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 
@@ -266,7 +266,7 @@ export namespace API {
             //     time
             //     type
             // }
-            var match = await db.addObject<Match>(Collections.Matches, new Match(data.number, await GenerateSlug(Collections.Matches, data.number.toString()), data.tbaId, data.time, data.type));
+            var match = await db.addObject<Match>(Collections.Matches, new Match(data.number, await GenerateSlug(Collections.Matches, data.number.toString()), data.tbaId, data.time, data.type, [], []));
             return res.status(200).send(match);
         },
 
