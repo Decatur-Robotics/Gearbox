@@ -4,6 +4,7 @@ import { TheBlueAlliance } from "./TheBlueAlliance";
 import { Alliance, Competition, Form, Match, Season, Team, User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
+import { fillTeamWithFakeUsers } from "./dev/FakeData";
 
 export namespace API {
 
@@ -203,6 +204,11 @@ export namespace API {
             user.owner.push(team._id!);
 
             await db.updateObjectById(Collections.Users, new ObjectId(user._id), user);
+
+            if(process.env.FILL_TEAMS) {
+                fillTeamWithFakeUsers(20, team._id);
+            }
+            
 
             return res.status(200).send(team);
         },

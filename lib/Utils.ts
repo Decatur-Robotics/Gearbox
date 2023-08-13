@@ -21,3 +21,7 @@ export async function GenerateSlug(collection: Collections, name: string, index:
 
     return finalName;
 }
+
+export function RandomArrayValue(array: any[]): any {
+    return array[Math.floor(Math.random()*array.length)]
+}

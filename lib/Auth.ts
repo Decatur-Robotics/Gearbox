@@ -2,7 +2,7 @@ import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
 import { Collections, GetDatabase, clientPromise } from './MongoDB'
-import { ObjectId } from 'mongodb'
+import { Admin, ObjectId } from 'mongodb'
 import { User } from './Types';
 import { GenerateSlug } from './Utils'
 
@@ -14,16 +14,9 @@ export default NextAuth({
         clientId: process.env.GOOGLE_ID,
         clientSecret: process.env.GOOGLE_SECRET,
         profile: async (profile, tokens) => {
-            return {
-                id: profile.sub,
-                name: profile.name,
-                email: profile.email,
-                image: profile.picture,
-                admin: false,
-                slug: await GenerateSlug(Collections.Users, profile.name),
-                teams: [],
-                owner: [],
-            }
+            const user = new User(profile.name, profile.email, profile.picture, false, await GenerateSlug(Collections.Users, profile.name), [], []);
+            user.id = profile.sub;
+            return user;
         },
       }),
     ],
