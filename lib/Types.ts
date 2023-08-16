@@ -45,7 +45,7 @@ export class Team {
 
     seasons: string[];
 
-    constructor(name: string, slug: string | undefined, tbaId: string | undefined, number: number, owners: string[]=[], users: string[]=[], scouters: string[]=[], requests: string[]=[], seasons: string[]=[]) {
+    constructor(name: string,  slug: string | undefined, tbaId: string | undefined, number: number, owners: string[]=[], users: string[]=[], scouters: string[]=[], requests: string[]=[], seasons: string[]=[]) {
         this.name = name;
         this.slug = slug;
         this.tbaId = tbaId;

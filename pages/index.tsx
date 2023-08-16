@@ -1,8 +1,8 @@
+import Container from "@/components/Container";
 
 export default function Homepage() {
 
-    return <div>
-        <div className="min-h-screen">
+    return <Container requireAuthentication={false} hideMenu={true}>
             <div className="hero min-h-screen bg-base-200">
                 <div className="hero-content text-center">
                     <div className="max-w-md">
@@ -11,8 +11,7 @@ export default function Homepage() {
                         <a className="btn btn-primary normal-case" href="profile">Get Started</a>
                     </div>
                 </div>
-            </div>
         </div>
-    </div>
+    </Container>
 
 }

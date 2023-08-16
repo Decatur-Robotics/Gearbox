@@ -24,7 +24,11 @@ export default function Home(props: ResolvedUrlData) {
 
   useEffect(() => {
     const loadAutoMatches = async() => {
-      const matches = await api.getCompetitionMatches(comp?.tbaId);
+      const matches: Match[] = [];
+
+      comp?.matches.forEach(async (match) => {
+        matches.push(await api.findMatchById(match));
+      })
       
       matches.sort((a, b) => {
         if(a.number < b.number) {
@@ -38,12 +42,18 @@ export default function Home(props: ResolvedUrlData) {
 
       setAllMatches(matches);
 
+      matches.forEach((match) => {
+        console.log(match.type === MatchType.Qualifying ? "poop": "")
+      })
+      
       setQualMatches(matches.filter((match) => match.type === MatchType.Qualifying));
       setSemiMatches(matches.filter((match) => match.type === MatchType.Semifinals));    
       setFinalMatches(matches.filter((match) => match.type === MatchType.Finals));
     }
-
-    loadAutoMatches();
+    if(allMatches.length === 0) {
+      loadAutoMatches();
+    }
+      
   }, [])
 
   if(!comp) {
@@ -54,7 +64,7 @@ export default function Home(props: ResolvedUrlData) {
           <div className="card w-5/6 bg-base-200 shadow-xl">
               <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
               <div className="card-body">
-                  <h2 className="card-title text-4xl">{comp.name} </h2>
+                  <h2 className="card-title text-4xl">{comp.name} - {allMatches.length} - {qualMatches.length} - {semiMatches.length}</h2>
                   <h1 className="text-2xl">{MonthString(comp.start)} - {MonthString(comp.end)}</h1>
 
                   <div className="card-action space-x-2">
@@ -97,9 +107,9 @@ export default function Home(props: ResolvedUrlData) {
                   <h2 className="card-title text-4xl">Matches</h2>
                   <h1 className="text-2xl">Matches</h1>
 
-                  <div>
+                  <div className="max-h-96 overflow-auto">
                     {
-                      allMatches.map((match) => <div className="mt-2">
+                      allMatches.map((match) => <div className="mt-2" key={match._id}>
                         <h1>{match.type} #{match.number}</h1>
 
                         <h2 className="opacity-50 italic">Approx: {TimeString(match.time)}</h2>

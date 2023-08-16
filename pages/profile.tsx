@@ -4,6 +4,7 @@ import {useEffect, useState} from "react"
 
 import ClientAPI from "@/lib/client/ClientAPI"
 import { Team, User } from "@/lib/Types";
+import Container from "@/components/Container";
 const api = new ClientAPI();
 
 export default function Profile() {
@@ -172,7 +173,7 @@ export default function Profile() {
     }
 
 
-    return <div>
+    return <Container requireAuthentication={true} hideMenu={false}>
         <div className="min-h-screen flex flex-col items-center justify-center space-y-6 mb-10">
             <div className="card w-5/6 bg-base-200 shadow-xl">
                 <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
@@ -211,6 +212,6 @@ export default function Profile() {
 
 
         </div>
-    </div>
+    </Container>
 
 }
