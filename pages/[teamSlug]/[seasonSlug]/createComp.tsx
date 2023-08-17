@@ -5,6 +5,7 @@ import { currentSession } from "@/lib/client/currentSession";
 import ClientAPI from "@/lib/client/ClientAPI";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
+import Container from "@/components/Container";
 
 const api = new ClientAPI();
 
@@ -42,7 +43,8 @@ export default function CreateComp(props: ResolvedUrlData) {
 
     useEffect(() => {searchComp()}, [name])
 
-    return <div className="flex flex-col items-center justify-center min-h-screen">
+    return <Container requireAuthentication={true} hideMenu={false}>
+    <div className="flex flex-col items-center justify-center min-h-screen">
             <div className="card w-3/4 bg-base-200 shadow-xl">
           
                 <div className="card-body">
@@ -56,22 +58,16 @@ export default function CreateComp(props: ResolvedUrlData) {
                     
                     <h1 className="text-white text-xl">{results.length > 0 ? "Select a Result" : ""}</h1>
                     {
-                      results.map((result, index) => <div key={result.pair.name} className={"card bg-base-300 w-1/2 border-2 " + (index===selection ? "border-accent" : "border-base-300")} onClick={()=>{setSelection(index)}}>
-                        <div className="card-body">
-                          <h1 className="card-title">{result.pair.name}</h1>
-                        </div>
+                      results.map((result, index) => <div key={result.pair.name} className={"rounded-lg bg-base-300 w-full p-2 border-2 " + (index===selection ? "border-accent" : "border-base-300")} onClick={()=>{setSelection(index)}}>
+                        <h1 className="text-md">{result.pair.name}</h1>
                       </div>)
                     }
 
-                    <button className="btn btn-primary" disabled={selection === undefined} onClick={createComp}>Create</button>
-                    
+                    <button className="btn btn-primary" disabled={selection === undefined} onClick={createComp}>Create</button>        
                 </div>
-
-            </div>
-
-            
-    </div>
-
+            </div>  
+    </div>     
+    </Container>
 }
 
 export const getServerSideProps: GetServerSideProps = async ({req, res, resolvedUrl}) => {

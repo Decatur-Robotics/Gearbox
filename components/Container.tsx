@@ -133,7 +133,7 @@ export default function Container(props: ContainerProps) {
                                 </button>
                             })}
 
-                            <Link className="w-16 h-16 btn btn-primary" href={"/createTeam"}>
+                            <Link className="w-16 h-16 btn btn-primary" href={"/profile"}>
                                 <BiPlus className="text-4xl"></BiPlus>
                             </Link>
 

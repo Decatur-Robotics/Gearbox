@@ -201,8 +201,8 @@ export namespace API {
             const team = await db.addObject<Team>(Collections.Teams, newTeamObj);
 
             var user = await db.findObjectById<User>(Collections.Users, new ObjectId(data.creator));
-            user.teams.push(team._id!);
-            user.owner.push(team._id!);
+            user.teams.push(team._id!.toString());
+            user.owner.push(team._id!.toString());
 
             await db.updateObjectById(Collections.Users, new ObjectId(user._id), user);
 

@@ -4,6 +4,7 @@ import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { Competition, Form } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
+import Container from "@/components/Container";
 
 const api = new ClientAPI();
 
@@ -90,7 +91,8 @@ export default function Home(props: ResolvedUrlData) {
 </div>
     }
   
-    return <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+    return <Container requireAuthentication={true} hideMenu={false}>
+    <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
           <div className="card w-5/6 bg-base-200 shadow-xl">
               <div className="card-body min-h-1/2 w-full bg-primary rounded-t-lg"></div>
               <div className="card-body">
@@ -115,7 +117,8 @@ export default function Home(props: ResolvedUrlData) {
     {selection === 1 ? <Overview></Overview>: <></>}
     {selection === 2 ? <Forms></Forms>: <></>}
     {selection === 3 ? <></>:<></>}
-</div>
+  </div>
+  </Container>
 }
 
 
@@ -124,6 +127,3 @@ export const getServerSideProps: GetServerSideProps = async ({req, res, resolved
       props: await UrlResolver(resolvedUrl),
     }
 }
-
-
-

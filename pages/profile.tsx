@@ -31,6 +31,7 @@ export default function Profile() {
     
     const Main = () => {
 
+        const[loadingTeams, setLoadingTeams] = useState<boolean>(false);
         const[teams, setTeams] = useState<Team[]>([]);
         const[teamNumber, setTeamNumber] = useState<number>();
         const[foundTeam, setFoundTeam] = useState<Team>();
@@ -39,19 +40,24 @@ export default function Profile() {
         useEffect(() => {
             
             const loadTeams = async() => {
+
+                if(!session.user) {return;}
+                setLoadingTeams(true);
                 var newTeams: Team[] = [];
 
-                session?.user?.teams.forEach(async (id) => {
-                    newTeams.push(await api.findTeamById(id));
-                })
+                for(const id in session.user.teams) {
+                    newTeams.push(await api.findTeamById(session.user.teams[id]));
+                }
 
                 setTeams(newTeams);
+                setLoadingTeams(false);
             }
 
-            if(teams.length === 0) 
+            if(teams.length === 0) {
                 loadTeams()
+            }
 
-        }, [session]);
+        }, []);
 
         const findTeam = async() => {
             setFoundTeam(await api.findTeamByNumber(teamNumber))
@@ -73,8 +79,8 @@ export default function Profile() {
                 <div className="flex flex-col items-center mt-4">
                     <div className="w-full p-4 min-h-max bg-base-300 rounded-lg">
                         {!teamMember ? <p>No Teams - <a href="#join" className="text-accent">Join a Team</a></p> : <></>}
-
-                        {teams.map((team, index) => <a href={`/${team.slug}`}><div className="card w-full bg-base-200 shadow-xl mt-2" key={team._id}>
+                        {loadingTeams ? <span className="loading loading-spinner loading-lg"></span> : <></> }
+                        {teams.map((team, index) => <a href={`/${team.slug}`} key={team._id}><div className="card w-full bg-base-200 shadow-xl mt-2">
                             <div className="card-body">
                                 <h2 className="card-title text">{team.name} <span className="text-accent">#{team.number}</span></h2>
 
@@ -201,7 +207,7 @@ export default function Profile() {
 
 
             <div className="flex flex-row justify-start w-5/6 ">
-                <div className="w-1/3 join grid grid-cols-2 ">
+                <div className="w-full lg:w-1/3 join grid grid-cols-2 ">
                     <button className={"join-item btn btn-outline normal-case" + (!showSettings ? " btn-active": "")} onClick={()=>{setShowSettings(false)}}>Main</button>
                     <button className={"join-item btn btn-outline normal-case" + (showSettings ? " btn-active": "")} onClick={()=>{setShowSettings(true)}}>Settings</button>
                 </div>       
