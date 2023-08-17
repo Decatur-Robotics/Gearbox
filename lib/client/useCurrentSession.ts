@@ -1,4 +1,4 @@
-import { useSession as useSessionAuth } from "next-auth/react";
+import { useSession as useSession } from "next-auth/react";
 import { User } from "../Types";
 import { ISODateString } from "next-auth";
 // abstraction for next-auth useSession, just makes typescript stuff tidy
@@ -8,8 +8,8 @@ export interface AdvancedSession {
     expires: ISODateString
 }
 
-export function currentSession() {
-    const { data: session, status } = useSessionAuth();
+export function useCurrentSession() {
+    const { data: session, status } = useSession();
     
     var newSession = session as AdvancedSession;
     

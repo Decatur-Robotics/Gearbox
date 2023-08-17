@@ -47,7 +47,7 @@ function EditElement(props: {data: FormElement, index: number, callback: (index:
           <p className="text-lg font-semibold inline">Question Type: </p>
           <select value={type} onChange={(e)=>change(index, "type", e.target.value)} className="select select-bordered">
             {
-              Object.keys(FormElementType).map((type) => <option value={type}>{type}</option>)
+              Object.keys(FormElementType).map((type, index) => <option value={type} key={index}>{type}</option>)
             }
           </select>
 

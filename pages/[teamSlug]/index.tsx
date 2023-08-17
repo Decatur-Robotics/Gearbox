@@ -146,7 +146,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
             return  <div className="card w-5/6 bg-base-200 shadow-xl">
                 <div className="card-body">
                     <h1 className="card-title text-2xl">Team Roster</h1>
-                    <p>Manage your team's members</p>
+                    <p>Manage your teams members</p>
 
                     
                     <h1 className="text-lg">Requests:</h1>
@@ -157,7 +157,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     
                     <div className="grid gap-4 grid-cols-2">
                     {
-                        requests.map((user) => <div className="card bg-base-300">
+                        requests.map((user) => <div className="card bg-base-300" key={user._id}>
                             <div className="card-body">
                                 <div className="flex flex-row space-x-2">
                                     <div className="avatar">
@@ -195,7 +195,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                             <tbody>
 
                             {
-                                users.map((user, index) => <tr>
+                                users.map((user, index) => <tr key={user._id}>
                                 <th>{index+1}</th>
                                 <td className="flex flex-row items-center justify-evenly">
                                     <div className="avatar">
@@ -249,7 +249,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
             <div className="card-body">
             
                 <h2 className="card-title text-3xl">Settings</h2>
-                <p className="">Modify and Update Your Team's Information</p>
+                <p className="">Modify and Update Your Teams Information</p>
 
                 <p className="text-error">{settingsError}</p>
                 

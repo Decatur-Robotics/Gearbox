@@ -1,14 +1,15 @@
 import { validEmail, validName } from "@/lib/client/InputVerification";
-import {currentSession} from "@/lib/client/currentSession";
+import {useCurrentSession} from "@/lib/client/useCurrentSession";
 import {useEffect, useState} from "react"
 
 import ClientAPI from "@/lib/client/ClientAPI"
 import { Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
+import Link from "next/link";
 const api = new ClientAPI();
 
 export default function Profile() {
-    const { session, status } = currentSession();
+    const { session, status } = useCurrentSession();
 
     // Top User Card
     const userImageUrl = session?.user?.image || "/user.jpg";
@@ -99,7 +100,7 @@ export default function Profile() {
             <div className="card-body" id="join">
             
                 <h2 className="card-title text-3xl">Join a Team</h2>
-                <p className="">Your Team does not exist? <a href="/createTeam" className="text-accent">Create It!</a></p>
+                <p className="">Your Team does not exist? <Link href="/createTeam" className="text-accent">Create It!</Link></p>
 
                 <div className="flex flex-row items-center mt-4 space-x-2">
                     <input type="number" placeholder="Team Number" value={teamNumber} onChange={(e) => {setTeamNumber(e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
@@ -108,7 +109,7 @@ export default function Profile() {
 
                 {foundTeam ? <div>
                     <p>Results:</p>
-                    <a className="text-accent text-lg"><h1>{foundTeam.name} - {foundTeam.number}</h1></a>
+                    <span className="text-accent text-lg"><h1>{foundTeam.name} - {foundTeam.number}</h1></span>
                     <button className="btn btn-secondary normal-case" onClick={requestTeam}>Request to Join</button>
                    
                 </div> : <></>}

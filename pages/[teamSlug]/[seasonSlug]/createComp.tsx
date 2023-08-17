@@ -1,6 +1,6 @@
 import { Competition, CompetitonNameIdPair, Team } from "@/lib/Types";
 import { useEffect, useState } from "react"
-import { currentSession } from "@/lib/client/currentSession";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";

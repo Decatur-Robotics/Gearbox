@@ -45,7 +45,7 @@ export default function Home(props: ResolvedUrlData) {
       return <div className="card w-5/6 bg-base-200 shadow-xl">
             <div className="card-body">
                 <h2 className="card-title text-2xl">Forms</h2>
-                <h1 className="text-xl">Manage and Edit Your Scouter's Forms</h1>
+                <h1 className="text-xl">Manage and Edit Your Scouters Forms</h1>
 
                 <h3>No Forms? <a className="text-accent" href={`/${team.slug}/${season?.slug}/formEditor`}>Create a new one</a></h3>
                 <div className="divider"></div>
@@ -77,7 +77,7 @@ export default function Home(props: ResolvedUrlData) {
           <h3>No Competitions? <a className="text-accent" href={`/${team.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>
           <div className="divider"></div>
           {
-            comps.map((comp) => <a href={`/${team.slug}/${season?.slug}/${comp.slug}`}><div className="card w-5/6 bg-base-300" key={comp._id}>
+            comps.map((comp) => <a href={`/${team.slug}/${season?.slug}/${comp.slug}`}  key={comp._id}><div className="card w-5/6 bg-base-300">
               <div className="card-body">
                 
                 <h1 className="card-title">{comp.name}</h1>

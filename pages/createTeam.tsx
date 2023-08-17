@@ -1,7 +1,7 @@
 import { Team } from "@/lib/Types";
 import { useEffect, useState } from "react"
 
-import { currentSession } from "@/lib/client/currentSession";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import Container from "@/components/Container";
@@ -10,7 +10,7 @@ const api = new ClientAPI();
 
 export default function CreateTeam() {
 
-    const { session, status } = currentSession();
+    const { session, status } = useCurrentSession();
 
     const[teamNumber, setTeamNumber] = useState<number>()
     const[autoData, setAutoData] = useState<Team>();
@@ -64,7 +64,7 @@ export default function CreateTeam() {
           
                 <div className="card-body">
                     <h2 className="card-title text-2xl">Create a new Team</h2>
-                    <p>Have a team number? <span className="text-accent">Automatically find your team's details</span></p>
+                    <p>Have a team number? <span className="text-accent">Automatically find your teams details</span></p>
                     <p className="text-error">{error}</p>
 
                     <input type="number" placeholder="Team Number" value={teamNumber} onChange={(e)=>(setTeamNumber(e.target.valueAsNumber))} className="input input-bordered input-primary w-full max-w-xs" />

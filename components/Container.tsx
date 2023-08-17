@@ -1,5 +1,5 @@
 import { Season, Team } from "@/lib/Types"
-import { currentSession } from "@/lib/client/currentSession"
+import { useCurrentSession } from "@/lib/client/useCurrentSession"
 import Link from "next/link"
 import { ReactNode, useEffect, useState } from "react"
 import {BiMenu, BiPlus, BiHome, } from "react-icons/bi"
@@ -18,7 +18,7 @@ type ContainerProps = {
 export default function Container(props: ContainerProps) {
 
 
-    const { session, status } = currentSession();
+    const { session, status } = useCurrentSession();
     const user = session?.user;
     const authenticated = status === "authenticated";
 
@@ -152,7 +152,7 @@ export default function Container(props: ContainerProps) {
                             {loadingSeasons ? <span className="loading loading-spinner loading-lg"></span> : <></> }
 
                             {selectedTeamSeasons.map((season, index) => {
-                                return <Link className="btn btn-ghost w-7/8 bg-base-200 normal-case" href={`/${selectedTeam?.slug}/${season.slug}`}>
+                                return <Link className="btn btn-ghost w-7/8 bg-base-200 normal-case" href={`/${selectedTeam?.slug}/${season.slug}`} key={season._id}>
                                     <h1 className="text-sm">{season.name} - {season.year}</h1>
                                 </Link>
                             })}

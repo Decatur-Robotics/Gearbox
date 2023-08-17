@@ -34,7 +34,7 @@ export default function Home(props: ResolvedUrlData) {
                     </figure>
                     <div className="card-body">
                         <h2 className="card-title text-2xl">{CurrentSeason.name}</h2>
-                        <p className="text-xl">FIRST Robotics's <span className="text-accent">{CurrentSeason.year} Season</span></p>
+                        <p className="text-xl">FIRST Robotics <span className="text-accent">{CurrentSeason.year} Season</span></p>
                         <div className="card-actions justify-end">
                         <button className="btn btn-primary normal-case" onClick={()=>{createSeason(CurrentSeason)}}>Create</button>
                         </div>
