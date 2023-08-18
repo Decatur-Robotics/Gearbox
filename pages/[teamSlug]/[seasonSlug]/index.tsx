@@ -4,6 +4,7 @@ import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { Competition, Form } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
+import Container from "@/components/Container";
 
 const api = new ClientAPI();
 
@@ -44,7 +45,7 @@ export default function Home(props: ResolvedUrlData) {
       return <div className="card w-5/6 bg-base-200 shadow-xl">
             <div className="card-body">
                 <h2 className="card-title text-2xl">Forms</h2>
-                <h1 className="text-xl">Manage and Edit Your Scouter's Forms</h1>
+                <h1 className="text-xl">Manage and Edit Your Scouters Forms</h1>
 
                 <h3>No Forms? <a className="text-accent" href={`/${team.slug}/${season?.slug}/formEditor`}>Create a new one</a></h3>
                 <div className="divider"></div>
@@ -76,7 +77,7 @@ export default function Home(props: ResolvedUrlData) {
           <h3>No Competitions? <a className="text-accent" href={`/${team.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>
           <div className="divider"></div>
           {
-            comps.map((comp) => <a href={`/${team.slug}/${season?.slug}/${comp.slug}`}><div className="card w-5/6 bg-base-300" key={comp._id}>
+            comps.map((comp) => <a href={`/${team.slug}/${season?.slug}/${comp.slug}`}  key={comp._id}><div className="card w-5/6 bg-base-300">
               <div className="card-body">
                 
                 <h1 className="card-title">{comp.name}</h1>
@@ -90,7 +91,8 @@ export default function Home(props: ResolvedUrlData) {
 </div>
     }
   
-    return <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+    return <Container requireAuthentication={true} hideMenu={false}>
+    <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
           <div className="card w-5/6 bg-base-200 shadow-xl">
               <div className="card-body min-h-1/2 w-full bg-primary rounded-t-lg"></div>
               <div className="card-body">
@@ -115,7 +117,8 @@ export default function Home(props: ResolvedUrlData) {
     {selection === 1 ? <Overview></Overview>: <></>}
     {selection === 2 ? <Forms></Forms>: <></>}
     {selection === 3 ? <></>:<></>}
-</div>
+  </div>
+  </Container>
 }
 
 
@@ -124,6 +127,3 @@ export const getServerSideProps: GetServerSideProps = async ({req, res, resolved
       props: await UrlResolver(resolvedUrl),
     }
 }
-
-
-

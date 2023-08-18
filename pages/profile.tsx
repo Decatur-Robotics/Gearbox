@@ -1,13 +1,15 @@
 import { validEmail, validName } from "@/lib/client/InputVerification";
-import {currentSession} from "@/lib/client/currentSession";
+import {useCurrentSession} from "@/lib/client/useCurrentSession";
 import {useEffect, useState} from "react"
 
 import ClientAPI from "@/lib/client/ClientAPI"
 import { Team, User } from "@/lib/Types";
+import Container from "@/components/Container";
+import Link from "next/link";
 const api = new ClientAPI();
 
 export default function Profile() {
-    const { session, status } = currentSession();
+    const { session, status } = useCurrentSession();
 
     // Top User Card
     const userImageUrl = session?.user?.image || "/user.jpg";
@@ -30,6 +32,7 @@ export default function Profile() {
     
     const Main = () => {
 
+        const[loadingTeams, setLoadingTeams] = useState<boolean>(false);
         const[teams, setTeams] = useState<Team[]>([]);
         const[teamNumber, setTeamNumber] = useState<number>();
         const[foundTeam, setFoundTeam] = useState<Team>();
@@ -38,19 +41,24 @@ export default function Profile() {
         useEffect(() => {
             
             const loadTeams = async() => {
+
+                if(!session.user) {return;}
+                setLoadingTeams(true);
                 var newTeams: Team[] = [];
 
-                session?.user?.teams.forEach(async (id) => {
-                    newTeams.push(await api.findTeamById(id));
-                })
+                for(const id in session.user.teams) {
+                    newTeams.push(await api.findTeamById(session.user.teams[id]));
+                }
 
                 setTeams(newTeams);
+                setLoadingTeams(false);
             }
 
-            if(teams.length === 0) 
+            if(teams.length === 0) {
                 loadTeams()
+            }
 
-        }, [session]);
+        }, []);
 
         const findTeam = async() => {
             setFoundTeam(await api.findTeamByNumber(teamNumber))
@@ -72,8 +80,8 @@ export default function Profile() {
                 <div className="flex flex-col items-center mt-4">
                     <div className="w-full p-4 min-h-max bg-base-300 rounded-lg">
                         {!teamMember ? <p>No Teams - <a href="#join" className="text-accent">Join a Team</a></p> : <></>}
-
-                        {teams.map((team, index) => <a href={`/${team.slug}`}><div className="card w-full bg-base-200 shadow-xl mt-2" key={team._id}>
+                        {loadingTeams ? <span className="loading loading-spinner loading-lg"></span> : <></> }
+                        {teams.map((team, index) => <a href={`/${team.slug}`} key={team._id}><div className="card w-full bg-base-200 shadow-xl mt-2">
                             <div className="card-body">
                                 <h2 className="card-title text">{team.name} <span className="text-accent">#{team.number}</span></h2>
 
@@ -92,7 +100,7 @@ export default function Profile() {
             <div className="card-body" id="join">
             
                 <h2 className="card-title text-3xl">Join a Team</h2>
-                <p className="">Your Team does not exist? <a href="/createTeam" className="text-accent">Create It!</a></p>
+                <p className="">Your Team does not exist? <Link href="/createTeam" className="text-accent">Create It!</Link></p>
 
                 <div className="flex flex-row items-center mt-4 space-x-2">
                     <input type="number" placeholder="Team Number" value={teamNumber} onChange={(e) => {setTeamNumber(e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
@@ -101,7 +109,7 @@ export default function Profile() {
 
                 {foundTeam ? <div>
                     <p>Results:</p>
-                    <a className="text-accent text-lg"><h1>{foundTeam.name} - {foundTeam.number}</h1></a>
+                    <span className="text-accent text-lg"><h1>{foundTeam.name} - {foundTeam.number}</h1></span>
                     <button className="btn btn-secondary normal-case" onClick={requestTeam}>Request to Join</button>
                    
                 </div> : <></>}
@@ -172,7 +180,7 @@ export default function Profile() {
     }
 
 
-    return <div>
+    return <Container requireAuthentication={true} hideMenu={false}>
         <div className="min-h-screen flex flex-col items-center justify-center space-y-6 mb-10">
             <div className="card w-5/6 bg-base-200 shadow-xl">
                 <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
@@ -200,7 +208,7 @@ export default function Profile() {
 
 
             <div className="flex flex-row justify-start w-5/6 ">
-                <div className="w-1/3 join grid grid-cols-2 ">
+                <div className="w-full lg:w-1/3 join grid grid-cols-2 ">
                     <button className={"join-item btn btn-outline normal-case" + (!showSettings ? " btn-active": "")} onClick={()=>{setShowSettings(false)}}>Main</button>
                     <button className={"join-item btn btn-outline normal-case" + (showSettings ? " btn-active": "")} onClick={()=>{setShowSettings(true)}}>Settings</button>
                 </div>       
@@ -211,6 +219,6 @@ export default function Profile() {
 
 
         </div>
-    </div>
+    </Container>
 
 }

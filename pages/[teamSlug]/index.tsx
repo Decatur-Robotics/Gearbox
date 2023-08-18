@@ -6,6 +6,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { Competition, Season, User } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
 import { validName } from "@/lib/client/InputVerification";
+import Container from "@/components/Container";
 
 const api = new ClientAPI();
 
@@ -45,7 +46,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
         }
 
         const loadCurrentSeason = async() => {
-            const cs = await api.findSeasonById(currentSeasonId)
+            let cs: Season | undefined = await api.findSeasonById(currentSeasonId)
+            if(Object.keys(cs).length === 0) {
+                return;
+            } 
             setCurrentSeason(cs)
             setUpcomingEvent(await api.findCompetitionById(cs?.competitions[cs.competitions.length-1]))
         }
@@ -89,7 +93,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         <div className="w-1/2">
                             <h1 className="text-xl ">Current Season:</h1>
                             <h1 className="text-md mb-2">You can always <a href={`/${team?.slug}/createSeason`} className="text-accent">create a season</a></h1>
-                            {currentSeason ? <a href={seasonUrl}><div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
+                            {currentSeason?.name ? <a href={seasonUrl}><div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
 
                                 <div className="card-body">
                                     <h1 className="card-title text-2xl">{currentSeason.name}</h1>
@@ -97,7 +101,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                 </div>
                                 </div>
                             </a>
-                              : <p className="text-sm ml-4">No Upcoming Events</p>}
+                              : <p className="text-sm ml-4">No Seasons</p>}
 
 
                             <br></br>
@@ -142,7 +146,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
             return  <div className="card w-5/6 bg-base-200 shadow-xl">
                 <div className="card-body">
                     <h1 className="card-title text-2xl">Team Roster</h1>
-                    <p>Manage your team's members</p>
+                    <p>Manage your teams members</p>
 
                     
                     <h1 className="text-lg">Requests:</h1>
@@ -153,7 +157,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     
                     <div className="grid gap-4 grid-cols-2">
                     {
-                        requests.map((user) => <div className="card bg-base-300">
+                        requests.map((user) => <div className="card bg-base-300" key={user._id}>
                             <div className="card-body">
                                 <div className="flex flex-row space-x-2">
                                     <div className="avatar">
@@ -191,7 +195,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                             <tbody>
 
                             {
-                                users.map((user, index) => <tr>
+                                users.map((user, index) => <tr key={user._id}>
                                 <th>{index+1}</th>
                                 <td className="flex flex-row items-center justify-evenly">
                                     <div className="avatar">
@@ -200,9 +204,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        {user.name}
-                                    </div>   
+                                    <div >{user.name}</div>   
                                 </td>
                                 <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team.scouters.includes(user._id as string)} /></td>
                                 <td><input type="checkbox" className="toggle toggle-secondary" checked={team.owners.includes(user._id as string)} disabled/></td>
@@ -247,7 +249,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
             <div className="card-body">
             
                 <h2 className="card-title text-3xl">Settings</h2>
-                <p className="">Modify and Update Your Team's Information</p>
+                <p className="">Modify and Update Your Teams Information</p>
 
                 <p className="text-error">{settingsError}</p>
                 
@@ -265,35 +267,36 @@ export default function TeamIndex(props: ResolvedUrlData) {
         </div>
     }
 
-    return <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
-            <div className="card w-5/6 bg-base-200 shadow-xl">
-                <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
-                <div className="card-body">
+    return <Container requireAuthentication={true} hideMenu={false}>
+        <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+                <div className="card w-5/6 bg-base-200 shadow-xl">
+                    <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
+                    <div className="card-body">
 
-                    <h2 className="card-title text-4xl">{team.name} <span className="text-accent">#{team.number}</span></h2>
-                    <p>{numberOfMembers} Members</p>
+                        <h2 className="card-title text-4xl">{team.name} <span className="text-accent">#{team.number}</span></h2>
+                        <p>{numberOfMembers} Members</p>
 
-                    <div className="card-action space-x-2">
-                        {team.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
-                        {isFrc ? <div className="badge badge-secondary">FIRST FRC</div> : <></>}
+                        <div className="card-action space-x-2">
+                            {team.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
+                            {isFrc ? <div className="badge badge-secondary">FIRST FRC</div> : <></>}
+                        </div>
+                        
                     </div>
-                    
                 </div>
-            </div>
 
-            <div className="flex flex-row justify-start w-5/6 ">
-                <div className="w-3/8 join grid grid-cols-3">
-                    <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
-                    <button className={"join-item btn btn-outline normal-case " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary">New </span>: <></>} </button>
-                    <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button>
-                </div>       
-            </div>
+                <div className="flex flex-row justify-start w-5/6 ">
+                    <div className="w-full join grid grid-cols-3">
+                        <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
+                        <button className={"join-item btn btn-outline normal-case " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary">New </span>: <></>} </button>
+                        <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button>
+                    </div>       
+                </div>
 
-            {selection === 1 ? <Overview></Overview> : <></>}
-            {selection === 2 ? <Roster></Roster> : <></>}
-            {selection === 3 ? <Settings></Settings>: <></>}
-            
-    </div>
+                {selection === 1 ? <Overview></Overview> : <></>}
+                {selection === 2 ? <Roster></Roster> : <></>}
+                {selection === 3 ? <Settings></Settings>: <></>}
+        </div>
+    </Container>
     
 
 }
