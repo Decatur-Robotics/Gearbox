@@ -46,15 +46,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
         }
 
         const loadCurrentSeason = async() => {
-<<<<<<< HEAD
             if(!currentSeasonId) {return;}
             const cs = await api.findSeasonById(currentSeasonId)
-=======
-            let cs: Season | undefined = await api.findSeasonById(currentSeasonId)
-            if(Object.keys(cs).length === 0) {
-                return;
-            } 
->>>>>>> 704eb2568c6057431fe916089ba3fecde95d25d3
             setCurrentSeason(cs)
             setUpcomingEvent(await api.findCompetitionById(cs?.competitions[cs.competitions.length-1]))
         }
@@ -279,23 +272,12 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
                     <div className="card-body">
 
-<<<<<<< HEAD
                     <h2 className="card-title text-4xl">{team?.name} <span className="text-accent">#{team?.number}</span></h2>
                     <p>{numberOfMembers} Members</p>
 
                     <div className="card-action space-x-2">
                         {team?.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
                         {isFrc ? <div className="badge badge-secondary">FIRST FRC</div> : <></>}
-=======
-                        <h2 className="card-title text-4xl">{team.name} <span className="text-accent">#{team.number}</span></h2>
-                        <p>{numberOfMembers} Members</p>
-
-                        <div className="card-action space-x-2">
-                            {team.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
-                            {isFrc ? <div className="badge badge-secondary">FIRST FRC</div> : <></>}
-                        </div>
-                        
->>>>>>> 704eb2568c6057431fe916089ba3fecde95d25d3
                     </div>
                 </div>
 
@@ -310,6 +292,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 {selection === 1 ? <Overview></Overview> : <></>}
                 {selection === 2 ? <Roster></Roster> : <></>}
                 {selection === 3 ? <Settings></Settings>: <></>}
+        </div>
         </div>
     </Container>
     

@@ -77,11 +77,7 @@ export default function Home(props: ResolvedUrlData) {
           <h3>No Competitions? <a className="text-accent" href={`/${team?.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>
           <div className="divider"></div>
           {
-<<<<<<< HEAD
             comps.map((comp) => <a href={`/${team?.slug}/${season?.slug}/${comp.slug}`}><div className="card w-5/6 bg-base-300" key={comp._id}>
-=======
-            comps.map((comp) => <a href={`/${team.slug}/${season?.slug}/${comp.slug}`}  key={comp._id}><div className="card w-5/6 bg-base-300">
->>>>>>> 704eb2568c6057431fe916089ba3fecde95d25d3
               <div className="card-body">
                 
                 <h1 className="card-title">{comp.name}</h1>
