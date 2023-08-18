@@ -10,10 +10,15 @@ export enum ClientRequestMethod {
 export default class ClientAPI {
 
     baseUrl: string;
+    authenticationKey: string = ""
 
     // replace this with the process.env
     constructor(baseUrl="http://localhost:3000/api/") {
         this.baseUrl = baseUrl;
+    }
+
+    setAuth(authKey: string) {
+        this.authenticationKey = authKey;
     }
 
     async request(subUrl: string, body: any, method: ClientRequestMethod=ClientRequestMethod.POST) {
@@ -21,7 +26,8 @@ export default class ClientAPI {
               method: method,
               headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "Gearbox-Auth": this.authenticationKey,
               },
               body: JSON.stringify(body)
         });

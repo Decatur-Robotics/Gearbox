@@ -1,5 +1,3 @@
-
-
 export const ValidRegex = /^[0-9a-z]+$/;
 export const MinimumNameLength = 3;
 

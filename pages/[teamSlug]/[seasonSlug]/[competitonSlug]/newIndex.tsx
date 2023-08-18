@@ -58,7 +58,7 @@ export default function Home(props: ResolvedUrlData) {
                   <h1 className="text-2xl">{MonthString(comp.start)} - {MonthString(comp.end)}</h1>
 
                   <div className="card-action space-x-2">
-                        {team.tbaId ? <a href={`https://www.thebluealliance.com/event/${comp.tbaId}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
+                        {team?.tbaId ? <a href={`https://www.thebluealliance.com/event/${comp.tbaId}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
                         <div className="badge badge-secondary">FIRST FRC</div>
                   </div>
           </div>
@@ -113,8 +113,8 @@ export default function Home(props: ResolvedUrlData) {
 </div>
 }
 
-export const getServerSideProps: GetServerSideProps = async ({req, res, resolvedUrl}) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: await UrlResolver(resolvedUrl),
+    props: await UrlResolver(context),
   }
 }

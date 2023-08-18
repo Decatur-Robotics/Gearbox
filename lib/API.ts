@@ -1,15 +1,40 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Alliance, Competition, Form, Match, Season, Team, User } from "./Types";
+import { Competition, Form, Match, Season, Team, User, Report } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 
 export namespace API {
 
+    export const GearboxHeader = "Gearbox-Auth"
     type Route = (req: NextApiRequest, res: NextApiResponse, contents: {db: MongoDBInterface, tba: TheBlueAlliance.Interface, data: any}) => Promise<void>;
     type RouteCollection = { [routeName: string]: Route};
+
+    class Error {
+        constructor(res: NextApiResponse, errorCode: number=500, description: string = "The server encountered an error while processing the request") {
+            res.status(errorCode).send({"error": description})
+        }
+    }
+
+    class NotFoundError extends Error {
+        constructor(res: NextApiResponse, routeName: string) {
+            super(res, 404, `This API Route (/${routeName}) does not exist`);
+        }
+    }
+    
+    class InvalidRequestError extends Error {
+        constructor(res: NextApiResponse) {
+            super(res, 400, "Invalid Request");
+        }
+    }
+
+    class UnauthorizedError extends Error {
+        constructor(res: NextApiResponse) {
+            super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key")
+        }
+    }
     
     export class Handler {
         // feed routes as big object ot tjhe handler
@@ -28,7 +53,17 @@ export namespace API {
         async handleRequest(req: NextApiRequest, res: NextApiResponse) {
             
             if(!req.url) {
-                res.status(404).send({"error": "API Route Does Not Exist"});
+                new InvalidRequestError(res);
+                return;
+            }
+
+            if(req.headers[GearboxHeader]) {
+                const user = await (await this.db).findObjectById(Collections.Users, new ObjectId(req.headers[GearboxHeader].toString()));
+                if(!user) {
+                    new UnauthorizedError(res);
+                }
+            } else {
+                new UnauthorizedError(res);
                 return;
             }
 
@@ -37,7 +72,8 @@ export namespace API {
             if(route in this.routes) {
                 this.routes[route](req, res, {db:await this.db, tba:this.tba, data:req.body});
             } else {
-                res.status(404).send({"error": "API Route Does Not Exist"});
+                new NotFoundError(res, route);
+                return;
             }
         }
     }
@@ -255,7 +291,8 @@ export namespace API {
             //     seasonId
             // }
             var matches = await tba.getCompetitionMatches(data.tbaId);
-            matches.map(async(match) => (await db.addObject<Match>(Collections.Matches, match))._id)
+            matches.map(async(match) => (await db.addObject<Match>(Collections.Matches, match))._id);
+
             var comp = await db.addObject<Competition>(Collections.Competitions, new Competition(data.name, await GenerateSlug(Collections.Competitions, data.name), data.tbaId, data.start, data.end, [], matches.map((match) => String(match._id))));
             // update seaason too $$$$$$$
 
