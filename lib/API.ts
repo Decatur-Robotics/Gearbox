@@ -109,6 +109,7 @@ export namespace API {
         "findAll": async (req, res, {db, data}) => {
             // {
             //     collection, 
+            
             // }
             const collection = data.collection;
             
@@ -200,8 +201,8 @@ export namespace API {
             const team = await db.addObject<Team>(Collections.Teams, newTeamObj);
 
             var user = await db.findObjectById<User>(Collections.Users, new ObjectId(data.creator));
-            user.teams.push(team._id!);
-            user.owner.push(team._id!);
+            user.teams.push(team._id!.toString());
+            user.owner.push(team._id!.toString());
 
             await db.updateObjectById(Collections.Users, new ObjectId(user._id), user);
 
@@ -245,7 +246,7 @@ export namespace API {
             return res.status(200).send(form);
         },
 
-        "createCompetiton": async (req, res, {db, data}) => {
+        "createCompetiton": async (req, res, {db, data, tba}) => {
             // {
             //     tbaId?
             //     start
@@ -253,11 +254,12 @@ export namespace API {
             //     name
             //     seasonId
             // }
-            var comp = await db.addObject<Competition>(Collections.Competitions, new Competition(data.name, await GenerateSlug(Collections.Competitions, data.name), data.tbaId, data.start, data.end));
+            var matches = await tba.getCompetitionMatches(data.tbaId);
+            matches.map(async(match) => (await db.addObject<Match>(Collections.Matches, match))._id)
+            var comp = await db.addObject<Competition>(Collections.Competitions, new Competition(data.name, await GenerateSlug(Collections.Competitions, data.name), data.tbaId, data.start, data.end, [], matches.map((match) => String(match._id))));
             // update seaason too $$$$$$$
 
             var season = await db.findObjectById<Season>(Collections.Seasons, new ObjectId(data.seasonId));
-            console.log(season)
             season.competitions = [...season.competitions, String(comp._id)]
 
             await db.updateObjectById(Collections.Seasons, new ObjectId(season._id), season);

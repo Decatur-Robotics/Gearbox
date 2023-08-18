@@ -4,6 +4,7 @@ import { Form, FormElement, FormElementType } from "@/lib/Types";
 import { GetServerSideProps } from "next";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useRouter } from 'next/router'
+import Container from "@/components/Container";
 
 const api = new ClientAPI();
 
@@ -46,7 +47,7 @@ function EditElement(props: {data: FormElement, index: number, callback: (index:
           <p className="text-lg font-semibold inline">Question Type: </p>
           <select value={type} onChange={(e)=>change(index, "type", e.target.value)} className="select select-bordered">
             {
-              Object.keys(FormElementType).map((type) => <option value={type}>{type}</option>)
+              Object.keys(FormElementType).map((type, index) => <option value={type} key={index}>{type}</option>)
             }
           </select>
 
@@ -165,7 +166,8 @@ export default function Home(props: ResolvedUrlData) {
   }
 
 
-  return <div className="ml-10 flex flex-col w-5/6">
+  return <Container requireAuthentication={true} hideMenu={false}>
+  <div className="ml-10 flex flex-col w-5/6">
       <h1 className="text-4xl card-title mb-2">Form Editor</h1>
       <input type="text" placeholder="Form Name" value={name} onChange={(e) =>{setName(e.target.value)}} className="input input-bordered w-full max-w-xs" />
       <button onClick={saveForm} className="btn btn-info w-1/4 text-white">Save</button>
@@ -191,6 +193,7 @@ export default function Home(props: ResolvedUrlData) {
         </div>
       </div>
   </div>
+  </Container>
 
 }
 
