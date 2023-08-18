@@ -13,10 +13,10 @@ const api = new ClientAPI();
 export default function TeamIndex(props: ResolvedUrlData) {
 
     const [team, setTeam] = useState(props.team);
-    const numberOfMembers = team.users.length;
-    const isFrc = props.team.tbaId?.includes("frc");
-    const currentSeasonId = props.team.seasons[props.team.seasons.length-1];
-    const newRequests = team.requests.length > 0;
+    const numberOfMembers = team?.users.length;
+    const isFrc = props.team?.tbaId?.includes("frc");
+    const currentSeasonId = props.team?.seasons[props.team.seasons.length-1];
+    const newRequests = team ? team.requests.length > 0 : undefined;
 
     const[users, setUsers] = useState<User[]>([]);
     const[requests, setRequests] = useState<User[]>([]);
@@ -30,7 +30,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
         const loadUsers = async() => {
             var newData: User[] = []
-            team.users.forEach(async (userId) => {
+            team?.users.forEach(async (userId) => {
                 newData.push(await api.findUserById(userId))
             })
             setUsers(newData)
@@ -38,13 +38,14 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
         const loadRequests = async() => {
             var newData: User[] = [];
-            team.requests.forEach(async (userId) => {
+            team?.requests.forEach(async (userId) => {
                 newData.push(await api.findUserById(userId));
             })
             setRequests(newData);
         }
 
         const loadCurrentSeason = async() => {
+            if(!currentSeasonId) {return;}
             const cs = await api.findSeasonById(currentSeasonId)
             setCurrentSeason(cs)
             setUpcomingEvent(await api.findCompetitionById(cs?.competitions[cs.competitions.length-1]))
@@ -52,7 +53,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
         const loadPastSeasons = async() => {
             var newData: Season[] = [];
-            team.seasons.forEach(async (seasonId) => {
+            team?.seasons.forEach(async (seasonId) => {
                 newData.push(await api.findSeasonById(seasonId));
             })
             setPastSeasons(newData);
@@ -68,7 +69,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     const[selection, setSelection] = useState(1);
 
     const Overview = () => {
-        const seasonUrl = `/${team.slug}/${currentSeason?.slug}`
+        const seasonUrl = `/${team?.slug}/${currentSeason?.slug}`
         return <div className="card w-5/6 bg-base-200 shadow-xl">
                 <div className="card-body">
                     <div className="w-full min-h-1/2 flex flex-row">
@@ -119,6 +120,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
 
     const updateScouter = async (userId: string) => {
+        if(!team) {return;}
         var newTeam = structuredClone(team)
         var newArray = [...team.scouters]
         if(!team.scouters.includes(userId)) {
@@ -134,7 +136,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     }
 
     const handleRequest = async (userId: string | undefined, accept: boolean) => {
-        await api.handleRequest(accept, userId as string, team._id as string)
+        await api.handleRequest(accept, userId as string, team?._id as string)
         location.reload();
     }
 
@@ -204,8 +206,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                         {user.name}
                                     </div>   
                                 </td>
-                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team.scouters.includes(user._id as string)} /></td>
-                                <td><input type="checkbox" className="toggle toggle-secondary" checked={team.owners.includes(user._id as string)} disabled/></td>
+                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} /></td>
+                                <td><input type="checkbox" className="toggle toggle-secondary" checked={team?.owners.includes(user._id as string)} disabled/></td>
                             </tr>)
                             }
                             </tbody>
@@ -221,8 +223,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
    
     const Settings = () => {
 
-        const [nameChange, setNameChange] = useState(team.name);
-        const [numberChange, setNumberChange] = useState(team.number);
+        const [nameChange, setNameChange] = useState(team?.name);
+        const [numberChange, setNumberChange] = useState(team?.number);
         const [settingsError, setSettingsError] = useState("")
     
     
@@ -233,12 +235,12 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 return;
             }
     
-            if(numberChange <= 0) {
+            if(numberChange && numberChange <= 0) {
                 setSettingsError("Invalid Number");
                 return;
             }
     
-            await api.updateTeam({name: nameChange, number: numberChange}, team._id as string);
+            await api.updateTeam({name: nameChange, number: numberChange}, team?._id as string);
     
             location.reload()
         }
@@ -270,11 +272,11 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
                 <div className="card-body">
 
-                    <h2 className="card-title text-4xl">{team.name} <span className="text-accent">#{team.number}</span></h2>
+                    <h2 className="card-title text-4xl">{team?.name} <span className="text-accent">#{team?.number}</span></h2>
                     <p>{numberOfMembers} Members</p>
 
                     <div className="card-action space-x-2">
-                        {team.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
+                        {team?.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
                         {isFrc ? <div className="badge badge-secondary">FIRST FRC</div> : <></>}
                     </div>
                     
@@ -298,8 +300,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
 }
 
-export const getServerSideProps: GetServerSideProps = async ({resolvedUrl}) => {
+export const getServerSideProps: GetServerSideProps = async (context) => { 
     return {
-      props: await UrlResolver(resolvedUrl),
+      props: await UrlResolver(context)
     }
 }

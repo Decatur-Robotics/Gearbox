@@ -36,7 +36,7 @@ export default function CreateComp(props: ResolvedUrlData) {
       console.log(season)
       const comp = await api.createCompetition(autofill.name, autofill.tbaId, autofill.start, autofill.end, season?._id);
       var win: Window = window;
-      win.location = `/${team.slug}/${season?.slug}/${comp.slug}`;
+      win.location = `/${team?.slug}/${season?.slug}/${comp.slug}`;
     }
 
 
@@ -74,8 +74,8 @@ export default function CreateComp(props: ResolvedUrlData) {
 
 }
 
-export const getServerSideProps: GetServerSideProps = async ({req, res, resolvedUrl}) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: await UrlResolver(resolvedUrl),
+    props: await UrlResolver(context),
   }
 }

@@ -194,8 +194,8 @@ export default function Home(props: ResolvedUrlData) {
 
 }
 
-export const getServerSideProps: GetServerSideProps = async ({req, res, resolvedUrl}) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: await UrlResolver(resolvedUrl),
+    props: await UrlResolver(context),
   }
 }

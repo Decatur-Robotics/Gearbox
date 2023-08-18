@@ -16,9 +16,9 @@ export default function Home(props: ResolvedUrlData) {
     const[name, setName] = useState(CurrentSeason.name);
 
     const createSeason = async(season: {name: string, year: number}) => {
-        const s = await api.createSeason(season.name, season.year, team._id as string);
+        const s = await api.createSeason(season.name, season.year, team?._id as string);
         const win: Window = window;
-        win.location = `/${team.slug}/${s.slug}`;
+        win.location = `/${team?.slug}/${s.slug}`;
     }
     
     return <div className="flex flex-col items-center justify-center min-h-screen">
@@ -48,8 +48,8 @@ export default function Home(props: ResolvedUrlData) {
 }
 
 
-export const getServerSideProps: GetServerSideProps = async ({req, res, resolvedUrl}) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
-      props: await UrlResolver(resolvedUrl),
+      props: await UrlResolver(context),
     }
 }
