@@ -6,7 +6,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Container from "@/components/Container";
 
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 export default function CreateTeam() {
 

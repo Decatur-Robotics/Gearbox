@@ -8,7 +8,7 @@ import { MonthString } from "@/lib/client/FormatTime";
 import { validName } from "@/lib/client/InputVerification";
 import Container from "@/components/Container";
 
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 
 export default function TeamIndex(props: ResolvedUrlData) {

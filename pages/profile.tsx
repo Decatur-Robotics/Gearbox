@@ -6,7 +6,7 @@ import ClientAPI from "@/lib/client/ClientAPI"
 import { Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 export default function Profile() {
     const { session, status } = useCurrentSession();

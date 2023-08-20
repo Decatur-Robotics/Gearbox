@@ -13,7 +13,8 @@ export default class ClientAPI {
     authenticationKey: string = ""
 
     // replace this with the process.env
-    constructor(baseUrl="http://localhost:3000/api/") {
+    constructor(authKey="", baseUrl="http://localhost:3000/api/") {
+        this.authenticationKey = authKey;
         this.baseUrl = baseUrl;
     }
 
@@ -27,7 +28,7 @@ export default class ClientAPI {
               headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                "Gearbox-Auth": this.authenticationKey,
+                "gearbox-auth": this.authenticationKey,
               },
               body: JSON.stringify(body)
         });

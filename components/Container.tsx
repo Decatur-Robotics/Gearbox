@@ -7,7 +7,7 @@ import {BsGearFill} from "react-icons/bs"
 import ClientAPI from "@/lib/client/ClientAPI"
 
 
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 type ContainerProps = {
     children: ReactNode

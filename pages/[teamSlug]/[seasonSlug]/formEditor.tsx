@@ -6,7 +6,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { useRouter } from 'next/router'
 import Container from "@/components/Container";
 
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 const defaultElement : FormElement = {
   ref: "untitled_question",

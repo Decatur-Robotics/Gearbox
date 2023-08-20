@@ -6,7 +6,7 @@ import { Competition, Form } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
 import Container from "@/components/Container";
 
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 export default function Home(props: ResolvedUrlData) {
 

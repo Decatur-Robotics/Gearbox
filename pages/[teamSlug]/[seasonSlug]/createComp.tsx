@@ -7,7 +7,7 @@ import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
 
-const api = new ClientAPI();
+const api = new ClientAPI("gearboxiscool");
 
 export default function CreateComp(props: ResolvedUrlData) {
 

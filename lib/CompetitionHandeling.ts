@@ -19,13 +19,13 @@ export async function AssignScoutersToCompetitionMatches(teamId: string, competi
     }
 
     for(const matchId in matchIds) {
-        await AssignScoutersToMatch(matchId, scouters);
+        await AssignScoutersToMatch(matchId, scouters, formId);
         RotateArray(scouters);
     }
 
 }
 
-export async function AssignScoutersToMatch(matchId: string, scouterArray: string[], formId: string, shuffleScouters: boolean = false) {
+export async function AssignScoutersToMatch(matchId: string, scouterArray: string[], formId: string, shuffleScouters: boolean = false): Promise<void> {
     const db = await GetDatabase();
     const scouters = shuffleScouters ? ShuffleArray(scouterArray): scouterArray;
     const match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId));
@@ -36,6 +36,9 @@ export async function AssignScoutersToMatch(matchId: string, scouterArray: strin
         const scouter = scouters[i];
         const newReport = new Report(scouter, formId, bots[i], String(match._id));
         
-        newReports.push(String((await db.addObject(Collections.Reports, newReport))
+        newReports.push(String((await db.addObject<Report>(Collections.Reports, newReport))._id));
     }
+
+    match.reports = newReports;
+    await db.updateObjectById<Match>(Collections.Matches, new ObjectId(matchId), match);
 }

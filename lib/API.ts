@@ -8,7 +8,7 @@ import { fillTeamWithFakeUsers } from "./dev/FakeData";
 
 export namespace API {
 
-    export const GearboxHeader = "Gearbox-Auth"
+    export const GearboxHeader = "gearbox-auth"
     type Route = (req: NextApiRequest, res: NextApiResponse, contents: {db: MongoDBInterface, tba: TheBlueAlliance.Interface, data: any}) => Promise<void>;
     type RouteCollection = { [routeName: string]: Route};
 
@@ -57,14 +57,12 @@ export namespace API {
                 return;
             }
 
-            if(req.headers[GearboxHeader]) {
-                const user = await (await this.db).findObjectById(Collections.Users, new ObjectId(req.headers[GearboxHeader].toString()));
+            console.log(req.headers)
+            if(req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
+                const user = await (await this.db).findObjectById(Collections.Users, new ObjectId(req.headers[GearboxHeader]?.toString()));
                 if(!user) {
                     new UnauthorizedError(res);
                 }
-            } else {
-                new UnauthorizedError(res);
-                return;
             }
 
             var route = req.url.replace(this.basePath, "");
@@ -128,7 +126,7 @@ export namespace API {
             //     query
             // }
             const collection = data.collection;
-            const query = data.query;
+            var query = data.query;
 
             if(query._id) {
                 query._id = new ObjectId(query._id);

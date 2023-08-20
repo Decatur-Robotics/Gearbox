@@ -12,6 +12,7 @@ declare global {
         TBA_KEY: string;
 
         API_URL: string;
+        API_KEY: string;
 
         DEFAULT_IMAGE: string;
 
