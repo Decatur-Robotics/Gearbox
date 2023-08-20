@@ -176,7 +176,7 @@ export class Report {
     robotNumber: number; // number of robot to be reported
     match: string; // id of match
 
-    constructor(timestamp: number | undefined, user: string | undefined, form: string, robotNumber: number, match: string) {
+    constructor(user: string | undefined, form: string, robotNumber: number, match: string, timestamp: number | undefined=0) {
         this.timestamp = timestamp;
         this.user = user;
         this.form = form;

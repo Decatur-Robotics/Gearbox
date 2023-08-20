@@ -26,11 +26,16 @@ export function RandomArrayValue(array: any[]): any {
     return array[Math.floor(Math.random()*array.length)]
 }
 
-export function shuffleArray(array: any[]) {
+export function ShuffleArray(array: any[]) {
     for (var i = array.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
         var temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
+    return array;
+}
+
+export function RotateArray(array: any[]) {
+    return array.push(array.shift());
 }
