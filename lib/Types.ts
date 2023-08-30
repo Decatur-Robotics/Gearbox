@@ -1,7 +1,15 @@
-
+// A collection of all the standard types Gearbox uses
 import { Account as NextAuthAccount, Session as NextAuthSession, User as NextAuthUser} from "next-auth";
 
+/**
+ * Standard Account Type
+ * @remarks
+ * Derived orginally from NextAuth's Account struct
+ */
 export interface Account extends NextAuthAccount {
+    /**
+     * ID for the Mongo database
+     */
     _id: string;
 };
 
@@ -183,7 +191,6 @@ export class Report {
         this.robotNumber = robotNumber;
         this.match = match;
     }
-
 }
 
 export interface CompetitonNameIdPair {

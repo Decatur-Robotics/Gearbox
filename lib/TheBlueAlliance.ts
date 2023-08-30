@@ -89,6 +89,25 @@ export namespace TheBlueAlliance {
         return Date.parse(tbaDate);
     }
 
+    export function competitionLevelToMatchType(matchType: CompetitionLevel): MatchType {
+        if(matchType === CompetitionLevel.QM) {
+            return MatchType.Qualifying
+        } if(matchType === CompetitionLevel.EF) {
+            return MatchType.Qualifying;
+        } if(matchType === CompetitionLevel.QF) {
+            return MatchType.Quarterfinals
+        } if(matchType === CompetitionLevel.SF) {
+            return MatchType.Semifinals
+        } else {
+            return MatchType.Finals;
+        }
+    }
+
+    export function tbaIdsToTeamNumbers(tbaIds: string[]): Alliance {
+        //@ts-ignore
+        return tbaIds.map((id) => parseInt(id.match(/\d+/g)[0]));
+    }
+
     class Request {
 
         baseUrl : string;
@@ -144,33 +163,13 @@ export namespace TheBlueAlliance {
         db: Promise<MongoDBInterface>;
 
         competitionPairings: CompetitonNameIdPair[] = [];
+
         constructor() {
             this.req = new Request();
             this.db = GetDatabase();
 
-            this.loadCompetitionPairings();+96
-
+            this.loadCompetitionPairings();
         }
-
-        competitionLevelToMatchType(matchType: CompetitionLevel): MatchType {
-            if(matchType === CompetitionLevel.QM) {
-                return MatchType.Qualifying
-            } if(matchType === CompetitionLevel.EF) {
-                return MatchType.Qualifying;
-            } if(matchType === CompetitionLevel.QF) {
-                return MatchType.Quarterfinals
-            } if(matchType === CompetitionLevel.SF) {
-                return MatchType.Semifinals
-            } else {
-                return MatchType.Finals;
-            }
-        }
-
-        tbaIdsToTeamNumbers(tbaIds: string[]): Alliance {
-            //@ts-ignore
-            return tbaIds.map((id) => parseInt(id.match(/\d+/g)[0]));
-        }
-        
 
         async getTeamAutofillData(teamNumber: number): Promise<Team> {
             let team = await this.req.getTeam(Prefixes.FRC + teamNumber.toString());
@@ -191,11 +190,11 @@ export namespace TheBlueAlliance {
 
         async getMatchAutofillData(tbaId: string): Promise<Match> {
             let data = await this.req.getMatch(tbaId);
-            return new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys));
+            return new Match(data.match_number, undefined, data.key, data.time, competitionLevelToMatchType(data.comp_level), tbaIdsToTeamNumbers(data.alliances.blue.team_keys), tbaIdsToTeamNumbers(data.alliances.blue.team_keys));
         }
 
         async getCompetitionMatches(tbaId: string): Promise<Match[]> {
-            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys)));
+            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, competitionLevelToMatchType(data.comp_level), tbaIdsToTeamNumbers(data.alliances.blue.team_keys), tbaIdsToTeamNumbers(data.alliances.blue.team_keys)));
             return matches;
         }
 

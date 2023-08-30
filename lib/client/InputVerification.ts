@@ -20,6 +20,5 @@ export function validEmail(email: string): boolean {
     )) {
         return false
     }
-
     return true
 }

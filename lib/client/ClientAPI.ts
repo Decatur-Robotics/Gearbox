@@ -1,4 +1,4 @@
-// think of this as JAI but "better"
+
 
 import { Competition, Season, Team, User, Match, Form, FormElement, CompetitonNameIdPair } from "../Types";
 
