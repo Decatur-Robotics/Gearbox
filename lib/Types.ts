@@ -115,7 +115,7 @@ export class Competition {
     name: string;
     slug: string | undefined;
     tbaId: string | undefined;
-
+    
     start: number;
     end: number;
 
@@ -134,6 +134,10 @@ export class Competition {
 }
 
 
+export enum AllianceColor {
+    Red="Red",
+    Blue="Blue",
+}
 export type Alliance = []
 
 export enum MatchType {
@@ -156,8 +160,6 @@ export class Match {
     redAlliance: Alliance;
 
     time: number; // time the match begins
-
-    scouters: string[];
     reports: string[];
 
     constructor(number: number, slug: string | undefined, tbaId: string | undefined,  time: number, type: MatchType, blueAlliance: Alliance, redAlliance: Alliance,  reports: string[]=[], scouters: string[]=[]) {
@@ -169,7 +171,6 @@ export class Match {
         this.blueAlliance = blueAlliance;
         this.redAlliance = redAlliance;
         this.reports = reports;
-        this.scouters = scouters;
     }
 }
 
@@ -181,15 +182,20 @@ export class Report {
 
     form: string; // id of form;
 
+    color: AllianceColor;
     robotNumber: number; // number of robot to be reported
     match: string; // id of match
 
-    constructor(user: string | undefined, form: string, robotNumber: number, match: string, timestamp: number | undefined=0) {
+    data: object;
+
+    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number | undefined=0, data: object={}) {
         this.timestamp = timestamp;
         this.user = user;
         this.form = form;
         this.robotNumber = robotNumber;
         this.match = match;
+        this.color = color;
+        this.data = data;
     }
 }
 

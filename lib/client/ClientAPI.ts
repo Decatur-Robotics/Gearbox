@@ -1,6 +1,6 @@
 
 
-import { Competition, Season, Team, User, Match, Form, FormElement, CompetitonNameIdPair } from "../Types";
+import { Competition, Season, Team, User, Match, Form, FormElement, CompetitonNameIdPair, Report } from "../Types";
 
 export enum ClientRequestMethod {
     POST="POST",
@@ -62,6 +62,10 @@ export default class ClientAPI {
 
     async findMatchById(id: string): Promise<Match> {
         return await this.request("/find", {collection: "Matches", query: {"_id": id}});
+    }
+
+    async findReportById(id: string): Promise<Report> {
+        return await this.request("/find", {collection: "Reports", query: {"_id": id}});
     }
 
     async allTeams(): Promise<Team[]> {
@@ -127,5 +131,9 @@ export default class ClientAPI {
 
     async updateForm(newValues: object, formId: string | undefined) {
         return await this.request("/update", {collection: "Forms", newValues: newValues, id: formId})
+    }
+
+    async assignScouters(teamId: string | undefined, compId: string | undefined, formId: string | undefined, shuffle: boolean=false) {
+        return await this.request("/assignScouters", {teamId: teamId, compId: compId, formId: formId, shuffle: shuffle})
     }
 };
