@@ -12,7 +12,6 @@ export interface ResolvedUrlData {
     team: Team | undefined,
     season: Season | undefined,
     competition: Competition | undefined,
-    match: Match | undefined,
     report: Report | undefined,
 }
 
@@ -55,8 +54,8 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
     const teamSlug = splittedUrl[0];
     const seasonSlug = splittedUrl[1];
     const competitionSlug = splittedUrl[2];
-    const matchSlug = splittedUrl[3];
-    const reportSlug = splittedUrl[4];
+    const reportSlug = splittedUrl[3];
+
 
     try {
         // find these slugs, and convert them to a JSON safe condition
@@ -65,19 +64,22 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
             team: SerializeDatabaseObject(await db.findObject<Team>(Collections.Teams, {"slug": teamSlug})),
             season: seasonSlug ? SerializeDatabaseObject(await db.findObject<Season>(Collections.Seasons, {"slug": seasonSlug})) : null,
             competition: competitionSlug ? SerializeDatabaseObject(await db.findObject<Competition>(Collections.Competitions, {"slug": competitionSlug})): null,
-            match: matchSlug ? SerializeDatabaseObject(await db.findObject<Match>(Collections.Matches, {"slug": matchSlug})) : null,
             report: reportSlug ? SerializeDatabaseObject(await db.findObject<Report>(Collections.Reports, {"slug": reportSlug})) : null,
         }
+
+        if(!data.team || !data.season || !data.competition) {
+            throw new Error();
+        }
+
         return data;
     } catch(error) {
         // if an error occured, the URL is probably faulty, return nothing and redirect to 404
-        context.res.writeHead(301, {Location: "/not-found"});
+        context.res.writeHead(301, {Location: "/404"});
         context.res.end();
         return {
             team: undefined,
             season: undefined,
             competition: undefined,
-            match: undefined,
             report: undefined,
         }
     }

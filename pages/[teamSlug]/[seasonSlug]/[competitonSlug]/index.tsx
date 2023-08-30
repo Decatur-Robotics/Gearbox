@@ -83,11 +83,11 @@ export default function Home(props: ResolvedUrlData) {
     })
 
     return <div>
-                  <h1>{match.type} - Match {match.number}</h1>
-                  <div className="w-full h-12 flex flex-row rounded-lg items-center space-x-2">
-                    {repElements}
-                  </div>
-                  <div className="divider mt-1 mb-1"></div>
+            <h1>{match.type} - Match {match.number}</h1>
+            <div className="w-full h-12 flex flex-row rounded-lg items-center space-x-2">
+              {repElements}
+            </div>
+            <div className="divider mt-1 mb-1"></div>
           </div>
   }
 
@@ -105,6 +105,22 @@ export default function Home(props: ResolvedUrlData) {
               <h1 className="card-title">Qualifying Matches (#{qualifyingMatches.length})</h1>
               {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
               {qualifyingMatches.map((match) => matchToDisplay(match))}
+            </div>
+
+            <div className="divider"></div>
+
+            <div className="w-full flex flex-col items-center ">
+              <h1 className="card-title">Semifinal Matches (#{semiFinalMatches.length})</h1>
+              {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
+              {semiFinalMatches.map((match) => matchToDisplay(match))}
+            </div>
+
+            <div className="divider"></div>
+
+            <div className="w-full flex flex-col items-center ">
+              <h1 className="card-title">Final Matches (#{finalMatches.length})</h1>
+              {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
+              {finalMatches.map((match) => matchToDisplay(match))}
             </div>
 
         </div>
