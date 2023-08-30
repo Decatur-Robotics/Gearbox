@@ -195,7 +195,7 @@ export namespace TheBlueAlliance {
         }
 
         async getCompetitionMatches(tbaId: string): Promise<Match[]> {
-            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys)));
+            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, this.competitionLevelToMatchType(data.comp_level), this.tbaIdsToTeamNumbers(data.alliances.blue.team_keys), this.tbaIdsToTeamNumbers(data.alliances.red.team_keys)));
             return matches;
         }
 

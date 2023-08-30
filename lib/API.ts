@@ -5,6 +5,7 @@ import { Competition, Form, Match, Season, Team, User, Report } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
+import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 
 export namespace API {
 
@@ -57,7 +58,6 @@ export namespace API {
                 return;
             }
 
-            console.log(req.headers)
             if(req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
                 const user = await (await this.db).findObjectById(Collections.Users, new ObjectId(req.headers[GearboxHeader]?.toString()));
                 if(!user) {
@@ -319,6 +319,18 @@ export namespace API {
             //    name
             // }
             return res.status(200).send(await tba.searchCompetitionByName(data.name))
+        },
+
+        "assignScouters": async (req, res, {tba, data}) => {
+            // {
+            //    teamId
+            //    compId
+            //    shuffle
+            //    formId
+            // }
+            
+            await AssignScoutersToCompetitionMatches(data.teamId, data.compId, data.formId, data.shuffle);
+            return res.status(200).send({"result": "success"})
         }
 
 

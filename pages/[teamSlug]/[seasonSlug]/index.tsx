@@ -28,7 +28,7 @@ export default function Home(props: ResolvedUrlData) {
        }
 
        const loadComps = async () => {
-        var newComps: Competition[] = []
+        var newComps: Competition[] = [];
         season?.competitions.forEach(async (id) => {
           newComps.push(await api.findCompetitionById(id));
         })
