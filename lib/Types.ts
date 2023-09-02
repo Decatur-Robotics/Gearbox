@@ -186,6 +186,7 @@ export class Report {
     robotNumber: number; // number of robot to be reported
     match: string; // id of match
 
+    submitted: boolean = false;
     data: object;
 
     constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number | undefined=0, data: object={}) {
