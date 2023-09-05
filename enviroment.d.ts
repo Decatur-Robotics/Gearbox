@@ -16,7 +16,7 @@ declare global {
 
         DEFAULT_IMAGE: string;
 
-        FILL_TEAMS: boolean;
+        FILL_TEAMS: string;
 
         NODE_ENV: 'development' | 'production';
 

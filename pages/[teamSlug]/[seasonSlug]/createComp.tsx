@@ -49,7 +49,7 @@ export default function CreateComp(props: ResolvedUrlData) {
           
                 <div className="card-body">
                     <h2 className="card-title text-2xl">Create a new Competition</h2>
-                    <p>Have a team number? <span className="text-accent">Search By Name</span></p>
+                    <p>Know the competition? <span className="text-accent">Search By Name</span></p>
 
                     <input type="text" placeholder="Name" value={name} onChange={(e)=>(setName(e.target.value))} className="input input-bordered input-primary w-full" />
                     

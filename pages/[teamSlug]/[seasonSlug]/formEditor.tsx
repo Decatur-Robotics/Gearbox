@@ -5,6 +5,7 @@ import { GetServerSideProps } from "next";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useRouter } from 'next/router'
 import Container from "@/components/Container";
+import PreviewElement from "@/components/PreviewElement";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -58,42 +59,7 @@ function EditElement(props: {data: FormElement, index: number, callback: (index:
     </div>
 }
 
-function PreviewElement(props: {data: FormElement, index: number}) {
-  const data = props.data;
-  const index = props.index;
 
-
-  const ref = data.ref;
-  const text = data.text;
-  const type = data.type;
-  const value = data.value;
-
-
-  const FormElementTypeToForm = (type: FormElementType) => {
-    if(type === FormElementType.Number) {
-      return <div className="flex flex-row items-center justify-center space-x-8">
-        <button className="btn btn-circle btn-info text-white">-</button>
-        <h1 className="font-bold text-4xl">{value}</h1>
-        <button className="btn btn-circle btn-info text-white">+</button>
-      </div>
-    }
-
-    if(type === FormElementType.Text) {
-      return <input type="text" className="input input-bordered" placeholder={value}></input>
-    }
-
-    if(type === FormElementType.Boolean) {
-      return <input type="checkbox" className="input input-bordered" placeholder={value}></input>
-    }
-  }
-
-  return <div className="card bg-base-200">
-      <div className="card-body">
-        <h1 className="card-title">{text}</h1>
-        {FormElementTypeToForm(type)}
-      </div>
-    </div>
-}
 
 export default function Home(props: ResolvedUrlData) {
   const season = props.season;
@@ -185,10 +151,10 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
         <div className="divider divider-horizontal"></div>
-        <div className="w-1/2 flex flex-col space-y-2">
+        <div className="w-1/2 flex flex-col items-center space-y-2">
           <h1 className="text-2xl">Preview Form</h1>
           {
-            elements.map((element, index) => <PreviewElement data={element} key={index} index={index} ></PreviewElement>)
+            elements.map((element, index) => <PreviewElement data={element} key={index} index={index} callback={()=>{}}></PreviewElement>)
           }
         </div>
       </div>

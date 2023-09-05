@@ -1,6 +1,7 @@
 import { GetServerSidePropsContext } from "next";
 import { Collections, GetDatabase } from "./MongoDB";
 import { Competition, Match, Season, Team, Report } from "./Types";
+import {ObjectId} from "mongodb";
 
 // fetches the database
 const gdb = GetDatabase();
@@ -54,7 +55,7 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
     const teamSlug = splittedUrl[0];
     const seasonSlug = splittedUrl[1];
     const competitionSlug = splittedUrl[2];
-    const reportSlug = splittedUrl[3];
+    const reportId = splittedUrl[3];
 
 
     try {
@@ -64,18 +65,11 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
             team: SerializeDatabaseObject(await db.findObject<Team>(Collections.Teams, {"slug": teamSlug})),
             season: seasonSlug ? SerializeDatabaseObject(await db.findObject<Season>(Collections.Seasons, {"slug": seasonSlug})) : null,
             competition: competitionSlug ? SerializeDatabaseObject(await db.findObject<Competition>(Collections.Competitions, {"slug": competitionSlug})): null,
-            report: reportSlug ? SerializeDatabaseObject(await db.findObject<Report>(Collections.Reports, {"slug": reportSlug})) : null,
-        }
-
-        if(!data.team || !data.season || !data.competition) {
-            throw new Error();
+            report: reportId ? SerializeDatabaseObject(await db.findObject<Report>(Collections.Reports, {"_id": new ObjectId(reportId)})) : null,
         }
 
         return data;
     } catch(error) {
-        // if an error occured, the URL is probably faulty, return nothing and redirect to 404
-        context.res.writeHead(301, {Location: "/404"});
-        context.res.end();
         return {
             team: undefined,
             season: undefined,

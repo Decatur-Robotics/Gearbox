@@ -190,11 +190,11 @@ export namespace TheBlueAlliance {
 
         async getMatchAutofillData(tbaId: string): Promise<Match> {
             let data = await this.req.getMatch(tbaId);
-            return new Match(data.match_number, undefined, data.key, data.time, competitionLevelToMatchType(data.comp_level), tbaIdsToTeamNumbers(data.alliances.blue.team_keys), tbaIdsToTeamNumbers(data.alliances.blue.team_keys));
+            return new Match(data.match_number, undefined, data.key, data.time, competitionLevelToMatchType(data.comp_level), tbaIdsToTeamNumbers(data.alliances.blue.team_keys), tbaIdsToTeamNumbers(data.alliances.red.team_keys));
         }
 
         async getCompetitionMatches(tbaId: string): Promise<Match[]> {
-            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, competitionLevelToMatchType(data.comp_level), tbaIdsToTeamNumbers(data.alliances.blue.team_keys), tbaIdsToTeamNumbers(data.alliances.blue.team_keys)));
+            let matches = (await this.req.getCompetitionMatches(tbaId)).map((data) => new Match(data.match_number, undefined, data.key, data.time, competitionLevelToMatchType(data.comp_level), tbaIdsToTeamNumbers(data.alliances.blue.team_keys), tbaIdsToTeamNumbers(data.alliances.red.team_keys)));
             return matches;
         }
 

@@ -11,6 +11,7 @@ import { Bs1Circle, BsStarFill } from "react-icons/bs";
 import { AiFillWarning, AiOutlineUser } from "react-icons/ai";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { chownSync } from "fs";
 
 
 const api = new ClientAPI("gearboxiscool");
@@ -75,8 +76,9 @@ export default function Home(props: ResolvedUrlData) {
 
   function matchToDisplay(match: Match) {
     const reps: Report[] = match.reports.map((reportId) => reports[reportId]);
-    
+    console.log(match.blueAlliance)
     const repElements = reps.map((rep) => {
+      console.log(rep.color)
       const isItUs = rep.robotNumber === team?.number;
       const isMe = rep.user === session.user?._id;
       return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`}><div className={`w-10 h-10 ${rep.color === "Blue" ? "bg-blue-500" : "bg-red-500"} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>{isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>} {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}</div></Link>
@@ -85,7 +87,7 @@ export default function Home(props: ResolvedUrlData) {
     return <div>
             <h1>{match.type} - Match {match.number}</h1>
             <div className="w-full h-12 flex flex-row rounded-lg items-center space-x-2">
-              {repElements}
+              {reps.length > 0 ? repElements : <h1>No Information Available</h1>}
             </div>
             <div className="divider mt-1 mb-1"></div>
           </div>
