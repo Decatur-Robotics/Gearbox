@@ -10,6 +10,7 @@ export default function PreviewElement(props: {data: FormElement, index: number,
     const text = data.text;
     const type = data.type;
     const value = data.value;
+    console.log(data);
   
     function handleCallback(value: any) {
       if(callback) {
@@ -31,7 +32,7 @@ export default function PreviewElement(props: {data: FormElement, index: number,
       }
   
       if(type === FormElementType.Boolean) {
-        return <input type="checkbox" className="input input-bordered" checked={value} onClick={()=>handleCallback(!val)}></input>
+        return <input type="checkbox" className="input input-bordered" checked={value} onClick={()=>handleCallback(!value)}></input>
       }
     }
   

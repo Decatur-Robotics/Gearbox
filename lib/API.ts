@@ -330,8 +330,21 @@ export namespace API {
             
             await AssignScoutersToCompetitionMatches(data.teamId, data.compId, data.formId, data.shuffle);
             return res.status(200).send({"result": "success"})
-        }
+        },
 
+        "submitForm": async (req, res, {db, data}) => {
+            // {
+            //    reportId
+            //    formData
+            //
+            // }
+            
+            var form = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
+            form.data = data.formData;
+            form.submitted = true;
+            await db.updateObjectById(Collections.Reports, new ObjectId(data.reportId), form);
+            return res.status(200).send({"result": "success"})
+        }
 
     }
 }

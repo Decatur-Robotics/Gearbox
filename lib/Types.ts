@@ -187,9 +187,9 @@ export class Report {
     match: string; // id of match
 
     submitted: boolean = false;
-    data: object;
+    data: Form | undefined;
 
-    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number | undefined=0, data: object={}) {
+    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number | undefined=0, data: Form | undefined) {
         this.timestamp = timestamp;
         this.user = user;
         this.form = form;

@@ -76,12 +76,13 @@ export default function Home(props: ResolvedUrlData) {
 
   function matchToDisplay(match: Match) {
     const reps: Report[] = match.reports.map((reportId) => reports[reportId]);
-    console.log(match.blueAlliance)
+
     const repElements = reps.map((rep) => {
-      console.log(rep.color)
+
       const isItUs = rep.robotNumber === team?.number;
       const isMe = rep.user === session.user?._id;
-      return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`}><div className={`w-10 h-10 ${rep.color === "Blue" ? "bg-blue-500" : "bg-red-500"} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>{isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>} {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}</div></Link>
+      const submitted = rep.submitted;
+      return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`}><div className={`w-10 h-10 ${submitted ? "bg-gray-500" : (rep.color === "Blue" ? "bg-blue-500" : "bg-red-500")} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>{isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>} {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}</div></Link>
     })
 
     return <div>

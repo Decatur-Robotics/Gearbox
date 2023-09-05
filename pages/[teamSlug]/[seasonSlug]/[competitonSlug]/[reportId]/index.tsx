@@ -21,7 +21,13 @@ export default function ReportForm(props: ResolvedUrlData) {
     useEffect(() => {
       async function loadForm() {
         setLoadingForm(true);
-        setForm(await api.findFormById(report?.form));
+
+          // REMOVE THE !
+        if(!report?.data) {
+          setForm(report?.data);
+        } else {
+          setForm(await api.findFormById(report?.form));
+        }
         setLoadingForm(false)
       }
 
@@ -34,6 +40,10 @@ export default function ReportForm(props: ResolvedUrlData) {
       const newForm = structuredClone(form) as Form;
       newForm.data[index].value = value;
       setForm(newForm);
+    }
+
+    function submit() {
+      api.submitForm(report?._id, form);
     }
 
     return <Container requireAuthentication={true} hideMenu={false}>
@@ -55,6 +65,7 @@ export default function ReportForm(props: ResolvedUrlData) {
           
           {loadingForm ? <span className="loading loading-spinner loading-lg mt-10"></span>: <></>}
           {form?.data.map((element, index) => <PreviewElement data={element} index={index} key={index} callback={updateCallback}></PreviewElement>)}
+          <button className="btn btn-primary w-1/2 h-16 text-2xl" onClick={submit}>Submit</button>
           </div>}
       </div>
       
