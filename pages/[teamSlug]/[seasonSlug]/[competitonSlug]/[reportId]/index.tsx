@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Form } from "@/lib/Types";
 import PreviewElement from "@/components/PreviewElement";
+import { useSocketIO } from "@/lib/client/useSocketIO";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -17,6 +18,11 @@ export default function ReportForm(props: ResolvedUrlData) {
 
     const[loadingForm, setLoadingForm] = useState(false);
     const[form, setForm] = useState<Form>();
+
+    const[io, connected] = useSocketIO();
+    if(connected) {
+      console.log("Connected!")
+    }
 
     useEffect(() => {
       async function loadForm() {
