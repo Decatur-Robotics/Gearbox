@@ -20,6 +20,16 @@ const SocketHandler = (req: NextRequest, res: NextResponseWithSocketIO) => {
     console.log('Socket is initializing')
     const io = new Server(res.socket.server, {path:'/api/socketio',  addTrailingSlash: false});
     res.socket.server.io = io
+
+    io.on("connect", (socket) => {
+      socket.on("form-update", (data) => {
+        socket.broadcast.emit("form-update", data)
+      })
+
+      socket.on("form-submit", (_id) => {
+        socket.broadcast.emit("form-submit", _id)
+      })
+    })
   }
   //@ts-ignore
   res.end();

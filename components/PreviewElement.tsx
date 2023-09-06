@@ -10,7 +10,7 @@ export default function PreviewElement(props: {data: FormElement, index: number,
     const text = data.text;
     const type = data.type;
     const value = data.value;
-    console.log(data);
+
   
     function handleCallback(value: any) {
       if(callback) {
