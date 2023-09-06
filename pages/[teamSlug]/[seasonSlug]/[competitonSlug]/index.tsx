@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 // linked icon, for everything with tbaId!!!!!!!
 import ClientAPI from "@/lib/client/ClientAPI"
 import { GetServerSideProps } from "next";
-import { MonthString, TimeString } from "@/lib/client/FormatTime";
+
 import { Form, Match, MatchType, Report } from "@/lib/Types";
 import Container from "@/components/Container";
-import { Bs1Circle, BsStarFill } from "react-icons/bs";
+import {BsStarFill, BsClipboardCheck } from "react-icons/bs";
 import { AiFillWarning, AiOutlineUser } from "react-icons/ai";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { chownSync } from "fs";
+
+import { BiCommentError } from "react-icons/bi";
 
 
 const api = new ClientAPI("gearboxiscool");
@@ -33,6 +34,10 @@ export default function Home(props: ResolvedUrlData) {
   const [semiFinalMatches, setSemiFinalMatches] = useState<Match[]>([]);
   const [finalMatches, setFinalMatches] = useState<Match[]>([]);
 
+  const[numberSubmitted, setNumberSubmitted] = useState(0)
+  const[submissionRate, setSubmissionRate] = useState(0)
+  const[missedMatches, setMissedMatches] = useState(0);
+
   const[assigned, setAssigned] = useState(false);
 
   useEffect(() => {
@@ -40,12 +45,14 @@ export default function Home(props: ResolvedUrlData) {
       if(!comp) {return;}
       setLoadingMatches(true);
       var newMatches: Match[] = [];
-      var newReports: {[id: string]: Report} = {}
+      var newReports: {[id: string]: Report} = {};
+      let submissionCounter = 0
       for(const id of comp.matches) {
         const match = await api.findMatchById(id);
         for(const rid of match.reports) {
           const report = await api.findReportById(rid);
           if(!report._id) {continue;}
+          submissionCounter += report.submitted ? 1 : 0;
           newReports[report._id] = report;
         }
         newMatches.push(match);
@@ -69,6 +76,24 @@ export default function Home(props: ResolvedUrlData) {
       setSemiFinalMatches(newMatches.filter((match) => match.type === MatchType.Semifinals));
       setFinalMatches(newMatches.filter((match) => match.type === MatchType.Finals));
       setLoadingMatches(false);
+      setNumberSubmitted(submissionCounter)
+      setSubmissionRate(Math.round((submissionCounter/Object.keys(newReports).length)*100)/100)
+
+      let missed = 0;
+      newMatches.forEach((match) => {
+        let numSubmitted = 0
+        match.reports.forEach((report) => {
+          if(newReports[report].submitted) {
+            numSubmitted++;
+          }
+        });
+
+        if(numSubmitted > 0) {
+          missed += (6-numSubmitted);
+        }
+      });
+
+      setMissedMatches(missed)
     }
 
     loadMatches();
@@ -78,7 +103,6 @@ export default function Home(props: ResolvedUrlData) {
     const reps: Report[] = match.reports.map((reportId) => reports[reportId]);
 
     const repElements = reps.map((rep) => {
-
       const isItUs = rep.robotNumber === team?.number;
       const isMe = rep.user === session.user?._id;
       const submitted = rep.submitted;
@@ -91,39 +115,36 @@ export default function Home(props: ResolvedUrlData) {
               {reps.length > 0 ? repElements : <h1>No Information Available</h1>}
             </div>
             <div className="divider mt-1 mb-1"></div>
-          </div>
+    </div>
   }
 
   function Overview() {
+
+    const[tab, setTab] = useState(1);
+
+    const matches = tab === 1 ? qualifyingMatches : (tab === 2 ? semiFinalMatches : finalMatches);
+    const name = tab === 1 ? "Qualifiers" : (tab === 2 ? "Semifinals" : "Finals");
+
     return <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-            <h2 className="card-title">Matches: </h2>
+            <h2 className="card-title text-2xl">Matches: </h2>
 
             {!assigned ? <div className="alert alert-warning mb-10">
               <AiFillWarning/>
               <span>Scouters are not assigned!</span>
             </div> : <></>}
-
+            
             <div className="w-full flex flex-col items-center ">
-              <h1 className="card-title">Qualifying Matches (#{qualifyingMatches.length})</h1>
-              {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
-              {qualifyingMatches.map((match) => matchToDisplay(match))}
-            </div>
 
-            <div className="divider"></div>
+              <div className="tabs">
+                <a className={`tab tab-bordered ${tab === 1 ? "tab-active": ""}`} onClick={()=>{setTab(1)}}>Qualifying</a> 
+                <a className={`tab tab-bordered ${tab === 2 ? "tab-active": ""}`} onClick={()=>{setTab(2)}}>Semifinal</a> 
+                <a className={`tab tab-bordered ${tab === 3 ? "tab-active": ""}`} onClick={()=>{setTab(3)}}>Final</a>
+              </div>
 
-            <div className="w-full flex flex-col items-center ">
-              <h1 className="card-title">Semifinal Matches (#{semiFinalMatches.length})</h1>
-              {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
-              {semiFinalMatches.map((match) => matchToDisplay(match))}
-            </div>
-
-            <div className="divider"></div>
-
-            <div className="w-full flex flex-col items-center ">
-              <h1 className="card-title">Final Matches (#{finalMatches.length})</h1>
-              {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
-              {finalMatches.map((match) => matchToDisplay(match))}
+              <h1 className="card-title mt-6">{name} ({matches.length})</h1>
+                {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
+                {matches.map((match) => matchToDisplay(match))}
             </div>
 
         </div>
@@ -160,6 +181,7 @@ export default function Home(props: ResolvedUrlData) {
       setAssigning(true);
       const res = await api.assignScouters(team?._id, comp?._id, selectedForm, shuffle );
       setAssigning(false);
+      location.reload();
     }
 
 
@@ -192,12 +214,35 @@ export default function Home(props: ResolvedUrlData) {
     <div className="w-full h-full flex flex-col items-center justify-center space-y-6">
       <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-            <h2 className="card-title text-2xl">{comp?.name}</h2>
+            <h2 className="card-title text-2xl font-bold">{comp?.name}</h2>
+            <div className="divider"></div>
+
+            <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">
+              <div className="stat ">
+              <div className="stat-figure text-accent text-6xl">
+                  <BsClipboardCheck></BsClipboardCheck>
+                </div>
+                <div className="stat-title">Overall Submission</div>
+                  {/*@ts-ignore --- lol!!*/}
+                  <div className="stat-value m-2 text-xl"><div className="radial-progress " style={{"--value":submissionRate}}>{submissionRate }%</div></div>
+                <div className="stat-desc">{Object.keys(reports).length-numberSubmitted} Matches Remaining</div>
+              </div>
+              
+              <div className="stat">
+                <div className="stat-figure text-accent text-6xl">
+                  <BiCommentError></BiCommentError>
+                </div>
+                <div className="stat-title">Missing Matches</div>
+                <div className="stat-value">{missedMatches}</div>
+                <div className="stat-desc">{(missedMatches/Object.keys(reports).length) * 100}% of total matches</div>
+              </div>
+              
+            </div>
         </div>
      </div>
 
-     <div className="flex flex-row justify-start w-5/6 ">
-        <div className="w-full join grid grid-cols-3">
+     <div className="flex flex-row justify-start w-5/6">
+        <div className="w-full join grid grid-cols-2">
             <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
             <button className={"join-item btn btn-outline normal-case " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Settings</button>
         </div>
