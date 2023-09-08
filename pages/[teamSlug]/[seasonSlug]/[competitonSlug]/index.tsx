@@ -12,7 +12,8 @@ import { AiFillWarning, AiOutlineUser } from "react-icons/ai";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-import { BiCommentError } from "react-icons/bi";
+import { BiCommentError, BiUser } from "react-icons/bi";
+import { collectAppConfig } from "next/dist/build/utils";
 
 
 const api = new ClientAPI("gearboxiscool");
@@ -36,6 +37,7 @@ export default function Home(props: ResolvedUrlData) {
 
   const[numberSubmitted, setNumberSubmitted] = useState(0)
   const[submissionRate, setSubmissionRate] = useState(0)
+  const[reliability, setReliability] = useState(0);
   const[missedMatches, setMissedMatches] = useState(0);
 
   const[assigned, setAssigned] = useState(false);
@@ -80,11 +82,20 @@ export default function Home(props: ResolvedUrlData) {
       setSubmissionRate(Math.round((submissionCounter/Object.keys(newReports).length)*100)/100)
 
       let missed = 0;
+      let mine = 0;
+      let mineDone = 0;
       newMatches.forEach((match) => {
         let numSubmitted = 0
         match.reports.forEach((report) => {
           if(newReports[report].submitted) {
             numSubmitted++;
+          }
+
+          if(newReports[report].user === session?.user?._id) {
+            mine++;
+            if(newReports[report].submitted) {
+              mineDone++;
+            }
           }
         });
 
@@ -92,7 +103,9 @@ export default function Home(props: ResolvedUrlData) {
           missed += (6-numSubmitted);
         }
       });
+      
 
+      setReliability(Math.round((mineDone/mine)*100)/100)
       setMissedMatches(missed)
     }
 
@@ -235,6 +248,18 @@ export default function Home(props: ResolvedUrlData) {
                 <div className="stat-title">Missing Matches</div>
                 <div className="stat-value">{missedMatches}</div>
                 <div className="stat-desc">{(Math.round((missedMatches/Object.keys(reports).length)*100)/100) * 100}% of total matches</div>
+              </div>
+              
+            </div>
+
+            <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">
+              <div className="stat">
+                <div className="stat-figure text-accent text-6xl">
+                  <BiUser></BiUser>
+                </div>
+                <div className="stat-title">YourReliability</div>
+                <div className={`stat-value ${reliability < .5 ? "text-warning": "text-success"}`}>{reliability}</div>
+                <div className="stat-desc">{reliability < .8 ? "Continue scouting": "Awesome Job"}</div>
               </div>
               
             </div>

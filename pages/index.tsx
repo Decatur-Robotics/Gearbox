@@ -7,6 +7,7 @@ export default function Homepage() {
             <div className="hero min-h-screen bg-base-200">
                 <div className="hero-content text-center">
                     
+                    
                     <div className="max-w-md flex flex-col items-center">
                         <img src="/robot.jpg.png" className="w-5/6"></img>
                         <h1 className="text-5xl font-bold">Welcome to <span className="text-accent">Gearbox</span></h1>

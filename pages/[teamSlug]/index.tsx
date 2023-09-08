@@ -7,12 +7,14 @@ import { Competition, Season, User } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
 import { validName } from "@/lib/client/InputVerification";
 import Container from "@/components/Container";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 const api = new ClientAPI("gearboxiscool");
 
 
 export default function TeamIndex(props: ResolvedUrlData) {
 
+    const { session, status } = useCurrentSession();
     const [team, setTeam] = useState(props.team);
     const numberOfMembers = team?.users.length;
     const isFrc = props.team?.tbaId?.includes("frc");
@@ -26,6 +28,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     const[upcomingEvent, setUpcomingEvent] = useState<Competition>();
     const[pastSeasons, setPastSeasons] = useState<Season[]>();
 
+    const owner = session?.user?.owner.includes(team?._id ? team?._id: "");
 
     useEffect(() => {
 
@@ -157,9 +160,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     }
 
                     
-                    <div className="grid gap-4 grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
                     {
-                        requests.map((user) => <div className="card bg-base-300" key={user._id}>
+                        requests.map((user) => <div className="card bg-base-300 w-full" key={user._id}>
                             <div className="card-body">
                                 <div className="flex flex-row space-x-2">
                                     <div className="avatar">
@@ -207,7 +210,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     </div>
                                     <div className="pl-2 lg:pl-0" >{user.name}</div>   
                                 </td>
-                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} disabled/></td>
+                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} disabled={!owner}/></td>
                                 <td><input type="checkbox" className="toggle toggle-secondary" checked={team?.owners.includes(user._id as string)} disabled/></td>
                             </tr>)
                             }
@@ -287,7 +290,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 <div className="flex flex-row justify-start w-5/6 ">
                     <div className="w-full join grid grid-cols-3">
                         <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
-                        <button className={"join-item btn btn-outline normal-case " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary">New </span>: <></>} </button>
+                        <button className={"join-item btn btn-outline normal-case inline " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary inline-block">New </span>: <></>} </button>
                         <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button>
                     </div>       
                 </div>
