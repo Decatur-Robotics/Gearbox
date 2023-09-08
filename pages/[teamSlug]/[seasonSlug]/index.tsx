@@ -21,17 +21,28 @@ export default function Home(props: ResolvedUrlData) {
     useEffect(() => {
        const loadForms = async () => {
         var newForms: Form[] = []
-        season?.forms.forEach(async (id) => {
+
+        if(!season) {
+          return;
+        }
+
+        for(const id of season?.forms) {
           newForms.push(await api.findFormById(id));
-        })
+        }
         setForms(newForms)
        }
 
        const loadComps = async () => {
         var newComps: Competition[] = [];
-        season?.competitions.forEach(async (id) => {
+
+        if(!season) {
+          return;
+        }
+
+        for(const id of season?.competitions) {
           newComps.push(await api.findCompetitionById(id));
-        })
+        }
+        
         setComps(newComps)
        }
 

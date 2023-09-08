@@ -152,7 +152,7 @@ export default function Container(props: ContainerProps) {
                             {loadingSeasons ? <span className="loading loading-spinner loading-lg"></span> : <></> }
 
                             {selectedTeamSeasons.map((season, index) => {
-                                return <Link className="btn btn-ghost w-7/8 bg-base-200 normal-case" href={`/${selectedTeam?.slug}/${season.slug}`} key={season._id}>
+                                return <Link className="btn btn-ghost w-7/8 bg-base-200 normal-case" href={`/${selectedTeam?.slug}/${season?.slug}`} key={season._id}>
                                     <h1 className="text-sm">{season.name} - {season.year}</h1>
                                 </Link>
                             })}

@@ -61,7 +61,8 @@ export default function Profile() {
         }, []);
 
         const findTeam = async() => {
-            setFoundTeam(await api.findTeamByNumber(teamNumber))
+            const team = await api.findTeamByNumber(teamNumber);
+            setFoundTeam(Object.keys(team).length > 0 ? team: undefined);
         }
 
         const requestTeam = async () => {
@@ -112,7 +113,7 @@ export default function Profile() {
                     <span className="text-accent text-lg"><h1>{foundTeam.name} - {foundTeam.number}</h1></span>
                     <button className="btn btn-secondary normal-case" onClick={requestTeam}>Request to Join</button>
                    
-                </div> : <></>}
+                </div> : <p className="text-warning">Team does not exist</p>}
 
                 {request ? <div className="alert alert-success">
                             <span>Team Request Sent!</span>

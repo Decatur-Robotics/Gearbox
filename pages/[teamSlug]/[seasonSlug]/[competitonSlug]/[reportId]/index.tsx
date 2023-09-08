@@ -33,7 +33,7 @@ export default function ReportForm(props: ResolvedUrlData) {
     useEffect(() => {
       async function loadForm() {
         setLoadingForm(true);
-        if(!report?.data) {
+        if(report?.data) {
           setForm(report?.data);
         } else {
           setForm(await api.findFormById(report?.form));

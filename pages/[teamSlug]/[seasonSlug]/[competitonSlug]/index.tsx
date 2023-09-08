@@ -234,7 +234,7 @@ export default function Home(props: ResolvedUrlData) {
                 </div>
                 <div className="stat-title">Missing Matches</div>
                 <div className="stat-value">{missedMatches}</div>
-                <div className="stat-desc">{(missedMatches/Object.keys(reports).length) * 100}% of total matches</div>
+                <div className="stat-desc">{(Math.round((missedMatches/Object.keys(reports).length)*100)/100) * 100}% of total matches</div>
               </div>
               
             </div>

@@ -49,7 +49,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
             if(!currentSeasonId) {return;}
             const cs = await api.findSeasonById(currentSeasonId)
             setCurrentSeason(cs)
-            setUpcomingEvent(await api.findCompetitionById(cs?.competitions[cs.competitions.length-1]))
+            if(cs.competitions.length > 0) {
+                setUpcomingEvent(await api.findCompetitionById(cs?.competitions[cs.competitions.length-1]))
+            }
+            
         }
 
         const loadPastSeasons = async() => {
@@ -73,8 +76,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
         const seasonUrl = `/${team?.slug}/${currentSeason?.slug}`
         return <div className="card w-5/6 bg-base-200 shadow-xl">
                 <div className="card-body">
-                    <div className="w-full min-h-1/2 flex flex-row">
-                        <div className="w-1/2">
+                    <div className="w-full flex flex-col lg:flex-row">
+                        <div className="lg:w-1/2">
                             <h1 className="text-xl mb-2">Upcoming Events:</h1>
                             {upcomingEvent ? <a href={seasonUrl + `/${upcomingEvent.slug}`}><div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
 
@@ -86,9 +89,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                             
                         </div>
                         
-                        <div className="divider divider-horizontal"></div>
+                        <div className="divider lg:divider-horizontal"></div>
 
-                        <div className="w-1/2">
+                        <div className="lg:w-1/2">
                             <h1 className="text-xl ">Current Season:</h1>
                             <h1 className="text-md mb-2">You can always <a href={`/${team?.slug}/createSeason`} className="text-accent">create a season</a></h1>
                             {currentSeason?.name ? <a href={seasonUrl}><div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
@@ -202,10 +205,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                             <img src={user.image} />
                                         </div>
                                     </div>
-
-                                    <div >{user.name}</div>   
+                                    <div className="pl-2 lg:pl-0" >{user.name}</div>   
                                 </td>
-                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} /></td>
+                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} disabled/></td>
                                 <td><input type="checkbox" className="toggle toggle-secondary" checked={team?.owners.includes(user._id as string)} disabled/></td>
                             </tr>)
                             }
@@ -267,7 +269,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     }
 
     return <Container requireAuthentication={true} hideMenu={false}>
-        <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+        <div className="w-full h-full flex flex-col justify-center items-center space-y-6 pb-12 lg:pb-0">
                 <div className="card w-5/6 bg-base-200 shadow-xl">
                     <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
                     <div className="card-body">
@@ -278,6 +280,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     <div className="card-action space-x-2">
                         {team?.tbaId ? <a href={`https://www.thebluealliance.com/team/${team.number}`}><div className="badge badge-outline link">Linked To TBA</div></a> : <></>}
                         {isFrc ? <div className="badge badge-secondary">FIRST FRC</div> : <></>}
+                    </div>
                     </div>
                 </div>
 
@@ -292,7 +295,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 {selection === 1 ? <Overview></Overview> : <></>}
                 {selection === 2 ? <Roster></Roster> : <></>}
                 {selection === 3 ? <Settings></Settings>: <></>}
-        </div>
         </div>
     </Container>
     
