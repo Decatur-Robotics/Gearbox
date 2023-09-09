@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_ENV=development node index.js",
     "build": "next build",
-    "start": "next start",
+    "start": "cross-env NODE_ENV=production node index.js ",
     "lint": "next lint"
   },
   "dependencies": {
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
+    "cross-env": "^7.0.3",
     "daisyui": "^3.5.0",
     "postcss": "^8.4.23",
     "tailwindcss": "^3.3.2"

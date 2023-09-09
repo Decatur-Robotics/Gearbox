@@ -18,6 +18,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/createTeam.tsx", "pages/[teamSlug]/createSeason.ksx", "pages/index.tsx", "pages/profile.jsx", "pages/[teamSlug]/index.jsx", "pages/[teamSlug]/[seasonSlug]/index.jsx", "pages/[teamSlug]/[seasonSlug]/[competitonSlug]/index.jsx", "lib/client/getSession.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/createTeam.tsx", "pages/[teamSlug]/createSeason.ksx", "pages/index.tsx", "pages/profile.jsx", "pages/[teamSlug]/index.jsx", "pages/[teamSlug]/[seasonSlug]/index.jsx", "pages/[teamSlug]/[seasonSlug]/[competitonSlug]/index.jsx", "lib/client/getSession.js", "index.js"],
   "exclude": ["node_modules"]
 }
