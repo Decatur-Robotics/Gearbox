@@ -53,6 +53,7 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
 
     // each split cooresponds to a different slug for a specific object
     const teamSlug = splittedUrl[0];
+    
     const seasonSlug = splittedUrl[1];
     const competitionSlug = splittedUrl[2];
     // very hacky- fix this

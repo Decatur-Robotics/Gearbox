@@ -104,8 +104,9 @@ export default function Container(props: ContainerProps) {
                             <div className="card-body">
                                 <h2 className="card-title">Wait a minute...</h2>
                                 <p>You need to sign in first!</p>
+                                <p className="text-sm">If this persits, try reloading</p>
                                 <div className="card-actions justify-end">
-                                <Link href={"/api/auth/signin"}><button className="btn btn-primary">Sign In</button></Link>
+                                <Link href={"/api/auth/signin/google"}><button className="btn btn-primary">Sign In</button></Link>
                                 </div>
                             </div>
                         </div> 
