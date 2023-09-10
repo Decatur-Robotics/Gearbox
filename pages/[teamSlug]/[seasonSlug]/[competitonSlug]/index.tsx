@@ -113,11 +113,11 @@ export default function Home(props: ResolvedUrlData) {
   function matchToDisplay(match: Match) {
     const reps: Report[] = match.reports.map((reportId) => reports[reportId]);
 
-    const repElements = reps.map((rep) => {
+    const repElements = reps.map((rep, index) => {
       const isItUs = rep.robotNumber === team?.number;
       const isMe = rep.user === session.user?._id;
       const submitted = rep.submitted;
-      return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`} key={match._id}><div className={`w-10 h-10 ${submitted ? "bg-gray-500" : (rep.color === "Blue" ? "bg-blue-500" : "bg-red-500")} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>{isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>} {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}</div></Link>
+      return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`} key={index} ><div className={`w-10 h-10 ${submitted ? "bg-gray-500" : (rep.color === "Blue" ? "bg-blue-500" : "bg-red-500")} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>{isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>} {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}</div></Link>
     })
 
     return <div>
@@ -147,10 +147,10 @@ export default function Home(props: ResolvedUrlData) {
             
             <div className="w-full flex flex-col items-center ">
 
-              <div className="tabs">
-                <a className={`tab tab-bordered ${tab === 1 ? "tab-active": ""}`} onClick={()=>{setTab(1)}}>Qualifying</a> 
-                <a className={`tab tab-bordered ${tab === 2 ? "tab-active": ""}`} onClick={()=>{setTab(2)}}>Semifinal</a> 
-                <a className={`tab tab-bordered ${tab === 3 ? "tab-active": ""}`} onClick={()=>{setTab(3)}}>Final</a>
+              <div className="tabs ">
+                <a className={`tab tab-bordered ${tab === 1 ? "tab-active": ""}`} onClick={()=>{setTab(1)}}>Quals</a> 
+                <a className={`tab tab-bordered ${tab === 2 ? "tab-active": ""}`} onClick={()=>{setTab(2)}}>Semis</a> 
+                <a className={`tab tab-bordered ${tab === 3 ? "tab-active": ""}`} onClick={()=>{setTab(3)}}>Finals</a>
               </div>
 
               <h1 className="card-title mt-6">{name} ({matches.length})</h1>
