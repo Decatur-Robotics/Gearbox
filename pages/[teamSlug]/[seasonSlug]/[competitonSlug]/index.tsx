@@ -46,18 +46,16 @@ export default function Home(props: ResolvedUrlData) {
     const loadMatches = async() => {
       if(!comp) {return;}
       setLoadingMatches(true);
-      var newMatches: Match[] = [];
+      var newMatches: Match[] = await api.allCompetitionMatches(comp?._id);
       var newReports: {[id: string]: Report} = {};
       let submissionCounter = 0
-      for(const id of comp.matches) {
-        const match = await api.findMatchById(id);
-        for(const rid of match.reports) {
-          const report = await api.findReportById(rid);
+      for(const match of newMatches) {
+        const reports = await api.matchReports(match._id);
+        for(const report of reports) {
           if(!report._id) {continue;}
           submissionCounter += report.submitted ? 1 : 0;
           newReports[report._id] = report;
         }
-        newMatches.push(match);
       }
 
       newMatches.sort((a, b) => {
@@ -229,11 +227,11 @@ export default function Home(props: ResolvedUrlData) {
         <div className="card-body">
             <h2 className="card-title text-2xl font-bold">{comp?.name}</h2>
             <div className="divider"></div>
-
+            
             <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">
               <div className="stat ">
               <div className="stat-figure text-accent text-6xl">
-                  <BsClipboardCheck></BsClipboardCheck>
+                {loadingMatches ? <span className="loading loading-spinner loading-lg"></span>: <BsClipboardCheck></BsClipboardCheck>}
                 </div>
                 <div className="stat-title">Overall Submission</div>
                   {/*@ts-ignore --- lol!!*/}
@@ -243,7 +241,7 @@ export default function Home(props: ResolvedUrlData) {
               
               <div className="stat">
                 <div className="stat-figure text-accent text-6xl">
-                  <BiCommentError></BiCommentError>
+                {loadingMatches ? <span className="loading loading-spinner loading-lg"></span>: <BiCommentError></BiCommentError>}
                 </div>
                 <div className="stat-title">Missing Matches</div>
                 <div className="stat-value">{missedMatches}</div>
@@ -255,7 +253,7 @@ export default function Home(props: ResolvedUrlData) {
             <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">
               <div className="stat">
                 <div className="stat-figure text-accent text-6xl">
-                  <BiUser></BiUser>
+                {loadingMatches ? <span className="loading loading-spinner loading-lg"></span>: <BiUser></BiUser>}
                 </div>
                 <div className="stat-title">Your Reliability</div>
                 <div className={`stat-value ${reliability < .5 ? "text-warning": "text-success"}`}>{reliability}</div>

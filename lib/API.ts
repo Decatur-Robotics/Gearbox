@@ -354,6 +354,26 @@ export namespace API {
             const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
             const reports = await db.findObjects<Report[]>(Collections.Reports, {"match": {"$in": comp.matches}, "submitted": true});
             return res.status(200).send(reports)
+        },
+
+        "allCompetitionMatches": async(req, res, {db, data}) => {
+            // {
+            // compId
+            // }
+
+            const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+            const matches = await db.findObjects<Match[]>(Collections.Matches, {"_id": {"$in": comp.matches.map((matchId) => new ObjectId(matchId))}});
+            return res.status(200).send(matches)
+        },
+
+        "matchReports": async(req, res, {db, data}) => {
+            // {
+            // matchId
+            // }
+
+            const match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(data.matchId));
+            const reports = await db.findObjects<Report[]>(Collections.Reports, {"_id": {"$in": match.reports.map((reportId) => new ObjectId(reportId))}});
+            return res.status(200).send(reports)
         }
 
     }

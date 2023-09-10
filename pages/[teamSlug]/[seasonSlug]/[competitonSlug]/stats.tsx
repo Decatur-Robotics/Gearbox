@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 // linked icon, for everything with tbaId!!!!!!!
 import ClientAPI from "@/lib/client/ClientAPI"
 import { GetServerSideProps } from "next";
-import { Form, Match, MatchType, Report } from "@/lib/Types";
+import { Report } from "@/lib/Types";
 import Container from "@/components/Container";
 
 import {
@@ -200,6 +200,7 @@ export default function Home(props: ResolvedUrlData) {
       }
     </select>
 
+    {/*@ts-ignore --- idk why it gets mad here*/ }
     <Bar options={ChartOptions}  data={averageChartData ? averageChartData: DefaultChartData } className=""></Bar>
   </Container>
 }

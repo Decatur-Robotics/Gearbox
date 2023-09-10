@@ -17,12 +17,15 @@
 
 # misc
 .DS_Store
-*.pem
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+/certs/production.pem
+/certs/production-key.pem
+
 
 .env.local
 .env

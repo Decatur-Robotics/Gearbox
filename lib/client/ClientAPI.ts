@@ -144,4 +144,12 @@ export default class ClientAPI {
     async competitionReports(compId: string | undefined) {
         return await this.request("/competitionReports", {compId: compId});
     }
+
+    async allCompetitionMatches(compId: string | undefined) {
+        return await this.request("/allCompetitionMatches", {compId: compId})
+    }
+
+    async matchReports(matchId: string | undefined) {
+        return await this.request("/matchReports", {matchId: matchId})
+    }
 };
