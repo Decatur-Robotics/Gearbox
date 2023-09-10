@@ -257,7 +257,7 @@ export default function Home(props: ResolvedUrlData) {
                 <div className="stat-figure text-accent text-6xl">
                   <BiUser></BiUser>
                 </div>
-                <div className="stat-title">YourReliability</div>
+                <div className="stat-title">Your Reliability</div>
                 <div className={`stat-value ${reliability < .5 ? "text-warning": "text-success"}`}>{reliability}</div>
                 <div className="stat-desc">{reliability < .8 ? "Continue scouting": "Awesome Job"}</div>
               </div>

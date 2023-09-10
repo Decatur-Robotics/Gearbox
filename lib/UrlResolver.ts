@@ -55,8 +55,8 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
     const teamSlug = splittedUrl[0];
     const seasonSlug = splittedUrl[1];
     const competitionSlug = splittedUrl[2];
-    const reportId = splittedUrl[3];
-
+    // very hacky- fix this
+    const reportId = splittedUrl[3]?.length > 5 ? splittedUrl[3]: undefined;
 
     try {
         // find these slugs, and convert them to a JSON safe condition
@@ -67,7 +67,6 @@ export default async function UrlResolver(context: GetServerSidePropsContext): P
             competition: competitionSlug ? SerializeDatabaseObject(await db.findObject<Competition>(Collections.Competitions, {"slug": competitionSlug})): null,
             report: reportId ? SerializeDatabaseObject(await db.findObject<Report>(Collections.Reports, {"_id": new ObjectId(reportId)})) : null,
         }
-
         return data;
     } catch(error) {
         return {

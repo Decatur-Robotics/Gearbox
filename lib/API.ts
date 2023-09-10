@@ -344,6 +344,16 @@ export namespace API {
             form.submitted = true;
             await db.updateObjectById(Collections.Reports, new ObjectId(data.reportId), form);
             return res.status(200).send({"result": "success"})
+        },
+
+        "competitionReports": async(req, res, {db, data}) => {
+            // {
+            // compId
+            // }
+
+            const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+            const reports = await db.findObjects<Report[]>(Collections.Reports, {"match": {"$in": comp.matches}, "submitted": true});
+            return res.status(200).send(reports)
         }
 
     }

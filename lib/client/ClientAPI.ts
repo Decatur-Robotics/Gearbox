@@ -140,4 +140,8 @@ export default class ClientAPI {
     async submitForm(reportId: string | undefined, formData: Form | undefined) {
         return await this.request("/submitForm", {reportId: reportId, formData: formData});
     }
+
+    async competitionReports(compId: string | undefined) {
+        return await this.request("/competitionReports", {compId: compId});
+    }
 };
