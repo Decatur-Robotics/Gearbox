@@ -187,7 +187,7 @@ export default function Home(props: ResolvedUrlData) {
     <select className="select select-bordered w-full max-w-xs" value={selectedTeam} onChange={(e)=>{setSelectedTeam(Number(e.target.value))}}>
       <option disabled selected>Select Team?</option>
       {
-        teams.map((team) => <option value={team}>{team}</option>)
+        teams.map((team) => <option value={team} key={team}>{team}</option>)
       }
     </select>
 
@@ -196,7 +196,7 @@ export default function Home(props: ResolvedUrlData) {
     <select className="select select-bordered w-full max-w-xs" value={selectedLabel} onChange={(e)=>{setSelectedLabel(e.target.value)}}>
       <option disabled selected>Select Category?</option>
       {
-        labels.map((label) => <option value={label}>{label}</option>)
+        labels.map((label) => <option value={label} key={label}>{label}</option>)
       }
     </select>
 

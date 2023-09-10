@@ -187,16 +187,15 @@ export class Report {
     match: string; // id of match
 
     submitted: boolean = false;
-    data: Form | undefined;
+    data: Form | undefined = undefined;
 
-    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number | undefined=0, data: Form | undefined) {
+    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0) {
         this.timestamp = timestamp;
         this.user = user;
         this.form = form;
         this.robotNumber = robotNumber;
         this.match = match;
         this.color = color;
-        this.data = data;
     }
 }
 

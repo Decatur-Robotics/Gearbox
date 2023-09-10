@@ -5,6 +5,7 @@ import { GetServerSideProps } from "next";
 import { Competition, Form } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
 import Container from "@/components/Container";
+import Link from "next/link";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -88,7 +89,7 @@ export default function Home(props: ResolvedUrlData) {
           <h3>No Competitions? <a className="text-accent" href={`/${team?.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>
           <div className="divider"></div>
           {
-            comps.map((comp) => <a href={`/${team?.slug}/${season?.slug}/${comp.slug}`}><div className="card w-5/6 bg-base-300" key={comp._id}>
+            comps.map((comp) => <Link href={`/${team?.slug}/${season?.slug}/${comp.slug}`} key={comp._id}><div className="card w-5/6 bg-base-300" >
               <div className="card-body">
                 
                 <h1 className="card-title">{comp.name}</h1>
@@ -96,7 +97,7 @@ export default function Home(props: ResolvedUrlData) {
                 <h1>{MonthString(comp.start)} - {MonthString(comp.end)}</h1>
               </div>
             </div>
-            </a>)
+            </Link>)
           }
       </div>
 </div>

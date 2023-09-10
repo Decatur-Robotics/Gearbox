@@ -9,6 +9,7 @@ import { GenerateSlug } from './Utils'
 var db = GetDatabase();
 
 export default NextAuth({
+    secret: process.env.NEXTAUTH_SECRET,
     providers: [
       Google({
         clientId: process.env.GOOGLE_ID,
