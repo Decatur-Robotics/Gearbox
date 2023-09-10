@@ -63,7 +63,11 @@ export class MongoDBInterface {
         this.db = this.client?.db(process.env.DB);
         const collections = await this.db?.listCollections().toArray();
         if(collections?.length === 0) {
-            Object.values(Collections).forEach(async (collectionName) => await this.db?.createCollection(collectionName));
+            try {
+                Object.values(Collections).forEach(async (collectionName) => await this.db?.createCollection(collectionName));
+            } catch(e) {
+                console.log("Failed to create collections... (probably exist already)")
+            }
         }
     }
 
