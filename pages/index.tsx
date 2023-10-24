@@ -1,8 +1,13 @@
 import Container from "@/components/Container";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 export default function Homepage() {
 
-    return <Container requireAuthentication={false} hideMenu={true}>
+    const { session, status } = useCurrentSession();
+
+    const hide = status === "authenticated";
+
+    return <Container requireAuthentication={false} hideMenu={!hide}>
         <div className="w-full min-h-screen flex flex-col">
             <div className="hero min-h-screen bg-base-200">
                 <div className="hero-content text-center">

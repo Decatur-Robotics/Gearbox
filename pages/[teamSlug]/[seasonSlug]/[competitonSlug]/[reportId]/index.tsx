@@ -98,9 +98,9 @@ export default function ReportForm(props: ResolvedUrlData) {
                 <h2 className={`card-title text-6xl animate-pulse ` + color}>#{number}</h2>
                 <div className="divider "></div>
                 <div className="w-full flex flex-row items-center justify-center">
-                <h3>Match is Live <div className="w-4 h-4 rounded-full bg-success animate-pulse inline-block translate-y-1 ml-1"></div> </h3>
-                <div className="divider divider-horizontal h-full"></div>
-                <h3 className="">Live Sync <div className={`w-4 h-4 rounded-full ${connected ? "bg-success" : "bg-error"} animate-pulse inline-block translate-y-1 ml-1`}></div> </h3>
+               
+              
+                <h3 className="">Live Sync Enabled <div className={`w-4 h-4 rounded-full ${connected ? "bg-success" : "bg-error"} animate-pulse inline-block translate-y-1 ml-1`}></div> </h3>
                 </div>
                 
             </div>

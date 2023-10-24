@@ -60,8 +60,11 @@ export default function Profile() {
 
         }, []);
 
-        const findTeam = async() => {
-            const team = await api.findTeamByNumber(teamNumber);
+    
+
+        const findTeam = async(num: number) => {
+            setTeamNumber(num);
+            const team = await api.findTeamByNumber(num);
             setFoundTeam(Object.keys(team).length > 0 ? team: undefined);
         }
 
@@ -104,16 +107,16 @@ export default function Profile() {
                 <p className="">Your Team does not exist? <Link href="/createTeam" className="text-accent">Create It!</Link></p>
 
                 <div className="flex flex-row items-center mt-4 space-x-2">
-                    <input type="number" placeholder="Team Number" value={teamNumber} onChange={(e) => {setTeamNumber(e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
-                    <button className="btn btn-primary normal-case" onClick={findTeam}>Search</button>
+                    <input type="number" placeholder="Team Number" value={teamNumber} onChange={(e) => {findTeam(e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+
                 </div>
 
                 {foundTeam ? <div>
                     <p>Results:</p>
                     <span className="text-accent text-lg"><h1>{foundTeam.name} - {foundTeam.number}</h1></span>
-                    <button className="btn btn-secondary normal-case" onClick={requestTeam}>Request to Join</button>
+                    {!session?.user?.teams.includes(foundTeam._id ? foundTeam._id : "") ? <button className="btn btn-secondary normal-case" onClick={requestTeam}>Request to Join</button> : <button className="btn btn-disabled normal-case">Already Joined</button>}
                    
-                </div> : <p className="text-warning">Team does not exist</p>}
+                </div> : <p className="text-warning">{teamNumber ? "Team does not exist" : ""}</p>}
 
                 {request ? <div className="alert alert-success">
                             <span>Team Request Sent!</span>
@@ -193,7 +196,7 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    <h2 className="card-title">{session?.user?.name}</h2>
+                    <h2 className="card-title">{session?.user?.name} <Link href={"/api/auth/signout"} className="btn btn-sm btn-outline">Sign Out</Link></h2>
                     <p className="italic">Known as: {session?.user?.slug}</p>
 
 

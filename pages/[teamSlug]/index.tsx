@@ -8,6 +8,7 @@ import { MonthString } from "@/lib/client/FormatTime";
 import { validName } from "@/lib/client/InputVerification";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import Link from "next/link";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -31,6 +32,11 @@ export default function TeamIndex(props: ResolvedUrlData) {
     const owner = session?.user?.owner.includes(team?._id ? team?._id: "");
 
     useEffect(() => {
+
+       
+        if(session?.user && !session?.user?.teams.includes(team?._id ? team?._id : "")) {
+            location.href = "/";
+        }
 
         const loadUsers = async() => {
             var newData: User[] = []
@@ -71,7 +77,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
         loadCurrentSeason();
         loadPastSeasons();
 
-    }, [])
+    }, [session?.user])
 
     const[selection, setSelection] = useState(1);
 
@@ -113,9 +119,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
                             
                             <ul className="list-disc">
                                 {
-                                    pastSeasons?.map((season) =><li key={season.slug} className="ml-4"><a className="text-accent">{season.name}</a></li>)
+                                    pastSeasons?.map((season) =><li key={season.slug} className="ml-4"><Link href={`/${team?.slug}/${season.slug}`} className="text-accent">{season.name} ({season.year})</Link></li>)
                                 }
-
                                 {pastSeasons?.length === 0 ? <p>Nothing Here</p>: <></>}
                             </ul>
                         </div>
@@ -192,7 +197,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                             <thead>
                                 <tr>
                                     <th></th>
+                                    <th>Picture </th>
                                     <th>Name</th>
+                                    
                                     <th>Scouter</th>
                                     <th>Manager</th>
                                 </tr>
@@ -208,8 +215,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                             <img src={user.image} />
                                         </div>
                                     </div>
-                                    <div className="pl-2 lg:pl-0" >{user.name}</div>   
+                                    
                                 </td>
+                                <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
                                 <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} disabled={!owner}/></td>
                                 <td><input type="checkbox" className="toggle toggle-secondary" checked={team?.owners.includes(user._id as string)} disabled/></td>
                             </tr>)
@@ -239,7 +247,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 return;
             }
     
-            if(numberChange && numberChange <= 0) {
+
+            
+            
+            if(numberChange && numberChange <= 0 || Object.keys(await api.findTeamByNumber(numberChange)).length > 0) {
                 setSettingsError("Invalid Number");
                 return;
             }
@@ -258,10 +269,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 <p className="text-error">{settingsError}</p>
                 
                 <label className="mt-4">Name: </label>
-                <input type="text" placeholder="Name" value={nameChange} onChange={(e) => {setNameChange(e.target.value)}} className="input input-bordered w-full max-w-xs" />
+                <input type="text" placeholder="Name" value={nameChange} maxLength={50} onChange={(e) => {setNameChange(e.target.value)}} className="input input-bordered w-full max-w-xs" />
 
                 <label className="mt-2">Number: </label>
-                <input type="number" placeholder="Team Number" value={numberChange} onChange={(e) => {setNumberChange(e.target.valueAsNumber)}} className="input input-bordered w-full max-w-xs" />
+                <input type="number" placeholder="Team Number" value={numberChange} min={1} max={9999} onChange={(e) => {setNumberChange(e.target.valueAsNumber)}} className="input input-bordered w-full max-w-xs" />
 
                 <div className="card-actions justify-end">
                     <button className="btn btn-primary normal-case" onClick={updateSettings}>Update</button>

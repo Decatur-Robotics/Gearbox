@@ -8,7 +8,7 @@ import { GetServerSideProps } from "next";
 import { Form, Match, MatchType, Report } from "@/lib/Types";
 import Container from "@/components/Container";
 import {BsStarFill, BsClipboardCheck } from "react-icons/bs";
-import { AiFillWarning, AiOutlineUser } from "react-icons/ai";
+import { AiFillWarning, AiOutlineQuestionCircle, AiOutlineUser } from "react-icons/ai";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
@@ -39,6 +39,8 @@ export default function Home(props: ResolvedUrlData) {
   const[submissionRate, setSubmissionRate] = useState(0)
   const[reliability, setReliability] = useState(0);
   const[missedMatches, setMissedMatches] = useState(0);
+
+  const[showKey, setShowKey] = useState(false);
 
   const[assigned, setAssigned] = useState(false);
 
@@ -138,7 +140,10 @@ export default function Home(props: ResolvedUrlData) {
 
     return <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-            <h2 className="card-title text-2xl">Matches: </h2>
+            <h2 className="card-title text-2xl">Matches <button className="btn btn-ghost btn-sm text-xl" onClick={()=>{setShowKey(!showKey)}}><AiOutlineQuestionCircle ></AiOutlineQuestionCircle></button>: </h2>
+
+           
+
 
             {!assigned ? <div className="alert alert-warning mb-10">
               <AiFillWarning/>
@@ -146,6 +151,12 @@ export default function Home(props: ResolvedUrlData) {
             </div> : <></>}
             
             <div className="w-full flex flex-col items-center ">
+
+            {showKey ? <div className="mb-10">
+              <h1 className="font-bold">Key: </h1>
+              <h1><AiOutlineUser className="inline-block text-2xl"></AiOutlineUser> = Match Assigned To You</h1>
+              <h1><BsStarFill className="inline-block text-2xl"></BsStarFill> = Your Team</h1>
+            </div>:<></>}
 
               <div className="tabs ">
                 <a className={`tab tab-bordered ${tab === 1 ? "tab-active": ""}`} onClick={()=>{setTab(1)}}>Quals</a> 
@@ -169,6 +180,9 @@ export default function Home(props: ResolvedUrlData) {
     const[selectedForm, setSelectedForm] = useState<string>();
     const[shuffle, setShuffle] = useState(false);
     const[assigning, setAssigning] = useState(false);
+
+    // ts at its finest :smile:
+    const canAssign = team?.scouters ? (team?.scouters.length >= 6 ? true: false) : false;
 
     useEffect(() => {
       const loadForms = async () => {
@@ -196,6 +210,7 @@ export default function Home(props: ResolvedUrlData) {
     }
 
 
+    
     return <div className="card w-5/6 bg-base-200 shadow-xl">
     <div className="card-body">
         <h2 className="card-title text-2xl">Settings: </h2>
@@ -216,7 +231,7 @@ export default function Home(props: ResolvedUrlData) {
 
         <div className="divider"></div>
         {assigning ? <span className="loading loading-spinner loading-md">Loading...</span>: <></>}
-        <button className="btn btn-primary" disabled={assigning} onClick={assignScouters}>Assign</button>
+        {canAssign? <button className="btn btn-primary" disabled={assigning} onClick={assignScouters}>Assign</button>: <button className="btn btn-disabled disabled">More than 6 scouters required</button>}
     </div>
  </div>
   }

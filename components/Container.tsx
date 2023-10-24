@@ -91,11 +91,11 @@ export default function Container(props: ContainerProps) {
                     </div>
 
                     <div>
-                        {authenticated ? <Link href={"/profile"} tabIndex={0} className="btn btn-ghost btn-circle avatar mr-10">
+                        {authenticated ?<Link href={"/profile"} tabIndex={0} className="btn btn-ghost btn-circle avatar mr-10">
                             <div className="w-10 rounded-full">
                                 <img src={user?.image}/>
                             </div>
-                        </Link> : <Link href={"/api/auth/signin"}><button className="btn btn-primary mr-4">Sign In</button></Link> }
+                        </Link>: <Link href={"/api/auth/signin"}><button className="btn btn-primary mr-4">Sign In</button></Link> }
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@ export default function Container(props: ContainerProps) {
                             <div className="card-body">
                                 <h2 className="card-title">Wait a minute...</h2>
                                 <p>You need to sign in first!</p>
-                                <p className="text-sm">If this persits, try reloading</p>
+                                <p className="text-sm">If this persists, try reloading</p>
                                 <div className="card-actions justify-end">
                                 <Link href={"/api/auth/signin/google"}><button className="btn btn-primary">Sign In</button></Link>
                                 </div>
