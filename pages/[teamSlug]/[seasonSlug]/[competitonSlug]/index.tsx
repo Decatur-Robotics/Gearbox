@@ -183,6 +183,7 @@ export default function Home(props: ResolvedUrlData) {
     const canAssign = team?.scouters ? (team?.scouters.length >= 6 ? true: false) : false;
 
     useEffect(() => {
+
       const loadForms = async () => {
         if(!season) {return;}
         setLoadingForms(true);
@@ -338,9 +339,6 @@ export default function Home(props: ResolvedUrlData) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   var ctx = await UrlResolver(context);
-  if(context.resolvedUrl.includes("signin")) {
-    context.res.writeHead(301, {Location: context.resolvedUrl});
-  }
   return {
     props: ctx,
   }
