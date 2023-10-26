@@ -248,7 +248,7 @@ export default function Home(props: ResolvedUrlData) {
                 <h2 className="card-title text-lg">Top Scorers (Totaled Points)</h2>
 
                 <div className="w-full flex flex-col items-center space-y-1">
-                  {teamRanking.map((team, index) => <div className="card w-full bg-base-200 p-4 flex flex-row"><p className="font-bold w-1/6">{index+1}</p><div className="divider divider-horizontal"></div><p className="w-5/6 font-bold">{team} - {teamOverallScores[team]} points</p></div>)}
+                  {teamRanking.map((team, index) => <div  key={team} className="card w-full bg-base-200 p-4 flex flex-row"><p className="font-bold w-1/6">{index+1}</p><div className="divider divider-horizontal"></div><p className="w-5/6 font-bold">{team} - {teamOverallScores[team]} points</p></div>)}
 
                 </div>
                 </div>
@@ -261,7 +261,7 @@ export default function Home(props: ResolvedUrlData) {
                 <p>Select a specific team</p>
                 <select className="select select-bordered w-full max-w-xs" value={selectedTeam} onChange={(e) => {setSelectedTeam(e.target.value)}}>
                   {
-                    teamRanking.map((team) => <option>{team}</option>)
+                    teamRanking.map((team) => <option key={team}>{team}</option>)
                   }
                 </select>
 
@@ -269,7 +269,7 @@ export default function Home(props: ResolvedUrlData) {
                   <p>Select a specific datapoint</p>
                   <select className="select select-bordered w-full max-w-xs" value={selectedField} onChange={(e) => {setSelectedField(e.target.value)}}>
                 {
-                  formFields.map((field) => <option>{field}</option>)
+                  formFields.map((field) => <option key={field}>{field}</option>)
                 }
                 </select></div>: <></>}
 
@@ -279,7 +279,7 @@ export default function Home(props: ResolvedUrlData) {
                 <Bar options={ChartOptions}  data={selectedChartData ? selectedChartData: DefaultChartData } className=""></Bar>
 
                 <p>Comments: </p>
-                {selectedComments.length > 0 ? selectedComments.map((comment) => <p>{comment}</p>) : <p>No Comments</p>}
+                {selectedComments.length > 0 ? selectedComments.map((comment) => <p key={comment}>{comment}</p>) : <p>No Comments</p>}
 
                 </div>
               </div>
