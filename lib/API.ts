@@ -308,7 +308,11 @@ export namespace API {
             //     time
             //     type
             // }
-            var match = await db.addObject<Match>(Collections.Matches, new Match(data.number, await GenerateSlug(Collections.Matches, data.number.toString()), data.tbaId, data.time, data.type, [], []));
+            var match = await db.addObject<Match>(Collections.Matches, new Match(data.number, await GenerateSlug(Collections.Matches, data.number.toString()), data.tbaId, data.time, data.type, data.redAlliance, data.blueAlliance));
+            var comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+            comp.matches.push(match._id ? String(match._id): "");
+            await db.updateObjectById(Collections.Competitions, new ObjectId(comp._id), comp)
+
             return res.status(200).send(match);
         },
 
@@ -376,11 +380,6 @@ export namespace API {
             const reports = await db.findObjects<Report[]>(Collections.Reports, {"_id": {"$in": match.reports.map((reportId) => new ObjectId(reportId))}});
             return res.status(200).send(reports)
         },
-
-
-        "fullCompetitionData": async(req, res, {db, data}) => {
-
-        }
 
     }
 }

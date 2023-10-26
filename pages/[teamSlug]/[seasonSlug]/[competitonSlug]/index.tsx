@@ -173,6 +173,12 @@ export default function Home(props: ResolvedUrlData) {
     const[shuffle, setShuffle] = useState(false);
     const[assigning, setAssigning] = useState(false);
 
+    const[matchNumber, setMatchNumber] = useState(0);
+    const[matchType, setMatchType] = useState<MatchType>(MatchType.Qualifying);
+    const[redAlliance, setRedAlliance] = useState<number[]>([0, 0, 0]);
+    const[blueAlliance, setBlueAlliance] = useState<number[]>([0, 0, 0]);
+
+
     // ts at its finest :smile:
     const canAssign = team?.scouters ? (team?.scouters.length >= 6 ? true: false) : false;
 
@@ -201,6 +207,23 @@ export default function Home(props: ResolvedUrlData) {
       location.reload();
     }
 
+    const targetBlueAlliance = (index: number, value: number) => {
+      var newAlliance = structuredClone(blueAlliance);
+      newAlliance[index] = value;
+      setBlueAlliance(newAlliance);
+    }
+
+    const targetRedAlliance = (index: number, value: number) => {
+      var newAlliance = structuredClone(redAlliance);
+      newAlliance[index] = value;
+      setRedAlliance(newAlliance);
+    }
+
+    const createMatch = async () => {
+      await api.createMatch(comp?._id, matchNumber, matchType, blueAlliance, redAlliance);
+      location.reload();
+    }
+
 
     
     return <div className="card w-5/6 bg-base-200 shadow-xl">
@@ -223,7 +246,46 @@ export default function Home(props: ResolvedUrlData) {
 
         <div className="divider"></div>
         {assigning ? <span className="loading loading-spinner loading-md">Loading...</span>: <></>}
-        {canAssign? <button className="btn btn-primary" disabled={assigning} onClick={assignScouters}>Assign</button>: <button className="btn btn-disabled disabled">More than 6 scouters required</button>}bj     
+        {canAssign? <button className="btn btn-primary" disabled={assigning} onClick={assignScouters}>Assign</button>: <button className="btn btn-disabled disabled">More than 6 scouters required</button>}
+
+        <div className="divider"></div>
+
+        <h1 className="font-bold text-xl">Manually Add a Match</h1>
+
+        <label>Match Number: </label>
+        <input type="number" placeholder="Team Number" value={matchNumber} onChange={(e)=>(setMatchNumber(e.target.valueAsNumber))} className="input input-bordered input-primary w-full max-w-xs" />
+
+        <p>Match Type</p>
+        {/* @ts-ignore*/}
+        <select className="select select-bordered w-full max-w-xs" value={matchType} onChange={(e) => {setMatchType((e.target.value))}}>
+          <option value={MatchType.Qualifying}>Qualifying</option>
+          <option value={MatchType.Semifinals}>Semifinals</option>
+          <option value={MatchType.Finals}>Finals</option>
+        </select>
+
+        <div className="divider"></div>
+
+        <p>Red Alliance</p>
+        <label>Team 1</label>
+        <input type="number" placeholder="Red Alliance 1" value={redAlliance[0]} onChange={(e)=>{targetRedAlliance(0, e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+        <label>Team 2</label>
+        <input type="number" placeholder="Red Alliance 2" value={redAlliance[1]} onChange={(e)=>{targetRedAlliance(1, e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+        <label>Team 3</label>
+        <input type="number" placeholder="Red Alliance 3" value={redAlliance[2]} onChange={(e)=>{targetRedAlliance(2, e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+
+        <div className="divider"></div>
+
+        <p>Blue Alliance</p>
+        <label>Team 1</label>
+        <input type="number" placeholder="Blue Alliance 1" value={blueAlliance[0]} onChange={(e)=>{targetBlueAlliance(0, e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+        <label>Team 2</label>
+        <input type="number" placeholder="Blue Alliance 2" value={blueAlliance[1]} onChange={(e)=>{targetBlueAlliance(1, e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+        <label>Team 3</label>
+        <input type="number" placeholder="Blue Alliance 3" value={blueAlliance[2]} onChange={(e)=>{targetBlueAlliance(2, e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
+
+        <p className="italic">Note: Manually Creating a Match Requires Eventual Scouter Reassignment</p>
+        <button className="btn btn-primary" onClick={createMatch}>Create</button>
+
     </div>
  </div>
   }
