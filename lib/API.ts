@@ -349,10 +349,11 @@ export namespace API {
         "competitionReports": async(req, res, {db, data}) => {
             // {
             // compId
+            // submitted
             // }
 
             const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
-            const reports = await db.findObjects<Report[]>(Collections.Reports, {"match": {"$in": comp.matches}, "submitted": true});
+            const reports = await db.findObjects<Report[]>(Collections.Reports, {"match": {"$in": comp.matches}, "submitted": data.submitted ? true: {"$exists": true}});
             return res.status(200).send(reports)
         },
 
@@ -368,12 +369,17 @@ export namespace API {
 
         "matchReports": async(req, res, {db, data}) => {
             // {
-            // matchId
+            // compId
             // }
 
             const match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(data.matchId));
             const reports = await db.findObjects<Report[]>(Collections.Reports, {"_id": {"$in": match.reports.map((reportId) => new ObjectId(reportId))}});
             return res.status(200).send(reports)
+        },
+
+
+        "fullCompetitionData": async(req, res, {db, data}) => {
+
         }
 
     }

@@ -13,7 +13,6 @@ import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import { BiCommentError, BiUser } from "react-icons/bi";
-import { collectAppConfig } from "next/dist/build/utils";
 
 
 const api = new ClientAPI("gearboxiscool");
@@ -37,7 +36,6 @@ export default function Home(props: ResolvedUrlData) {
 
   const[numberSubmitted, setNumberSubmitted] = useState(0)
   const[submissionRate, setSubmissionRate] = useState(0)
-  const[reliability, setReliability] = useState(0);
   const[missedMatches, setMissedMatches] = useState(0);
 
   const[showKey, setShowKey] = useState(false);
@@ -50,14 +48,12 @@ export default function Home(props: ResolvedUrlData) {
       setLoadingMatches(true);
       var newMatches: Match[] = await api.allCompetitionMatches(comp?._id);
       var newReports: {[id: string]: Report} = {};
-      let submissionCounter = 0
-      for(const match of newMatches) {
-        const reports = await api.matchReports(match._id);
-        for(const report of reports) {
-          if(!report._id) {continue;}
+      let submissionCounter = 0;
+      var allReports = await api.competitionReports(comp?._id, false);
+      console.log(allReports.length);
+      for(const report of allReports) {
           submissionCounter += report.submitted ? 1 : 0;
           newReports[report._id] = report;
-        }
       }
 
       newMatches.sort((a, b) => {
@@ -66,7 +62,6 @@ export default function Home(props: ResolvedUrlData) {
         } if(a.number > b.number) {
           return 1
         }
-
         return 0
       });
 
@@ -104,8 +99,6 @@ export default function Home(props: ResolvedUrlData) {
         }
       });
       
-
-      setReliability(Math.round((mineDone/mine)*100)/100)
       setMissedMatches(missed)
     }
 
@@ -142,8 +135,7 @@ export default function Home(props: ResolvedUrlData) {
         <div className="card-body">
             <h2 className="card-title text-2xl">Matches <button className="btn btn-ghost btn-sm text-xl" onClick={()=>{setShowKey(!showKey)}}><AiOutlineQuestionCircle ></AiOutlineQuestionCircle></button>: </h2>
 
-           
-
+          
 
             {!assigned ? <div className="alert alert-warning mb-10">
               <AiFillWarning/>
@@ -231,7 +223,7 @@ export default function Home(props: ResolvedUrlData) {
 
         <div className="divider"></div>
         {assigning ? <span className="loading loading-spinner loading-md">Loading...</span>: <></>}
-        {canAssign? <button className="btn btn-primary" disabled={assigning} onClick={assignScouters}>Assign</button>: <button className="btn btn-disabled disabled">More than 6 scouters required</button>}
+        {canAssign? <button className="btn btn-primary" disabled={assigning} onClick={assignScouters}>Assign</button>: <button className="btn btn-disabled disabled">More than 6 scouters required</button>}bj     
     </div>
  </div>
   }
@@ -241,6 +233,7 @@ export default function Home(props: ResolvedUrlData) {
       <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
             <h2 className="card-title text-2xl font-bold">{comp?.name}</h2>
+            <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/stats`}><button className="btn btn-outline">View Stats</button></Link>
             <div className="divider"></div>
             
             <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">
@@ -261,18 +254,6 @@ export default function Home(props: ResolvedUrlData) {
                 <div className="stat-title">Missing Matches</div>
                 <div className="stat-value">{missedMatches}</div>
                 <div className="stat-desc">{(Math.round((missedMatches/Object.keys(reports).length)*100)/100) * 100}% of total matches</div>
-              </div>
-              
-            </div>
-
-            <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">
-              <div className="stat">
-                <div className="stat-figure text-accent text-6xl">
-                {loadingMatches ? <span className="loading loading-spinner loading-lg"></span>: <BiUser></BiUser>}
-                </div>
-                <div className="stat-title">Your Reliability</div>
-                <div className={`stat-value ${reliability < .5 ? "text-warning": "text-success"}`}>{reliability}</div>
-                <div className="stat-desc">{reliability < .8 ? "Continue scouting": "Awesome Job"}</div>
               </div>
               
             </div>

@@ -141,8 +141,8 @@ export default class ClientAPI {
         return await this.request("/submitForm", {reportId: reportId, formData: formData});
     }
 
-    async competitionReports(compId: string | undefined) {
-        return await this.request("/competitionReports", {compId: compId});
+    async competitionReports(compId: string | undefined, submitted: boolean) {
+        return await this.request("/competitionReports", {compId: compId, submitted: submitted});
     }
 
     async allCompetitionMatches(compId: string | undefined) {
