@@ -100,7 +100,7 @@ export default function Container(props: ContainerProps) {
                             <div className="w-10 rounded-full">
                                 <img src={user?.image}/>
                             </div>
-                        </Link>: <a href={"/api/auth/signin"}><button className="btn btn-primary mr-4">Sign In</button></a> }
+                        </Link>: <Link href={"/api/auth/signin"} shallow={false}><button className="btn btn-primary mr-4">Sign In</button></Link> }
                     </div>
                 </div>
 
