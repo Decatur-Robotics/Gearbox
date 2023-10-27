@@ -144,7 +144,22 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
         await api.updateTeam({scouters: newArray}, team._id)
         newTeam.scouters = newArray;
-        setTeam(newTeam)
+        setTeam(newTeam);
+       
+    }
+
+    const deleteUser = async (id:string|undefined, index: number) => {
+        if(!team || !id) {return;}
+        var newTeam = structuredClone(team)
+        var newUsers = [...team.users]
+        if(newUsers.indexOf(id) === index) {
+            newUsers.splice(index, 1);
+        }
+        await api.updateTeam({users: newUsers}, team._id)
+        newTeam.users = newUsers;
+        setTeam(newTeam);
+
+        location.reload();
     }
 
     const handleRequest = async (userId: string | undefined, accept: boolean) => {
@@ -202,6 +217,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     
                                     <th>Scouter</th>
                                     <th>Manager</th>
+                                    <th>Remove</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -218,8 +234,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     
                                 </td>
                                 <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
-                                <td><input type="checkbox" className="toggle toggle-accent" onClick={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)} disabled={!owner}/></td>
-                                <td><input type="checkbox" className="toggle toggle-secondary" checked={team?.owners.includes(user._id as string)} disabled/></td>
+                                <td><input type="checkbox" className="toggle toggle-accent" onChange={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)}/></td>
+                                <td><input type="checkbox" className="toggle toggle-secondary" defaultChecked={owner} disabled/></td>
+                                <td><button className="btn btn-outline btn-sm" onClick={() => {deleteUser(user?._id, index)}}>Remove</button></td>
                             </tr>)
                             }
                             </tbody>
