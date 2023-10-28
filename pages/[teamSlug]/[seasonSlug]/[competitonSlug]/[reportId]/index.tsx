@@ -83,9 +83,9 @@ export default function ReportForm(props: ResolvedUrlData) {
       }  
     }
 
-    function submit() {
+    async function submit() {
       io.emit("form-submit", report?._id)
-      api.submitForm(report?._id, form);
+      await api.submitForm(report?._id, form);
       location.href = `/${team?.slug}/${season?.slug}/${comp?.slug}`
     }
 
