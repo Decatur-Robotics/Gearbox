@@ -180,7 +180,7 @@ export default function Home(props: ResolvedUrlData) {
           if(datapoint.ref === selectedField) {
             values.push(datapoint.value);
           }
-          if(datapoint.ref === "comment") {
+          if(datapoint.type === FormElementType.Text) {
             comments.push(datapoint.value);
           }
         });

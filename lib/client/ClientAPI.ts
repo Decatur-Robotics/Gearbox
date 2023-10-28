@@ -36,7 +36,7 @@ export default class ClientAPI {
     };
 
 
-    async findUserById(id: string): Promise<User> {
+    async findUserById(id: string | undefined): Promise<User> {
         return await this.request("/find", {collection: "users", query: {"_id": id}});
     }
 

@@ -30,7 +30,10 @@ export default function ReportForm(props: ResolvedUrlData) {
 
     const[connected, setConnected] = useState(true);
 
+    const[name, setName] = useState<string>("");
+
     useEffect(() => {
+
       async function loadForm() {
         setLoadingForm(true);
         if(report?.data) {
@@ -38,6 +41,10 @@ export default function ReportForm(props: ResolvedUrlData) {
         } else {
           setForm(await api.findFormById(report?.form));
         }
+
+        const user = await api.findUserById(report?.user);
+        setName(user.name ? user.name : "Error");
+
         setLoadingForm(false)
       }
 
@@ -99,7 +106,7 @@ export default function ReportForm(props: ResolvedUrlData) {
                 <div className="divider "></div>
                 <div className="w-full flex flex-row items-center justify-center">
                
-              
+                <h3>Intended Scouter: {name}</h3>
                 <h3 className="">Live Sync Enabled <div className={`w-4 h-4 rounded-full ${connected ? "bg-success" : "bg-error"} animate-pulse inline-block translate-y-1 ml-1`}></div> </h3>
                 </div>
                 
