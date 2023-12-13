@@ -3,6 +3,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession"
 import Link from "next/link"
 import { ReactNode, useEffect, useState } from "react"
 import {BiMenu, BiPlus, BiHome, } from "react-icons/bi"
+import { IoSunny, IoMoon} from "react-icons/io5";
 import {BsGearFill} from "react-icons/bs"
 import ClientAPI from "@/lib/client/ClientAPI"
 
@@ -30,6 +31,15 @@ export default function Container(props: ContainerProps) {
     const[loadingSeasons, setLoadingSeasons] = useState<boolean>(false);
     const[selectedTeamSeasons, setSelectedTeamSeasons] = useState<Season[]>([]);
 
+    
+
+    const tLocal = typeof window !== "undefined" ? window.localStorage.getItem('theme') : "dark";
+    const[theme, setTheme] = useState<string>(tLocal ? tLocal: "dark");
+    useEffect(() => {
+        window.localStorage.setItem('theme', JSON.stringify(theme));
+    }, [theme])
+    
+
     useEffect(() => {
 
         if(window.location.href.includes("signin")) {
@@ -54,6 +64,8 @@ export default function Container(props: ContainerProps) {
         loadTeams();
 
     }, [user]);
+
+
 
     useEffect(() => {
        const loadSelectedSeasons = async() => {
@@ -82,7 +94,7 @@ export default function Container(props: ContainerProps) {
     }
 
     
-   return <div className="w-full h-screen flex flex-col">
+   return <div className="w-full h-screen flex flex-col" data-theme={theme}>
         
         <div className="drawer">
             <input id="menu" type="checkbox" className="drawer-toggle" />
@@ -96,11 +108,20 @@ export default function Container(props: ContainerProps) {
                     </div>
 
                     <div>
-                        {authenticated ?<Link href={"/profile"} tabIndex={0} className="btn btn-ghost btn-circle avatar mr-10">
+                        {authenticated ?<Link href={"/profile"} tabIndex={0} className="btn btn-ghost btn-circle avatar mr-5">
                             <div className="w-10 rounded-full">
                                 <img src={user?.image}/>
                             </div>
                         </Link>: <a href={"/api/auth/signin"} rel="noopener noreferrer" target="_blank"><button className="btn btn-primary mr-4">Sign In</button></a> }
+
+                        <label className="swap swap-rotate mr-5">
+                            <input type="checkbox" className="theme-controller" onClick={()=>{setTheme(theme === "dark" ? "light": "dark" )}} />
+                            
+                            <IoSunny className="swap-on w-10 h-10"></IoSunny>
+
+                            <IoMoon className="swap-off w-10 h-10"></IoMoon>
+                            
+                        </label>
                     </div>
                 </div>
 
