@@ -306,7 +306,7 @@ export default function Home(props: ResolvedUrlData) {
                 </div>
                 <div className="stat-title">Overall Submission</div>
                   {/*@ts-ignore --- lol!!*/}
-                  <div className="stat-value m-2 text-xl"><div className="radial-progress " style={{"--value":submissionRate}}>{submissionRate }%</div></div>
+                  <div className="stat-value m-2 text-xl"><div className="radial-progress " style={{"--value":submissionRate}}>{submissionRate * 100}%</div></div>
                 <div className="stat-desc">{Object.keys(reports).length-numberSubmitted} Matches Remaining</div>
               </div>
               
