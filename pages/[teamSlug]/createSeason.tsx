@@ -7,8 +7,8 @@ import Container from "@/components/Container";
 
 const api = new ClientAPI("gearboxiscool");
 
-export const CurrentSeason = new Season("Charged Up", undefined, 2023);
-export const OffSeason = new Season("Off Season", undefined, 2023);
+export const CurrentSeason = new Season("Crescendo", undefined, 2024);
+export const OffSeason = new Season("Off Season", undefined, 2024);
 
 export default function Home(props: ResolvedUrlData) {
 
@@ -48,7 +48,7 @@ export default function Home(props: ResolvedUrlData) {
 
                     <div className="card lg:w-1/4 bg-base-100 shadow-xl">
                         <figure>
-                            <img src={"https://www.mouser.de/images/mktg/first/first-landing-chargedup-logo-well-600x500px.jpg"} alt="Season Logo" />
+                            <img src={"https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png"} alt="Season Logo" />
                         </figure>
                         <div className="card-body">
                             <h2 className="card-title text-2xl">{CurrentSeason.name}</h2>
