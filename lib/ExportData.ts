@@ -1,6 +1,7 @@
+/*
 import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
 import { ObjectId } from "mongodb";
-import { Competition, Match, Team, CompetitonNameIdPair, MatchType, Alliance } from "./Types";
+import { Competition, Match, Team, CompetitonNameIdPair, MatchType, Alliance, Report } from "./Types";
 
 export namespace ExportData {
     export const CompetitionToCSV = async (compId: string) => {
@@ -26,3 +27,5 @@ export namespace ExportData {
         return finalString;
     }
 }
+*/
+// need to rework
