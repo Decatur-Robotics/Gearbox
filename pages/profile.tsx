@@ -74,6 +74,7 @@ export default function Profile() {
             setTeamNumber(undefined);
         }
 
+
         
         return  <div className="card w-5/6 bg-base-200 shadow-xl">
             <div className="card-body">
@@ -105,7 +106,6 @@ export default function Profile() {
             
                 <h2 className="card-title text-3xl">Join a Team</h2>
                 <p className="">Your Team does not exist? <Link href="/createTeam" className="text-accent">Create It!</Link></p>
-
                 <div className="flex flex-row items-center mt-4 space-x-2">
                     <input type="number" placeholder="Team Number" value={teamNumber} onChange={(e) => {findTeam(e.target.valueAsNumber)}} className="input input-bordered input-primary w-full max-w-xs" />
 
@@ -134,7 +134,8 @@ export default function Profile() {
 
         const [nameChange, setNameChange] = useState(session?.user?.name);
         const [emailChange, setEmailChange] = useState(session?.user?.email);
-    
+        const[newPicUrl, setNewPicUrl] = useState<string>();
+
         useEffect(() => {
             setNameChange(session?.user?.name)
             setEmailChange(session?.user?.email)
@@ -142,6 +143,13 @@ export default function Profile() {
     
         const [settingsError, setSettingsError] = useState("")
     
+        const changePFP = async () => {
+            console.log("Running")
+            api.changePFP(session?.user?._id,newPicUrl)
+            console.log("Run")
+            window.location.reload()
+        }
+
         const updateSettings = async () => {
             setSettingsError("")
             if(!validName(nameChange as string)) {
@@ -177,6 +185,13 @@ export default function Profile() {
 
                 <div className="card-actions justify-end">
                     <button className="btn btn-primary normal-case" onClick={updateSettings}>Update</button>
+                </div>
+                <br />
+                <label className="mt-2">Profile Picture:</label>
+                <img src={session?.user?.image} height="200" width="80" className="ms-2"></img>
+                <input type="text" placeholder="Input the URL of your desired profile picture" onChange = {(e) => {setNewPicUrl(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
+                <div className="card-actions justify-end">
+                <button className="btn btn-primary normal-case" onClick={changePFP}>Change PFP</button>
                 </div>
         
             </div>     
