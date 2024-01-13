@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
+import GitHubProvider from 'next-auth/providers/github'
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
 import { Collections, GetDatabase, clientPromise } from './MongoDB'
 import { Admin, ObjectId } from 'mongodb'
@@ -20,6 +21,15 @@ export default NextAuth({
             return user;
         },
       }),
+        GitHubProvider({
+          clientId: process.env.GITHUB_ID as string,
+          clientSecret: process.env.GITHUB_SECRET as string,
+          profile: async (profile, tokens) => {
+            const user = new User(profile.login, profile.email, profile.avatar_url, false, await GenerateSlug(Collections.Users, profile.login), [], []);
+            user.id = profile.id;
+            return user;
+        },
+        }),
     ],
     callbacks: {
       async session({ session, user, token }) {
