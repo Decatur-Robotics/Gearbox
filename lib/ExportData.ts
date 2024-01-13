@@ -1,4 +1,5 @@
-import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
+
+/*import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
 import { ObjectId } from "mongodb";
 import { Competition, Match, Team, CompetitonNameIdPair, MatchType, Alliance } from "./Types";
 
@@ -26,3 +27,4 @@ export namespace ExportData {
         return finalString;
     }
 }
+*/

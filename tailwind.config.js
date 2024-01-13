@@ -9,7 +9,17 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      dropShadow: {
+        glowWeak: [
+          "0 0px 20px oklch(65.69% 0.196 275.75 / .6)",
+        ],
+        glowStrong: [
+          "0 0px 10px oklch(65.69% 0.196 275.75 / .7)",
+          "0 0px 20px oklch(65.69% 0.196 275.75 / .5)",
+        ]
+      }
+    }
   },
   daisyui: {
     themes: ["dark", "light"]

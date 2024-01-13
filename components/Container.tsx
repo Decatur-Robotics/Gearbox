@@ -36,7 +36,7 @@ export default function Container(props: ContainerProps) {
     const tLocal = typeof window !== "undefined" ? window.localStorage.getItem('theme') : "dark";
     const[theme, setTheme] = useState<string>(tLocal ? tLocal: "dark");
     useEffect(() => {
-        window.localStorage.setItem('theme', JSON.stringify(theme));
+        //window.localStorage.setItem('theme', JSON.stringify(theme));
     }, [theme])
     
 
