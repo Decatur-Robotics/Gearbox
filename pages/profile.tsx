@@ -38,6 +38,7 @@ export default function Profile() {
         const[foundTeam, setFoundTeam] = useState<Team>();
         const[request, setRequest] = useState();
 
+
         useEffect(() => {
             
             const loadTeams = async() => {
