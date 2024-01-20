@@ -8,11 +8,10 @@ export default function Checkbox(props: {label: string}) {
 }
 
 export function IntakeType(props: {}) {
-    return <div className="w-full flex flex-col items-center text-2xl">
-        <h1 className="font-semibold text-xl mb-2">Intake Type</h1>
-        <span>Human Intake: <input type="radio" className="radio radio-primary"/></span>
-        <span>Ground Intake: <input type="radio" className="radio radio-secondary"/></span>
-        <span>Both: <input type="radio" className="radio radio-accent"/></span>
+    return <div className="w-full grid grid-cols-2 grid-rows-3 items-center text-2xl">
+        <span >Human Intake: </span> <input type="radio" className="radio radio-primary ml-10"/>
+        <span>Ground Intake: </span> <input type="radio" className="radio radio-secondary ml-10"/>
+        <span>Both: </span> <input type="radio" className="radio radio-accent ml-10"/>
     </div>
     
 }

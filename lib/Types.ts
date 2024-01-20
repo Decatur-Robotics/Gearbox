@@ -66,25 +66,53 @@ export class Team {
     }
 }
 
-export enum FormElementType {
-    Number="Number",
-    Text="Text",
-    Boolean="Boolean",
+
+
+export enum Defense {
+    None="None",
+    Partial="Partial",
+    Full="Full"
 }
 
-export interface FormElement {
-    ref: string,
-    text: string,
-    type: FormElementType;
-    value: any;
+export enum IntakeType {
+    Human="Human",
+    Ground="Ground",
+    Both="Both",
+}
+
+export interface FormData {
+    AutoStartX: number; // pixel position of robot
+    AutoStartY: number;
+    AutoStartAngle: number; // stored... but probably wont ever be used
+    AutoScoredAmp: number; // # of times scored in the amp
+    AutoMissedAmp: number;
+    AutoScoredSpeaker: number;
+    AutoMissedSpeaker: number;
+
+
+    TeleopScoredAmp: number;
+    TeleopMissedAmp: number;
+    TeleopScoredSpeaker: number;
+    TeleopMissedSpeaker: number;
+    TeleopScoredTrap: number;
+    TeleopMissedTrap: number;
+
+    Defense: Defense;
+
+    Coopertition: boolean; // true if used any point in match
+    ClimbedStage: boolean;
+    ParkedStage: boolean;
+    UnderStage: boolean;
+
+    IntakeType: IntakeType;
 }
 
 export class Form {
     _id: string | undefined;
     name: string;
-    data: FormElement[]; // JSON string;
+    data: FormData;
 
-    constructor(name: string, data: FormElement[]=[]) {
+    constructor(name: string, data: FormData) {
         this.name = name;
         this.data = data;
     }
