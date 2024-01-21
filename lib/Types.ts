@@ -74,37 +74,37 @@ export enum Defense {
     Full="Full"
 }
 
-export enum IntakeType {
+export enum IntakeTypes {
     Human="Human",
     Ground="Ground",
     Both="Both",
 }
 
-export interface FormData {
-    AutoStartX: number; // pixel position of robot
-    AutoStartY: number;
-    AutoStartAngle: number; // stored... but probably wont ever be used
-    AutoScoredAmp: number; // # of times scored in the amp
-    AutoMissedAmp: number;
-    AutoScoredSpeaker: number;
-    AutoMissedSpeaker: number;
+export class FormData {
+    AutoStartX: number = 0; // pixel position of robot
+    AutoStartY: number = 0;
+    AutoStartAngle: number = 0;// stored... but probably wont ever be used
+    AutoScoredAmp: number = 0;// # of times scored in the amp
+    AutoMissedAmp: number = 0;
+    AutoScoredSpeaker: number = 0;
+    AutoMissedSpeaker: number = 0;
 
 
-    TeleopScoredAmp: number;
-    TeleopMissedAmp: number;
-    TeleopScoredSpeaker: number;
-    TeleopMissedSpeaker: number;
-    TeleopScoredTrap: number;
-    TeleopMissedTrap: number;
+    TeleopScoredAmp: number = 0;
+    TeleopMissedAmp: number = 0;
+    TeleopScoredSpeaker: number = 0;
+    TeleopMissedSpeaker: number = 0;
+    TeleopScoredTrap: number = 0;
+    TeleopMissedTrap: number = 0;
 
-    Defense: Defense;
+    Defense: Defense = Defense.None;
 
-    Coopertition: boolean; // true if used any point in match
-    ClimbedStage: boolean;
-    ParkedStage: boolean;
-    UnderStage: boolean;
+    Coopertition: boolean = false; // true if used any point in match
+    ClimbedStage: boolean = false;
+    ParkedStage: boolean = false;
+    UnderStage: boolean = false;
 
-    IntakeType: IntakeType;
+    IntakeType: IntakeTypes = IntakeTypes.Human;
 }
 
 export class Form {

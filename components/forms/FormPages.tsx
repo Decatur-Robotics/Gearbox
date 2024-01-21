@@ -4,6 +4,9 @@ import StartingPosition from "./StartingPosition";
 import {AutoButtons, TeleopButtons} from "./Buttons";
 import DefenseSlider from "./Sliders";
 import Checkbox, { IntakeType } from "./Checkboxes";
+import { AllianceColor, FormData } from "@/lib/Types";
+
+export type PageProps = {alliance: AllianceColor, data: FormData, callback: (key: string, value: string | number | boolean) => void};
 
 export default function FormPage(props: {children: ReactNode; title: string}) {
 
@@ -20,37 +23,37 @@ export default function FormPage(props: {children: ReactNode; title: string}) {
     </main> )
 }
 
-export function AutoPage() {
+export function AutoPage(props: PageProps) {
 
     return <FormPage title="Auto">
-            <StartingPosition color={"Red"}></StartingPosition>
-            <AutoButtons></AutoButtons> 
+            <StartingPosition alliance={props.alliance} data={props.data} callback={props.callback}></StartingPosition>
+            <AutoButtons data={props.data} callback={props.callback} ></AutoButtons> 
     </FormPage>
 }
 
-export function TeleopPage() {
+export function TeleopPage(props: PageProps) {
 
     return <FormPage title="Teleop">
-            <TeleopButtons></TeleopButtons>
-            <DefenseSlider></DefenseSlider>
+            <TeleopButtons data={props.data} callback={props.callback}></TeleopButtons>
+            <DefenseSlider data={props.data} callback={props.callback}></DefenseSlider>
     </FormPage>
 }
 
-export function EndPage() {
+export function EndPage(props: PageProps) {
 
     return <FormPage title="Summary">
-            <Checkbox label="Coopertition Activated"></Checkbox>
+            <Checkbox label="Coopertition Activated" dataKey="Coopertition" data={props.data} callback={props.callback}></Checkbox>
 
             <hr className="w-full border-slate-700 border-2"></hr>
-            <Checkbox label="Climbed Stage"></Checkbox>
-            <Checkbox label="Parked Stage"></Checkbox>
-            <Checkbox label="Went Under Stage"></Checkbox>
+            <Checkbox label="Climbed Stage" dataKey="ClimbedStage" data={props.data} callback={props.callback}></Checkbox>
+            <Checkbox label="Parked Stage" dataKey="ParkedStage" data={props.data} callback={props.callback}></Checkbox>
+            <Checkbox label="Went Under Stage" dataKey="UnderStage" data={props.data} callback={props.callback}></Checkbox>
 
             <hr className="w-full border-slate-700 border-2"></hr>
-            <IntakeType></IntakeType>
+            <IntakeType data={props.data} callback={props.callback} ></IntakeType>
 
             <hr className="w-full border-slate-700 border-2"></hr>
-            <button className="btn btn-active btn-primary">Submit</button>
+            <button className="btn btn-wide btn-primary">Submit</button>
 
     </FormPage>
 }

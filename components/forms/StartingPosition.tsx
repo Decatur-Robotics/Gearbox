@@ -1,6 +1,8 @@
 import dynamic from 'next/dynamic';
 import { AllianceColor } from "@/lib/Types";
 import p5Types from "p5";
+import { useCallback, useEffect, useState } from 'react';
+import { PageProps } from './FormPages';
 
 const Sketch = dynamic(() => import('react-p5').then((mod) => mod.default), {
     ssr: false,
@@ -16,10 +18,16 @@ var my = 0;
 var ax = 0;
 var ay = 0;
 var a = 0;
-export default function StartingPosition(props: {color: AllianceColor}) {
+export default function StartingPosition(props: PageProps) {
+
+    const triggerCallback = useCallback(() => {
+        props.callback("AutoStartX", mx)
+        props.callback("AutoStartY", my)
+        props.callback("AutoStartAngle", a)
+    }, [mx, my, a, props.callback])
 
     const setup = (p5: p5Types, canvasParentRef: Element) => {
-        bg = p5.loadImage(props.color === AllianceColor.Blue ? "/croppedFieldBlue.PNG": "/croppedFieldRed.PNG");
+        bg = p5.loadImage(props.alliance === AllianceColor.Blue ? "/croppedFieldBlue.PNG": "/croppedFieldRed.PNG");
         const ctx = p5.createCanvas(350, 300).parent(canvasParentRef);
         ctx.mousePressed(() => {
             if(!dropped) {
@@ -33,6 +41,8 @@ export default function StartingPosition(props: {color: AllianceColor}) {
                 ax = p5.mouseX;
                 ay = p5.mouseY;
             }
+
+            triggerCallback();
             
         });
         p5.rectMode(p5.CENTER);
@@ -63,6 +73,7 @@ export default function StartingPosition(props: {color: AllianceColor}) {
     };
 
     return <div className="overflow-hidden rounded-3xl w-fit h-fit">
+                
                 <Sketch setup={setup} draw={draw} />
-            </div>
+    </div>
 }
