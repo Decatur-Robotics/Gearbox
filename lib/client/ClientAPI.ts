@@ -1,6 +1,6 @@
 
 
-import { Competition, Season, Team, User, Match, Form, FormElement, CompetitonNameIdPair, Report, MatchType } from "../Types";
+import { Competition, Season, Team, User, Match, Form, CompetitonNameIdPair, Report, MatchType } from "../Types";
 
 export enum ClientRequestMethod {
     POST="POST",
@@ -106,10 +106,6 @@ export default class ClientAPI {
 
     async createMatch(compId: string | undefined, number: number, type: MatchType, blueAlliance: number[], redAlliance: number[]) {
         return await this.request("/createMatch", {number: number, type: type, blueAlliance: blueAlliance, redAlliance: redAlliance, compId: compId});
-    }
-
-    async createForm(name: string, data: FormElement[], seasonId: string | undefined) {
-        return await this.request("/createForm", {name: name, data: data, seasonId: seasonId})
     }
 
     async createCompetition(name: string, tbaId: string | undefined, start: number, end: number, seasonId: string | undefined) {

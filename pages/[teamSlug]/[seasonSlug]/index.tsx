@@ -67,8 +67,6 @@ export default function Home(props: ResolvedUrlData) {
                       
                       <h1 className="card-title">{form.name}</h1>
 
-                      <h2>{form.data.length} Question(s)</h2>
-
                       <div className="card-actions justify-end">
                           <a href={`/${team?.slug}/${season?.slug}/formEditor?id=${form._id}`}><button className="btn btn-info normal-case">Edit</button></a>
                           <button className="btn btn-error normal-case" disabled>Delete</button>

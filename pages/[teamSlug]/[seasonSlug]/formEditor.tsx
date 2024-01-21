@@ -1,3 +1,6 @@
+console.warn("Deprecated File")
+/*
+
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { useEffect, useState } from "react";
 import { Form, FormElement, FormElementType } from "@/lib/Types";
@@ -168,3 +171,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: await UrlResolver(context),
   }
 }
+
+*/

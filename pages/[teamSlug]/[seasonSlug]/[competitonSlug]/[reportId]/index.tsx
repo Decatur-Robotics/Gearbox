@@ -1,3 +1,5 @@
+
+/* will redo
 import Container from "@/components/Container";
 import UrlResolver, {ResolvedUrlData} from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
@@ -127,3 +129,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       props: await UrlResolver(context),
     }
   }
+*/
