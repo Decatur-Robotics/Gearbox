@@ -100,6 +100,10 @@ export default class ClientAPI {
         return await this.request("/createSeason", {name: name, year: year, teamId: teamId});
     }
 
+    async changePFP(userId: string | undefined, newImage: string | undefined) {
+        return await this.request("/changePFP",{userId: userId, newImage: newImage})
+    }
+
     async createMatch(compId: string | undefined, number: number, type: MatchType, blueAlliance: number[], redAlliance: number[]) {
         return await this.request("/createMatch", {number: number, type: type, blueAlliance: blueAlliance, redAlliance: redAlliance, compId: compId});
     }

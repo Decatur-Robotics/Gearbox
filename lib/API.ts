@@ -365,5 +365,9 @@ export namespace API {
             return res.status(200).send(reports)
         },
 
+        "changePFP": async(req,res,{db,data}) => {
+            await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {image: `${data.newImage}`});
+        }
+
     }
 }
