@@ -182,24 +182,6 @@ export default function Home(props: ResolvedUrlData) {
     // ts at its finest :smile:
     const canAssign = team?.scouters ? (team?.scouters.length >= 6 ? true: false) : false;
 
-    useEffect(() => {
-
-      const loadForms = async () => {
-        if(!season) {return;}
-        setLoadingForms(true);
-
-        var newForms: Form[] = [];
-        for(const id of season.forms) {
-          newForms.push(await api.findFormById(id));
-        }
-
-        setForms(newForms);
-        setSelectedForm(newForms[0]._id)
-        setLoadingForms(false);
-      }
-
-      loadForms();
-    }, []);
 
     const assignScouters = async () => {
       setAssigning(true);
@@ -233,14 +215,7 @@ export default function Home(props: ResolvedUrlData) {
 
         <div className="divider"></div>
         <h1 className="text-xl">Assign Scouters</h1>
-
-        {loadingForms ? <span className="loading loading-spinner loading-md"></span>: <></>}
         
-        <h1>Select a Scouting Form</h1>
-        <select className="select select-bordered w-full max-w-xs" value={selectedForm} onChange={(e) => {setSelectedForm(e.target.value)}}>
-          {forms.map((form) => <option key={form._id} value={form._id}>{form.name}</option>)}
-        </select>
-
         <br></br>
         <h1>Randomize Scouter Order</h1>
         <input type="checkbox" className="checkbox h-8 w-8" checked={shuffle} onChange={(e) => {setShuffle(e.target.checked)}}/>

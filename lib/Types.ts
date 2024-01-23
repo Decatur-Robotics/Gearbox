@@ -66,26 +66,54 @@ export class Team {
     }
 }
 
-export enum FormElementType {
-    Number="Number",
-    Text="Text",
-    Boolean="Boolean",
+
+
+export enum Defense {
+    None="None",
+    Partial="Partial",
+    Full="Full"
 }
 
-export interface FormElement {
-    ref: string,
-    text: string,
-    type: FormElementType;
-    value: any;
+export enum IntakeTypes {
+    Human="Human",
+    Ground="Ground",
+    Both="Both",
+}
+
+export class FormData {
+    AutoStartX: number = 0; // pixel position of robot
+    AutoStartY: number = 0;
+    AutoStartAngle: number = 0;// stored... but probably wont ever be used
+    AutoScoredAmp: number = 0;// # of times scored in the amp
+    AutoMissedAmp: number = 0;
+    AutoScoredSpeaker: number = 0;
+    AutoMissedSpeaker: number = 0;
+
+
+    TeleopScoredAmp: number = 0;
+    TeleopMissedAmp: number = 0;
+    TeleopScoredSpeaker: number = 0;
+    TeleopMissedSpeaker: number = 0;
+    TeleopScoredTrap: number = 0;
+    TeleopMissedTrap: number = 0;
+
+    Defense: Defense = Defense.None;
+
+    Coopertition: boolean = false; // true if used any point in match
+    ClimbedStage: boolean = false;
+    ParkedStage: boolean = false;
+    UnderStage: boolean = false;
+
+    IntakeType: IntakeTypes = IntakeTypes.Human;
 }
 
 
 export class Form {
     _id: string | undefined;
     name: string;
-    data: FormElement[]; // JSON string;
+    data: FormData;
 
-    constructor(name: string, data: FormElement[]=[]) {
+    constructor(name: string, data: FormData) {
         this.name = name;
         this.data = data;
     }
@@ -100,14 +128,12 @@ export class Season {
 
     competitions: string[];
 
-    forms: string[];
 
-    constructor(name: string, slug: string | undefined, year: number, competitions: string[]=[], forms: string[]=[]) {
+    constructor(name: string, slug: string | undefined, year: number, competitions: string[]=[]) {
         this.name = name;
         this.slug = slug;
         this.year = year;
         this.competitions = competitions;
-        this.forms = forms;
     }
 }
 
@@ -181,19 +207,17 @@ export class Report {
     timestamp: number | undefined; // time it was initially submitted
     user: string | undefined; // id of user who submitted
 
-    form: string; // id of form;
-
     color: AllianceColor;
     robotNumber: number; // number of robot to be reported
     match: string; // id of match
 
     submitted: boolean = false;
-    data: Form | undefined = undefined;
+    data: FormData;
 
-    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0) {
+    constructor(user: string | undefined, data: FormData, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0) {
         this.timestamp = timestamp;
         this.user = user;
-        this.form = form;
+        this.data = data;
         this.robotNumber = robotNumber;
         this.match = match;
         this.color = color;

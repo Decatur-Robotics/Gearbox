@@ -1,6 +1,6 @@
 
 
-import { Competition, Season, Team, User, Match, Form, FormElement, CompetitonNameIdPair, Report, MatchType } from "../Types";
+import { Competition, Season, Team, User, Match, Form, CompetitonNameIdPair, Report, MatchType, FormData } from "../Types";
 
 export enum ClientRequestMethod {
     POST="POST",
@@ -50,10 +50,6 @@ export default class ClientAPI {
 
     async findSeasonById(id: string): Promise<Season> {
         return await this.request("/find", {collection: "Seasons", query: {"_id": id}});
-    }
-
-    async findFormById(id: string | undefined): Promise<Form> {
-        return await this.request("/find", {collection: "Forms", query: {"_id": id}});
     }
 
     async findCompetitionById(id: string | undefined): Promise<Competition> {
@@ -112,10 +108,6 @@ export default class ClientAPI {
         return await this.request("/createMatch", {number: number, type: type, blueAlliance: blueAlliance, redAlliance: redAlliance, compId: compId});
     }
 
-    async createForm(name: string, data: FormElement[], seasonId: string | undefined) {
-        return await this.request("/createForm", {name: name, data: data, seasonId: seasonId})
-    }
-
     async createCompetition(name: string, tbaId: string | undefined, start: number, end: number, seasonId: string | undefined) {
         return await this.request("/createCompetiton", {name: name, tbaId: tbaId, start: start, end: end, seasonId: seasonId});
     }
@@ -137,15 +129,15 @@ export default class ClientAPI {
         return await this.request("/update", {collection: "Seasons", newValues: newValues, id: seasonId})
     }
 
-    async updateForm(newValues: object, formId: string | undefined) {
-        return await this.request("/update", {collection: "Forms", newValues: newValues, id: formId})
+    async updateReport(newValues: object, reportId: string | undefined) {
+        return await this.request("/update", {collection: "Reports", newValues: newValues, id: reportId})
     }
 
-    async assignScouters(teamId: string | undefined, compId: string | undefined, formId: string | undefined, shuffle: boolean=false) {
-        return await this.request("/assignScouters", {teamId: teamId, compId: compId, formId: formId, shuffle: shuffle})
+    async assignScouters(teamId: string | undefined, compId: string | undefined, shuffle: boolean=false) {
+        return await this.request("/assignScouters", {teamId: teamId, compId: compId, shuffle: shuffle})
     }
 
-    async submitForm(reportId: string | undefined, formData: Form | undefined) {
+    async submitForm(reportId: string | undefined, formData: FormData | undefined) {
         return await this.request("/submitForm", {reportId: reportId, formData: formData});
     }
 

@@ -1,3 +1,4 @@
+/* will redo
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -275,7 +276,7 @@ export default function Home(props: ResolvedUrlData) {
 
                 <p>Calculated Average: {selectedAvergae.toFixed(2)} points</p>
 
-                {/*@ts-ignore --- idk why it gets mad here*/ }
+
                 <Bar options={ChartOptions}  data={selectedChartData ? selectedChartData: DefaultChartData } className=""></Bar>
 
                 <p>Comments: </p>
@@ -312,3 +313,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: await UrlResolver(context),
   }
 }
+*/

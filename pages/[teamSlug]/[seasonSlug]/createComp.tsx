@@ -63,7 +63,8 @@ export default function CreateComp(props: ResolvedUrlData) {
                       </div>)
                     }
 
-                    <button className="btn btn-primary" disabled={selection === undefined} onClick={createComp}>Create</button>        
+                    <button className="btn btn-primary" disabled={selection === undefined} onClick={createComp}>Create</button>      
+
                 </div>
             </div>  
     </div>     

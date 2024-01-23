@@ -1,12 +1,12 @@
 import { GetDatabase, Collections } from "@/lib/MongoDB";
-import { Competition, Match, Team, Report, AllianceColor } from "./Types";
+import { Competition, Match, Team, Report, AllianceColor, FormData } from "./Types";
 import { ObjectId } from "mongodb";
 import { RotateArray, ShuffleArray } from "./Utils";
 
 export const MinimumNumberOfScouters = 6;
 
 
-export async function AssignScoutersToCompetitionMatches(teamId: string, competitionId: string, formId: string, shuffle: boolean=false) {
+export async function AssignScoutersToCompetitionMatches(teamId: string, competitionId: string, shuffle: boolean=false) {
     const db = await GetDatabase();
     const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(competitionId));
     const team = await db.findObject<Team>(Collections.Teams, new ObjectId(teamId));
@@ -21,7 +21,7 @@ export async function AssignScoutersToCompetitionMatches(teamId: string, competi
     scouters = shuffle ? ShuffleArray(scouters): scouters;
 
     for(const matchId of matchIds) {
-        await AssignScoutersToMatch(matchId, scouters, formId);
+        await AssignScoutersToMatch(matchId, scouters);
         RotateArray(scouters);
     }
 
@@ -29,7 +29,7 @@ export async function AssignScoutersToCompetitionMatches(teamId: string, competi
     // addd data and color field to Reports, fix report attachment to matches
 }
 
-export async function AssignScoutersToMatch(matchId: string, scouterArray: string[], formId: string, shuffleScouters: boolean = false): Promise<void> {
+export async function AssignScoutersToMatch(matchId: string, scouterArray: string[], shuffleScouters: boolean = false): Promise<void> {
     const db = await GetDatabase();
     const scouters = shuffleScouters ? ShuffleArray(scouterArray): scouterArray;
     let match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId));
@@ -39,7 +39,7 @@ export async function AssignScoutersToMatch(matchId: string, scouterArray: strin
     for(let i = 0; i < 6; i++) {
         const scouter = scouters[i];
         const color = match.blueAlliance.includes(bots[i]) ? AllianceColor.Blue : AllianceColor.Red;
-        const newReport = new Report(scouter, formId, bots[i], color, String(match._id));
+        const newReport = new Report(scouter, new FormData(), bots[i], color, String(match._id));
         
         newReports.push(String((await db.addObject<Report>(Collections.Reports, newReport))._id));
     }
