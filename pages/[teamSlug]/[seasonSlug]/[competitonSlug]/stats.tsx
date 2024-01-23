@@ -314,3 +314,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 }
 */
+
+export default function Stats(props: any) {
+  return <p>Hi</p>
+}
