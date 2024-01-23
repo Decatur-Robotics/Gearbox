@@ -7,6 +7,7 @@ import Checkbox, { IntakeType } from "./Checkboxes";
 import { AllianceColor, FormData } from "@/lib/Types";
 
 export type PageProps = {alliance: AllianceColor, data: FormData, callback: (key: string, value: string | number | boolean) => void};
+export type EndPageProps = {alliance: AllianceColor, data: FormData, submit: () => void; callback: (key: string, value: string | number | boolean) => void};
 
 export default function FormPage(props: {children: ReactNode; title: string}) {
 
@@ -39,7 +40,7 @@ export function TeleopPage(props: PageProps) {
     </FormPage>
 }
 
-export function EndPage(props: PageProps) {
+export function EndPage(props: EndPageProps) {
 
     return <FormPage title="Summary">
             <Checkbox label="Coopertition Activated" dataKey="Coopertition" data={props.data} callback={props.callback}></Checkbox>
@@ -53,7 +54,7 @@ export function EndPage(props: PageProps) {
             <IntakeType data={props.data} callback={props.callback} ></IntakeType>
 
             <hr className="w-full border-slate-700 border-2"></hr>
-            <button className="btn btn-wide btn-primary">Submit</button>
+            <button className="btn btn-wide btn-primary -translate-y-2" onClick={props.submit}>Submit</button>
 
     </FormPage>
 }

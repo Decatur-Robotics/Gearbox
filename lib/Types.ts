@@ -127,14 +127,12 @@ export class Season {
 
     competitions: string[];
 
-    forms: string[];
 
-    constructor(name: string, slug: string | undefined, year: number, competitions: string[]=[], forms: string[]=[]) {
+    constructor(name: string, slug: string | undefined, year: number, competitions: string[]=[]) {
         this.name = name;
         this.slug = slug;
         this.year = year;
         this.competitions = competitions;
-        this.forms = forms;
     }
 }
 
@@ -208,19 +206,17 @@ export class Report {
     timestamp: number | undefined; // time it was initially submitted
     user: string | undefined; // id of user who submitted
 
-    form: string; // id of form;
-
     color: AllianceColor;
     robotNumber: number; // number of robot to be reported
     match: string; // id of match
 
     submitted: boolean = false;
-    data: Form | undefined = undefined;
+    data: FormData;
 
-    constructor(user: string | undefined, form: string, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0) {
+    constructor(user: string | undefined, data: FormData, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0) {
         this.timestamp = timestamp;
         this.user = user;
-        this.form = form;
+        this.data = data;
         this.robotNumber = robotNumber;
         this.match = match;
         this.color = color;

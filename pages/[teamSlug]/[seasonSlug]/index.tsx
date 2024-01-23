@@ -15,24 +15,10 @@ export default function Home(props: ResolvedUrlData) {
     const season = props.season;
 
     const[selection, setSelection] = useState(1)
-
-    const[forms, setForms] = useState<Form[]>([]);
     const[comps, setComps] = useState<Competition[]>([]);
 
     useEffect(() => {
-       const loadForms = async () => {
-        var newForms: Form[] = []
-
-        if(!season) {
-          return;
-        }
-
-        for(const id of season?.forms) {
-          newForms.push(await api.findFormById(id));
-        }
-        setForms(newForms)
-       }
-
+  
        const loadComps = async () => {
         var newComps: Competition[] = [];
 
@@ -47,36 +33,10 @@ export default function Home(props: ResolvedUrlData) {
         setComps(newComps)
        }
 
-       loadForms();
        loadComps();
     }, [])
 
 
-    const Forms = () => {
-
-      return <div className="card w-5/6 bg-base-200 shadow-xl">
-            <div className="card-body">
-                <h2 className="card-title text-2xl">Forms</h2>
-                <h1 className="text-xl">Manage and Edit Your Scouters Forms</h1>
-
-                <h3>No Forms? <a className="text-accent" href={`/${team?.slug}/${season?.slug}/formEditor`}>Create a new one</a></h3>
-                <div className="divider"></div>
-                {
-                  forms.map((form) => <div className="card w-5/6 bg-base-300" key={form._id}>
-                    <div className="card-body">
-                      
-                      <h1 className="card-title">{form.name}</h1>
-
-                      <div className="card-actions justify-end">
-                          <a href={`/${team?.slug}/${season?.slug}/formEditor?id=${form._id}`}><button className="btn btn-info normal-case">Edit</button></a>
-                          <button className="btn btn-error normal-case" disabled>Delete</button>
-                      </div>
-                    </div>
-                  </div>)
-                }
-            </div>
-      </div>
-    }
 
     const Overview = () => {
       return <div className="card w-5/6 bg-base-200 shadow-xl">
@@ -119,13 +79,11 @@ export default function Home(props: ResolvedUrlData) {
     <div className="flex flex-row justify-start w-5/6 ">
         <div className="w-3/8 join grid grid-cols-3">
             <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
-            <button className={"join-item btn btn-outline normal-case " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Forms</button>
             <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}} disabled>Season-Wide Stats</button>
         </div>
     </div>
 
     {selection === 1 ? <Overview></Overview>: <></>}
-    {selection === 2 ? <Forms></Forms>: <></>}
     {selection === 3 ? <></>:<></>}
   </div>
   </Container>

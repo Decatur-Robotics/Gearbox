@@ -315,10 +315,9 @@ export namespace API {
             //    teamId
             //    compId
             //    shuffle
-            //    formId
             // }
             
-            await AssignScoutersToCompetitionMatches(data.teamId, data.compId, data.formId, data.shuffle);
+            await AssignScoutersToCompetitionMatches(data.teamId, data.compId, data.shuffle);
             return res.status(200).send({"result": "success"})
         },
 
@@ -326,7 +325,6 @@ export namespace API {
             // {
             //    reportId
             //    formData
-            //
             // }
             
             var form = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
