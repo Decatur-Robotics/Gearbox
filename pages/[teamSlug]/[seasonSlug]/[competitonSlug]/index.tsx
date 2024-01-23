@@ -185,7 +185,7 @@ export default function Home(props: ResolvedUrlData) {
 
     const assignScouters = async () => {
       setAssigning(true);
-      const res = await api.assignScouters(team?._id, comp?._id, selectedForm, shuffle );
+      const res = await api.assignScouters(team?._id, comp?._id, shuffle );
       setAssigning(false);
       location.reload();
     }
