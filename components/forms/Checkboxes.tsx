@@ -5,7 +5,7 @@ export default function Checkbox(props: CheckboxProps) {
     //@ts-expect-error
     const checked = props.data[props.dataKey];
     return <label className="w-full label cursor-pointer flex flex-row justify-end space-x-8">
-    <span className="label-text text-xl font-semibold ">{props.label} + {props.dataKey}</span>
+    <span className="label-text text-xl font-semibold ">{props.label}</span>
     
     <input type="checkbox" onChange={()=>{props.callback(props.dataKey, !checked)}} checked={checked} className="w-10 h-10 checkbox checkbox-primary" />
   </label>
@@ -18,4 +18,4 @@ export function IntakeType(props: RadioProps) {
         <span>Both: </span> <input type="radio" className="radio radio-accent ml-10"  onClick={()=>{props.callback("IntakeType", IntakeTypes.Both)}} checked={props.data.IntakeType===IntakeTypes.Both}/>
     </div>
     
-}
+} 
