@@ -10,17 +10,6 @@ module.exports = {
   ],
   theme: {
     extend: {
-      keyframes: {
-        typing: {
-          "0%": {
-            width: "0%",
-            visibility: "hidden",
-          },
-          "100%": {
-            width: "100%",
-          },
-        },
-      },
       dropShadow: {
         glowWeak: ["0 0px 20px oklch(65.69% 0.196 275.75 / .6)"],
         glowStrong: [
