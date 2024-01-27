@@ -68,7 +68,7 @@ export default function PicklistScreen(props: {reports: Report[]}) {
         });
 
         setTeamNumbers(newTeamNumbers.map((num, index) => { return {id: index, number: num} }));
-    })
+    }, [props.reports])
     
     const addPicklist = () => {
         setPicklists([...picklists, picklists.length+1])
