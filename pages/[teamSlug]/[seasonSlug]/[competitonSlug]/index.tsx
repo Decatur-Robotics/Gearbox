@@ -4,20 +4,88 @@ import { useEffect, useState } from "react";
 // linked icon, for everything with tbaId!!!!!!!
 import ClientAPI from "@/lib/client/ClientAPI"
 import { GetServerSideProps } from "next";
-
-import { Form, Match, MatchType, Report } from "@/lib/Types";
+import { Form, Match, MatchType, Report, User } from "@/lib/Types";
 import Container from "@/components/Container";
-import {BsStarFill, BsClipboardCheck } from "react-icons/bs";
+import {BsStarFill, BsClipboardCheck, BsCheckCircle, BsQuestionCircle} from "react-icons/bs";
+
 import { AiFillWarning, AiOutlineQuestionCircle, AiOutlineUser } from "react-icons/ai";
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton'
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
+import { Socket } from "socket.io-client";
+import { ClientSocket} from "@/lib/client/ClientSocket";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { BiCommentError, BiUser } from "react-icons/bi";
+import { useRef } from 'react';
+
+// Require the Node Slack SDK package (github.com/slackapi/node-slack-sdk)
+
 
 
 const api = new ClientAPI("gearboxiscool");
+let io: Socket<DefaultEventsMap, DefaultEventsMap>;
+
 
 export default function Home(props: ResolvedUrlData) {
+
+  function UserNameList(matchID : any){
+    const [userNameList, setUserNameList] = useState<Array<string | undefined>>([])
+    const [checkedInList, setCheckedInList] = useState<Array<boolean>>([])
+    const [loaded, setLoaded] = useState<Boolean>(false)
+
+    useEffect(()=>{
+      async function updateUserNameList(){
+        const match = await api.findMatchById(matchID.matchID)
+        const reports = match.reports
+
+        for (let i = 0; i < 6; i++) {
+          const reportBeingAdded = await api.findReportById(reports[i])
+          const userToAdd = await api.findUserById(reportBeingAdded.user)
+          let checkedListToAdd = checkedInList
+          checkedListToAdd[i] = reportBeingAdded.checkedIn
+          let tempUserNameList = userNameList
+          tempUserNameList[i] = userToAdd.name
+          setCheckedInList(checkedListToAdd)
+          setUserNameList(tempUserNameList)
+        }
+        setLoaded(true)
+
+      }
+
+      function test(){
+        updateUserNameList()
+      }
+      test()
+    })
+
+    return(
+      <>
+      <button>SLACKIN TIME</button>
+      <details className="dropdown">
+        <summary className="w-14 btn btn-primary">Scouts</summary>
+          <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
+            {
+              userNameList.map((name, index) => {
+                return (
+                  <li onClick={(()=>{api.sendSlack(name)})} 
+                    style={{color:`${checkedInList[index] ? 'limeGreen': '#cc0000'}`}} key={index}>
+                    <a>
+                      {loaded ? name : 
+                        <div>
+                          <span className="loading loading-spinner loading-xs"></span> Loading
+                        </div>}
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+      </details>
+      </>
+    )
+  }
 
   const team = props.team;
   const season = props.season;
@@ -27,13 +95,15 @@ export default function Home(props: ResolvedUrlData) {
   const { session, status } = useCurrentSession();
   const[selection, setSelection] = useState(1);
 
+  const [users, setUsers] = useState<User[]>([])
+
   const[loadingMatches, setLoadingMatches] = useState<boolean>(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [reports, setReports] = useState<{[id: string]: Report}>({});
+  const fakeReport = structuredClone(reports)
   const [qualifyingMatches, setQualifyingMatches] = useState<Match[]>([]);
   const [semiFinalMatches, setSemiFinalMatches] = useState<Match[]>([]);
   const [finalMatches, setFinalMatches] = useState<Match[]>([]);
-
   const[numberSubmitted, setNumberSubmitted] = useState(0)
   const[submissionRate, setSubmissionRate] = useState(0)
   const[missedMatches, setMissedMatches] = useState(0);
@@ -41,6 +111,10 @@ export default function Home(props: ResolvedUrlData) {
   const[showKey, setShowKey] = useState(false);
 
   const[assigned, setAssigned] = useState(false);
+
+  const[id, setId] = useState('I HATE MY LIFE')
+
+  let rip = useRef(reports)
 
   useEffect(() => {
     const loadMatches = async() => {
@@ -68,6 +142,7 @@ export default function Home(props: ResolvedUrlData) {
 
       setMatches(newMatches);
       setReports(newReports);
+      localStorage.setItem("reports",JSON.stringify(newReports))
       setAssigned(newMatches[0].reports.length > 0)
       setQualifyingMatches(newMatches.filter((match) => match.type === MatchType.Qualifying));
       setSemiFinalMatches(newMatches.filter((match) => match.type === MatchType.Semifinals));
@@ -102,22 +177,74 @@ export default function Home(props: ResolvedUrlData) {
       setMissedMatches(missed)
     }
 
+
+    
     loadMatches();
+
+    async function setUpSocket(){
+
+      io = await ClientSocket()
+
+      io.on("connect", ()=>console.log("Connected"))
+
+      io.on("update-checkin", (reportId)=>  {
+        console.log("Checking In")
+        let reps: any = JSON.parse(localStorage.getItem("reports")!)
+        reps[reportId].checkedIn = true
+        setReports(reps)
+        localStorage.setItem("reports",JSON.stringify(reps))
+      })
+
+      io.on("update-checkout", (reportId)=> {
+        console.log("Checking out")
+        let reps: any = JSON.parse(localStorage.getItem("reports")!)
+        reps[reportId].checkedIn = false
+        setReports(reps)
+        localStorage.setItem("reports",JSON.stringify(reps))
+        console.log("Checked out")
+        console.log("About to call API")
+        async function checkOut(){
+          console.log("Calling API")
+          await api.updateCheckOut(reportId)
+          console.log("Reporting called from in function")
+        }
+        checkOut()
+        console.log("checkOut() ran succefully, checked out")
+      })
+    }
+
+    setUpSocket()
+
+    
   }, [])
 
   function matchToDisplay(match: Match) {
     const reps: Report[] = match.reports.map((reportId) => reports[reportId]);
 
     const repElements = reps.map((rep, index) => {
+      const user = rep.user
       const isItUs = rep.robotNumber === team?.number;
       const isMe = rep.user === session.user?._id;
       const submitted = rep.submitted;
-      return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`} key={index} ><div className={`w-10 h-10 ${submitted ? "bg-gray-500" : (rep.color === "Blue" ? "bg-blue-500" : "bg-red-500")} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>{isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>} {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}</div></Link>
+      let someoneActive: boolean = rep.checkedIn;
+
+      return (
+        <>
+       <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`} key={index}>
+          <div className={`w-10 h-10 ${submitted ? "bg-gray-500" : (rep.color === "Blue" ? "bg-blue-500" : "bg-red-500")} border-2 border-white rounded-lg flex flex-row items-center justify-center`}>
+            {isItUs ? <BsStarFill className="text-yellow-500 text-2xl"></BsStarFill> : <></>}
+            {isMe ? <AiOutlineUser className="text-white text-2xl"></AiOutlineUser> : <></>}
+            {someoneActive? <BsCheckCircle  className="text-white text-2x1"> </BsCheckCircle> : <></>}
+        </div>
+      </Link>
+      </>)
     })
 
     return <div>
             <h1>{match.type} - Match {match.number}</h1>
+            
             <div className="w-full h-12 flex flex-row rounded-lg items-center space-x-2">
+            <UserNameList matchID = {match._id}></UserNameList>
               {reps.length > 0 ? repElements : <h1>No Information Available</h1>}
             </div>
             <div className="divider mt-1 mb-1"></div>
@@ -133,6 +260,7 @@ export default function Home(props: ResolvedUrlData) {
 
     return <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
+        <button onClick={()=>{setId('HAS BEEN SET')}}>CLICK ME</button>
             <h2 className="card-title text-2xl">Matches <button className="btn btn-ghost btn-sm text-xl" onClick={()=>{setShowKey(!showKey)}}><AiOutlineQuestionCircle ></AiOutlineQuestionCircle></button>: </h2>
 
           
@@ -215,7 +343,7 @@ export default function Home(props: ResolvedUrlData) {
 
         <div className="divider"></div>
         <h1 className="text-xl">Assign Scouters</h1>
-        
+
         <br></br>
         <h1>Randomize Scouter Order</h1>
         <input type="checkbox" className="checkbox h-8 w-8" checked={shuffle} onChange={(e) => {setShuffle(e.target.checked)}}/>

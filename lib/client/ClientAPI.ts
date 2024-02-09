@@ -1,5 +1,4 @@
 
-
 import { Competition, Season, Team, User, Match, Form, CompetitonNameIdPair, Report, MatchType, FormData } from "../Types";
 
 export enum ClientRequestMethod {
@@ -151,5 +150,17 @@ export default class ClientAPI {
 
     async matchReports(matchId: string | undefined) {
         return await this.request("/matchReports", {matchId: matchId})
+    }
+
+    async updateCheckIn(reportId: string | undefined) {
+        return await this.request("/updateCheckIn", {reportId})
+    }
+
+    async updateCheckOut(reportId: string | undefined) {
+        return await this.request("/updateCheckOut", {reportId})
+    }
+
+    async sendSlack(message: string | undefined) {
+        return await this.request("/remind", {message})
     }
 };

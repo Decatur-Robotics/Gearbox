@@ -2,6 +2,9 @@ import { Socket } from "net"
 import { NextRequest, NextResponse } from "next/server"
 import { Server as HTTPServer } from "http"
 import { Server } from "socket.io"
+import ClientAPI from "@/lib/client/ClientAPI"
+
+const api = new ClientAPI("gearboxiscool");
 
 export interface SocketServer extends HTTPServer {
     io?: Server | undefined;
@@ -28,6 +31,16 @@ const SocketHandler = (req: NextRequest, res: NextResponseWithSocketIO) => {
 
       socket.on("form-submit", (_id) => {
         socket.broadcast.emit("form-submit", _id)
+      })
+
+      socket.on("update-checkin", (reportId) => {
+        console.log("Checkin")
+        socket.broadcast.emit("update-checkin", reportId)
+      })
+
+      socket.on("update-checkout", (reportId) => {
+        socket.broadcast.emit("update-checkout", reportId)
+        console.log("Checkout")
       })
     })
   }
