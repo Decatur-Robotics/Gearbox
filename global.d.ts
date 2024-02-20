@@ -1,5 +1,5 @@
 declare global {
-    var clientPromise;
-    var interface;
+  var clientPromise;
+  var interface;
 }
-export {}
+export {};
