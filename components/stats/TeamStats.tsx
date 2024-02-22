@@ -5,7 +5,7 @@ import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
 
 export default function TeamStats(props: {selectedTeam: number | undefined, selectedReports: Report[]}) {
     if(!props.selectedTeam)  {
-      return <div className="w-2/5 h-3/4 flex flex-col items-center justify-center bg-base-200">
+      return <div className="w-2/5 h-1/2 flex flex-col items-center justify-center bg-base-200">
         <h1 className="text-3xl text-accent animate-bounce font-semibold">Select A Team</h1>
       </div>
     }

@@ -4,7 +4,7 @@ import { Report } from "@/lib/Types";
 import { useDrag, useDrop } from 'react-dnd'
 import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
-import { report } from "process";
+import useLocalStorage from "@/lib/client/useLocalStorage";
 
 
 type CardType = {number: number, id: number};
@@ -56,7 +56,7 @@ function Picklist(props: {index: number}) {
 
 export default function PicklistScreen(props: {reports: Report[]}) {
     const[teamNumbers, setTeamNumbers] = useState<CardType[]>([]);
-
+    const[localSaves, setLocalSaves] = useLocalStorage<number[]>("picklists");
     const [picklists, setPicklists] = useState<number[]>([]);
 
     useEffect(() => {
@@ -68,14 +68,18 @@ export default function PicklistScreen(props: {reports: Report[]}) {
         });
 
         setTeamNumbers(newTeamNumbers.map((num, index) => { return {id: index, number: num} }));
-    }, [props.reports])
+    }, [props.reports]);
+
+    useEffect(() => {
+        setPicklists(localSaves);
+    }, [localSaves])
     
     const addPicklist = () => {
         setPicklists([...picklists, picklists.length+1])
     }
     
 
-    return <div className="w-full h-full flex flex-col space-y-2">
+    return <div className="w-full h-fit flex flex-col space-y-2">
         
         <div className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2">
                 {teamNumbers.map(team => <TeamCard draggable={true} id={team.id} number={team.number}></TeamCard>)}
@@ -87,7 +91,7 @@ export default function PicklistScreen(props: {reports: Report[]}) {
             </div>: <></>}
 
            {
-            picklists.map((num) =><Picklist key={num} index={num}></Picklist>)
+            picklists.map((num, index) =><Picklist key={num} index={index}></Picklist>)
            } 
         </div>
 
