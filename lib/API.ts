@@ -395,6 +395,10 @@ export namespace API {
                   // You could also use a blocks[] array to send richer content
                 })
             console.log("Posted")
+        },
+
+        "setSlackId" : async(req,res,{db,data}) => {
+            await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {slackId: data.slackId})
         }
 
     }

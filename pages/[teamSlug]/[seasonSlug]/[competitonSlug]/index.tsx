@@ -31,6 +31,7 @@ let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 export default function Home(props: ResolvedUrlData) {
 
   function UserNameList(matchID : any){
+    const [slackIdList, setSlackIdList] = useState<Array<string | undefined>>([])
     const [userNameList, setUserNameList] = useState<Array<string | undefined>>([])
     const [checkedInList, setCheckedInList] = useState<Array<boolean>>([])
     const [loaded, setLoaded] = useState<Boolean>(false)
@@ -41,8 +42,13 @@ export default function Home(props: ResolvedUrlData) {
         const reports = match.reports
 
         for (let i = 0; i < 6; i++) {
+          let slackIdsToAdd = slackIdList
           const reportBeingAdded = await api.findReportById(reports[i])
           const userToAdd = await api.findUserById(reportBeingAdded.user)
+          if (userToAdd.slackId){
+            slackIdsToAdd[i] = userToAdd.slackId
+            setSlackIdList(slackIdsToAdd)
+          }
           let checkedListToAdd = checkedInList
           checkedListToAdd[i] = reportBeingAdded.checkedIn
           let tempUserNameList = userNameList
@@ -62,14 +68,13 @@ export default function Home(props: ResolvedUrlData) {
 
     return(
       <>
-      <button>SLACKIN TIME</button>
       <details className="dropdown">
         <summary className="w-14 btn btn-primary">Scouts</summary>
           <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
             {
               userNameList.map((name, index) => {
                 return (
-                  <li onClick={(()=>{api.sendSlack(name)})} 
+                  <li onClick={(()=>{slackIdList[index]? api.sendSlack(`<@${slackIdList[index]}> Please report to our section and prepare to scout immemdiately`) : api.sendSlack(`@${userNameList[index]} please report to our section and prepare to scout immediately`)})} 
                     style={{color:`${checkedInList[index] ? 'limeGreen': '#cc0000'}`}} key={index}>
                     <a>
                       {loaded ? name : 

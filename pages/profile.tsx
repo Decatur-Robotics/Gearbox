@@ -136,6 +136,7 @@ export default function Profile() {
         const [nameChange, setNameChange] = useState(session?.user?.name);
         const [emailChange, setEmailChange] = useState(session?.user?.email);
         const[newPicUrl, setNewPicUrl] = useState<string>();
+        const[newSlackId, setNewSlackId] = useState<string>();
 
         useEffect(() => {
             setNameChange(session?.user?.name)
@@ -149,6 +150,10 @@ export default function Profile() {
             api.changePFP(session?.user?._id,newPicUrl)
             console.log("Run")
             window.location.reload()
+        }
+
+        const changeSlackId = async () => {
+            api.setSlackId(session?.user?._id, newSlackId)
         }
 
         const updateSettings = async () => {
@@ -184,17 +189,20 @@ export default function Profile() {
                 <label className="mt-2">Email: </label>
                 <input type="email" placeholder="Email" value={emailChange} onChange={(e) => {setEmailChange(e.target.value)}} className="input input-bordered w-full max-w-xs" />
 
-                <div className="card-actions justify-end">
-                    <button className="btn btn-primary normal-case" onClick={updateSettings}>Update</button>
-                </div>
                 <br />
                 <label className="mt-2">Profile Picture:</label>
                 <img src={session?.user?.image} height="200" width="80" className="ms-2"></img>
                 <input type="text" placeholder="Input the URL of your desired profile picture" onChange = {(e) => {setNewPicUrl(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
-                <div className="card-actions justify-end">
+                <div className="card-actions justify-start">
                 <button className="btn btn-primary normal-case" onClick={changePFP}>Change PFP</button>
                 </div>
-        
+                <br />
+                <label className="mt-2">SlackId:</label>
+                <input type="text" placeholder="Input your Slack Id" onChange = {(e) => {setNewSlackId(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
+                <div className="card-actions justify-start">
+                <button className="btn btn-primary normal-case" onClick={changeSlackId}>Update Slack Url</button>
+                </div>
+
             </div>     
         </div>
     }

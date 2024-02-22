@@ -39,7 +39,7 @@ export async function AssignScoutersToMatch(matchId: string, scouterArray: strin
     for(let i = 0; i < 6; i++) {
         const scouter = scouters[i];
         const color = match.blueAlliance.includes(bots[i]) ? AllianceColor.Blue : AllianceColor.Red;
-        const newReport = new Report(scouter, new FormData(), bots[i], color, String(match._id));
+        const newReport = new Report(scouter, new FormData(), bots[i], color, String(match._id), 0, false);
         
         newReports.push(String((await db.addObject<Report>(Collections.Reports, newReport))._id));
     }
