@@ -6,7 +6,10 @@ import { Competition, Form } from "@/lib/Types";
 import { MonthString } from "@/lib/client/FormatTime";
 import Container from "@/components/Container";
 import Link from "next/link";
-
+import { ClientSocket} from "@/lib/client/ClientSocket";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
+import { Socket } from "socket.io-client";
+let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 const api = new ClientAPI("gearboxiscool");
 
 export default function Home(props: ResolvedUrlData) {
@@ -18,7 +21,22 @@ export default function Home(props: ResolvedUrlData) {
     const[comps, setComps] = useState<Competition[]>([]);
 
     useEffect(() => {
+      async function setUpSocket(){
+        io = await ClientSocket()
+        io.emit("update-checkin", '65be796074ea38a2d2d806c8')
+        await api.updateCheckIn('65be796074ea38a2d2d806c8')
+      }
+      setUpSocket()
+
+      window.addEventListener("beforeunload", ()=> {
+        io.emit("update-checkout", '65be796074ea38a2d2d806c8')
+     });
+
+      window.addEventListener("onunload", ()=> {
+        io.emit("update-checkout", '65be796074ea38a2d2d806c8')
+     })
   
+
        const loadComps = async () => {
         var newComps: Competition[] = [];
 
@@ -35,9 +53,6 @@ export default function Home(props: ResolvedUrlData) {
 
        loadComps();
     }, [])
-
-
-
     const Overview = () => {
       return <div className="card w-5/6 bg-base-200 shadow-xl">
       <div className="card-body">

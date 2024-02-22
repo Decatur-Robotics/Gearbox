@@ -5,6 +5,8 @@ declare global {
         NEXTAUTH_SECRET: string;
         GOOGLE_ID: string;
         GOOGLE_SECRET: string;
+        GITHUB_SECRET: string;
+        GITHUB_ID: string;
 
         MONGO_DB_URI: string;
         DB: string;
@@ -18,6 +20,10 @@ declare global {
         DEFAULT_IMAGE: string;
 
         FILL_TEAMS: string;
+
+        SLACK_KEY: string;
+        SLACK_CLIENT_ID: string;
+        SLACK_CLIENT_SECRET: string;
 
         NODE_ENV: 'development' | 'production';
 
