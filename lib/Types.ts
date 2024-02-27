@@ -27,8 +27,9 @@ export class User implements NextAuthUser {
     slug: string | undefined;
     teams: string[];
     owner: string[];
+    slackId: string = ""
 
-    constructor(name:string|undefined, email:string|undefined, image: string = process.env.DEFAULT_IMAGE, admin: boolean=false, slug:string | undefined, teams: string[]=[], owner: string[]=[]) {
+    constructor(name:string|undefined, email:string|undefined, image: string = process.env.DEFAULT_IMAGE, admin: boolean=false, slug:string | undefined, teams: string[]=[], owner: string[]=[], slackId: string) {
         this.name = name;
         this.email = email;
         this.image = image;
@@ -36,6 +37,7 @@ export class User implements NextAuthUser {
         this.slug = slug;
         this.teams = teams;
         this.owner = owner;
+        this.slackId = slackId;
     }
 }
 
@@ -214,13 +216,16 @@ export class Report {
     submitted: boolean = false;
     data: FormData;
 
-    constructor(user: string | undefined, data: FormData, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0) {
+    checkedIn: boolean = false;
+
+    constructor(user: string | undefined, data: FormData, robotNumber: number, color: AllianceColor, match: string, timestamp: number=0, checkedIn: boolean) {
         this.timestamp = timestamp;
         this.user = user;
         this.data = data;
         this.robotNumber = robotNumber;
         this.match = match;
         this.color = color;
+        this.checkedIn = checkedIn;
     }
 }
 

@@ -6,11 +6,17 @@ import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
+import { isAwaitExpression } from "typescript";
+import { WebClient } from "@slack/web-api";
+
+// WebClient instantiates a client that can call API methods
+// When using Bolt, you can use either `app.client` or the `client` passed to listeners.
+const client = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
 
 export namespace API {
 
     export const GearboxHeader = "gearbox-auth"
-    type Route = (req: NextApiRequest, res: NextApiResponse, contents: {db: MongoDBInterface, tba: TheBlueAlliance.Interface, data: any}) => Promise<void>;
+    type Route = (req: NextApiRequest, res: NextApiResponse, contents: {slackClient: WebClient, db: MongoDBInterface, tba: TheBlueAlliance.Interface, data: any}) => Promise<void>;
     type RouteCollection = { [routeName: string]: Route};
 
     class Error {
@@ -42,6 +48,7 @@ export namespace API {
         routes: RouteCollection;
         db: Promise<MongoDBInterface>;
         tba: TheBlueAlliance.Interface;
+        slackClient: WebClient
         basePath: string;
         
         constructor(apiRoutes: RouteCollection, base="/api/") {
@@ -49,6 +56,7 @@ export namespace API {
             this.db = GetDatabase();
             this.tba = new TheBlueAlliance.Interface();
             this.basePath = base;
+            this.slackClient = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
         }
 
         async handleRequest(req: NextApiRequest, res: NextApiResponse) {
@@ -68,7 +76,7 @@ export namespace API {
             var route = req.url.replace(this.basePath, "");
             
             if(route in this.routes) {
-                this.routes[route](req, res, {db:await this.db, tba:this.tba, data:req.body});
+                this.routes[route](req, res, {slackClient:this.slackClient, db:await this.db, tba:this.tba, data:req.body});
             } else {
                 new NotFoundError(res, route);
                 return;
@@ -367,6 +375,30 @@ export namespace API {
 
         "changePFP": async(req,res,{db,data}) => {
             await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {image: `${data.newImage}`});
+        },
+
+        "updateCheckIn": async(req,res,{db,data}) => {
+            await db.updateObjectById<Report>(Collections.Reports, new ObjectId(data.reportId), {checkedIn: true})
+        },
+
+        "updateCheckOut": async(req,res,{db,data}) => {
+            await db.updateObjectById<Report>(Collections.Reports, new ObjectId(data.reportId), {checkedIn: false})
+        },
+
+        "remind" : async(req,res,{slackClient,data}) => {
+            console.log("Attempting to post")
+                await slackClient.chat.postMessage({
+                  // The token you used to initialize your app
+                  token: process.env.SLACK_KEY,
+                  channel: 'C06GXSJP2QN',
+                  text: data.message
+                  // You could also use a blocks[] array to send richer content
+                })
+            console.log("Posted")
+        },
+
+        "setSlackId" : async(req,res,{db,data}) => {
+            await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {slackId: data.slackId})
         }
 
     }

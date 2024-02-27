@@ -1,15 +1,74 @@
 import { AllianceColor, Report, FormData } from "@/lib/Types";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { AutoPage, EndPage, TeleopPage } from "./FormPages";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 
+import { Socket } from "socket.io-client";
+import { ClientSocket} from "@/lib/client/ClientSocket";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
+
 import ClientAPI from "@/lib/client/ClientAPI";
+import { useRouter } from "next/router";
 
 const api = new ClientAPI("gearboxiscool")
+let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 
 export default function Form(props: {report: Report}) {
+    const router = useRouter();
+
+    const reportID = props.report._id
+
+    useEffect(()=>{
+        async function setUpSocket(){
+            io = await ClientSocket()
+            io.emit("update-checkin", reportID)
+            await api.updateCheckIn(reportID)
+          }
+          setUpSocket()
+
+          async function checkOutOld(reportId : string | undefined){
+            await api.updateCheckOut(reportId)
+        }
+
+        console.log("Adding event handlers for check out...");
+        async function checkOut(reportId : string | undefined) {
+            console.log("Checking out...");
+            io.emit("update-checkout", reportID);
+            console.log("Check out");
+        }
+    
+        window.addEventListener("pagehide", async (event: PageTransitionEvent) => {
+            // event.returnValue='Farts';
+            event.preventDefault();
+            checkOut(reportID);
+        });
+
+        window.addEventListener("beforeunload", async (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            checkOut(reportID);
+        })
+
+        window.addEventListener("visibilitychange", async (event: Event) => {
+            event.preventDefault();
+
+            console.log("Visibility changed to " + document.visibilityState);
+            if(document.visibilityState === "hidden")
+                checkOut(reportID);
+            else io.emit("update-checkin", reportID)
+        })
+
+        router.events.on("routeChangeStart", async () => checkOut(reportID));
+        router.events.on("beforeHistoryChange", async () => checkOut(reportID));
+
+        console.log("Added event handlers");
+    })
+
+    async function checkOut(){
+        io.emit("update-checkout", reportID)
+        await api.updateCheckOut(reportID)
+    }
 
     const[page, setPage] = useState(1);
     const[formData, setFormData] = useState<FormData>(props.report?.data);
@@ -43,6 +102,7 @@ export default function Form(props: {report: Report}) {
 
 
     return <div className="w-full flex flex-col items-center space-y-2">
+            <button onClick={checkOut}>CLick me to check out</button>
             
             {page === 1 ? <AutoPage data={formData} callback={setCallback} alliance={alliance}></AutoPage> : <></>}
             {page === 2 ? <TeleopPage data={formData} callback={setCallback} alliance={alliance}></TeleopPage> : <></>}
