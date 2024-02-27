@@ -43,7 +43,7 @@ export default function StartingPosition(props: PageProps) {
             }
 
             triggerCallback();
-            
+            console.log(mx, my)
         });
         p5.rectMode(p5.CENTER);
     };
