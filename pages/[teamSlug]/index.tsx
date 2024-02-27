@@ -192,6 +192,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     </div>
 
                                     <h1 className="card-title">{user.name}</h1>
+                                    <h1 className="card-title">{user.oweBucks}</h1>
                                 </div>
 
                                 <div className="card-actions justify-end">
@@ -214,6 +215,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     <th></th>
                                     <th>Picture </th>
                                     <th>Name</th>
+                                    <th>Owebucks</th>
                                     
                                     <th>Scouter</th>
                                     <th>Manager</th>
@@ -234,6 +236,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     
                                 </td>
                                 <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
+                                <td><div>{user.oweBucks}</div></td>
                                 <td><input type="checkbox" className="toggle toggle-accent" onChange={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)}/></td>
                                 <td><input type="checkbox" className="toggle toggle-secondary" defaultChecked={owner} disabled/></td>
                                 <td><button className="btn btn-outline btn-sm" onClick={() => {deleteUser(user?._id, index)}}>Remove</button></td>
@@ -299,6 +302,87 @@ export default function TeamIndex(props: ResolvedUrlData) {
         </div>
     }
 
+    const OwebucksAdmin = () => {
+        const [owebucksToChange, setOwebucksToChange] = useState<number>(20)
+        async function changeOweBucks(userId : string | undefined, oweBucks : number | undefined, oweBucksToAdd : number | undefined){
+            await api.updateOwebucks(userId, oweBucks, oweBucksToAdd)
+        }
+        return  <div className="card w-5/6 bg-base-200 shadow-xl">
+            <div className="card-body">
+                <h1 className="card-title text-2xl">Owebucks</h1>
+                <p>Manage your owebucks</p>
+
+                
+                <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
+                {
+                    requests.map((user) => <div className="card bg-base-300 w-full" key={user._id}>
+                        <div className="card-body">
+                            <div className="flex flex-row space-x-2">
+                                <div className="avatar">
+                                    <div className="w-12 rounded-full">
+                                        <img src={user.image} />
+                                    </div>
+                                </div>
+
+                                <h1 className="card-title">{user.name}</h1>
+                            </div>
+
+                            <div className="card-actions justify-end">
+                                <button className="btn btn-success text-white" onClick={()=>{handleRequest( user._id, true)}}>Add</button>
+                                <button className="btn btn-error text-white" onClick={()=>{handleRequest( user._id, false)}}>Remove</button>
+                            </div>
+
+                        </div>
+                    </div>)
+                }
+                </div>
+
+                <div className="divider"></div>
+
+                <h1 className="text-lg">Members:</h1>
+                <div className="overflow-x-auto">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Picture </th>
+                                <th>Name</th>
+                                <th>Owebucks</th>
+                                
+                                <th>How Many</th>
+                                <th>Remove</th>
+                                <th>Add</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        {
+                            users.map((user, index) => <tr key={user._id}>
+                            <th>{index+1}</th>
+                            <td className="flex flex-row items-center justify-evenly">
+                                <div className="avatar">
+                                    <div className="w-10 rounded-full">
+                                        <img src={user.image} />
+                                    </div>
+                                </div>
+                                
+                            </td>
+                            <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
+                            <td>{user.oweBucks > 0?<div>{user.oweBucks}</div> : <div style={{color:"red"}}>{user.oweBucks}</div>}</td>
+                            <td><input type="number" placeholder="Name" value={owebucksToChange} maxLength={50} onChange={(e) => {setOwebucksToChange(e.target.valueAsNumber)}} className="input input-bordered w-full max-w-xs" /></td>
+                            <td><button className="btn btn-outline btn-sm" onClick={()=>{changeOweBucks(user._id, user?.oweBucks, (owebucksToChange*-1) )}}>Take</button></td>
+                            <td><button className="btn btn-outline btn-sm" onClick={()=>{changeOweBucks(user._id, user?.oweBucks, owebucksToChange )}}>Give</button></td>
+                        </tr>)
+                        }
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+    </div>
+
+        
+}
+
     return <Container requireAuthentication={true} hideMenu={false}>
         <div className="w-full h-full flex flex-col justify-center items-center space-y-6 pb-12 lg:pb-0">
                 <div className="card w-5/6 bg-base-200 shadow-xl">
@@ -320,12 +404,15 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
                         <button className={"join-item btn btn-outline normal-case inline " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary inline-block">New </span>: <></>} </button>
                         <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button>
+                        {session?.user?.owner?.includes(team?._id as string)? <button className={"join-item btn btn-outline normal-case " + (selection === 4 ? "btn-active": "")} onClick={()=>{setSelection(4)}}>Owebucks Admin</button> : <></>}
+                        
                     </div>       
                 </div>
 
                 {selection === 1 ? <Overview></Overview> : <></>}
                 {selection === 2 ? <Roster></Roster> : <></>}
                 {selection === 3 ? <Settings></Settings>: <></>}
+                {selection === 4 ? <OwebucksAdmin></OwebucksAdmin> : <></>}
         </div>
     </Container>
     

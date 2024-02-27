@@ -1,6 +1,7 @@
 import { AllianceColor, Report, FormData } from "@/lib/Types";
 import { useCallback, useState, useEffect } from "react";
 import { AutoPage, EndPage, TeleopPage } from "./FormPages";
+import {useCurrentSession} from "@/lib/client/useCurrentSession";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
@@ -14,6 +15,7 @@ import { useRouter } from "next/router";
 
 const api = new ClientAPI("gearboxiscool")
 let io: Socket<DefaultEventsMap, DefaultEventsMap>;
+const { session, status } = useCurrentSession();
 
 export default function Form(props: {report: Report}) {
     const router = useRouter();
@@ -37,6 +39,10 @@ export default function Form(props: {report: Report}) {
             console.log("Checking out...");
             io.emit("update-checkout", reportID);
             console.log("Check out");
+        }
+
+        async function checkIn(reportId: string | undefined) {
+            io.emit("update-checkin", reportID)
         }
     
         window.addEventListener("pagehide", async (event: PageTransitionEvent) => {
@@ -70,6 +76,10 @@ export default function Form(props: {report: Report}) {
         await api.updateCheckOut(reportID)
     }
 
+    async function checkIn(){
+        io.emit("update-checkin", reportID)
+    }
+
     const[page, setPage] = useState(1);
     const[formData, setFormData] = useState<FormData>(props.report?.data);
     const[syncing, setSyncing] = useState(false);
@@ -77,7 +87,7 @@ export default function Form(props: {report: Report}) {
     const alliance = props.report?.color;
 
     async function submitForm() {
-        await api.submitForm(props.report?._id, formData);
+        await api.submitForm(props.report?._id, formData, session?.user?._id, session?.user?.oweBucks);
         console.log("hi");
        location.href = location.href.substring(0, location.href.lastIndexOf("/"));
     }
@@ -102,7 +112,8 @@ export default function Form(props: {report: Report}) {
 
 
     return <div className="w-full flex flex-col items-center space-y-2">
-            <button onClick={checkOut}>CLick me to check out</button>
+            <button onClick={checkOut}>Click me to check out</button>
+            <button onClick={checkIn}>Click me to check in</button>
             
             {page === 1 ? <AutoPage data={formData} callback={setCallback} alliance={alliance}></AutoPage> : <></>}
             {page === 2 ? <TeleopPage data={formData} callback={setCallback} alliance={alliance}></TeleopPage> : <></>}
