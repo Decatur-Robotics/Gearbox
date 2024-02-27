@@ -40,7 +40,7 @@ function Picklist(props: {index: number}) {
 
     const [{ isOver }, dropRef] = useDrop({
         accept: 'team',
-        drop: (item) => setBasket((basket: any) => 
+        drop: (item: any) => setBasket((basket: any) => 
                             !Includes(basket, item) ? [...basket, item] : basket),
         collect: (monitor) => ({
             isOver: monitor.isOver()
@@ -49,7 +49,7 @@ function Picklist(props: {index: number}) {
 
     return <div className='bg-base-200 max-h-[30rem] rounded-lg w-1/6 min-h-32 flex flex-col items-center space-y-2 p-4' ref={dropRef}>
             <h1 className="font-semibold">Picklist #{props.index}</h1>
-            {basket.map(team => <TeamCard id={team.id} number={team.number} draggable={false}/>)}
+            {basket.map(team => <TeamCard id={team.id} number={team.number} draggable={false} key={team.id}/>)}
             {isOver && <h1 className="font-semibold text-accent">Drop Here!</h1>}
     </div>
 }
@@ -82,7 +82,7 @@ export default function PicklistScreen(props: {reports: Report[]}) {
     return <div className="w-full h-fit flex flex-col space-y-2">
         
         <div className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2">
-                {teamNumbers.map(team => <TeamCard draggable={true} id={team.id} number={team.number}></TeamCard>)}
+                {teamNumbers.map(team => <TeamCard draggable={true} id={team.id} number={team.number} key={team.id}></TeamCard>)}
         </div>
         
         <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">

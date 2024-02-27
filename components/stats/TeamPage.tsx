@@ -82,7 +82,7 @@ export default function TeamPage(props: {reports: Report[]}) {
     return <div className="w-full h-full flex flex-row space-x-4">
     <div className="w-1/5 h-[50rem] flex flex-col space-y-4 overflow-y-scroll">
     {
-      teamRanking.map((number, index) => <TeamCard number={Number(number)} selected={selectedTeam === Number(number)} reports={teamReports[Number(number)]} rank={index+1} onClick={()=>{setSelectedTeam(Number(number))}}></TeamCard>)
+      teamRanking.map((number, index) => <TeamCard key={number} number={Number(number)} selected={selectedTeam === Number(number)} reports={teamReports[Number(number)]} rank={index+1} onClick={()=>{setSelectedTeam(Number(number))}}></TeamCard>)
     }
     </div>
     

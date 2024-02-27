@@ -56,10 +56,6 @@ const options = {
 
 export default function SmallGraph(props: {selectedReports: Report[]}) {
 
-    if(!props.selectedReports) {
-        return <></>
-    }
-
     const[key, setKey] = useState("AutoStartX");
     const keys = Object.keys(props.selectedReports[0].data);
     const labels = props.selectedReports.map((report, index) => `Match ${index}`);
@@ -71,6 +67,10 @@ export default function SmallGraph(props: {selectedReports: Report[]}) {
             data: props.selectedReports.map((report) => report.data[key]),
             backgroundColor: 'rgba(255, 99, 132, 0.5)',
         }]
+    }
+
+    if(!props.selectedReports) {
+        return <></>
     }
 
     return <div className="w-full h-2/5 bg-base-300 rounded-lg p-4">
