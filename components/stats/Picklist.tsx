@@ -38,6 +38,7 @@ function TeamCard(props: {number: number, id: number, draggable: boolean}) {
 function Picklist(props: {index: number}) {
     const [basket, setBasket] = useState<CardType[]>([])
 
+    // build fix
     const [{ isOver }, dropRef] = useDrop({
         accept: 'team',
         drop: (item: any) => setBasket((basket: any) => 
