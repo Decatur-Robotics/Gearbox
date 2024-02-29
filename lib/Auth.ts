@@ -14,6 +14,7 @@ export default NextAuth({
     secret: process.env.NEXTAUTH_SECRET,
     providers: [
 
+      /*
       Google({
         clientId: process.env.GOOGLE_ID,
         clientSecret: process.env.GOOGLE_SECRET,
@@ -32,7 +33,7 @@ export default NextAuth({
             return user;
         },
       }),
-      
+      */
       SlackProvider({
         clientId: process.env.SLACK_CLIENT_ID as string,
         clientSecret: process.env.SLACK_CLIENT_SECRET as string,
