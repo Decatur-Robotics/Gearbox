@@ -6,19 +6,18 @@ import { Collections, GetDatabase, clientPromise } from './MongoDB'
 import { Admin, ObjectId } from 'mongodb'
 import { User } from './Types';
 import { GenerateSlug } from './Utils'
-import SlackProvider from "next-auth/providers/slack";
 
 var db = GetDatabase();
 
 export default NextAuth({
     secret: process.env.NEXTAUTH_SECRET,
     providers: [
-      /*
+
       Google({
         clientId: process.env.GOOGLE_ID,
         clientSecret: process.env.GOOGLE_SECRET,
         profile: async (profile) => {
-            const user = new User(profile.name, profile.email, profile.picture, false, await GenerateSlug(Collections.Users, profile.name), [], [], '');
+            const user = new User(profile.name, profile.email, profile.picture, false, await GenerateSlug(Collections.Users, profile.name), [], []);
             user.id = profile.sub;
             return user;
         },
@@ -27,12 +26,13 @@ export default NextAuth({
           clientId: process.env.GITHUB_ID as string,
           clientSecret: process.env.GITHUB_SECRET as string,
           profile: async (profile) => {
-            const user = new User(profile.login, profile.email, profile.avatar_url, false, await GenerateSlug(Collections.Users, profile.login), [], [], '');
+            const user = new User(profile.login, profile.email, profile.avatar_url, false, await GenerateSlug(Collections.Users, profile.login), [], []);
             user.id = profile.id;
             return user;
         },
       }),
-      */
+      
+      /*
       SlackProvider({
         clientId: process.env.SLACK_CLIENT_ID as string,
         clientSecret: process.env.SLACK_CLIENT_SECRET as string,
@@ -42,6 +42,8 @@ export default NextAuth({
           return user;
         }
       }),
+      */
+
     ],
     callbacks: {
       async session({ session, user }) {
