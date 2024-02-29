@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
+import SlackProvider from "next-auth/providers/slack"
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
 import { Collections, GetDatabase, clientPromise } from './MongoDB'
 import { Admin, ObjectId } from 'mongodb'
@@ -32,7 +33,6 @@ export default NextAuth({
         },
       }),
       
-      /*
       SlackProvider({
         clientId: process.env.SLACK_CLIENT_ID as string,
         clientSecret: process.env.SLACK_CLIENT_SECRET as string,
@@ -42,7 +42,7 @@ export default NextAuth({
           return user;
         }
       }),
-      */
+      
 
     ],
     callbacks: {
