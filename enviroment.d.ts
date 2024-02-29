@@ -24,6 +24,7 @@ declare global {
         SLACK_KEY: string;
         SLACK_CLIENT_ID: string;
         SLACK_CLIENT_SECRET: string;
+        SLACK_CHANNEL: string;
 
         NODE_ENV: 'development' | 'production';
 

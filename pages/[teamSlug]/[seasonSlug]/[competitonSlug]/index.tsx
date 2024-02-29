@@ -148,7 +148,7 @@ export default function Home(props: ResolvedUrlData) {
       setMatches(newMatches);
       setReports(newReports);
       localStorage.setItem("reports",JSON.stringify(newReports))
-      setAssigned(newMatches[0].reports.length > 0)
+      setAssigned(newMatches[0]?.reports?.length > 0)
       setQualifyingMatches(newMatches.filter((match) => match.type === MatchType.Qualifying));
       setSemiFinalMatches(newMatches.filter((match) => match.type === MatchType.Semifinals));
       setFinalMatches(newMatches.filter((match) => match.type === MatchType.Finals));

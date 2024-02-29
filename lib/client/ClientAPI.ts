@@ -136,8 +136,8 @@ export default class ClientAPI {
         return await this.request("/assignScouters", {teamId: teamId, compId: compId, shuffle: shuffle})
     }
 
-    async submitForm(reportId: string | undefined, formData: FormData | undefined) {
-        return await this.request("/submitForm", {reportId: reportId, formData: formData});
+    async submitForm(reportId: string | undefined, formData: FormData | undefined, userId: string | undefined, userBucks: number | undefined) {
+        return await this.request("/submitForm", {reportId: reportId, formData: formData, userId: userId, userBucks: userBucks});
     }
 
     async competitionReports(compId: string | undefined, submitted: boolean) {
@@ -166,5 +166,9 @@ export default class ClientAPI {
 
     async setSlackId(userId: string | undefined, slackId: string | undefined){
         return await this.request("/setSlackId", {userId, slackId})
+    }
+
+    async updateOwebucks(userId: string | undefined, oweBucks: number | undefined, oweBucksToAdd: number | undefined){
+        return await this.request("/setOwebucks", {userId, oweBucks, oweBucksToAdd})
     }
 };

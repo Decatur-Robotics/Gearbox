@@ -338,6 +338,7 @@ export namespace API {
             var form = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
             form.data = data.formData;
             form.submitted = true;
+            await db.updateObjectById(Collections.Users, new ObjectId(data.userId), (data.userBucks+10))
             await db.updateObjectById(Collections.Reports, new ObjectId(data.reportId), form);
             return res.status(200).send({"result": "success"})
         },
@@ -390,7 +391,7 @@ export namespace API {
                 await slackClient.chat.postMessage({
                   // The token you used to initialize your app
                   token: process.env.SLACK_KEY,
-                  channel: 'C06GXSJP2QN',
+                  channel: process.env.SLACK_CHANNEL,
                   text: data.message
                   // You could also use a blocks[] array to send richer content
                 })
@@ -399,6 +400,10 @@ export namespace API {
 
         "setSlackId" : async(req,res,{db,data}) => {
             await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {slackId: data.slackId})
+        },
+
+        "setOwebucks" : async(req,res,{db,data}) => {
+            await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {oweBucks: (data.oweBucks + data.oweBucksToAdd)})
         }
 
     }

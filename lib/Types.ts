@@ -28,8 +28,9 @@ export class User implements NextAuthUser {
     teams: string[];
     owner: string[];
     slackId: string = ""
+    oweBucks: number = 10;
 
-    constructor(name:string|undefined, email:string|undefined, image: string = process.env.DEFAULT_IMAGE, admin: boolean=false, slug:string | undefined, teams: string[]=[], owner: string[]=[], slackId: string) {
+    constructor(name:string|undefined, email:string|undefined, image: string = process.env.DEFAULT_IMAGE, admin: boolean=false, slug:string | undefined, teams: string[]=[], owner: string[]=[], slackId: string = "", oweBucks: number = 10) {
         this.name = name;
         this.email = email;
         this.image = image;
@@ -38,6 +39,7 @@ export class User implements NextAuthUser {
         this.teams = teams;
         this.owner = owner;
         this.slackId = slackId;
+        this.oweBucks = oweBucks;
     }
 }
 
