@@ -192,7 +192,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     </div>
 
                                     <h1 className="card-title">{user.name}</h1>
-                                    <h1 className="card-title">{user.oweBucks}</h1>
                                 </div>
 
                                 <div className="card-actions justify-end">
@@ -236,7 +235,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     
                                 </td>
                                 <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
-                                <td><div>{user.oweBucks}</div></td>
+                                <td>{(user.oweBucks > 0)?<div>{user.oweBucks}</div> : <div style={{color:'red'}}>{user.oweBucks}</div>}</td>
                                 <td><input type="checkbox" className="toggle toggle-accent" onChange={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)}/></td>
                                 <td><input type="checkbox" className="toggle toggle-secondary" defaultChecked={owner} disabled/></td>
                                 <td><button className="btn btn-outline btn-sm" onClick={() => {deleteUser(user?._id, index)}}>Remove</button></td>
@@ -403,8 +402,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     <div className="w-full join grid grid-cols-3">
                         <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
                         <button className={"join-item btn btn-outline normal-case inline " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary inline-block">New </span>: <></>} </button>
-                        <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button>
-                        {session?.user?.owner?.includes(team?._id as string)? <button className={"join-item btn btn-outline normal-case " + (selection === 4 ? "btn-active": "")} onClick={()=>{setSelection(4)}}>Owebucks Admin</button> : <></>}
+                        {session?.user?.owner?.includes(team?._id as string)? <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button> : <></>}
+                        {(session?.user?.owner?.includes(team?._id as string) && (team!.number == 4026))? <button className={"join-item btn btn-outline normal-case " + (selection === 4 ? "btn-active": "")} onClick={()=>{setSelection(4)}}>Owebucks Admin</button> : <></>}
                         
                     </div>       
                 </div>

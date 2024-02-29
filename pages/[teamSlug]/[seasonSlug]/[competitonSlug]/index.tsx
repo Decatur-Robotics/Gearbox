@@ -265,7 +265,6 @@ export default function Home(props: ResolvedUrlData) {
 
     return <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-        <button onClick={()=>{setId('HAS BEEN SET')}}>CLICK ME</button>
             <h2 className="card-title text-2xl">Matches <button className="btn btn-ghost btn-sm text-xl" onClick={()=>{setShowKey(!showKey)}}><AiOutlineQuestionCircle ></AiOutlineQuestionCircle></button>: </h2>
 
           
