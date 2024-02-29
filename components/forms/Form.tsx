@@ -15,9 +15,9 @@ import { useRouter } from "next/router";
 
 const api = new ClientAPI("gearboxiscool")
 let io: Socket<DefaultEventsMap, DefaultEventsMap>;
-const { session, status } = useCurrentSession();
 
 export default function Form(props: {report: Report}) {
+    const { session, status } = useCurrentSession();
     const router = useRouter();
 
     const reportID = props.report._id

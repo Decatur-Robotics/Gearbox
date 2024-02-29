@@ -87,7 +87,7 @@ export namespace slackAPI {
                 await slackClient.chat.postMessage({
                   // The token you used to initialize your app
                   token: process.env.SLACK_KEY,
-                  channel: 'C06GXSJP2QN',
+                  channel: 'C14H7JH39',
                   text: data.message
                   // You could also use a blocks[] array to send richer content
                 })
