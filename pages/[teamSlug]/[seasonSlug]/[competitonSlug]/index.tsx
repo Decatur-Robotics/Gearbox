@@ -7,6 +7,7 @@ import { GetServerSideProps } from "next";
 import { Form, Match, MatchType, Report, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import {BsStarFill, BsClipboardCheck, BsCheckCircle, BsQuestionCircle} from "react-icons/bs";
+import { IoIosArrowDropdownCircle, IoIosNotifications } from "react-icons/io";
 
 import { AiFillWarning, AiOutlineQuestionCircle, AiOutlineUser } from "react-icons/ai";
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -69,15 +70,15 @@ export default function Home(props: ResolvedUrlData) {
     return(
       <>
       <details className="dropdown">
-        <summary className="w-14 btn btn-primary">Scouts</summary>
+        <summary className="w-14 btn btn-circle text-3xl"><IoIosArrowDropdownCircle/></summary>
           <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
             {
               userNameList.map((name, index) => {
                 return (
-                  <li onClick={(()=>{slackIdList[index]? api.sendSlack(`<@${slackIdList[index]}> Please report to our section and prepare to scout immemdiately`) : api.sendSlack(`@${userNameList[index]} please report to our section and prepare to scout immediately`)})} 
+                  <li onClick={(()=>{api.remindSlack(slackIdList[index])})} 
                     style={{color:`${checkedInList[index] ? 'limeGreen': '#cc0000'}`}} key={index}>
                     <a>
-                      {loaded ? name : 
+                      {loaded ? <><IoIosNotifications></IoIosNotifications> {name}</> : 
                         <div>
                           <span className="loading loading-spinner loading-xs"></span> Loading
                         </div>}
@@ -186,6 +187,7 @@ export default function Home(props: ResolvedUrlData) {
     
     loadMatches();
 
+
     async function setUpSocket(){
 
       io = await ClientSocket()
@@ -218,7 +220,7 @@ export default function Home(props: ResolvedUrlData) {
       })
     }
 
-    setUpSocket()
+    //setUpSocket()
 
     
   }, [])
@@ -265,7 +267,7 @@ export default function Home(props: ResolvedUrlData) {
 
     return <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-        <button onClick={()=>{setId('HAS BEEN SET')}}>CLICK ME</button>
+
             <h2 className="card-title text-2xl">Matches <button className="btn btn-ghost btn-sm text-xl" onClick={()=>{setShowKey(!showKey)}}><AiOutlineQuestionCircle ></AiOutlineQuestionCircle></button>: </h2>
 
           

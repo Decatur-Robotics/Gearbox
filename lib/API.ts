@@ -386,16 +386,12 @@ export namespace API {
             await db.updateObjectById<Report>(Collections.Reports, new ObjectId(data.reportId), {checkedIn: false})
         },
 
-        "remind" : async(req,res,{slackClient,data}) => {
-            console.log("Attempting to post")
+        "remindSlack" : async(req,res,{slackClient,data}) => {
                 await slackClient.chat.postMessage({
-                  // The token you used to initialize your app
                   token: process.env.SLACK_KEY,
                   channel: process.env.SLACK_CHANNEL,
-                  text: data.message
-                  // You could also use a blocks[] array to send richer content
+                  text: `<@${data.slackId}> Please report to our section and prepare for scouting`
                 })
-            console.log("Posted")
         },
 
         "setSlackId" : async(req,res,{db,data}) => {

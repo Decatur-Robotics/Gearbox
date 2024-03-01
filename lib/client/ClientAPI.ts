@@ -12,7 +12,7 @@ export default class ClientAPI {
     authenticationKey: string = ""
 
     // replace this with the process.env
-    constructor(authKey="", baseUrl="https://4026.org/api") {
+    constructor(authKey="", baseUrl="https://localhost:3000/api") {
         this.authenticationKey = authKey;
         this.baseUrl = baseUrl;
     }
@@ -160,8 +160,8 @@ export default class ClientAPI {
         return await this.request("/updateCheckOut", {reportId})
     }
 
-    async sendSlack(message: string | undefined) {
-        return await this.request("/remind", {message})
+    async remindSlack(slackId: string | undefined) {
+        return await this.request("/remindSlack", {slackId})
     }
 
     async setSlackId(userId: string | undefined, slackId: string | undefined){

@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer components {
+    .background-grid {
+        background-size: 50px 50px;
+        background-image:
+            linear-gradient(to right, white 1px, transparent 1px),
+            linear-gradient(to bottom, white 1px, transparent 1px);
+    }
+}

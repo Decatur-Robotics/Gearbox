@@ -24,10 +24,9 @@ export default function Homepage() {
     const hide = status === "authenticated";
 
     return <Container requireAuthentication={false} hideMenu={!hide}>
-        <div className="w-full min-h-screen flex flex-col">
-            <div className="hero min-h-screen bg-base-200">
+        <div className="w-full min-h-screen flex flex-col  ">
+            <div className="hero min-h-screen bg-base-200 ">
                 <div className="hero-content text-center">
-                    
                     
                     <div className="max-w-md flex flex-col items-center">
                         <img src={imageSrc} className="w-5/6"></img>
