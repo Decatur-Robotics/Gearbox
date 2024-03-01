@@ -9,12 +9,16 @@ import Link from "next/link";
 import { ClientSocket} from "@/lib/client/ClientSocket";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { Socket } from "socket.io-client";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 const api = new ClientAPI("gearboxiscool");
 
 export default function Home(props: ResolvedUrlData) {
 
+    const { session, status } = useCurrentSession();
     const team = props.team;
+    const owner = team?.owners.includes(session?.user?._id as string);
+
     const season = props.season;
 
     const[selection, setSelection] = useState(1)
@@ -59,7 +63,7 @@ export default function Home(props: ResolvedUrlData) {
           <h2 className="card-title text-2xl">Overview</h2>
           <h1 className="text-xl">See your upcoming competitions</h1>
 
-          <h3>No Competitions? <a className="text-accent" href={`/${team?.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>
+          {owner ? <h3>No Competitions? <a className="text-accent" href={`/${team?.slug}/${season?.slug}/createComp`}>Create a new one</a></h3>: <></>}
           <div className="divider"></div>
           {
             comps.map((comp) => <Link href={`/${team?.slug}/${season?.slug}/${comp.slug}`} key={comp._id}><div className="card w-5/6 bg-base-300" >

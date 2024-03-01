@@ -160,8 +160,8 @@ export default class ClientAPI {
         return await this.request("/updateCheckOut", {reportId})
     }
 
-    async sendSlack(message: string | undefined) {
-        return await this.request("/remind", {message})
+    async remindSlack(slackId: string | undefined) {
+        return await this.request("/remindSlack", {slackId})
     }
 
     async setSlackId(userId: string | undefined, slackId: string | undefined){

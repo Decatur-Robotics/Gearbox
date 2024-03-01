@@ -10,6 +10,8 @@ import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
+import { MdOutlinePersonRemove } from "react-icons/md";
+
 const api = new ClientAPI("gearboxiscool");
 
 
@@ -29,7 +31,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     const[upcomingEvent, setUpcomingEvent] = useState<Competition>();
     const[pastSeasons, setPastSeasons] = useState<Season[]>();
 
-    const owner = session?.user?.owner.includes(team?._id ? team?._id: "");
+    const owner = team?.owners.includes(session?.user?._id as string);
 
     useEffect(() => {
 
@@ -102,7 +104,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
                         <div className="lg:w-1/2">
                             <h1 className="text-xl ">Current Season:</h1>
-                            <h1 className="text-md mb-2">You can always <a href={`/${team?.slug}/createSeason`} className="text-accent">create a season</a></h1>
+                            {owner ? <h1 className="text-md mb-2">You can always <a href={`/${team?.slug}/createSeason`} className="text-accent">create a season</a></h1> :<></>}
                             {currentSeason?.name ? <a href={seasonUrl}><div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
 
                                 <div className="card-body">
@@ -146,6 +148,22 @@ export default function TeamIndex(props: ResolvedUrlData) {
         newTeam.scouters = newArray;
         setTeam(newTeam);
        
+    }
+
+    const updateOwner = async (userId: string) => {
+        if(!team) {return;}
+        var newTeam = structuredClone(team)
+        var newArray = [...team.owners]
+        if(!team.owners.includes(userId)) {
+            newArray.push(userId);
+        }
+        else {
+            newArray.splice(newArray.indexOf(userId), 1);
+        }
+
+        await api.updateTeam({owners: newArray}, team._id);
+        newTeam.owners = newArray;
+        setTeam(newTeam);
     }
 
     const deleteUser = async (id:string|undefined, index: number) => {
@@ -192,7 +210,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     </div>
 
                                     <h1 className="card-title">{user.name}</h1>
-                                    <h1 className="card-title">{user.oweBucks}</h1>
                                 </div>
 
                                 <div className="card-actions justify-end">
@@ -215,7 +232,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     <th></th>
                                     <th>Picture </th>
                                     <th>Name</th>
-                                    <th>Owebucks</th>
                                     
                                     <th>Scouter</th>
                                     <th>Manager</th>
@@ -236,10 +252,9 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                     
                                 </td>
                                 <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
-                                <td><div>{user.oweBucks}</div></td>
-                                <td><input type="checkbox" className="toggle toggle-accent" onChange={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)}/></td>
-                                <td><input type="checkbox" className="toggle toggle-secondary" defaultChecked={owner} disabled/></td>
-                                <td><button className="btn btn-outline btn-sm" onClick={() => {deleteUser(user?._id, index)}}>Remove</button></td>
+                                <td><input type="checkbox" className="toggle toggle-accent" disabled={!owner} onChange={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)}/></td>
+                                <td><input type="checkbox" className="toggle toggle-secondary" disabled={!owner} checked={team?.owners.includes(user._id as string)} onChange={()=>{updateOwner(user._id as string)}}/></td>
+                                <td><button className="btn btn-outline btn-sm text-xl text-red-500" disabled={!owner} onClick={() => {deleteUser(user?._id, index)}}><MdOutlinePersonRemove /></button></td>
                             </tr>)
                             }
                             </tbody>
@@ -247,10 +262,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     </div>
             </div>
         </div>
-
-            
     }
-
 
    
     const Settings = () => {
@@ -266,9 +278,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 setSettingsError("Invalid Name")
                 return;
             }
-    
-
-            
             
             if(numberChange && numberChange <= 0 || Object.keys(await api.findTeamByNumber(numberChange)).length > 0) {
                 setSettingsError("Invalid Number");
@@ -283,7 +292,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
         return  <div className="card w-5/6 bg-base-200 shadow-xl">
             <div className="card-body">
             
-                <h2 className="card-title text-3xl">Settings</h2>
+                <h2 className="card-title text-3xl">Settings <button className="btn btn-ghost text-3xl" onClick={() => {setSelection(4)}}>💸💸💸</button></h2>
                 <p className="">Modify and Update Your Teams Information</p>
 
                 <p className="text-error">{settingsError}</p>
@@ -403,8 +412,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     <div className="w-full join grid grid-cols-3">
                         <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
                         <button className={"join-item btn btn-outline normal-case inline " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary inline-block">New </span>: <></>} </button>
-                        <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}}>Settings</button>
-                        {session?.user?.owner?.includes(team?._id as string)? <button className={"join-item btn btn-outline normal-case " + (selection === 4 ? "btn-active": "")} onClick={()=>{setSelection(4)}}>Owebucks Admin</button> : <></>}
+                        <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}} disabled={!owner}>Settings</button>
                         
                     </div>       
                 </div>

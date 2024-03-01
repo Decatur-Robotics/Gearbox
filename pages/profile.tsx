@@ -6,6 +6,7 @@ import ClientAPI from "@/lib/client/ClientAPI"
 import { Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
+import { FaSlack } from "react-icons/fa";
 const api = new ClientAPI("gearboxiscool");
 
 export default function Profile() {
@@ -135,7 +136,7 @@ export default function Profile() {
 
         const [nameChange, setNameChange] = useState(session?.user?.name);
         const [emailChange, setEmailChange] = useState(session?.user?.email);
-        const[newPicUrl, setNewPicUrl] = useState<string>();
+        const[newPicUrl, setNewPicUrl] = useState<string>(userImageUrl);
         const[newSlackId, setNewSlackId] = useState<string>();
 
         useEffect(() => {
@@ -146,10 +147,7 @@ export default function Profile() {
         const [settingsError, setSettingsError] = useState("")
     
         const changePFP = async () => {
-            console.log("Running")
             api.changePFP(session?.user?._id,newPicUrl)
-            console.log("Run")
-            window.location.reload()
         }
 
         const changeSlackId = async () => {
@@ -167,9 +165,14 @@ export default function Profile() {
                 setSettingsError("Invalid Email");
                 return
             }
-    
+
+            if(!newPicUrl || newPicUrl.length < 10) {
+                setSettingsError("Invalid Image URL")
+                return;
+            }
+     
             await api.updateUser({name: nameChange, email: emailChange}, session?.user?._id as string);
-    
+            changePFP();
             location.reload()
         }
 
@@ -191,18 +194,20 @@ export default function Profile() {
 
                 <br />
                 <label className="mt-2">Profile Picture:</label>
-                <img src={session?.user?.image} height="200" width="80" className="ms-2"></img>
-                <input type="text" placeholder="Input the URL of your desired profile picture" onChange = {(e) => {setNewPicUrl(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
+                <img src={session?.user?.image}  height="100" width="100" className="ms-2 rounded-full"></img>
+                <input type="text" value={newPicUrl} onChange = {(e) => {setNewPicUrl(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
                 <div className="card-actions justify-start">
-                <button className="btn btn-primary normal-case" onClick={changePFP}>Change PFP</button>
+                
+                <button className="btn btn-primary normal mt-5" onClick={updateSettings}>Update Settings</button>
                 </div>
                 <br />
-                <label className="mt-2">SlackId:</label>
-                <input type="text" placeholder="Input your Slack Id" onChange = {(e) => {setNewSlackId(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
-                <div className="card-actions justify-start">
-                <button className="btn btn-primary normal-case" onClick={changeSlackId}>Update Slack Url</button>
-                </div>
-
+                { /*
+                    <label className="mt-2"><FaSlack></FaSlack>Slack ID:</label>
+                    <input type="text" placeholder="Input your Slack Id" onChange = {(e) => {setNewSlackId(e.target.value)}} className="input input-bordered w-full max-w-xs"></input>
+                    <div className="card-actions justify-start">
+                    <button className="btn btn-primary normal-case" onClick={changeSlackId}>Update Slack Url</button>
+                    </div>
+    */          }
             </div>     
         </div>
     }

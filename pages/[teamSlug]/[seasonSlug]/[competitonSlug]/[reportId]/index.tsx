@@ -1,6 +1,5 @@
 
 import Container from "@/components/Container";
-import { AllianceColor, Report, FormData } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Form from "@/components/forms/Form";
 import { GetServerSideProps } from "next";

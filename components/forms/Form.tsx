@@ -65,10 +65,10 @@ export default function Form(props: {report: Report}) {
             else io.emit("update-checkin", reportID)
         })
 
-        router.events.on("routeChangeStart", async () => checkOut(reportID));
-        router.events.on("beforeHistoryChange", async () => checkOut(reportID));
+        //router.events.on("routeChangeStart", async () => checkOut(reportID));
+        //router.events.on("beforeHistoryChange", async () => checkOut(reportID));
 
-        console.log("Added event handlers");
+        //console.log("Added event handlers");
     })
 
     async function checkOut(){
@@ -89,7 +89,7 @@ export default function Form(props: {report: Report}) {
     async function submitForm() {
         await api.submitForm(props.report?._id, formData, session?.user?._id, session?.user?.oweBucks);
         console.log("hi");
-       location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+        location.href = location.href.substring(0, location.href.lastIndexOf("/"));
     }
 
     const sync = async() => {
@@ -112,8 +112,7 @@ export default function Form(props: {report: Report}) {
 
 
     return <div className="w-full flex flex-col items-center space-y-2">
-            <button onClick={checkOut}>Click me to check out</button>
-            <button onClick={checkIn}>Click me to check in</button>
+
             
             {page === 1 ? <AutoPage data={formData} callback={setCallback} alliance={alliance}></AutoPage> : <></>}
             {page === 2 ? <TeleopPage data={formData} callback={setCallback} alliance={alliance}></TeleopPage> : <></>}
