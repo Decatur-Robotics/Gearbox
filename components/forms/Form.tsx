@@ -14,11 +14,11 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { useRouter } from "next/router";
 
 const api = new ClientAPI("gearboxiscool")
-let io: Socket<DefaultEventsMap, DefaultEventsMap>;
+//let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 
 export default function Form(props: {report: Report}) {
     const { session, status } = useCurrentSession();
-    const router = useRouter();
+    //const router = useRouter();
 
     const reportID = props.report._id
 
@@ -93,7 +93,6 @@ export default function Form(props: {report: Report}) {
 
     async function submitForm() {
         await api.submitForm(props.report?._id, formData, session?.user?._id, session?.user?.oweBucks);
-        console.log("hi");
         location.href = location.href.substring(0, location.href.lastIndexOf("/"));
     }
 
