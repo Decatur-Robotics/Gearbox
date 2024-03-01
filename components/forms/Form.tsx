@@ -92,7 +92,8 @@ export default function Form(props: {report: Report}) {
     const alliance = props.report?.color;
 
     async function submitForm() {
-        await api.submitForm(props.report?._id, formData, session?.user?._id, session?.user?.oweBucks);
+        await api.submitForm(props.report?._id, formData, session?.user?._id);
+        console.log("yaya")
         location.href = location.href.substring(0, location.href.lastIndexOf("/"));
     }
 

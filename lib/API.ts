@@ -338,7 +338,6 @@ export namespace API {
             var form = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
             form.data = data.formData;
             form.submitted = true;
-            await db.updateObjectById(Collections.Users, new ObjectId(data.userId), (data.userBucks+10))
             await db.updateObjectById(Collections.Reports, new ObjectId(data.reportId), form);
             return res.status(200).send({"result": "success"})
         },

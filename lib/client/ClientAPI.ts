@@ -136,8 +136,8 @@ export default class ClientAPI {
         return await this.request("/assignScouters", {teamId: teamId, compId: compId, shuffle: shuffle})
     }
 
-    async submitForm(reportId: string | undefined, formData: FormData | undefined, userId: string | undefined, userBucks: number | undefined) {
-        return await this.request("/submitForm", {reportId: reportId, formData: formData, userId: userId, userBucks: userBucks});
+    async submitForm(reportId: string | undefined, formData: FormData | undefined, userId: string | undefined) {
+        return await this.request("/submitForm", {reportId: reportId, formData: formData, userId: userId});
     }
 
     async competitionReports(compId: string | undefined, submitted: boolean) {
