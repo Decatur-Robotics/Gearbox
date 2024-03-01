@@ -22,13 +22,14 @@ export default function Form(props: {report: Report}) {
 
     const reportID = props.report._id
 
+    /*
     useEffect(()=>{
         async function setUpSocket(){
             io = await ClientSocket()
             io.emit("update-checkin", reportID)
             await api.updateCheckIn(reportID)
           }
-          setUpSocket()
+          //setUpSocket()
 
           async function checkOutOld(reportId : string | undefined){
             await api.updateCheckOut(reportId)
@@ -45,6 +46,7 @@ export default function Form(props: {report: Report}) {
             io.emit("update-checkin", reportID)
         }
     
+        /*
         window.addEventListener("pagehide", async (event: PageTransitionEvent) => {
             // event.returnValue='Farts';
             event.preventDefault();
@@ -69,6 +71,8 @@ export default function Form(props: {report: Report}) {
         //router.events.on("beforeHistoryChange", async () => checkOut(reportID));
 
         //console.log("Added event handlers");
+
+        
     })
 
     async function checkOut(){
@@ -79,6 +83,7 @@ export default function Form(props: {report: Report}) {
     async function checkIn(){
         io.emit("update-checkin", reportID)
     }
+    */
 
     const[page, setPage] = useState(1);
     const[formData, setFormData] = useState<FormData>(props.report?.data);
