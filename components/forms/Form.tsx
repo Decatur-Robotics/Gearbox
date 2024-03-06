@@ -22,6 +22,9 @@ export default function Form(props: {report: Report}) {
 
     const reportID = props.report._id
 
+        console.log("API Calling")
+        api.updateCheckIn(props?.report?._id)
+
     /*
     useEffect(()=>{
         async function setUpSocket(){

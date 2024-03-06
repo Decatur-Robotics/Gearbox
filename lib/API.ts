@@ -339,6 +339,7 @@ export namespace API {
             form.data = data.formData;
             form.submitted = true;
             await db.updateObjectById(Collections.Reports, new ObjectId(data.reportId), form);
+            await db.updateObjectById<Report>(Collections.Reports, new ObjectId(data.reportId), {checkedIn: false})
             return res.status(200).send({"result": "success"})
         },
 
