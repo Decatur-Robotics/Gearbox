@@ -14,7 +14,7 @@ export default function Homepage(props: ResolvedUrlData) {
     const report = props?.report;
 
     const { session, status } = useCurrentSession();
-    const hide = status === "authenticated";
+    const hide = (status === "authenticated");
     
     
     return <Container requireAuthentication={false} hideMenu={!hide}>
