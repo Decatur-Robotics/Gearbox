@@ -253,7 +253,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                                 </td>
                                 <td><div className="pl-2 lg:pl-0" >{user.name}</div></td>
                                 <td><input type="checkbox" className="toggle toggle-accent" disabled={!owner} onChange={()=>{updateScouter(user._id as string)}} checked={team?.scouters.includes(user._id as string)}/></td>
-                                <td><input type="checkbox" className="toggle toggle-secondary" disabled={!owner} checked={team?.owners.includes(user._id as string)} onChange={()=>{updateOwner(user._id as string)}}/></td>
+                                {(team?.owners.includes(session?.user?._id as string))?<td><input type="checkbox" className="toggle toggle-secondary" disabled={!owner} checked={team?.owners.includes(user._id as string)} onChange={()=>{updateOwner(user._id as string)}}/></td>:<td><input type="checkbox" className="toggle toggle-secondary" disabled checked={team?.owners.includes(user._id as string)} onChange={()=>{updateOwner(user._id as string)}}/></td>}
                                 <td><button className="btn btn-outline btn-sm text-xl text-red-500" disabled={!owner} onClick={() => {deleteUser(user?._id, index)}}><MdOutlinePersonRemove /></button></td>
                             </tr>)
                             }
@@ -298,7 +298,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 <p className="text-error">{settingsError}</p>
                 
                 <label className="mt-4">Name: </label>
-                <input type="text" placeholder="Name" value={nameChange} maxLength={50} onChange={(e) => {setNameChange(e.target.value)}} className="input input-bordered w-full max-w-xs" />
+                <input type="text" placeholder="Name" value={nameChange} maxLength={40} onChange={(e) => {setNameChange(e.target.value)}} className="input input-bordered w-full max-w-xs" />
 
                 <label className="mt-2">Number: </label>
                 <input type="number" placeholder="Team Number" value={numberChange} min={1} max={9999} onChange={(e) => {setNumberChange(e.target.valueAsNumber)}} className="input input-bordered w-full max-w-xs" />
@@ -412,7 +412,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     <div className="w-full join grid grid-cols-3">
                         <button className={"join-item btn btn-outline normal-case " + (selection === 1 ? "btn-active": "")} onClick={()=>{setSelection(1)}}>Overview</button>
                         <button className={"join-item btn btn-outline normal-case inline " + (selection === 2 ? "btn-active": "")} onClick={()=>{setSelection(2)}}>Roster {newRequests ? <span className="badge badge-primary inline-block">New </span>: <></>} </button>
-                        <button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}} disabled={!owner}>Settings</button>
+                        {(team?.owners.includes(session?.user?._id as string))?<button className={"join-item btn btn-outline normal-case " + (selection === 3 ? "btn-active": "")} onClick={()=>{setSelection(3)}} disabled={!owner}>Settings</button> : <></>}
                         
                     </div>       
                 </div>
