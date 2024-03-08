@@ -228,7 +228,7 @@ export default function Home(props: ResolvedUrlData) {
 
               <h1 className="card-title mt-6">{name} ({matches.length})</h1>
                 {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
-                {matches.map((match) => <DisplayMatch match={match} users={users}></DisplayMatch>)}
+                {matches.map((match) => <DisplayMatch match={match} users={users} key={match._id}></DisplayMatch>)}
             </div>
 
         </div>
