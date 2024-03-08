@@ -2,6 +2,7 @@ import { BooleanAverage, StringAverage, NumericalAverage, ComparativePercent} fr
 import { Report } from "@/lib/Types"
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
+import { FaComment } from "react-icons/fa";
 
 export default function TeamStats(props: {selectedTeam: number | undefined, selectedReports: Report[]}) {
     if(!props.selectedTeam)  {
@@ -80,6 +81,17 @@ export default function TeamStats(props: {selectedTeam: number | undefined, sele
       <PiGitFork className="-rotate-90" size={40}/>
       <p>Overall Auto Amp Accuracy: {ComparativePercent("TeleopScoredTrap", "TeleopMissedTrap", props.selectedReports)}</p>
     </div>
+
+    <div className="w-1/3 divider"></div>
+    <h1 className="text-xl font-semibold"><FaComment size={32} className="inline"/> Comments</h1>
+
+    <div className="w-full h-fit flex flex-row items-center">
+      <ul>
+        {props.selectedReports.map((report) => <li className="mt-2" key={report._id}>{report.data.Comment?.length > 1 ? report.data.Comment: "[No Comment]"}</li>)}
+      </ul>
+    </div>
+
+
   
   </div>
   

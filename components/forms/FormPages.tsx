@@ -5,6 +5,7 @@ import {AutoButtons, TeleopButtons} from "./Buttons";
 import DefenseSlider from "./Sliders";
 import Checkbox, { IntakeType } from "./Checkboxes";
 import { AllianceColor, FormData } from "@/lib/Types";
+import { CommentBox } from "./Comment";
 
 export type PageProps = {alliance: AllianceColor, data: FormData, callback: (key: string, value: string | number | boolean) => void};
 export type EndPageProps = {alliance: AllianceColor, data: FormData, submit: () => void; callback: (key: string, value: string | number | boolean) => void};
@@ -16,7 +17,7 @@ export default function FormPage(props: {children: ReactNode; title: string}) {
             <div className="card-body h-full w-full flex flex-col items-center">
                 <h1 className="text-5xl font-bold">{props.title}</h1>
                 <hr className="w-2/3 border-slate-700 border-2"></hr>
-                <div className="h-full flex flex-col items-center justify-center space-y-4">
+                <div className="h-full flex flex-col items-center justify-center space-y-2">
                     {props.children}
                 </div>
             </div>
@@ -53,8 +54,9 @@ export function EndPage(props: EndPageProps) {
             <hr className="w-full border-slate-700 border-2"></hr>
             <IntakeType data={props.data} callback={props.callback} ></IntakeType>
 
+            <CommentBox data={props.data} callback={props.callback}></CommentBox>
             <hr className="w-full border-slate-700 border-2"></hr>
-            <button className="btn btn-wide btn-primary -translate-y-2" onClick={props.submit}>Submit</button>
+            <button className="btn btn-wide btn-primary " onClick={props.submit}>Submit</button>
 
     </FormPage>
 }

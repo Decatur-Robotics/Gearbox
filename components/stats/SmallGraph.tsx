@@ -57,14 +57,14 @@ const options = {
 export default function SmallGraph(props: {selectedReports: Report[]}) {
 
     const[key, setKey] = useState("AutoStartX");
-    const keys = Object.keys(props.selectedReports[0].data);
-    const labels = props.selectedReports.map((report, index) => `Match ${index}`);
+    const keys = Object.keys(new FormData());
+    const labels = props.selectedReports?.map((report, index) => `Match ${index}`);
     const data  = {
         labels,
         datasets: [{
             label: key,
             //@ts-expect-error
-            data: props.selectedReports.map((report) => report.data[key]),
+            data: props.selectedReports?.map((report) => report.data[key]),
             backgroundColor: 'rgba(255, 99, 132, 0.5)',
         }]
     }
