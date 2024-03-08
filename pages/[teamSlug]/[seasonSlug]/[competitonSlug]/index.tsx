@@ -31,67 +31,6 @@ let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 
 export default function Home(props: ResolvedUrlData) {
 
-  function UserNameList(matchID : any){
-    const [slackIdList, setSlackIdList] = useState<Array<string | undefined>>([])
-    const [userNameList, setUserNameList] = useState<Array<string | undefined>>([])
-    const [checkedInList, setCheckedInList] = useState<Array<boolean>>([])
-    const [loaded, setLoaded] = useState<Boolean>(false)
-
-    useEffect(()=>{
-      async function updateUserNameList(){
-        const match = await api.findMatchById(matchID.matchID)
-        const reports = match.reports
-
-        for (let i = 0; i < 6; i++) {
-          let slackIdsToAdd = slackIdList
-          const reportBeingAdded = await api.findReportById(reports[i])
-          const userToAdd = await api.findUserById(reportBeingAdded.user)
-          if (userToAdd.slackId){
-            slackIdsToAdd[i] = userToAdd.slackId
-            setSlackIdList(slackIdsToAdd)
-          }
-          let checkedListToAdd = checkedInList
-          checkedListToAdd[i] = reportBeingAdded.checkedIn
-          let tempUserNameList = userNameList
-          tempUserNameList[i] = userToAdd.name
-          setCheckedInList(checkedListToAdd)
-          setUserNameList(tempUserNameList)
-        }
-        setLoaded(true)
-
-      }
-
-      function test(){
-        updateUserNameList()
-      }
-      test()
-    })
-
-    return(
-      <>
-      <details className="dropdown">
-        <summary className="w-14 btn btn-circle text-3xl"><IoIosArrowDropdownCircle/></summary>
-          <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
-            {
-              userNameList.map((name, index) => {
-                return (
-                  <li onClick={(()=>{api.remindSlack(slackIdList[index])})} 
-                    style={{color:`${checkedInList[index] ? 'limeGreen': '#cc0000'}`}} key={index}>
-                    <a>
-                      {loaded ? <><IoIosNotifications></IoIosNotifications> {name}</> : 
-                        <div>
-                          <span className="loading loading-spinner loading-xs"></span> Loading
-                        </div>}
-                    </a>
-                  </li>
-                );
-              })
-            }
-          </ul>
-      </details>
-      </>
-    )
-  }
 
   const team = props.team;
   const season = props.season;
@@ -106,7 +45,6 @@ export default function Home(props: ResolvedUrlData) {
   const[loadingMatches, setLoadingMatches] = useState<boolean>(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [reports, setReports] = useState<{[id: string]: Report}>({});
-  const fakeReport = structuredClone(reports)
   const [qualifyingMatches, setQualifyingMatches] = useState<Match[]>([]);
   const [semiFinalMatches, setSemiFinalMatches] = useState<Match[]>([]);
   const [finalMatches, setFinalMatches] = useState<Match[]>([]);
@@ -117,10 +55,8 @@ export default function Home(props: ResolvedUrlData) {
   const[showKey, setShowKey] = useState(false);
 
   const[assigned, setAssigned] = useState(false);
+  
 
-  const[id, setId] = useState('I HATE MY LIFE')
-
-  let rip = useRef(reports)
 
   useEffect(() => {
     const loadMatches = async() => {
@@ -130,7 +66,8 @@ export default function Home(props: ResolvedUrlData) {
       var newReports: {[id: string]: Report} = {};
       let submissionCounter = 0;
       var allReports = await api.competitionReports(comp?._id, false);
-      console.log(allReports.length);
+
+
       for(const report of allReports) {
           submissionCounter += report.submitted ? 1 : 0;
           newReports[report._id] = report;
@@ -148,7 +85,7 @@ export default function Home(props: ResolvedUrlData) {
 
       setMatches(newMatches);
       setReports(newReports);
-      localStorage.setItem("reports",JSON.stringify(newReports))
+
       setAssigned(newMatches[0]?.reports?.length > 0)
       setQualifyingMatches(newMatches.filter((match) => match.type === MatchType.Qualifying));
       setSemiFinalMatches(newMatches.filter((match) => match.type === MatchType.Semifinals));
@@ -183,50 +120,33 @@ export default function Home(props: ResolvedUrlData) {
       setMissedMatches(missed)
     }
 
-
-    
-    loadMatches();
-
-
-    async function setUpSocket(){
-
-      io = await ClientSocket()
-
-      io.on("connect", ()=>console.log("Connected"))
-
-      io.on("update-checkin", (reportId)=>  {
-        console.log("Checking In")
-        let reps: any = JSON.parse(localStorage.getItem("reports")!)
-        reps[reportId].checkedIn = true
-        setReports(reps)
-        localStorage.setItem("reports",JSON.stringify(reps))
+    const loadUsers = async() => {
+      var newData: User[] = []
+      team?.users.forEach(async (userId) => {
+          newData.push(await api.findUserById(userId))
       })
-
-      io.on("update-checkout", (reportId)=> {
-        console.log("Checking out")
-        let reps: any = JSON.parse(localStorage.getItem("reports")!)
-        reps[reportId].checkedIn = false
-        setReports(reps)
-        localStorage.setItem("reports",JSON.stringify(reps))
-        console.log("Checked out")
-        console.log("About to call API")
-        async function checkOut(){
-          console.log("Calling API")
-          await api.updateCheckOut(reportId)
-          console.log("Reporting called from in function")
-        }
-        checkOut()
-        console.log("checkOut() ran succefully, checked out")
-      })
+      setUsers(newData)
     }
 
-    //setUpSocket()
 
-    
+    loadUsers();
+    loadMatches();
   }, [])
 
-  function matchToDisplay(match: Match) {
+  function DisplayMatch(props: {match: Match, users: User[]}) {
+    const match = props.match;
+    const users = props.users;
     const reps: Report[] = match.reports.map((reportId) => reports[reportId]);
+    const [slackUsers, setSlackUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+      const userIds = reps.map((rep) =>rep.user);
+      const u = userIds.map((id) => {
+        return users.find((u) => u._id === id)
+      });
+      //@ts-expect-error
+      setSlackUsers(u);
+    }, [])
 
     const repElements = reps.map((rep, index) => {
       const user = rep.user
@@ -234,7 +154,6 @@ export default function Home(props: ResolvedUrlData) {
       const isMe = rep.user === session.user?._id;
       const submitted = rep.submitted;
       let someoneActive: boolean = rep.checkedIn;
-
       return (
         <>
        <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${rep._id}`} key={index}>
@@ -251,7 +170,21 @@ export default function Home(props: ResolvedUrlData) {
             <h1>{match.type} - Match {match.number}</h1>
             
             <div className="w-full h-12 flex flex-row rounded-lg items-center space-x-2">
-            <UserNameList matchID = {match._id}></UserNameList>
+              <details className="dropdown">
+                <summary className="w-14 btn btn-circle text-3xl"><IoIosArrowDropdownCircle/></summary>
+                  <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
+                    
+                    {
+                      slackUsers.map((user, index) => {
+                        return (
+                          <li onClick={(()=>{api.remindSlack(user?.slackId)})} key={index} className="">
+                            <IoIosNotifications size={50} className="text-4xl inline-block text-white"></IoIosNotifications> {user?.name}
+                          </li>
+                        );
+                      })
+                    }
+                  </ul>
+              </details>
               {reps.length > 0 ? repElements : <h1>No Information Available</h1>}
             </div>
             <div className="divider mt-1 mb-1"></div>
@@ -269,8 +202,6 @@ export default function Home(props: ResolvedUrlData) {
         <div className="card-body">
 
             <h2 className="card-title text-2xl">Matches <button className="btn btn-ghost btn-sm text-xl" onClick={()=>{setShowKey(!showKey)}}><AiOutlineQuestionCircle ></AiOutlineQuestionCircle></button>: </h2>
-
-          
 
             {!assigned ? <div className="alert alert-warning mb-10">
               <AiFillWarning/>
@@ -293,7 +224,7 @@ export default function Home(props: ResolvedUrlData) {
 
               <h1 className="card-title mt-6">{name} ({matches.length})</h1>
                 {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
-                {matches.map((match) => matchToDisplay(match))}
+                {matches.map((match) => DisplayMatch({match:match, users:users}))}
             </div>
 
         </div>
