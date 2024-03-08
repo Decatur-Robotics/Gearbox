@@ -165,6 +165,7 @@ export default function Home(props: ResolvedUrlData) {
       </Link>
       </>)
     })
+    
 
     return <div>
             <h1>{match.type} - Match {match.number}</h1>
@@ -198,6 +199,9 @@ export default function Home(props: ResolvedUrlData) {
     const matches = tab === 1 ? qualifyingMatches : (tab === 2 ? semiFinalMatches : finalMatches);
     const name = tab === 1 ? "Qualifiers" : (tab === 2 ? "Semifinals" : "Finals");
 
+    console.log(name);
+    console.log(matches);
+
     return <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
 
@@ -224,7 +228,7 @@ export default function Home(props: ResolvedUrlData) {
 
               <h1 className="card-title mt-6">{name} ({matches.length})</h1>
                 {loadingMatches ? <div className="flex flex-col items-center"><span className="loading loading-spinner loading-lg"></span><p className="animate-pulse mt-6 text-xl">Loading... (this will take awhile)</p></div>: <></>}
-                {matches.map((match) => DisplayMatch({match:match, users:users}))}
+                {matches.map((match) => <DisplayMatch match={match} users={users}></DisplayMatch>)}
             </div>
 
         </div>
