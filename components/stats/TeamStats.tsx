@@ -87,7 +87,7 @@ export default function TeamStats(props: {selectedTeam: number | undefined, sele
 
     <div className="w-full h-fit flex flex-row items-center">
       <ul>
-        {props.selectedReports.map((report) => <li className="mt-2">"{report.data.Comment?.length > 1 ? report.data.Comment: "[No Comment]"}"</li>)}
+        {props.selectedReports.map((report) => <li className="mt-2" key={report._id}>{report.data.Comment?.length > 1 ? report.data.Comment: "[No Comment]"}</li>)}
       </ul>
     </div>
 
