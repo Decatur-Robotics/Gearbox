@@ -57,7 +57,7 @@ function Picklist(props: {index: number}) {
 
 export default function PicklistScreen(props: {reports: Report[]}) {
     const[teamNumbers, setTeamNumbers] = useState<CardType[]>([]);
-    const[localSaves, setLocalSaves] = useLocalStorage<number[]>("picklists");
+    //const[localSaves, setLocalSaves] = useLocalStorage<number[]>("picklists");
     const [picklists, setPicklists] = useState<number[]>([]);
 
     useEffect(() => {
@@ -71,9 +71,6 @@ export default function PicklistScreen(props: {reports: Report[]}) {
         setTeamNumbers(newTeamNumbers.map((num, index) => { return {id: index, number: num} }));
     }, [props.reports]);
 
-    useEffect(() => {
-        setPicklists(localSaves);
-    }, [localSaves])
     
     const addPicklist = () => {
         setPicklists([...picklists, picklists.length+1])
