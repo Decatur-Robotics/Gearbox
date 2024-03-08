@@ -109,6 +109,8 @@ export class FormData {
     UnderStage: boolean = false;
 
     IntakeType: IntakeTypes = IntakeTypes.Human;
+
+    Comment: string = "";
 }
 
 

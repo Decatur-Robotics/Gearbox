@@ -42,6 +42,7 @@ export default function TeamPage(props: {reports: Report[]}) {
 
   const[selectedTeam, setSelectedTeam] = useState<number>();
   const selectedReports = teamReports[selectedTeam ? selectedTeam : 0];
+  console.log(selectedReports)
 
   const associateTeams = () => {
     setAssociatingTeams(true);
