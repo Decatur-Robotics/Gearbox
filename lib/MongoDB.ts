@@ -1,4 +1,4 @@
-import { Db, MongoClient, ObjectId } from "mongodb";
+import { Db, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
 
 
 if (!process.env.MONGODB_URI) {
@@ -6,7 +6,7 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI;
-const options = {};
+const options: MongoClientOptions = {maxPoolSize: 10};
 
 let client;
 let clientPromise: Promise<MongoClient>;
