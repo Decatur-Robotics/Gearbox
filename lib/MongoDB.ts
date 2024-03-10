@@ -11,16 +11,12 @@ const options = {};
 let client;
 let clientPromise: Promise<MongoClient>;
 
-if (process.env.NODE_ENV === "development") {
-  if (!global.clientPromise) {
+if (!global.clientPromise) {
     client = new MongoClient(uri, options);
     global.clientPromise = client.connect();
-  }
-  clientPromise = global.clientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
 }
+clientPromise = global.clientPromise;
+
 
 export {clientPromise};
 
