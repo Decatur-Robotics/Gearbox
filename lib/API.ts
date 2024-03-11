@@ -6,12 +6,10 @@ import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
-import { isAwaitExpression } from "typescript";
 import { WebClient } from "@slack/web-api";
+import { getServerSession } from "next-auth";
+import Auth from "./Auth";
 
-// WebClient instantiates a client that can call API methods
-// When using Bolt, you can use either `app.client` or the `client` passed to listeners.
-const client = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
 
 export namespace API {
 
@@ -66,11 +64,10 @@ export namespace API {
                 return;
             }
 
-            if(req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
-                const user = await (await this.db).findObjectById(Collections.Users, new ObjectId(req.headers[GearboxHeader]?.toString()));
-                if(!user) {
-                    new UnauthorizedError(res);
-                }
+            
+            const session = await getServerSession(req, res, Auth);
+            if(!session && req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
+                new UnauthorizedError(res);
             }
 
             var route = req.url.replace(this.basePath, "");
