@@ -4,14 +4,14 @@ import { ISODateString } from "next-auth";
 // abstraction for next-auth useSession, just makes typescript stuff tidy
 
 export interface AdvancedSession {
-    user: User | null
-    expires: ISODateString
+  user: User | null;
+  expires: ISODateString;
 }
 
 export function useCurrentSession() {
-    const { data: session, status } = useSession();
-    
-    var newSession = session as AdvancedSession;
-    
-    return {session: newSession, status: status}
+  const { data: session, status } = useSession();
+
+  var newSession = session as AdvancedSession;
+
+  return { session: newSession, status: status };
 }

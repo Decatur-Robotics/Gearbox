@@ -18,6 +18,9 @@ module.exports = {
         ],
         glowAccent: ["0 0px 20px oklch(74.51% 0.167 183.61 / .8)"],
       },
+      animation: {
+        "spin-slow": "spin 3s linear infinite",
+      },
     },
   },
   daisyui: {
