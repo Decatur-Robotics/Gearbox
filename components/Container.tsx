@@ -6,6 +6,7 @@ import {BiMenu, BiPlus, BiHome, } from "react-icons/bi"
 import { IoSunny, IoMoon} from "react-icons/io5";
 import {BsGearFill} from "react-icons/bs"
 import ClientAPI from "@/lib/client/ClientAPI"
+import Footer from "./Footer"
 
 
 const api = new ClientAPI("gearboxiscool");
@@ -100,11 +101,10 @@ export default function Container(props: ContainerProps) {
             <input id="menu" type="checkbox" className="drawer-toggle" />
             <div className="drawer-content">
                 
-                
                 <div className="w-full h-16 bg-base-200 flex flex-row items-center justify-between sticky top-0 z-10">
                     <div className="flex flex-row items-cener justify-center">
                         {authenticated && !props.hideMenu ? <label htmlFor="menu" className="btn btn-ghost drawer-button"><BiMenu className="text-3xl"/></label> : <></> }
-                        <Link href={"/"}><h1 className="text-3xl mb-1 btn btn-ghost"><BsGearFill></BsGearFill>Gearbox</h1></Link>
+                        <Link href={"/"}><h1 className="text-3xl mb-1 btn btn-ghost"><BsGearFill></BsGearFill>Gearbox <span className="text-xl bg-accent p-3 rounded-full text-white">BETA</span></h1></Link>
                     </div>
 
                     <div>
@@ -136,7 +136,7 @@ export default function Container(props: ContainerProps) {
                                 </div>
                             </div>
                         </div> 
-                </div>: props.children}
+                </div>: <>{props.children} <Footer></Footer> </>}
                 
                 
             </div> 
