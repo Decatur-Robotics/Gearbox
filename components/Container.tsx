@@ -1,4 +1,4 @@
-import { Season, Team } from "@/lib/Types";
+import { CompetitonNameIdPair, Season, Team } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
@@ -7,6 +7,7 @@ import { IoSunny, IoMoon } from "react-icons/io5";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
+import { FaSearch } from "react-icons/fa";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -29,14 +30,27 @@ export default function Container(props: ContainerProps) {
   const [loadingSeasons, setLoadingSeasons] = useState<boolean>(false);
   const [selectedTeamSeasons, setSelectedTeamSeasons] = useState<Season[]>([]);
 
+  const[eventSearch, setEventSearch] = useState<string>("");
+  const[eventResults, setEventResults] = useState<
+  { value: number; pair: CompetitonNameIdPair }[]>([]);
+
   const tLocal =
     typeof window !== "undefined"
       ? window.localStorage.getItem("theme")
       : "dark";
   const [theme, setTheme] = useState<string>(tLocal ? tLocal : "dark");
+
+
   useEffect(() => {
-    //window.localStorage.setItem('theme', JSON.stringify(theme));
-  }, [theme]);
+    async function search() {
+      if(eventSearch === "") {
+        setEventResults([]);
+        return;
+      }
+      setEventResults(await api.searchCompetitionByName(eventSearch));
+    }
+    search();
+  }, [eventResults])
 
   useEffect(() => {
     if (window.location.href.includes("signin")) {
@@ -112,6 +126,17 @@ export default function Container(props: ContainerProps) {
                 </h1>
               </Link>
             </div>
+
+            <label className="input input-bordered flex items-center gap-2 w-1/4">
+              <input type="text" value={eventSearch} onChange={(e)=>{setEventSearch(e.target.value)}} className="grow bg-base-100" placeholder="Search an event" />
+              <FaSearch></FaSearch>
+              {
+                eventResults.length > 0 ? <div className="absolute -translate-x-5 translate-y-24 w-1/4 bg-base-300 rounded-b-lg p-2">
+                <ul>
+                  {eventResults.map((result) => <li key={result.pair.name}><a className="link" href={"/event/"+result.pair.tbaId}>{result.pair.name}</a></li>)}
+                </ul>
+              </div> : <></> }
+            </label>
 
             <div>
               {authenticated ? (

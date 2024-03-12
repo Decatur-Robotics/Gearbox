@@ -172,7 +172,7 @@ export namespace TheBlueAlliance {
       return this.request(`/event/${tbaId}/matches`);
     }
 
-    async getCompetitonRanking(tbaId: string): Promise<SimpleRank[]> {
+    async getCompetitonRanking(tbaId: string): Promise<{rankings:SimpleRank[]}> {
       return this.request(`/event/${tbaId}/rankings`)
     }
 
