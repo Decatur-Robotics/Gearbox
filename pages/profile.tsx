@@ -30,7 +30,10 @@ export default function Profile() {
 
   //main
 
-  const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
+  
+
+  const Main = () => {
+    const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [teams, setTeams] = useState<Team[]>([]);
   
 
@@ -54,8 +57,7 @@ export default function Profile() {
       loadTeams();
     }
   }, []);
-
-  const Main = () => {
+  
     const [teamNumber, setTeamNumber] = useState<number>();
     const [foundTeam, setFoundTeam] = useState<Team>();
     const [request, setRequest] = useState();

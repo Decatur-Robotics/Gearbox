@@ -50,7 +50,7 @@ export default function Container(props: ContainerProps) {
       setEventResults(await api.searchCompetitionByName(eventSearch));
     }
     search();
-  }, [eventResults])
+  }, [eventSearch])
 
   useEffect(() => {
     if (window.location.href.includes("signin")) {

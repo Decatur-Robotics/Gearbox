@@ -6,9 +6,6 @@ import Container from "@/components/Container";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import { DateString, TimeString } from "@/lib/client/FormatTime";
 import { Statbotics } from "@/lib/Statbotics";
-import { stat } from "fs";
-import { team } from "slack";
-import { couldStartTrivia } from "typescript";
 
 
 const tba =  new TheBlueAlliance.Interface();
