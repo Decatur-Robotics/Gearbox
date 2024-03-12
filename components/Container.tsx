@@ -119,7 +119,7 @@ export default function Container(props: ContainerProps) {
               )}
               <Link href={"/"}>
                 <h1 className="text-3xl mb-1 btn btn-ghost">
-                  <BsGearFill></BsGearFill>Gearbox{" "}
+                  <BsGearFill className="hover:animate-spin"></BsGearFill>Gearbox{" "}
                   <span className="text-xl bg-accent px-3 p-2 rounded-full text-white">
                     BETA
                   </span>
@@ -178,11 +178,10 @@ export default function Container(props: ContainerProps) {
           {showAuthBlock ? (
             <div className="w-full h-full flex flex-col items-center justify-center">
               <div className="card w-3/4 lg:w-1/4 bg-base-300 text-primary-content">
-                <div className="card-body">
-                  <span className="loading loading-spinner loading-lg"></span>
+                <div className="card-body flex items-center">
+                  <BsGearFill size={70} className="animate-spin-slow text-slate-700"></BsGearFill>
                   <h2 className="card-title">Wait a minute...</h2>
                   <p>You need to sign in first!</p>
-                  <p className="text-sm">If this persists, try reloading</p>
                   <div className="card-actions justify-end">
                     <Link href={"/api/auth/signin/google"}>
                       <button className="btn btn-primary">Sign In</button>

@@ -8,7 +8,7 @@ import Container from "@/components/Container";
 const api = new ClientAPI("gearboxiscool");
 
 export const CurrentSeason = new Season("Crescendo", undefined, 2024);
-export const OffSeason = new Season("Off Season", undefined, 2024);
+export const OffSeason = new Season("Offseason", undefined, 2024);
 
 export default function Home(props: ResolvedUrlData) {
   const team = props.team;
@@ -47,14 +47,15 @@ export default function Home(props: ResolvedUrlData) {
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="card w-5/6 bg-base-200 shadow-xl">
+        <div className="card w-5/6">
           <div className="card-body flex flex-col items-center">
             <h2 className="card-title text-3xl mb-10">Create a new Season</h2>
 
             <div className="flex flex-col lg:flex-row space-y-10 lg:space-x-10 lg:justify-center items-center">
-              <div className="card lg:w-1/4 bg-base-100 shadow-xl">
+              <div className="card lg:w-1/2 bg-base-200 shadow-xl">
                 <figure>
                   <img
+                    className="h-64"
                     src={
                       "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png"
                     }
@@ -82,9 +83,10 @@ export default function Home(props: ResolvedUrlData) {
                 </div>
               </div>
 
-              <div className="card lg:w-1/4 bg-base-100 shadow-xl">
-                <figure>
+              <div className="card lg:w-1/4 h-1/2 bg-base-200 shadow-xl">
+                <figure className="">
                   <img
+                    className="h-64"
                     src={
                       "https://www.firstinspires.org/sites/default/files/open-graph-first-logo.png"
                     }
@@ -93,10 +95,7 @@ export default function Home(props: ResolvedUrlData) {
                 </figure>
                 <div className="card-body">
                   <h2 className="card-title text-2xl">{OffSeason.name}</h2>
-                  <p className="text-xl">
-                    FIRST Robotics{" "}
-                    <span className="text-accent">{OffSeason.year} Season</span>
-                  </p>
+                  
                   <div className="card-actions justify-end">
                     <button
                       className={`btn ${existingSeasons?.includes(OffSeason.name) ? "btn-disabled disabled" : "btn-primary"} normal-case`}
