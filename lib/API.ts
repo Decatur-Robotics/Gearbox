@@ -6,8 +6,9 @@ import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
-import { isAwaitExpression } from "typescript";
 import { WebClient } from "@slack/web-api";
+import { getServerSession } from "next-auth";
+import Auth from "./Auth";
 
 
 export namespace API {
@@ -46,6 +47,7 @@ export namespace API {
     }
   }
 
+
   class UnauthorizedError extends Error {
     constructor(res: NextApiResponse) {
       super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key");
@@ -66,6 +68,29 @@ export namespace API {
       this.tba = new TheBlueAlliance.Interface();
       this.basePath = base;
       this.slackClient = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
+
+        async handleRequest(req: NextApiRequest, res: NextApiResponse) {
+            
+            if(!req.url) {
+                new InvalidRequestError(res);
+                return;
+            }
+
+            
+            const session = await getServerSession(req, res, Auth);
+            if(!session && req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
+                new UnauthorizedError(res);
+            }
+
+            var route = req.url.replace(this.basePath, "");
+            
+            if(route in this.routes) {
+                this.routes[route](req, res, {slackClient:this.slackClient, db:await this.db, tba:this.tba, data:req.body});
+            } else {
+                new NotFoundError(res, route);
+                return;
+            }
+        }
     }
 
     async handleRequest(req: NextApiRequest, res: NextApiResponse) {
