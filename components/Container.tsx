@@ -95,7 +95,7 @@ export default function Container(props: ContainerProps) {
         <input id="menu" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content">
           <div className="w-full h-16 bg-base-200 flex flex-row items-center justify-between sticky top-0 z-10">
-            <div className="flex flex-row items-cener justify-center">
+            <div className="flex flex-row items-center justify-center">
               {authenticated && !props.hideMenu ? (
                 <label htmlFor="menu" className="btn btn-ghost drawer-button">
                   <BiMenu className="text-3xl" />
@@ -134,7 +134,7 @@ export default function Container(props: ContainerProps) {
                 </a>
               )}
 
-              <label className="swap swap-rotate mr-5">
+              <label className="swap swap-rotate mr-10">
                 <input
                   type="checkbox"
                   className="theme-controller"
@@ -143,7 +143,7 @@ export default function Container(props: ContainerProps) {
                   }}
                 />
 
-                <IoSunny className="swap-on w-10 h-10"></IoSunny>
+                <IoSunny className="swap-on w-10 h-10 "></IoSunny>
 
                 <IoMoon className="swap-off w-10 h-10"></IoMoon>
               </label>

@@ -23,3 +23,7 @@ export function MonthString(timestamp: number): string {
 export function TimeString(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString();
 }
+
+export function DateString(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString("en-US")
+}

@@ -68,6 +68,25 @@ export namespace TheBlueAlliance {
     Blue = "blue",
   }
 
+  export interface SimpleRank {
+    matches_played: number,
+    qual_average: number,
+    record: {
+      losses: number,
+      wins: number,
+      ties: number,
+    },
+    rank: number,
+    dq: number,
+    team_key: string
+  }
+
+  export interface OprRanking {
+    oprs: {
+      [key: string]: number;
+    } 
+  }
+
   export interface SimpleMatch {
     key: string;
     comp_level: CompetitionLevel; // qm
@@ -151,6 +170,14 @@ export namespace TheBlueAlliance {
 
     async getCompetitionMatches(tbaId: string): Promise<SimpleMatch[]> {
       return this.request(`/event/${tbaId}/matches`);
+    }
+
+    async getCompetitonRanking(tbaId: string): Promise<SimpleRank[]> {
+      return this.request(`/event/${tbaId}/rankings`)
+    }
+
+    async getCompetitonOPRS(tbaId: string): Promise<OprRanking> {
+      return this.request(`/event/${tbaId}/oprs`)
     }
 
     async getMatch(tbaId: string): Promise<SimpleMatch> {
