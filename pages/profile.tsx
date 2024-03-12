@@ -32,9 +32,7 @@ export default function Profile() {
 
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [teamNumber, setTeamNumber] = useState<number>();
-  const [foundTeam, setFoundTeam] = useState<Team>();
-  const [request, setRequest] = useState();
+  
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -58,6 +56,10 @@ export default function Profile() {
   }, []);
 
   const Main = () => {
+    const [teamNumber, setTeamNumber] = useState<number>();
+    const [foundTeam, setFoundTeam] = useState<Team>();
+    const [request, setRequest] = useState();
+
     const findTeam = async (num: number) => {
       setTeamNumber(num);
       const team = await api.findTeamByNumber(num);

@@ -445,11 +445,12 @@ export default function Home(props: ResolvedUrlData) {
           />
 
           <p>Match Type</p>
-          {/* @ts-ignore*/}
+         
           <select
             className="select select-bordered w-full max-w-xs"
             value={matchType}
             onChange={(e) => {
+               {/* @ts-ignore*/}
               setMatchType(e.target.value);
             }}
           >
@@ -559,12 +560,10 @@ export default function Home(props: ResolvedUrlData) {
                   )}
                 </div>
                 <div className="stat-title">Overall Submission</div>
-                {/*@ts-ignore --- lol!!*/}
+               
                 <div className="stat-value m-2 text-xl">
-                  <div
-                    className="radial-progress "
-                    style={{ "--value": submissionRate }}
-                  >
+                   {/*@ts-ignore --- lol!!*/}
+                  <div className="radial-progress " style={{ "--value": submissionRate }}>
                     {submissionRate * 100}%
                   </div>
                 </div>

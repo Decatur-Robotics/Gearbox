@@ -9,6 +9,8 @@ import {
   Alliance,
 } from "./Types";
 
+global.compIdPairs = [];
+
 export namespace TheBlueAlliance {
   export interface SimpleTeam {
     key: string;

@@ -7,6 +7,7 @@ import { FaDatabase, FaUserGroup } from "react-icons/fa6";
 import { FaUser } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
 
+
 export default function Homepage() {
   const { session, status } = useCurrentSession();
   const hide = status === "authenticated";
@@ -69,8 +70,7 @@ export default function Homepage() {
                   </h1>
                   <div className="z-20 relative">
                     <h1 className="text-4xl font-bold italic">
-                      "Gearbox has allowed us to make strategic insights into
-                      the performance of other teams"
+                      {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
                     </h1>
                     <h1 className="text-lg font-light mt-2">- Team 4026</h1>
                   </div>
