@@ -78,8 +78,8 @@ export namespace API {
             }
 
             
-            const session = await getServerSession(req, res, Auth);
-            if(!session && req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
+            //const session = await getServerSession(req, res, Auth);
+            if(req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
                 new UnauthorizedError(res);
             }
 
