@@ -69,7 +69,7 @@ export default NextAuth({
     },
 
     async redirect({ url, baseUrl }) {
-      baseUrl = "https://localhost:3000/profile";
+      baseUrl = "https://4026.org/profile";
       return baseUrl;
     },
   },
