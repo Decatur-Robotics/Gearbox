@@ -68,8 +68,9 @@ export namespace API {
       this.tba = new TheBlueAlliance.Interface();
       this.basePath = base;
       this.slackClient = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
+    }
 
-        async handleRequest(req: NextApiRequest, res: NextApiResponse) {
+    async handleRequest(req: NextApiRequest, res: NextApiResponse) {
             
             if(!req.url) {
                 new InvalidRequestError(res);
@@ -90,40 +91,6 @@ export namespace API {
                 new NotFoundError(res, route);
                 return;
             }
-        }
-    }
-
-    async handleRequest(req: NextApiRequest, res: NextApiResponse) {
-      if (!req.url) {
-        new InvalidRequestError(res);
-        return;
-      }
-
-      if (req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
-        const user = await (
-          await this.db
-        ).findObjectById(
-          Collections.Users,
-          new ObjectId(req.headers[GearboxHeader]?.toString()),
-        );
-        if (!user) {
-          new UnauthorizedError(res);
-        }
-      }
-
-      var route = req.url.replace(this.basePath, "");
-
-      if (route in this.routes) {
-        this.routes[route](req, res, {
-          slackClient: this.slackClient,
-          db: await this.db,
-          tba: this.tba,
-          data: req.body,
-        });
-      } else {
-        new NotFoundError(res, route);
-        return;
-      }
     }
   }
 
