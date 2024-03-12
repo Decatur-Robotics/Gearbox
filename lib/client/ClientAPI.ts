@@ -21,7 +21,7 @@ export default class ClientAPI {
   authenticationKey: string = "";
 
   // replace this with the process.env
-  constructor(authKey = "", baseUrl = "https://localhost:3000/api") {
+  constructor(authKey = "", baseUrl = "https://4026.org/api") {
     this.authenticationKey = authKey;
     this.baseUrl = baseUrl;
   }
