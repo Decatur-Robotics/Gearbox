@@ -9,9 +9,6 @@ import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 import { isAwaitExpression } from "typescript";
 import { WebClient } from "@slack/web-api";
 
-// WebClient instantiates a client that can call API methods
-// When using Bolt, you can use either `app.client` or the `client` passed to listeners.
-const client = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
