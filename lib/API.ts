@@ -6,6 +6,7 @@ import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
+import { ExportData } from "./ExportData";
 
 export namespace API {
 
@@ -367,6 +368,10 @@ export namespace API {
 
         "changePFP": async(req,res,{db,data}) => {
             await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), {image: `${data.newImage}`});
+        },
+
+        "elevators": async(req,res,{db,data}) => {
+            return res.status(200).send(ExportData.CompetitionToCSV(data.compId))
         }
 
     }

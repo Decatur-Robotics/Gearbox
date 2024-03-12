@@ -1,32 +1,21 @@
-/*
-import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
 
-import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
+import {GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
 import { ObjectId } from "mongodb";
-import { Competition, Match, Team, CompetitonNameIdPair, MatchType, Alliance, Report } from "./Types";
-
+import { FormData } from "./Types";
+import { Competition } from "./Types";
+const dbq = GetDatabase();
 export namespace ExportData {
     export const CompetitionToCSV = async (compId: string) => {
-        const db = await GetDatabase();
+        
+        const db = await dbq;
         const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
         const reports = await db.findObjects<Report[]>(Collections.Reports, {"match": {"$in": comp.matches}, "submitted": true});
-        
-        var headers: string[] = ["id"];
-        var lines: string[] = []
-        reports[0].data.data.forEach(formElement => {
-            headers.push(formElement.ref)
-        });
+        let keys = Object.keys(FormData);
 
-        reports.forEach(report => {
-            let line = `${report._id}`
-            report.data.data.forEach(formElement => {
-                line += `,${formElement.value}`
-            });
-            lines.push(line);
-        });
+        var csv = "";
+        csv += keys.join(",");
 
-        const finalString = headers.join(",") + "\n" + lines.join("\n");
-        return finalString;
+        console.log(csv)
+      
     }
 }
-*/

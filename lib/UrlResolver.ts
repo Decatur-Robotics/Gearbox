@@ -6,6 +6,9 @@ import {ObjectId} from "mongodb";
 // fetches the database
 const gdb = GetDatabase();
 
+import { ExportData } from "@/lib/ExportData";
+ExportData.CompetitionToCSV("65b2deaed35ea7e19d139df4")
+
 /**
  * Structure to hold the final, resolved URL Data
  */

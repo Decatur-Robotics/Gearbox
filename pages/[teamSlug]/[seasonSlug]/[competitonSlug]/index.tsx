@@ -1,6 +1,5 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { useEffect, useState } from "react";
-
 // linked icon, for everything with tbaId!!!!!!!
 import ClientAPI from "@/lib/client/ClientAPI"
 import { GetServerSideProps } from "next";
@@ -41,6 +40,12 @@ export default function Home(props: ResolvedUrlData) {
   const[showKey, setShowKey] = useState(false);
 
   const[assigned, setAssigned] = useState(false);
+  
+  const elevatorTest = async() => {
+    console.log(await api.elevator(comp?._id))
+  }
+
+  elevatorTest();
 
   useEffect(() => {
     const loadMatches = async() => {
@@ -270,8 +275,8 @@ export default function Home(props: ResolvedUrlData) {
     <div className="w-full h-full flex flex-col items-center justify-center space-y-6">
       <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-            <h2 className="card-title text-2xl font-bold">{comp?.name}</h2>
-            <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/stats`}><button className="btn btn-outline">View Stats</button></Link>
+            <center><h2 className="card-title text-2xl font-bold">{comp?.name}</h2></center>
+            <center><Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/stats`}><button className="btn btn-outline">View Stats</button></Link><button className="btn btn-outline">Export as CSV</button></center>
             <div className="divider"></div>
             
             <div className="stats bg-base-300 stats-vertical lg:stats-horizontal lg:w-1/2">

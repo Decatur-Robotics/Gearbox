@@ -152,4 +152,8 @@ export default class ClientAPI {
     async matchReports(matchId: string | undefined) {
         return await this.request("/matchReports", {matchId: matchId})
     }
+
+    async elevator(compId: string|undefined) {
+        return await this.request("/elevator",{compId: compId})
+    }
 };

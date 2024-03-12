@@ -4,7 +4,10 @@
  * This is a general collection of commoly used functions
  */
 
+
 import { Collections, GetDatabase } from "./MongoDB";
+
+
 
 // get the database for some functions that use it
 const db = GetDatabase();

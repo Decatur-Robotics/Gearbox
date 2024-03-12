@@ -6,9 +6,8 @@ import { Collections, GetDatabase, clientPromise } from './MongoDB'
 import { Admin, ObjectId } from 'mongodb'
 import { User } from './Types';
 import { GenerateSlug } from './Utils'
-
+import { ExportData } from './ExportData'
 var db = GetDatabase();
-
 export default NextAuth({
     secret: process.env.NEXTAUTH_SECRET,
     providers: [

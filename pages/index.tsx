@@ -2,6 +2,7 @@ import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useState } from "react";
 
+
 export default function Homepage() {
 
     const { session, status } = useCurrentSession();
