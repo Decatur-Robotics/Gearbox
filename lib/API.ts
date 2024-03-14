@@ -569,6 +569,7 @@ export namespace API {
       const teamsPromise = db.countObjects(Collections.Teams, {});
       const usersPromise = db.countObjects(Collections.Users, {});
       const reportsPromise = db.countObjects(Collections.Reports, {});
+      const competitionsPromise = db.countObjects(Collections.Competitions, {});
 
       const dataPointsPerReport = Reflect.ownKeys(FormData).length;
 
@@ -578,6 +579,7 @@ export namespace API {
         teams: await teamsPromise,
         users: await usersPromise,
         datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport,
+        competitions: await competitionsPromise,
       });
     },
   };

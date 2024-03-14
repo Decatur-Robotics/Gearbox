@@ -301,6 +301,7 @@ export default class ClientAPI {
     teams: number | null;
     users: number | null;
     datapoints: number | null;
+    competitions: number | null;
   }> {
     return await this.request("/getMainPageCounterData", {});
   }
