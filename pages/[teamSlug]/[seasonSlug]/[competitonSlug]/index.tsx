@@ -225,7 +225,7 @@ export default function Home(props: ResolvedUrlData) {
                         return <div className="tooltip tooltip-bottom" data-tip={user?.name} key={reportId}>
                           <div className="avatar online">
                             <div className="w-10 rounded-full">
-                              <img src={user?.image} />
+                              <img src={user?.image} onClick={api.remindSlack("jello","hello")}/>
                             </div>
                         </div>
                       </div>
