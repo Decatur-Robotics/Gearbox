@@ -1,12 +1,14 @@
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaDatabase, FaUserGroup } from "react-icons/fa6";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaWifi } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
+import { IoPhonePortrait, IoPhonePortraitOutline } from "react-icons/io5";
+import useIsVisible from "@/lib/client/useIsVisible"
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -31,6 +33,12 @@ export default function Homepage() {
   });
 
   const hide = status === "authenticated";
+
+  const secondSection = useRef<HTMLDivElement>(null);
+  const secondVisible = useIsVisible(secondSection)
+
+  const thirdSection = useRef<HTMLDivElement>(null);
+  const thirdVisible = useIsVisible(thirdSection)
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
@@ -138,6 +146,76 @@ export default function Homepage() {
           </div>
         </div>
       </div>
+
+      <div ref={secondSection} className={`z-30 hero py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${secondVisible ? "opacity-100" : "opacity-0"}`}>
+          <div className="hero-content w-full">
+            <div className="w-1/2 space-y-2">
+                <h1 className="text-5xl font-bold leading-relaxed">
+                    Feature-packed and blazing fast<span className="animate-pulse">🔥</span>
+                </h1>
+                <ul className="list-disc translate-y-6  w-full text-lg">
+                  <li>Easy setup with <span className="text-accent">automatic match generation</span> and <span className="text-accent">assignment</span></li>
+                  <li>Maximize your data with <span className="text-accent">pre-generated forms</span> for every aspect of play</li>
+                </ul>
+                <div className="divider translate-y-6"></div>
+            </div>
+            <div className="w-1/2 grid space-x-8 space-y-8 grid-cols-2 grid-row-2">
+
+              
+              <div className="card-bordered glass rounded-lg w-full animate-float-offset ml-10">
+                <div className="p-4 font-mono">
+                  <span className="float-right -translate-y-2 "><IoPhonePortraitOutline size={80} className="opacity-50 rotate-12"></IoPhonePortraitOutline></span>
+                  <p className="text-lg translate-y-4">Mobile Friendly</p>
+                </div>
+              </div>
+
+              <div className="w-full"></div>
+              <div className="w-full"></div>
+
+              <div className="card-bordered glass rounded-lg w-full animate-float">
+                <div className="p-5 font-mono">
+                  <span className="float-right -translate-y-3 "><FaWifi size={90} className="opacity-50 rotate-12"></FaWifi></span>
+                  <p className="text-lg translate-y-2">Low-data Functionality</p>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+      </div>
+
+      <div ref={thirdSection} className={`hero py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${thirdVisible ? "scale-100" : "scale-0"}`}>
+          <div className="hero-content w-full">
+            <div className="w-full space-y-2 grid grid-cols-3 grid-rows-2 space-x-10 z-20">
+                <div className="relative w-full flex items-center justify-center">
+                  <div className="w-96 h-96 right-36 top-2 absolute bg-slate-600 opacity-20 rounded-xl animate-spin-slow -z-50"></div>
+                </div>
+                
+                <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+                  <p className="text-2xl font-bold">Insightful Visualizations</p>
+                  <div className="divider"></div>
+                  <p className="font-mono opacity-50">Graphs, heatmaps and textual insights are generated in real-time</p>
+                </div>
+                <div className="w-full flex items-center justify-center">
+                  <div className="w-80 h-80 absolute mask mask-hexagon bottom-40 bg-slate-600 opacity-50 rounded-full animate-spin-slow -z-50"></div>
+                </div>
+                <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+                  <p className="text-2xl font-bold">Minimal UI/UX</p>
+                  <div className="divider"></div>
+                  <p className="font-mono opacity-50">Designed from the ground-up to be intuitive to use</p>
+                </div>
+                <div className="w-full flex items-center justify-center">
+                </div>
+                <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+                  <p className="text-2xl font-bold">Integrated Team Management</p>
+                  <div className="divider"></div>
+                  <p className="font-mono opacity-50">Toggle and set responsibilities for your teammates</p>
+                </div>
+            </div>
+            
+          </div>
+      </div>
+
+      
     </Container>
   );
 }
