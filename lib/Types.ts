@@ -101,6 +101,7 @@ export enum Defense {
 }
 
 export enum IntakeTypes {
+  None="None",
   Human = "Human",
   Ground = "Ground",
   Both = "Both",
@@ -167,6 +168,28 @@ export class Season {
   }
 }
 
+export enum Drivetrain {
+  Tank="Tank",
+  Swerve="Swerve",
+  Mecanum="Mecanum",
+}
+
+export class Pitreport {
+  _id: string | undefined;
+  teamNumber: number;
+  image: string = "/robot.jpg"
+  intakeType: IntakeTypes = IntakeTypes.None
+  canClimb: boolean = false;
+  drivetrain: Drivetrain = Drivetrain.Tank;
+  canScoreAmp: boolean = false;
+  canScoreSpeaker: boolean = false
+  comments: string = "";
+
+  constructor(teamNumber: number) {
+    this.teamNumber = teamNumber;
+  }
+}
+
 export class Competition {
   _id: string | undefined;
   name: string;
@@ -176,7 +199,7 @@ export class Competition {
   start: number;
   end: number;
 
-  teams: string[];
+  pitReports: string[];
   matches: string[];
 
   constructor(
@@ -185,7 +208,7 @@ export class Competition {
     tbaId: string | undefined,
     start: number,
     end: number,
-    teams: string[] = [],
+    pitReports: string[] = [],
     matches: string[] = [],
   ) {
     this.name = name;
@@ -193,7 +216,7 @@ export class Competition {
     this.tbaId = tbaId;
     this.start = start;
     this.end = end;
-    this.teams = teams;
+    this.pitReports = pitReports;
     this.matches = matches;
   }
 }

@@ -104,7 +104,7 @@ export default function Container(props: ContainerProps) {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col" data-theme={theme}>
+    <div className="w-full h-screen flex flex-col overflow-x-hidden" data-theme={theme}>
       <div className="drawer">
         <input id="menu" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content">

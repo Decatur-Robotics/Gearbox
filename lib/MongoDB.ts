@@ -28,6 +28,7 @@ export enum Collections {
   Accounts = "accounts",
   Sessions = "sessions",
   Forms = "Forms",
+  Pitreports = "Pitreports"
 }
 
 export async function GetDatabase(): Promise<MongoDBInterface> {

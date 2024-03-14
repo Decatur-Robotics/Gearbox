@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Competition, Form, Match, Season, Team, User, Report } from "./Types";
+import { Competition, Form, Match, Season, Team, User, Report, Pitreport } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
@@ -355,6 +355,9 @@ export namespace API {
           (await db.addObject<Match>(Collections.Matches, match))._id,
       );
 
+      var pitreports = await tba.getCompetitionPitreports(data.tbaId);
+      pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id)
+
       var comp = await db.addObject<Competition>(
         Collections.Competitions,
         new Competition(
@@ -363,7 +366,7 @@ export namespace API {
           data.tbaId,
           data.start,
           data.end,
-          [],
+          pitreports.map((report) => String(report._id)),
           matches.map((match) => String(match._id)),
         ),
       );

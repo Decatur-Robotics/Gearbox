@@ -9,6 +9,7 @@ import {
   Report,
   MatchType,
   FormData,
+  Pitreport,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -95,6 +96,15 @@ export default class ClientAPI {
       query: { _id: id },
     });
   }
+
+  async findPitreportById(id: string): Promise<Pitreport> {
+    return await this.request("/find", {
+      collection: "Pitreports",
+      query: { _id: id },
+    });
+  }
+
+
 
   async allTeams(): Promise<Team[]> {
     return await this.request("/findAll", { collection: "Teams" });

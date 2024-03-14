@@ -7,6 +7,7 @@ import {
   CompetitonNameIdPair,
   MatchType,
   Alliance,
+  Pitreport,
 } from "./Types";
 
 global.compIdPairs = [];
@@ -112,6 +113,8 @@ export namespace TheBlueAlliance {
     FRC = "frc",
   }
 
+  export type TeamArray = {[team_number: string]: number}[];
+
   export function ConvertDate(tbaDate: string): number {
     return Date.parse(tbaDate);
   }
@@ -195,6 +198,10 @@ export namespace TheBlueAlliance {
     async getEvents(year: number): Promise<SimpleCompetition[]> {
       return this.request(`/events/${year}/simple`);
     }
+
+    async getCompetitionTeams(tbaId: string): Promise<TeamArray> {
+      return this.request(`/event/${tbaId}/teams`);
+    }
   }
 
   export class Interface {
@@ -221,6 +228,8 @@ export namespace TheBlueAlliance {
 
     async getCompetitionAutofillData(tbaId: string): Promise<Competition> {
       var competitonData = await this.req.getCompetition(tbaId);
+      
+
       let competition = new Competition(
         competitonData.name,
         undefined,
@@ -245,6 +254,7 @@ export namespace TheBlueAlliance {
         tbaIdsToTeamNumbers(data.alliances.red.team_keys),
       );
     }
+    
 
     async getCompetitionMatches(tbaId: string): Promise<Match[]> {
       let matches = (await this.req.getCompetitionMatches(tbaId)).map(
@@ -260,6 +270,11 @@ export namespace TheBlueAlliance {
           ),
       );
       return matches;
+    }
+
+    async getCompetitionPitreports(tbaId: string): Promise<Pitreport[]> {
+      var competitionTeams = await this.req.getCompetitionTeams(tbaId);
+      return competitionTeams.map(({team_number}) => new Pitreport(team_number))
     }
 
     async getMatchAndReportsAutofillData() {

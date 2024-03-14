@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
-import { AllianceColor, Form, Match, MatchType, Report, User } from "@/lib/Types";
+import { AllianceColor, Form, Match, MatchType, Pitreport, Report, User } from "@/lib/Types";
 import Container from "@/components/Container";
 
 
@@ -13,11 +13,9 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import { MdAutoGraph, MdDriveEta, MdInsertPhoto, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
-import { GrDocumentMissing } from "react-icons/gr";
 import { FaDatabase, FaEdit, FaUserCheck } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
-import { match } from "assert";
 
 
 const api = new ClientAPI("gearboxiscool");
@@ -43,6 +41,11 @@ export default function Home(props: ResolvedUrlData) {
 
   const[submissionRate, setSubmissionRate] = useState(0);
   const[submittedReports, setSubmittedReports] = useState(0);
+
+
+  const[pitreports, setPitreports] = useState<Pitreport[]>([]);
+  
+  const[loadingPitreports, setLoadingPitreports] = useState(true);
 
   useEffect(() => {
     const scoutingStats = (reps: Report[]) => {
@@ -106,16 +109,29 @@ export default function Home(props: ResolvedUrlData) {
       scoutingStats(newReports);
     }
 
+    const loadPitreports = async() => {
+      setLoadingPitreports(true);
+      if(!comp?.pitReports) {return;}
+      const newPitReports: Pitreport[] = []
+      for(const pitreportId of comp?.pitReports) {
+        newPitReports.push(await api.findPitreportById(pitreportId));
+      };
+      setPitreports(newPitReports);
+      setLoadingPitreports(false);
+
+    }
+
     loadUsers();
     loadMatches();
     loadReports();
+    loadPitreports();
   }, [])
 
   const { session, status } = useCurrentSession();
   
   return <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen w-full flex flex-row items-center justify-center  space-x-6 space-y-6">
-        <div className="w-2/5 flex flex-col space-y-4 h-screen ">
+      <div className="min-h-screen w-screen flex flex-row grow-0 items-center justify-center  space-x-6 space-y-6 overflow-hidden">
+        <div className="w-2/5 flex flex-col grow-0 space-y-4 h-screen ">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
@@ -186,8 +202,8 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
 
-        <div className="w-1/2 flex flex-col h-screen space-y-4">
-          <div className="w-full card bg-base-200 shadow-xl">
+        <div className="w-1/2 flex flex-col grow-0 h-screen space-y-4">
+          <div className=" w-full card bg-base-200 shadow-xl ">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{team?.name} - {team?.number}</h1>
               <div className="divider"></div>
@@ -247,19 +263,21 @@ export default function Home(props: ResolvedUrlData) {
 
           </div>
 
+                       
           <div className="w-full card bg-base-200 shadow-xl h-64">
-              <div className="card-body">
+              <div className="card-body grow-0">
                 <h1 className="card-title">Pitscouting</h1>
-                <div className="flex flex-row w-full items-center justify-center">
-                  <div className="avatar">
-                    <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">4026</div>
-                    <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
-                      <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-                    </div>
-                    
-                  </div>
+                <div className="overflow-x-scroll flex flex-row space-x-10 h-36">
+
+                {loadingPitreports ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>: 
+                    pitreports.map((report) => <div className="avatar mt-2">
+                      <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">{report.teamNumber}</div>
+                      <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
+                        <img src={report.image} />
+                      </div>
+                    </div>)}
+                  
                 </div>
-                
               </div>
           </div>
         </div>
