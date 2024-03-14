@@ -21,7 +21,7 @@ export default class ClientAPI {
   authenticationKey: string = "";
 
   // replace this with the process.env
-  constructor(authKey = "", baseUrl = "https://4026.org/api") {
+  constructor(authKey = "", baseUrl = "http://localhost:3000/api/") {
     this.authenticationKey = authKey;
     this.baseUrl = baseUrl;
   }
@@ -295,5 +295,13 @@ export default class ClientAPI {
       oweBucks,
       oweBucksToAdd,
     });
+  }
+
+  async getMainPageCounterData(): Promise<{
+    teams: number | null;
+    users: number | null;
+    datapoints: number | null;
+  }> {
+    return await this.request("/getMainPageCounterData", {});
   }
 }

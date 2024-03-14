@@ -55,7 +55,7 @@ export namespace API {
   }
 
   export class Handler {
-    // feed routes as big object ot tjhe handler
+    // feed routes as big object to the handler
     routes: RouteCollection;
     db: Promise<MongoDBInterface>;
     tba: TheBlueAlliance.Interface;
@@ -557,5 +557,17 @@ export namespace API {
         { oweBucks: data.oweBucks + data.oweBucksToAdd },
       );
     },
+
+    getMainPageCounterData: async (req, res, { db, data }) => {
+      const teams = await db.countObjects(Collections.Teams, {});
+      const users = await db.countObjects(Collections.Users, {});
+      const datapoints = await db.countObjects(Collections.Reports, {});
+
+      return res.status(200).send({
+        teams: teams,
+        users: users,
+        datapoints: datapoints,
+      });
+    }
   };
 }

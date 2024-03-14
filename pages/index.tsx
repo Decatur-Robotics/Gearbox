@@ -1,15 +1,35 @@
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaDatabase, FaUserGroup } from "react-icons/fa6";
 import { FaUser } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
+import ClientAPI from "@/lib/client/ClientAPI";
 
+const api = new ClientAPI("gearboxiscool");
 
 export default function Homepage() {
   const { session, status } = useCurrentSession();
+  const [ counterData, setCounterData ] = useState<{
+    teams: number | null,
+    users: number | null,
+    datapoints: number | null
+  }>({
+    teams: null,
+    users: null,
+    datapoints: null,
+  });
+
+  useEffect(() => {
+    if (counterData.teams !== null) return;
+
+    api.getMainPageCounterData().then((data) => {
+      setCounterData(data);
+    });
+  });
+
   const hide = status === "authenticated";
 
   return (
@@ -83,7 +103,10 @@ export default function Homepage() {
                   <div className="stat-figure text-primary">
                     <FaUserGroup size={30}></FaUserGroup>
                   </div>
-                  <div className="stat-value text-primary">3</div>
+                  { counterData.teams === null 
+                    ? <div className="stat-value loading loading-spinner text-primary"></div> 
+                    : <div className="stat-value text-primary">{counterData.teams}</div> 
+                  }
                   <div className="stat-desc">Depend on Gearbox</div>
                 </div>
 
@@ -92,7 +115,10 @@ export default function Homepage() {
                     <FaUser size={30}></FaUser>
                   </div>
                   <div className="stat-title">Users</div>
-                  <div className="stat-value text-secondary">{30}</div>
+                  { counterData.teams === null 
+                    ? <div className="stat-value loading loading-spinner text-secondary"></div> 
+                    : <div className="stat-value text-secondary">{counterData.users}</div> 
+                  }
                   <div className="stat-desc">Registered</div>
                 </div>
 
@@ -101,7 +127,10 @@ export default function Homepage() {
                     <FaDatabase size={30}></FaDatabase>
                   </div>
                   <div className="stat-title">Net Datapoints</div>
-                  <div className="stat-value text-accent">12.6K</div>
+                  { counterData.teams === null 
+                    ? <div className="stat-value loading loading-spinner text-accent"></div> 
+                    : <div className="stat-value text-accent">{counterData.datapoints}</div> 
+                  }
                   <div className="stat-desc">Over 3 Competitions</div>
                 </div>
               </div>
