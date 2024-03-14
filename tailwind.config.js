@@ -20,7 +20,12 @@ module.exports = {
       },
       animation: {
         "spin-slow": "spin 3s linear infinite",
+        float: "float 4s ease-in-out infinite",
+        "float-offset": "float 2s ease-in-out infinite",
       },
+    },
+    blur: {
+      xs: "2px",
     },
   },
   daisyui: {

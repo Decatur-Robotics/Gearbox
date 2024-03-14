@@ -14,7 +14,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { MdAutoGraph, MdDriveEta, MdInsertPhoto, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { GrDocumentMissing } from "react-icons/gr";
-import { FaDatabase, FaUserCheck } from "react-icons/fa";
+import { FaDatabase, FaEdit, FaUserCheck } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import { match } from "assert";
@@ -45,13 +45,15 @@ export default function Home(props: ResolvedUrlData) {
   const[submittedReports, setSubmittedReports] = useState(0);
 
   useEffect(() => {
-    const scoutingStats = () => {
+    const scoutingStats = (reps: Report[]) => {
       setLoadingScoutStats(true);
       let submittedCount = 0;
-      reports.forEach((report) => {
-        if(report.submitted) {submittedCount++;}
+      reps.forEach((report) => {
+        if(report.submitted) {
+          submittedCount++;
+        }
       })
-      setSubmissionRate(Round(submittedCount/reports.length))
+      setSubmissionRate(Round(submittedCount/reps.length))
       setSubmittedReports(submittedCount);
       setLoadingScoutStats(false);
     }
@@ -64,9 +66,6 @@ export default function Home(props: ResolvedUrlData) {
       for(const userId of team.scouters) {
         newUsersById[userId] = await api.findUserById(userId);
       };
-    
-      console.log("loaded users");
-      console.log(Object.keys(newUsersById).length);
     
       setUsersById(newUsersById);
       setLoadingUsers(false);
@@ -104,7 +103,7 @@ export default function Home(props: ResolvedUrlData) {
       })
       setReportsById(newReportId);
       setLoadingReports(false);
-      scoutingStats();
+      scoutingStats(newReports);
     }
 
     loadUsers();
@@ -116,7 +115,7 @@ export default function Home(props: ResolvedUrlData) {
   
   return <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-full flex flex-row items-center justify-center  space-x-6 space-y-6">
-        <div className="w-2/5 flex flex-col space-y-4">
+        <div className="w-2/5 flex flex-col space-y-4 h-screen ">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
@@ -187,7 +186,7 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
 
-        <div className="w-2/5 flex flex-col space-y-4">
+        <div className="w-1/2 flex flex-col h-screen space-y-4">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{team?.name} - {team?.number}</h1>
@@ -195,7 +194,7 @@ export default function Home(props: ResolvedUrlData) {
               {loadingMatches || loadingReports || loadingUsers ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>:
               <div className="w-full flex flex-col items-center space-y-2">
                 <div className="carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box">
-                  {qualificationMatches.map((match) => <div className="carousel-item w-full flex flex-col items-center space-y-1" key={match._id}>
+                  {qualificationMatches.map((match) => <div className="carousel-item w-full flex flex-col items-center" key={match._id}>
 
                     <h1 className="text-lg font-light">Current Match:</h1>
                     <h1 className="text-2xl font-bold mb-4">Match {match.number}</h1>
@@ -205,10 +204,12 @@ export default function Home(props: ResolvedUrlData) {
                       match.reports.map((reportId) => {
                         const report = reportsById[reportId];
                         const submitted = report.submitted;
+                        const mine = report.user === session.user?._id;
                         let color = !submitted ? (report.color===AllianceColor.Red?"bg-red-500":"bg-blue-500"): "bg-slate-500";
+
                         
                         if(!report) return <></>
-                        return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`} key={reportId} className={`${color} rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}>
+                        return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`} key={reportId} className={`${color} ${mine && !submitted ? "drop-shadow-glowStrong": ""} rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}>
                         <h1>{report.robotNumber}</h1>
                       </Link>
                       })
@@ -244,6 +245,22 @@ export default function Home(props: ResolvedUrlData) {
               </div>}
             </div>
 
+          </div>
+
+          <div className="w-full card bg-base-200 shadow-xl h-64">
+              <div className="card-body">
+                <h1 className="card-title">Pitscouting</h1>
+                <div className="flex flex-row w-full items-center justify-center">
+                  <div className="avatar">
+                    <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">4026</div>
+                    <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
+                      <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+                    </div>
+                    
+                  </div>
+                </div>
+                
+              </div>
           </div>
         </div>
 
