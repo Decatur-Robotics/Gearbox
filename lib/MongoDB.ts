@@ -1,4 +1,4 @@
-import { Db, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
+import { Db, GridFSBucket, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
@@ -56,6 +56,8 @@ export class MongoDBInterface {
   async init() {
     this.client = await this.promise;
     this.db = this.client?.db(process.env.DB);
+    //@ts-ignore
+    
     const collections = await this.db?.listCollections().toArray();
     if (collections?.length === 0) {
       try {

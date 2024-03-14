@@ -20,6 +20,7 @@
     "dependencies": "^0.0.1",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.1",
+    "formidable": "^3.5.1",
     "jose": "^5.2.3",
     "levenary": "^1.1.1",
     "mongodb": "^5.9.2",
@@ -42,6 +43,7 @@
     "typescript": "5.0.4"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.54",
     "autoprefixer": "^10.4.14",
