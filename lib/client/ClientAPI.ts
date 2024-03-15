@@ -23,7 +23,7 @@ export default class ClientAPI {
   // replace this with the process.env
   constructor(
     authKey = "",
-    baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://4026.org/api",
+    baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api",
   ) {
     this.authenticationKey = authKey;
     this.baseUrl = baseUrl;

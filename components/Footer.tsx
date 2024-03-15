@@ -1,22 +1,41 @@
 import { BsGearFill } from "react-icons/bs";
 import Image from "next/image";
+import { FaBug, FaFacebook, FaGithub, FaInstagram, FaList } from "react-icons/fa";
+import { TbUfo } from "react-icons/tb";
+import Link from "next/link";
+import { MdAlternateEmail } from "react-icons/md";
 export default function Footer() {
   return (
-    <footer className="footer p-10 bg-base-100 text-base-content">
-      <aside>
-        <p className="text-lg">
-          Made with ❤️ by{" "}
+    <footer className="footer p-10 bg-base-100 text-base-content border-t-8 border-base-300">
+      
+      <aside className="flex flex-col -space-x-4">
+        <p className="text-lg">Made with ❤️ by{" "}
+          
           <a
             href="https://www.decaturrobotics.org/"
-            className="text-primary text-bold"
+            className="inline-block text-bold text-accent"
           >
             Team 4026
+            
           </a>
+          <TbUfo size={30} className="animate-bounce inline ml-2"></TbUfo>
         </p>
+        <div className="divider divider-vertical"> </div>
+        <div className="flex flex-row space-x-2">
+          <Link href={"https://www.instagram.com/decaturrobotics4026/?img_index=1"}><FaInstagram size={30} className="ml-4"></FaInstagram></Link>
+          <Link href={"https://www.facebook.com/DecaturRobotics4026/"}><FaFacebook size={30}></FaFacebook></Link>
+          <Link href={"https://github.com/Decatur-Robotics"}><FaGithub size={30}></FaGithub></Link>
+        </div>
+        
       </aside>
       <nav>
-        <h6 className="footer-title">Help</h6>
-        <a className="link link-hover">Contact</a>
+        <h6 className="footer-title">More</h6>
+        <a className="link link-hover"><MdAlternateEmail className="inline mr-1" size={16}></MdAlternateEmail>Contact</a>
+        <a className="link link-hover"><FaBug className="inline mr-1" size={16}></FaBug>Bug Report/Feature Request</a>
+      </nav>
+      <nav>
+        <h6 className="footer-title">About</h6>
+        <a className="link link-hover"><FaList className="inline mr-1" size={16}></FaList>About Us</a>
       </nav>
       <div className="flex-row flex space-x-4">
         <a
