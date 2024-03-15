@@ -324,6 +324,7 @@ export default class ClientAPI {
       team,
       eventKey,
     });
+  }
 
   async getMainPageCounterData(): Promise<{
     teams: number | null;
