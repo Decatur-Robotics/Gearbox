@@ -1,7 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Competition, Form, Match, Season, Team, User, Report } from "./Types";
+import {
+  Competition,
+  FormData,
+  Match,
+  Season,
+  Team,
+  User,
+  Report,
+} from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
@@ -9,7 +17,6 @@ import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth from "./Auth";
-
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -47,7 +54,6 @@ export namespace API {
     }
   }
 
-
   class UnauthorizedError extends Error {
     constructor(res: NextApiResponse) {
       super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key");
@@ -55,7 +61,7 @@ export namespace API {
   }
 
   export class Handler {
-    // feed routes as big object ot tjhe handler
+    // feed routes as big object to the handler
     routes: RouteCollection;
     db: Promise<MongoDBInterface>;
     tba: TheBlueAlliance.Interface;
@@ -71,38 +77,39 @@ export namespace API {
     }
 
     async handleRequest(req: NextApiRequest, res: NextApiResponse) {
-            
-            if(!req.url) {
-                new InvalidRequestError(res);
-                return;
-            }
+      if (!req.url) {
+        new InvalidRequestError(res);
+        return;
+      }
 
-            
-            //const session = await getServerSession(req, res, Auth);
-            if(req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
-                new UnauthorizedError(res);
-            }
+      //const session = await getServerSession(req, res, Auth);
+      if (req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
+        new UnauthorizedError(res);
+      }
 
-            var route = req.url.replace(this.basePath, "");
-            
-            if(route in this.routes) {
-                this.routes[route](req, res, {slackClient:this.slackClient, db:await this.db, tba:this.tba, data:req.body});
-            } else {
-                new NotFoundError(res, route);
-                return;
-            }
+      var route = req.url.replace(this.basePath, "");
+
+      if (route in this.routes) {
+        this.routes[route](req, res, {
+          slackClient: this.slackClient,
+          db: await this.db,
+          tba: this.tba,
+          data: req.body,
+        });
+      } else {
+        new NotFoundError(res, route);
+        return;
+      }
     }
   }
 
   export const Routes: RouteCollection = {
     hello: async (req, res, { db, data }) => {
-      res
-        .status(200)
-        .send({
-          message: "howdy there partner",
-          db: db ? "connected" : "disconnected",
-          data: data,
-        });
+      res.status(200).send({
+        message: "howdy there partner",
+        db: db ? "connected" : "disconnected",
+        data: data,
+      });
     },
 
     // crud operations- no need to make extra endpoints when we can just shape the query client side;
@@ -556,6 +563,24 @@ export namespace API {
         new ObjectId(data.userId),
         { oweBucks: data.oweBucks + data.oweBucksToAdd },
       );
+    },
+
+    getMainPageCounterData: async (req, res, { db, data }) => {
+      const teamsPromise = db.countObjects(Collections.Teams, {});
+      const usersPromise = db.countObjects(Collections.Users, {});
+      const reportsPromise = db.countObjects(Collections.Reports, {});
+      const competitionsPromise = db.countObjects(Collections.Competitions, {});
+
+      const dataPointsPerReport = Reflect.ownKeys(FormData).length;
+
+      await Promise.all([teamsPromise, usersPromise, reportsPromise]);
+
+      return res.status(200).send({
+        teams: await teamsPromise,
+        users: await usersPromise,
+        datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport,
+        competitions: await competitionsPromise,
+      });
     },
   };
 }
