@@ -246,7 +246,7 @@ export default function PublicEvent() {
           )
         }
 
-        {first.length > 0 && (
+        {first.length > 0 ? (
           <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
             <div className="card-body">
               <h2 className="card-title font-bold text-4xl">Ranking</h2>
@@ -322,6 +322,13 @@ export default function PublicEvent() {
                   </table>
                 </div>
               </div>
+            </div>
+          </div>
+        ) : (
+          <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
+            <div className="card-body">
+              <h3 className="card-title font-bold text-3xl">No data.</h3>
+              Check back later for rankings.
             </div>
           </div>
         )}
