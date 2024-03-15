@@ -206,8 +206,8 @@ export default function TeamStats(props: {
         <ul>
           {props.selectedReports.map((report) => (
             <li className="mt-2" key={report._id}>
-              {report.data.Comment?.length > 1
-                ? report.data.Comment
+              {report.data.comments?.length > 1
+                ? report.data.comments
                 : "[No Comment]"}
             </li>
           ))}

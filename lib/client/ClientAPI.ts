@@ -269,6 +269,18 @@ export default class ClientAPI {
     });
   }
 
+  async updatePitreport(
+    pitreportId: string | undefined,
+    data: object | undefined,
+  ) {
+    return await this.request("/update", {
+      collection: "Pitreports",
+      newValues: data,
+      id: pitreportId
+    });
+    
+  }
+
   async competitionReports(compId: string | undefined, submitted: boolean) {
     return await this.request("/competitionReports", {
       compId: compId,

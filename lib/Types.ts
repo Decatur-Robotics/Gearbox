@@ -129,14 +129,16 @@ export class FormData {
 
   Defense: Defense = Defense.None;
 
+  drivetrain: Drivetrain = Drivetrain.Tank;
+
   Coopertition: boolean = false; // true if used any point in match
   ClimbedStage: boolean = false;
   ParkedStage: boolean = false;
   UnderStage: boolean = false;
 
-  IntakeType: IntakeTypes = IntakeTypes.Human;
+  intakeType: IntakeTypes = IntakeTypes.Human;
 
-  Comment: string = "";
+  comments: string = "";
 }
 
 export class Form {
