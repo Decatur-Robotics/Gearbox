@@ -342,11 +342,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         <input
                           type="checkbox"
                           className="toggle toggle-secondary"
-                          disabled
                           checked={team?.owners.includes(user._id as string)}
-                          onChange={() => {
-                            updateOwner(user._id as string);
-                          }}
                         />
                       </td>
                     )}
