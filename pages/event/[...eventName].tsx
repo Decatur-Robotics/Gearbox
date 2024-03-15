@@ -208,7 +208,7 @@ export default function PublicEvent() {
 
         {
           Date.now() < startTime && (
-            <div className="card w-96 shadow-xl bg-base-200">
+            <div className="card w-5/6 shadow-xl bg-base-200">
               <div className="card-body items-center">
                 <div className="grid grid-flow-col gap-5 text-center auto-cols-max">
                   <div className="flex flex-col">
