@@ -3,12 +3,14 @@ import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import {
   Competition,
+  Form,
   FormData,
   Match,
   Season,
   Team,
   User,
   Report,
+  EventData,
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
@@ -17,6 +19,9 @@ import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth from "./Auth";
+
+import { Statbotics } from "./Statbotics";
+
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -565,6 +570,25 @@ export namespace API {
       );
     },
 
+    initialEventData: async (req, res, { tba, data }) => {
+      const compRankingsPromise = tba.req.getCompetitonRanking(data.eventKey);
+      const eventInformationPromise = tba.getCompetitionAutofillData(
+        data.eventKey,
+      );
+      const tbaOPRPromise = tba.req.getCompetitonOPRS(data.eventKey);
+
+      return res.status(200).send({
+        firstRanking: (await compRankingsPromise).rankings,
+        comp: await eventInformationPromise,
+        oprRanking: await tbaOPRPromise,
+      });
+    },
+
+    statboticsTeamEvent: async (req, res, { data }) => {
+      const teamEvent = await Statbotics.getTeamEvent(data.eventKey, data.team);
+      return res.status(200).send(teamEvent);
+    },
+    
     getMainPageCounterData: async (req, res, { db, data }) => {
       const teamsPromise = db.countObjects(Collections.Teams, {});
       const usersPromise = db.countObjects(Collections.Users, {});

@@ -26,6 +26,8 @@ declare global {
       SLACK_CLIENT_SECRET: string;
       SLACK_CHANNEL: string;
 
+      NEXT_PUBLIC_API_URL: string;
+
       NODE_ENV: "development" | "production";
     }
   }
