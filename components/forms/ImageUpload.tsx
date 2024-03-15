@@ -1,0 +1,53 @@
+import React, { useState } from 'react';
+import { FaFileUpload, FaImage } from 'react-icons/fa';
+
+export default function ImageUpload(props: {callback: (key: string, value: string | number | boolean) => void}) {
+
+  const[imageUrl, setImageUrl] = useState("");
+  const[uploadProgress, setUploadProgress] = useState(-1);
+
+  const onUpload = async(event: any) => {
+    setUploadProgress(50);
+    const data = event.target.files[0];
+    const formData = new FormData();
+    formData.append('files', data);
+
+    const res = await fetch('/api/img/upload', {
+        method: 'POST',
+        headers: {
+            "gearbox-auth": "gearboxiscool",
+        },
+        body: formData,
+    });
+
+    if(res.status === 200) {
+        const data = await res.json();
+        const url = `/api/img/${data.filename}`;
+        setImageUrl(url);
+        props.callback("image", url);
+        setUploadProgress(100);
+    } else {
+        setUploadProgress(-1)
+    }
+
+
+
+  };
+
+  return (
+    <div className='w-full flex flex-col items-center'>
+        {!imageUrl ? <div className='flex flex-col justify-center items-center w-64 h-64 animate-pulse bg-slate-600 opacity-25 rounded-lg'>
+            <FaImage size={60}></FaImage>
+            Upload an Image first
+        </div>: <img src={imageUrl} className='w-64 h-64 rounded-lg'></img>}
+        {uploadProgress > 0 ? <progress className="progress w-64 my-2" value={uploadProgress} max="100"></progress>: <></>}
+        <label className="form-control w-full max-w-xs">
+            <div className="label">
+                <span className="label-text inline"><FaFileUpload className='inline mr-2'></FaFileUpload>Pick a Image</span>
+                <span className="label-text-alt">Only .png, .jpg, jpeg accepted</span>
+            </div>
+            <input type="file" className="file-input file-input-bordered w-full max-w-xs" accept=".png,.jpg,.jpeg" multiple={false} onChange={onUpload} />
+        </label>
+    </div>
+  );
+}
