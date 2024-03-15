@@ -289,6 +289,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                   <th></th>
                   <th>Picture </th>
                   <th>Name</th>
+                  <th>XP</th>
 
                   <th>Scouter</th>
                   <th>Manager</th>
@@ -299,7 +300,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 {users.map((user, index) => (
                   <tr key={user._id}>
                     <th>{index + 1}</th>
-                    <td className="flex flex-row items-center justify-evenly">
+                    <td className="flex flex-row items-center">
                       <div className="avatar">
                         <div className="w-10 rounded-full">
                           <img src={user.image} />
@@ -308,6 +309,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     </td>
                     <td>
                       <div className="pl-2 lg:pl-0">{user.name}</div>
+                    </td>
+                    <td>
+                      <div>Level {user.level} ({user.xp}/{user.level*100})</div>
+                      <progress className="progress progress-primary" value={25} max={100}>Hello</progress>
                     </td>
                     <td>
                       <input
