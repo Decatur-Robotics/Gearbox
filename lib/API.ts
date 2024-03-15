@@ -4,6 +4,7 @@ import { TheBlueAlliance } from "./TheBlueAlliance";
 import {
   Competition,
   Form,
+  FormData,
   Match,
   Season,
   Team,
@@ -18,7 +19,9 @@ import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth from "./Auth";
+
 import { Statbotics } from "./Statbotics";
+
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -63,7 +66,7 @@ export namespace API {
   }
 
   export class Handler {
-    // feed routes as big object ot tjhe handler
+    // feed routes as big object to the handler
     routes: RouteCollection;
     db: Promise<MongoDBInterface>;
     tba: TheBlueAlliance.Interface;
@@ -584,6 +587,24 @@ export namespace API {
     statboticsTeamEvent: async (req, res, { data }) => {
       const teamEvent = await Statbotics.getTeamEvent(data.eventKey, data.team);
       return res.status(200).send(teamEvent);
+    },
+    
+    getMainPageCounterData: async (req, res, { db, data }) => {
+      const teamsPromise = db.countObjects(Collections.Teams, {});
+      const usersPromise = db.countObjects(Collections.Users, {});
+      const reportsPromise = db.countObjects(Collections.Reports, {});
+      const competitionsPromise = db.countObjects(Collections.Competitions, {});
+
+      const dataPointsPerReport = Reflect.ownKeys(FormData).length;
+
+      await Promise.all([teamsPromise, usersPromise, reportsPromise]);
+
+      return res.status(200).send({
+        teams: await teamsPromise,
+        users: await usersPromise,
+        datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport,
+        competitions: await competitionsPromise,
+      });
     },
   };
 }

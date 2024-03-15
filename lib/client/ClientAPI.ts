@@ -314,5 +314,13 @@ export default class ClientAPI {
       team,
       eventKey,
     });
+
+  async getMainPageCounterData(): Promise<{
+    teams: number | null;
+    users: number | null;
+    datapoints: number | null;
+    competitions: number | null;
+  }> {
+    return await this.request("/getMainPageCounterData", {});
   }
 }
