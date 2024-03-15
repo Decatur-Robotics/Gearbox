@@ -1,32 +1,67 @@
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
-import { GetServerSideProps } from "next";
-import { Competition } from "@/lib/Types";
+import { EventData } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Container from "@/components/Container";
-import { SerializeDatabaseObject } from "@/lib/UrlResolver";
-import { DateString, TimeString } from "@/lib/client/FormatTime";
+import { DateString } from "@/lib/client/FormatTime";
 import { Statbotics } from "@/lib/Statbotics";
+import { useEffect, useState } from "react";
+import ClientAPI from "@/lib/client/ClientAPI";
 
-const tba = new TheBlueAlliance.Interface();
+const api = new ClientAPI("gearboxiscool");
 
-export default function PublicEvent(props: {
-  comp: Competition;
-  firstRanking: TheBlueAlliance.SimpleRank[];
-  oprRanking: TheBlueAlliance.OprRanking;
-  statbotics: Statbotics.TeamEvent[];
-}) {
+export default function PublicEvent() {
   const { session, status } = useCurrentSession();
+  const [eventData, setEventData] = useState<EventData | null>(null);
+  const [teamEvents, setTeamEvents] = useState<Statbotics.TeamEvent[] | null>(
+    null,
+  );
   const hide = status === "authenticated";
 
-  const oprs = props.oprRanking.oprs;
+  useEffect(() => {
+    const eventName = window.location.pathname.split("/event/")[1];
+    if (eventData === null) {
+      api.initialEventData(eventName).then((data) => {
+        setEventData(data);
+      });
+    } else if (teamEvents === null) {
+      const firstRanking = eventData.firstRanking;
+
+      firstRanking.map(({ team_key }) =>
+        api
+          .statboticsTeamEvent(eventName, team_key.split("frc")[1])
+          .then((teamEvent: Statbotics.TeamEvent) =>
+            setTeamEvents((prev) => {
+              if (prev === null) {
+                return [teamEvent];
+              } else {
+                return [...prev, teamEvent];
+              }
+            }),
+          ),
+      );
+    }
+  });
+
+  if (eventData === null) {
+    return (
+      <Container requireAuthentication={false} hideMenu={!hide}>
+        <div className=" min-h-screen flex flex-col items-center justify-center space-y-6">
+          <div className="loading loading-spinner loading-lg"></div>
+          <div className="text-4xl font-bold">Loading...</div>
+        </div>
+      </Container>
+    );
+  }
+
+  const oprs = eventData.oprRanking.oprs;
   //@ts-ignore
-  const first = props.firstRanking;
-  const statbotics = props.statbotics;
+  const first = eventData.firstRanking;
+  const statbotics = teamEvents ?? [];
 
   const findStatboticsStats = (key: string) => {
     var stats: Statbotics.TeamEvent | undefined;
-    statbotics.forEach((s) => {
-      if (s.team == Number(key.split("frc")[1])) {
+    statbotics.forEach((s: Statbotics.TeamEvent | undefined) => {
+      if (s?.team == Number(key.split("frc")[1])) {
         stats = s;
       }
     });
@@ -40,14 +75,24 @@ export default function PublicEvent(props: {
         <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
           <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
           <div className="card-body">
-            <h2 className="card-title font-bold text-4xl">{props.comp.name}</h2>
-            {DateString(props.comp.start)} - {DateString(props.comp.end)}
+            <h2 className="card-title font-bold text-4xl">
+              {eventData.comp.name}
+            </h2>
+            {DateString(eventData.comp.start)} -{" "}
+            {DateString(eventData.comp.end)}
           </div>
         </div>
 
         <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
           <div className="card-body">
             <h2 className="card-title font-bold text-4xl">Ranking</h2>
+            {statbotics.length < first.length && (
+              <progress
+                className="progress progress-primary w-100%"
+                value={statbotics.length}
+                max={first.length}
+              ></progress>
+            )}
             <div className="w-full h-full flex flex-row">
               <div className="w-full h-full">
                 <h1 className="text-lg font-semibold">Composite Ranking</h1>
@@ -72,10 +117,8 @@ export default function PublicEvent(props: {
                     {first.map((ranking: any, index: number) => (
                       <tr key={ranking.team_key}>
                         <th>
-                          {
-                            findStatboticsStats(ranking.team_key)?.record.qual
-                              .rank
-                          }
+                          {findStatboticsStats(ranking.team_key)?.record.qual
+                            .rank ?? "..."}
                         </th>
                         <td className="">{ranking.team_key.split("frc")[1]}</td>
                         <td className="">
@@ -85,23 +128,24 @@ export default function PublicEvent(props: {
                         <td>
                           {findStatboticsStats(
                             ranking.team_key,
-                          )?.record.qual.winrate.toFixed(2)}
+                          )?.record.qual.winrate.toFixed(2) ?? "..."}
                         </td>
                         <td>{oprs[ranking.team_key].toFixed(2)}</td>
                         <td>
                           {findStatboticsStats(
                             ranking.team_key,
-                          )?.epa.total_points.mean.toFixed(2)}
+                          )?.epa.total_points.mean.toFixed(2) ?? "..."}
                         </td>
                         <td>
                           {findStatboticsStats(
                             ranking.team_key,
-                          )?.epa.breakdown.teleop_points.mean.toFixed(2)}
+                          )?.epa.breakdown.teleop_points.mean.toFixed(2) ??
+                            "..."}
                         </td>
                         <td>
                           {findStatboticsStats(
                             ranking.team_key,
-                          )?.epa.breakdown.auto_points.mean.toFixed(2)}
+                          )?.epa.breakdown.auto_points.mean.toFixed(2) ?? "..."}
                         </td>
                         <td className="">{ranking.extra_stats}</td>
                       </tr>
@@ -116,37 +160,3 @@ export default function PublicEvent(props: {
     </Container>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const eventKey = context.resolvedUrl.split("/event/")[1];
-
-  // Start promises
-  const compRankingsPromise = tba.req.getCompetitonRanking(eventKey);
-  const eventInformationPromise = tba.getCompetitionAutofillData(eventKey);
-  const tbaOPRPromise = tba.req.getCompetitonOPRS(eventKey);
-
-  await compRankingsPromise;
-  const firstRanking = (await compRankingsPromise).rankings;
-
-  async function getStatboticsData(): Promise<Statbotics.TeamEvent[]> {
-    const promises = firstRanking.map(({ team_key }) =>
-      Statbotics.getTeamEvent(eventKey, team_key.split("frc")[1]),
-    );
-
-    return Promise.all(promises);
-  }
-  const statboticsPromise = getStatboticsData();
-
-  const eventInformation = await eventInformationPromise;
-  const tbaOPR = await tbaOPRPromise;
-  const statbotics = await statboticsPromise;
-
-  return {
-    props: {
-      comp: JSON.parse(JSON.stringify(eventInformation)),
-      firstRanking: firstRanking,
-      oprRanking: tbaOPR,
-      statbotics: statbotics,
-    },
-  };
-};

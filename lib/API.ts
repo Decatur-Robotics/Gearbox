@@ -1,7 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Competition, Form, Match, Season, Team, User, Report } from "./Types";
+import {
+  Competition,
+  Form,
+  Match,
+  Season,
+  Team,
+  User,
+  Report,
+  EventData,
+} from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
@@ -9,7 +18,7 @@ import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth from "./Auth";
-
+import { Statbotics } from "./Statbotics";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -47,7 +56,6 @@ export namespace API {
     }
   }
 
-
   class UnauthorizedError extends Error {
     constructor(res: NextApiResponse) {
       super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key");
@@ -71,38 +79,39 @@ export namespace API {
     }
 
     async handleRequest(req: NextApiRequest, res: NextApiResponse) {
-            
-            if(!req.url) {
-                new InvalidRequestError(res);
-                return;
-            }
+      if (!req.url) {
+        new InvalidRequestError(res);
+        return;
+      }
 
-            
-            //const session = await getServerSession(req, res, Auth);
-            if(req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
-                new UnauthorizedError(res);
-            }
+      //const session = await getServerSession(req, res, Auth);
+      if (req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
+        new UnauthorizedError(res);
+      }
 
-            var route = req.url.replace(this.basePath, "");
-            
-            if(route in this.routes) {
-                this.routes[route](req, res, {slackClient:this.slackClient, db:await this.db, tba:this.tba, data:req.body});
-            } else {
-                new NotFoundError(res, route);
-                return;
-            }
+      var route = req.url.replace(this.basePath, "");
+
+      if (route in this.routes) {
+        this.routes[route](req, res, {
+          slackClient: this.slackClient,
+          db: await this.db,
+          tba: this.tba,
+          data: req.body,
+        });
+      } else {
+        new NotFoundError(res, route);
+        return;
+      }
     }
   }
 
   export const Routes: RouteCollection = {
     hello: async (req, res, { db, data }) => {
-      res
-        .status(200)
-        .send({
-          message: "howdy there partner",
-          db: db ? "connected" : "disconnected",
-          data: data,
-        });
+      res.status(200).send({
+        message: "howdy there partner",
+        db: db ? "connected" : "disconnected",
+        data: data,
+      });
     },
 
     // crud operations- no need to make extra endpoints when we can just shape the query client side;
@@ -556,6 +565,25 @@ export namespace API {
         new ObjectId(data.userId),
         { oweBucks: data.oweBucks + data.oweBucksToAdd },
       );
+    },
+
+    initialEventData: async (req, res, { tba, data }) => {
+      const compRankingsPromise = tba.req.getCompetitonRanking(data.eventKey);
+      const eventInformationPromise = tba.getCompetitionAutofillData(
+        data.eventKey,
+      );
+      const tbaOPRPromise = tba.req.getCompetitonOPRS(data.eventKey);
+
+      return res.status(200).send({
+        firstRanking: (await compRankingsPromise).rankings,
+        comp: await eventInformationPromise,
+        oprRanking: await tbaOPRPromise,
+      });
+    },
+
+    statboticsTeamEvent: async (req, res, { data }) => {
+      const teamEvent = await Statbotics.getTeamEvent(data.eventKey, data.team);
+      return res.status(200).send(teamEvent);
     },
   };
 }

@@ -1,3 +1,4 @@
+import { Statbotics } from "../Statbotics";
 import {
   Competition,
   Season,
@@ -9,6 +10,7 @@ import {
   Report,
   MatchType,
   FormData,
+  EventData,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -297,6 +299,20 @@ export default class ClientAPI {
       userId,
       oweBucks,
       oweBucksToAdd,
+    });
+  }
+
+  async initialEventData(eventKey: string | undefined): Promise<EventData> {
+    return await this.request("/initialEventData", { eventKey });
+  }
+
+  async statboticsTeamEvent(
+    eventKey: string,
+    team: string,
+  ): Promise<Statbotics.TeamEvent> {
+    return await this.request("/statboticsTeamEvent", {
+      team,
+      eventKey,
     });
   }
 }

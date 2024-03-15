@@ -4,6 +4,8 @@ import {
   Session as NextAuthSession,
   User as NextAuthUser,
 } from "next-auth";
+import { TheBlueAlliance } from "./TheBlueAlliance";
+import { Statbotics } from "./Statbotics";
 
 /**
  * Standard Account Type
@@ -285,4 +287,10 @@ export class Report {
 export interface CompetitonNameIdPair {
   name: string;
   tbaId: string;
+}
+
+export interface EventData {
+  comp: Competition;
+  firstRanking: TheBlueAlliance.SimpleRank[];
+  oprRanking: TheBlueAlliance.OprRanking;
 }
