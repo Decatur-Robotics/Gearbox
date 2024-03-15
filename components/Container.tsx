@@ -118,7 +118,7 @@ export default function Container(props: ContainerProps) {
                 <></>
               )}
               <Link href={"/"}>
-                <h1 className="text-3xl mb-1 btn btn-ghost">
+                <h1 className="max-sm:invisible text-3xl mb-1 btn btn-ghost">
                   <BsGearFill className="hover:animate-spin"></BsGearFill>Gearbox{" "}
                   <span className="text-xl bg-accent px-3 p-2 rounded-full text-white">
                     BETA

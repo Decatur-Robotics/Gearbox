@@ -50,17 +50,17 @@ export default function Homepage() {
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
-      <div className="w-full min-h-screen flex lg:flex-row flex-col  ">
+      <div className="w-full min-h-screen flex lg:flex-row flex-col">
         <div className="hero min-h-screen bg-base-200 lg:w-1/2 w-full">
           <div className="hero-content">
             <div className="max-w-md flex flex-col items-center">
-              <h1 className="text-5xl font-bold">
+              <h1 className="text-3xl md:text-5xl font-bold">
                 Welcome to{" "}
-                <span className="text-8xl text-accent drop-shadow-glowAccent">
+                <span className="text-4xl md:text-8xl text-accent drop-shadow-glowAccent">
                   Gearbox
                 </span>
               </h1>
-              <p className="py-6 text-lg font-semibold">
+              <p className="py-6 text-lg font-semibold text-center sm:text-left items-center">
                 A fully customizable, modular scouting platform for{" "}
                 <Link
                   href={"https://www.firstinspires.org/robotics/frc"}
@@ -69,7 +69,6 @@ export default function Homepage() {
                   FIRST Robotics
                 </Link>
               </p>
-              <p className="font-mono text-yellow-500"></p>
               <div className="flex flex-row space-x-4">
                 <a
                   className="btn btn-lg btn-primary normal-case"
@@ -86,15 +85,15 @@ export default function Homepage() {
         </div>
         <div className="hero min-h-screen bg-base-200 lg:w-2/3 w-full">
           <div className="hero-content text-center w-full">
-            <div className="w-full flex flex-col items-center">
-              <div className="w-2/3 h-full mockup-browser border-2 border-slate-800">
-                <div className="mockup-browser-toolbar">
-                  <div className="input border border-base-300">
+            <div className="w-full flex flex-col items-center sm:bg-base-200">
+              <div className="w-4/5 sm:w-2/3 h-full max-sm:mockup-phone sm:mockup-browser border-2 border-slate-800">
+                <div className="max-sm:camera sm:mockup-browser-toolbar">
+                  <div className="max-sm:invisible input border border-base-300">
                     https://4026.org
                   </div>
                 </div>
-                <div className="flex justify-center px-4 py-16 border-t border-base-100">
-                  <h1 className="z-10 absolute flex flex-row space-x-8 opacity-20">
+                <div className="max-sm:display max-sm:artboard max-sm:artboard-demo flex justify-center px-4 py-16 sm:border-t border-base-100">
+                  <h1 className="max-sm:invisible z-10 absolute flex flex-row space-x-8 opacity-20">
                     <BsGearFill
                       size={200}
                       className="animate-spin-slow"
@@ -113,7 +112,7 @@ export default function Homepage() {
                 </div>
               </div>
 
-              <div className="stats mt-6">
+              <div className="stats max-sm:stats-vertical mt-6">
                 <div className="stat place-items-center">
                   <div className="stat-title">Teams</div>
                   <div className="stat-figure text-primary">
