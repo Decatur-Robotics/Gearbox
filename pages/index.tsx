@@ -86,14 +86,14 @@ export default function Homepage() {
         <div className="hero min-h-screen bg-base-200 lg:w-2/3 w-full">
           <div className="hero-content text-center w-full">
             <div className="w-full flex flex-col items-center sm:bg-base-200">
-              <div className="w-4/5 sm:w-2/3 h-full max-sm:mockup-phone sm:mockup-browser border-2 border-slate-800">
-                <div className="max-sm:camera sm:mockup-browser-toolbar">
-                  <div className="max-sm:invisible input border border-base-300">
+              <div className=" max-sm:hidden sm:w-2/3 h-full mockup-browser border-2 border-slate-800">
+                <div className="mockup-browser-toolbar">
+                  <div className="input border border-base-300">
                     https://4026.org
                   </div>
                 </div>
-                <div className="max-sm:display max-sm:artboard max-sm:artboard-demo flex justify-center px-4 py-16 sm:border-t border-base-100">
-                  <h1 className="max-sm:invisible z-10 absolute flex flex-row space-x-8 opacity-20">
+                <div className="flex justify-center px-4 py-16 sm:border-t border-base-100">
+                  <h1 className="z-10 absolute flex flex-row space-x-8 opacity-20">
                     <BsGearFill
                       size={200}
                       className="animate-spin-slow"
@@ -108,6 +108,19 @@ export default function Homepage() {
                       {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
                     </h1>
                     <h1 className="text-lg font-light mt-2">- Team 4026</h1>
+                  </div>
+                </div>
+              </div>
+              <div className="sm:hidden mockup-phone">
+                <div className="camera"></div>
+                <div className="display">
+                  <div className="artboard artboard-demo phone-1">
+                    <div className="z-20 relative">
+                      <h1 className="text-4xl font-bold italic">
+                        {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
+                      </h1>
+                      <h1 className="text-lg font-light mt-2">- Team 4026</h1>
+                    </div>
                   </div>
                 </div>
               </div>
