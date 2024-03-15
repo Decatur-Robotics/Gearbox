@@ -30,7 +30,7 @@ export default function Footer() {
       </aside>
       <nav>
         <h6 className="footer-title">More</h6>
-        <a className="link link-hover"><MdAlternateEmail className="inline mr-1" size={16}></MdAlternateEmail>Contact</a>
+        <a className="link link-hover" href="mailto:gearbox@decaturrobotics.org"><MdAlternateEmail className="inline mr-1" size={16}></MdAlternateEmail>Contact</a>
         <a className="link link-hover"><FaBug className="inline mr-1" size={16}></FaBug>Bug Report/Feature Request</a>
       </nav>
       <nav>
