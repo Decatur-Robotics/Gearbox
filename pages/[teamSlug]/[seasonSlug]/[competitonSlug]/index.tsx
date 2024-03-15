@@ -225,8 +225,11 @@ export default function Home(props: ResolvedUrlData) {
                         
                         return <div className="tooltip tooltip-bottom" data-tip={user?.name} key={reportId}>
                           <div className="avatar online">
+                            {/*Ternaries are fun*/}
                             <div className="w-10 rounded-full">
-                              <img src={user?.image} />
+                              <img src={user?.image} onClick={()=>{user.slackId? session.user?.slackId? 
+                                api.remindSlack(user.slackId, session.user?.slackId) : console.log("Sender has no valid slackId") 
+                                : console.log("Scouter has no slackId")}}/>
                             </div>
                         </div>
                       </div>

@@ -462,8 +462,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
     return (
       <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-          <h1 className="card-title text-2xl">Owebucks</h1>
-          <p>Manage your owebucks</p>
+          <h1 className="card-title text-2xl">XP</h1>
+          <p>Manually edit team XP</p>
 
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
             {requests.map((user) => (
@@ -512,7 +512,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                   <th></th>
                   <th>Picture </th>
                   <th>Name</th>
-                  <th>Owebucks</th>
+                  <th>XP</th>
 
                   <th>How Many</th>
                   <th>Remove</th>
@@ -534,10 +534,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <div className="pl-2 lg:pl-0">{user.name}</div>
                     </td>
                     <td>
-                      {user.oweBucks > 0 ? (
-                        <div>{user.oweBucks}</div>
+                      {user.xp > 0 ? (
+                        <div>{user.xp}</div>
                       ) : (
-                        <div style={{ color: "red" }}>{user.oweBucks}</div>
+                        <div style={{ color: "red" }}>{user.xp}</div>
                       )}
                     </td>
                     <td>
@@ -558,7 +558,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         onClick={() => {
                           changeOweBucks(
                             user._id,
-                            user?.oweBucks,
+                            user?.xp,
                             owebucksToChange * -1,
                           );
                         }}
@@ -572,7 +572,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         onClick={() => {
                           changeOweBucks(
                             user._id,
-                            user?.oweBucks,
+                            user?.xp,
                             owebucksToChange,
                           );
                         }}

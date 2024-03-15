@@ -34,7 +34,8 @@ export class User implements NextAuthUser {
   teams: string[];
   owner: string[];
   slackId: string = "";
-  oweBucks: number = 10;
+  xp: number = 10;
+  level: number = 1;
 
   constructor(
     name: string | undefined,
@@ -45,7 +46,8 @@ export class User implements NextAuthUser {
     teams: string[] = [],
     owner: string[] = [],
     slackId: string = "",
-    oweBucks: number = 10,
+    xp: number = 10,
+    level: number = 1,
   ) {
     this.name = name;
     this.email = email;
@@ -55,7 +57,7 @@ export class User implements NextAuthUser {
     this.teams = teams;
     this.owner = owner;
     this.slackId = slackId;
-    this.oweBucks = oweBucks;
+    this.xp = xp;
   }
 }
 

@@ -54,6 +54,8 @@ export default NextAuth({
           [],
           [],
           profile.sub,
+          10,
+          1,
         );
         user.id = profile.sub;
         return user;

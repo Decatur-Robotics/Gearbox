@@ -282,8 +282,8 @@ export default class ClientAPI {
     return await this.request("/updateCheckOut", { reportId });
   }
 
-  async remindSlack(slackId: string | undefined) {
-    return await this.request("/remindSlack", { slackId });
+  async remindSlack(slackId: string | undefined, senderSlackId: string | undefined) {
+    return await this.request("/remindSlack", { slackId, senderSlackId });
   }
 
   async setSlackId(userId: string | undefined, slackId: string | undefined) {
