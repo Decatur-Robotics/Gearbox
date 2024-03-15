@@ -1,16 +1,30 @@
+import { Pitreport } from '@/lib/Types';
+import imageCompression from 'browser-image-compression';
 import React, { useState } from 'react';
 import { FaFileUpload, FaImage } from 'react-icons/fa';
 
-export default function ImageUpload(props: {callback: (key: string, value: string | number | boolean) => void}) {
+const CompressionOptions = {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+}
 
-  const[imageUrl, setImageUrl] = useState("");
+export default function ImageUpload(props: {data: Pitreport, callback: (key: string, value: string | number | boolean) => void}) {
+
+  const[imageUrl, setImageUrl] = useState(props.data.image !== "/robot.jpg"?props.data.image: "");
   const[uploadProgress, setUploadProgress] = useState(-1);
 
   const onUpload = async(event: any) => {
     setUploadProgress(50);
     const data = event.target.files[0];
+    console.log(`originalFile size ${data.size / 1024 / 1024} MB`);
+    const compressedFile = await imageCompression(data, CompressionOptions);
+    console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`);
+
+
+    
     const formData = new FormData();
-    formData.append('files', data);
+    formData.append('files', compressedFile);
 
     const res = await fetch('/api/img/upload', {
         method: 'POST',

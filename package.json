@@ -17,6 +17,7 @@
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^1.0.10",
     "bootstrap": "^5.3.2",
+    "browser-image-compression": "^2.0.2",
     "dependencies": "^0.0.1",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.1",

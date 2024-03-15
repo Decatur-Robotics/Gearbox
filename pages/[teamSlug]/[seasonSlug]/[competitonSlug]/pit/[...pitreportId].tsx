@@ -64,7 +64,7 @@ export default function PitreportForm(props: {pitreport: Pitreport}) {
             <div className="card w-2/3 bg-base-200 mb-2">
                 <div className="card-body w-full flex flex-col justify-center items-center text-center">
                     <h1>Image: </h1>
-                    <ImageUpload callback={setCallback}></ImageUpload>
+                    <ImageUpload data={pitreport} callback={setCallback}></ImageUpload>
 
                     <div className="divider "></div>
 
