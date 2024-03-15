@@ -118,4 +118,8 @@ export class MongoDBInterface {
       .find(query)
       .toArray()) as Type[];
   }
+
+  async countObjects(collection: Collections, query: object): Promise<number | undefined> {
+    return await this?.db?.collection(collection).countDocuments(query);
+  }
 }
