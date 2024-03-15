@@ -183,8 +183,8 @@ export default function Homepage() {
         className={`z-30 hero py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${secondVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div className="hero-content w-full">
-          <div className="w-1/2 space-y-2">
-            <h1 className="text-5xl font-bold leading-relaxed">
+          <div className="w-2/3 sm:w-1/2 space-y-2">
+            <h1 className="text-4xl sm:text-5xl font-bold leading-relaxed">
               Feature-packed and blazing fast
               <span className="animate-pulse">🔥</span>
             </h1>
@@ -202,7 +202,7 @@ export default function Homepage() {
             </ul>
             <div className="divider translate-y-6"></div>
           </div>
-          <div className="w-1/2 grid space-x-8 space-y-8 grid-cols-2 grid-row-2">
+          <div className="max-sm:hidden w-1/2 grid space-x-8 space-y-8 grid-cols-2 grid-row-2">
             <div className="card-bordered glass rounded-lg w-full animate-float-offset ml-10">
               <div className="p-4 font-mono">
                 <span className="float-right -translate-y-2 ">
@@ -232,15 +232,15 @@ export default function Homepage() {
 
       <div
         ref={thirdSection}
-        className={`hero py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${thirdVisible ? "scale-100" : "scale-0"}`}
+        className={`hero py-14 sm:py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${thirdVisible ? "scale-100" : "scale-0"}`}
       >
-        <div className="hero-content w-full">
-          <div className="w-full space-y-2 grid grid-cols-3 grid-rows-2 space-x-10 z-20">
+        <div className="hero-content w-full max-sm:pb-14">
+          <div className="w-full space-y-2 grid grid-cols-1 sm:grid-cols-3 grid-rows-2 sm:space-x-10 z-20">
             <div className="relative w-full flex items-center justify-center">
               <div className="w-96 h-96 right-36 top-2 absolute bg-slate-600 opacity-20 rounded-xl animate-spin-slow -z-50"></div>
             </div>
 
-            <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+            <div className="w-full flex flex-col items-center text-center bg-base-300 sm:p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
               <p className="text-2xl font-bold">Insightful Visualizations</p>
               <div className="divider"></div>
               <p className="font-mono opacity-50">
