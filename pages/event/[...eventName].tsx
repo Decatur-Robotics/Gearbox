@@ -6,12 +6,15 @@ import { DateString } from "@/lib/client/FormatTime";
 import { Statbotics } from "@/lib/Statbotics";
 import { useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
+import { FaX } from "react-icons/fa6";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function PublicEvent() {
   const { session, status } = useCurrentSession();
-  const [eventData, setEventData] = useState<EventData | null>(null);
+  const [eventData, setEventData] = useState<EventData | undefined | null>(
+    null,
+  );
   const [teamEvents, setTeamEvents] = useState<Statbotics.TeamEvent[] | null>(
     null,
   );
@@ -23,10 +26,17 @@ export default function PublicEvent() {
       api.initialEventData(eventName).then((data) => {
         setEventData(data);
       });
+      setTimeout(() => {
+        console.log("Event not found");
+        if (eventData === null) {
+          console.log("Event is null");
+          setEventData(undefined);
+        }
+      }, 10000);
     } else if (teamEvents === null) {
-      const firstRanking = eventData.firstRanking;
+      const firstRanking = eventData?.firstRanking;
 
-      firstRanking.map(({ team_key }) =>
+      firstRanking?.map(({ team_key }) =>
         api
           .statboticsTeamEvent(eventName, team_key.split("frc")[1])
           .then((teamEvent: Statbotics.TeamEvent) =>
@@ -45,7 +55,7 @@ export default function PublicEvent() {
   if (eventData === null) {
     return (
       <Container requireAuthentication={false} hideMenu={!hide}>
-        <div className=" min-h-screen flex flex-col items-center justify-center space-y-6">
+        <div className=" min-h-[65vh] flex flex-col items-center justify-center space-y-6">
           <div className="loading loading-spinner loading-lg"></div>
           <div className="text-4xl font-bold">Loading...</div>
         </div>
@@ -53,7 +63,18 @@ export default function PublicEvent() {
     );
   }
 
-  const oprs = eventData.oprRanking.oprs;
+  if (eventData === undefined) {
+    return (
+      <Container requireAuthentication={false} hideMenu={!hide}>
+        <div className="min-h-[65vh] flex flex-col items-center justify-center space-y-6">
+          <FaX size={48} color="red" />
+          <div className="text-4xl font-bold">Error: Event not found</div>
+        </div>
+      </Container>
+    );
+  }
+
+  const oprs = eventData!.oprRanking.oprs;
   //@ts-ignore
   const first = eventData.firstRanking;
   const statbotics = teamEvents ?? [];
@@ -76,10 +97,10 @@ export default function PublicEvent() {
           <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
           <div className="card-body">
             <h2 className="card-title font-bold text-4xl">
-              {eventData.comp.name}
+              {eventData?.comp.name}
             </h2>
-            {DateString(eventData.comp.start)} -{" "}
-            {DateString(eventData.comp.end)}
+            {DateString(eventData!.comp.start)} -{" "}
+            {DateString(eventData!.comp.end)}
           </div>
         </div>
 
@@ -130,7 +151,7 @@ export default function PublicEvent() {
                             ranking.team_key,
                           )?.record.qual.winrate.toFixed(2) ?? "..."}
                         </td>
-                        <td>{oprs[ranking.team_key].toFixed(2)}</td>
+                        <td>{oprs![ranking.team_key].toFixed(2)}</td>
                         <td>
                           {findStatboticsStats(
                             ranking.team_key,
