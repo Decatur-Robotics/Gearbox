@@ -11,7 +11,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import { MdAutoGraph, MdDriveEta, MdInsertPhoto, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
-import { FaDatabase, FaEdit, FaUserCheck } from "react-icons/fa";
+import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 
@@ -22,12 +22,12 @@ export default function Home(props: ResolvedUrlData) {
   const season = props.season;
   const comp = props.competition;
 
-
   const[matches, setMatches] = useState<Match[]>([]);
   const[qualificationMatches, setQualificationMatches] = useState<Match[]>([]);6
   const[reports, setReports] = useState<Report[]>([]);
   const[matchesAssigned, setMatchesAssigned] = useState(false);
   const[assigningMatches, setAssigningMatches] = useState(false);
+  const[noMatches, setNoMatches] = useState(false);
 
   const[reportsById, setReportsById] = useState<{[key: string]: Report}>({});
   const[usersById, setUsersById] = useState<{[key: string]: User}>({});
@@ -37,12 +37,13 @@ export default function Home(props: ResolvedUrlData) {
   const[loadingReports, setLoadingReports] = useState(true);
   const[loadingScoutStats, setLoadingScoutStats] = useState(true);
   const[loadingUsers, setLoadingUsers] = useState(true);
-
+  
   const[submissionRate, setSubmissionRate] = useState(0);
   const[submittedReports, setSubmittedReports] = useState(0);
 
   const[pitreports, setPitreports] = useState<Pitreport[]>([]);
   const[loadingPitreports, setLoadingPitreports] = useState(true);
+  const[submittedPitreports, setSubmittedPitreports] = useState(0);
 
   useEffect(() => {
 
@@ -87,6 +88,8 @@ export default function Home(props: ResolvedUrlData) {
 
       if(matches.length > 0) {
         setMatchesAssigned(matches[0].reports.length > 0 ? true: false);
+      } else {
+        setNoMatches(true);
       }
 
       setQualificationMatches(
@@ -114,10 +117,16 @@ export default function Home(props: ResolvedUrlData) {
     const loadPitreports = async() => {
       setLoadingPitreports(true);
       if(!comp?.pitReports) {return;}
-      const newPitReports: Pitreport[] = []
+      const newPitReports: Pitreport[] = [];
+      let submitted = 0;
       for(const pitreportId of comp?.pitReports) {
-        newPitReports.push(await api.findPitreportById(pitreportId));
+        const pitreport = await api.findPitreportById(pitreportId);
+        if(pitreport.image !== "/robot.jpg") {
+          submitted++;
+        }
+        newPitReports.push(pitreport);
       };
+      setSubmittedPitreports(submitted)
       setPitreports(newPitReports);
       setLoadingPitreports(false);
     }
@@ -146,13 +155,13 @@ export default function Home(props: ResolvedUrlData) {
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
-              <progress className="progress w-2/3"></progress>
+              <div className="divider"></div>
               <div className="w-full flex flex-row items-center mt-4">
                 <a className="btn btn-primary" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className="btn btn-secondary btn-disabled" >Stats <MdQueryStats size={30}/></a>
+                <a className={`btn btn-secondary ${noMatches ? "btn-disabled": ""}`} >Stats <MdQueryStats size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className="btn btn-secondary btn-disabled">Driver Reports <MdDriveEta size={30}/></a>
+                <a className={`btn btn-secondary ${noMatches ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
               </div>
             </div>
           </div>
@@ -167,8 +176,8 @@ export default function Home(props: ResolvedUrlData) {
                     <BsClipboard2Check size={65}></BsClipboard2Check>
                   </div>
                   <div className="stat-title text-slate-400">Competition Progress</div>
-                  <div className="stat-value text-accent">{30}%</div>
-                  <div className="stat-desc">0/71</div>
+                  <div className="stat-value text-accent">{!Number.isNaN(submissionRate) ? submissionRate: "?"}%</div>
+                  <div className="stat-desc"></div>
                 </div>
 
                 <div className="stat space-y-2" >
@@ -176,9 +185,9 @@ export default function Home(props: ResolvedUrlData) {
                     <FaUserCheck size={65}></FaUserCheck>
                   </div>
                   <div className="stat-title text-slate-400">Scouter Submission</div>
-                  {
+                    {
                     loadingScoutStats ? <div className="stat-value text-primary"><BsGearFill size={45} className="animate-spin-slow"/></div> : <div>
-                    <div className="stat-value text-primary">{submissionRate}%</div>
+                    <div className="stat-value text-primary">{!Number.isNaN(submissionRate) ? submissionRate: "?"}%</div>
                     <div className="stat-desc">{submittedReports}/{reports.length} Reports</div>
                   </div>}
                 </div>
@@ -190,7 +199,7 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="stat-figure text-primary">
                       <FaUserGroup size={40}></FaUserGroup>
                     </div>
-                    <div className="stat-value text-primary">3</div>
+                    <div className="stat-value text-primary">{!submittedPitreports ? "?": submittedPitreports}</div>
                   </div>
 
                   <div className="stat place-items-center">
@@ -198,7 +207,7 @@ export default function Home(props: ResolvedUrlData) {
                       <MdInsertPhoto size={40}></MdInsertPhoto>
                     </div>
                     <div className="stat-title">Photos</div>
-                    <div className="stat-value text-secondary">{30}</div>
+                    <div className="stat-value text-secondary">{!submittedPitreports ? "?": submittedPitreports}</div>
                   </div>
 
                   <div className="stat place-items-center">
@@ -206,7 +215,7 @@ export default function Home(props: ResolvedUrlData) {
                       <FaDatabase size={40}></FaDatabase>
                     </div>
                     <div className="stat-title">Datapoints</div>
-                    <div className="stat-value text-accent">12.6K</div>
+                    <div className="stat-value text-accent">{!submittedPitreports ? "?": (submittedPitreports*8).toLocaleString()}</div>
                   </div>
                 </div>
             </div>
@@ -220,7 +229,8 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>:
               <div className="w-full flex flex-col items-center space-y-2">
-                <div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box "}>
+                {
+                  noMatches ? <div className="flex flex-col items-center justify-center font-bold space-y-4"><h1>No Match Schedule Available</h1><button className="btn btn-lg btn-primary"> <FaSync></FaSync> Refresh</button></div> : <div><div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box "}>
                   {qualificationMatches.map((match) => <div className="carousel-item w-full flex flex-col items-center" key={match._id}>
 
                     <h1 className="text-lg font-light">Current Match:</h1>
@@ -274,6 +284,7 @@ export default function Home(props: ResolvedUrlData) {
                 <div>
                   <kbd className="kbd">← Scroll →</kbd>
                 </div>
+                </div>}
               </div>}
             </div>
 
