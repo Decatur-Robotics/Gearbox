@@ -29,6 +29,8 @@ export default function Home(props: ResolvedUrlData) {
   const[matches, setMatches] = useState<Match[]>([]);
   const[qualificationMatches, setQualificationMatches] = useState<Match[]>([]);6
   const[reports, setReports] = useState<Report[]>([]);
+  const[matchesAssigned, setMatchesAssigned] = useState(false);
+  const[assigningMatches, setAssigningMatches] = useState(false);
 
   const[reportsById, setReportsById] = useState<{[key: string]: Report}>({});
   const[usersById, setUsersById] = useState<{[key: string]: User}>({});
@@ -42,12 +44,11 @@ export default function Home(props: ResolvedUrlData) {
   const[submissionRate, setSubmissionRate] = useState(0);
   const[submittedReports, setSubmittedReports] = useState(0);
 
-
   const[pitreports, setPitreports] = useState<Pitreport[]>([]);
-  
   const[loadingPitreports, setLoadingPitreports] = useState(true);
 
   useEffect(() => {
+
     const scoutingStats = (reps: Report[]) => {
       setLoadingScoutStats(true);
       let submittedCount = 0;
@@ -87,6 +88,10 @@ export default function Home(props: ResolvedUrlData) {
         return 0;
       });
 
+      if(matches.length > 0) {
+        setMatchesAssigned(matches[0].reports.length > 0 ? true: false);
+      }
+
       setQualificationMatches(
         matches.filter((match) => match.type === MatchType.Qualifying),
       );
@@ -118,19 +123,28 @@ export default function Home(props: ResolvedUrlData) {
       };
       setPitreports(newPitReports);
       setLoadingPitreports(false);
-
     }
 
-    loadUsers();
-    loadMatches();
-    loadReports();
-    loadPitreports();
-  }, [])
+    if(!assigningMatches) {
+      loadUsers();
+      loadMatches();
+      loadReports();
+      loadPitreports();
+    }
+
+    
+  }, [assigningMatches])
+
+  const assignScouters = async () => {
+    setAssigningMatches(true);
+    const res = await api.assignScouters(team?._id, comp?._id, true);
+    setAssigningMatches(false);
+  };
 
   const { session, status } = useCurrentSession();
   
   return <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen w-screen flex flex-row grow-0 items-center justify-center  space-x-6 space-y-6 overflow-hidden">
+      <div className="min-h-screen w-screen flex flex-row grow-0 items-center justify-center  space-x-6 space-y-6 overflow-hidden mb-4">
         <div className="w-2/5 flex flex-col grow-0 space-y-4 h-screen ">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
@@ -209,13 +223,18 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>:
               <div className="w-full flex flex-col items-center space-y-2">
-                <div className="carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box">
+                <div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box "}>
                   {qualificationMatches.map((match) => <div className="carousel-item w-full flex flex-col items-center" key={match._id}>
 
                     <h1 className="text-lg font-light">Current Match:</h1>
                     <h1 className="text-2xl font-bold mb-4">Match {match.number}</h1>
-                    <div className="flex flex-col items-center space-y-4">
+                    <div className="flex flex-col items-center space-y-4 opa">
                   <div className="w-full flex flex-row items-center space-x-2">
+                    {!matchesAssigned ? <div className="opacity-100 font-bold text-warning flex flex-col items-center space-y-2">
+                      Matches are not assigned
+                      <div className="divider "></div>
+                      <button className={"btn btn-primary " + (assigningMatches ? "disabled" : "")} onClick={assignScouters}>{!assigningMatches ? "Assign Matches": <BsGearFill className="animate-spin-slow" size={30}></BsGearFill>}</button>
+                    </div>: <></>}
                     {
                       match.reports.map((reportId) => {
                         const report = reportsById[reportId];
@@ -258,9 +277,6 @@ export default function Home(props: ResolvedUrlData) {
                 <div>
                   <kbd className="kbd">← Scroll →</kbd>
                 </div>
-                
-                
-                
               </div>}
             </div>
 
@@ -284,9 +300,6 @@ export default function Home(props: ResolvedUrlData) {
               </div>
           </div>
         </div>
-
-       
-        
 
       </div>
     </Container>
