@@ -6,17 +6,14 @@ import { GetServerSideProps } from "next";
 import { AllianceColor, Form, Match, MatchType, Pitreport, Report, User } from "@/lib/Types";
 import Container from "@/components/Container";
 
-
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-
 
 import { MdAutoGraph, MdDriveEta, MdInsertPhoto, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaUserCheck } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
-
 
 const api = new ClientAPI("gearboxiscool");
 

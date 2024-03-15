@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
@@ -10,7 +10,7 @@ import { GenerateSlug } from "./Utils";
 
 var db = GetDatabase();
 
-export default NextAuth({
+export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     Google({
@@ -77,4 +77,6 @@ export default NextAuth({
   },
   debug: false,
   adapter: MongoDBAdapter(clientPromise, { databaseName: process.env.DB }),
-});
+}
+
+export default NextAuth(AuthenticationOptions);

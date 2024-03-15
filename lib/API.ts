@@ -8,7 +8,7 @@ import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
-import Auth from "./Auth";
+import Auth, { AuthenticationOptions } from "./Auth";
 
 import { Statbotics } from "./Statbotics";
 
@@ -77,9 +77,15 @@ export namespace API {
         return;
       }
 
-      //const session = await getServerSession(req, res, Auth);
-      if (req.headers[GearboxHeader]?.toString() !== process.env.API_KEY) {
-        new UnauthorizedError(res);
+      // ignore requests coming from anyone on the homepage
+      //@ts-ignore
+      if(req.headers.referer?.split("/")[3].length > 0) {
+        
+        const session = await getServerSession(req, res, AuthenticationOptions);
+      
+        if (req.headers[GearboxHeader]?.toString() !== process.env.API_KEY || !session) {
+          new UnauthorizedError(res);
+        }
       }
 
       var route = req.url.replace(this.basePath, "");
