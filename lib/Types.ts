@@ -4,6 +4,8 @@ import {
   Session as NextAuthSession,
   User as NextAuthUser,
 } from "next-auth";
+import { TheBlueAlliance } from "./TheBlueAlliance";
+import { Statbotics } from "./Statbotics";
 
 /**
  * Standard Account Type
@@ -32,7 +34,8 @@ export class User implements NextAuthUser {
   teams: string[];
   owner: string[];
   slackId: string = "";
-  oweBucks: number = 10;
+  xp: number = 10;
+  level: number = 1;
 
   constructor(
     name: string | undefined,
@@ -43,7 +46,8 @@ export class User implements NextAuthUser {
     teams: string[] = [],
     owner: string[] = [],
     slackId: string = "",
-    oweBucks: number = 10,
+    xp: number = 10,
+    level: number = 1,
   ) {
     this.name = name;
     this.email = email;
@@ -53,7 +57,7 @@ export class User implements NextAuthUser {
     this.teams = teams;
     this.owner = owner;
     this.slackId = slackId;
-    this.oweBucks = oweBucks;
+    this.xp = xp;
   }
 }
 
@@ -308,4 +312,10 @@ export class Report {
 export interface CompetitonNameIdPair {
   name: string;
   tbaId: string;
+}
+
+export interface EventData {
+  comp: Competition;
+  firstRanking: TheBlueAlliance.SimpleRank[];
+  oprRanking: TheBlueAlliance.OprRanking;
 }
