@@ -455,16 +455,25 @@ export namespace API {
       );
       form.data = data.formData;
       form.submitted = true;
+      form.checkedIn = false;
       await db.updateObjectById(
         Collections.Reports,
         new ObjectId(data.reportId),
         form,
       );
-      await db.updateObjectById<Report>(
-        Collections.Reports,
-        new ObjectId(data.reportId),
-        { checkedIn: false },
+      let user = await db.findObjectById<User>(
+        Collections.Users,
+        new ObjectId(data.userId),
       );
+      user.xp = user.xp + Math.round(Math.random()*10)
+      if (user.xp>user.level*100){
+        user.level = Math.ceil((user.xp+1)/100)
+      }
+      await db.updateObjectById(
+        Collections.Users,
+        new ObjectId(data.userId),
+        user,
+      )
       return res.status(200).send({ result: "success" });
     },
 
