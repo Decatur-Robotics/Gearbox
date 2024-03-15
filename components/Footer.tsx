@@ -6,7 +6,7 @@ import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
 export default function Footer() {
   return (
-    <footer className="footer p-10 bg-base-100 text-base-content border-t-8 border-base-300">
+    <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300">
       
       <aside className="flex flex-col -space-x-4">
         <p className="text-lg">Made with ❤️ by{" "}
