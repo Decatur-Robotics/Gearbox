@@ -6,9 +6,9 @@ import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
 export default function Footer() {
   return (
-    <footer className="footer p-10 bg-base-100 text-base-content border-t-8 border-base-300">
+    <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
       
-      <aside className="flex flex-col -space-x-4">
+      <aside className="max-sm:pl-8 flex flex-col -space-x-4">
         <p className="text-lg">Made with ❤️ by{" "}
           
           <a
@@ -28,16 +28,16 @@ export default function Footer() {
         </div>
         
       </aside>
-      <nav>
+      <nav className="max-sm:pl-8">
         <h6 className="footer-title">More</h6>
         <a className="link link-hover" href="mailto:gearbox@decaturrobotics.org"><MdAlternateEmail className="inline mr-1" size={16}></MdAlternateEmail>Contact</a>
         <a className="link link-hover"><FaBug className="inline mr-1" size={16}></FaBug>Bug Report/Feature Request</a>
       </nav>
-      <nav>
+      <nav className="max-sm:pl-8">
         <h6 className="footer-title">About</h6>
         <a className="link link-hover"><FaList className="inline mr-1" size={16}></FaList>About Us</a>
       </nav>
-      <div className="flex-row flex space-x-4">
+      <div className="max-sm:hidden flex-row flex space-x-4">
         <a
           className="bg-indigo-600 p-4 rounded-lg text-white font-bold flex flex-row"
           href="https://www.thebluealliance.com/"

@@ -108,8 +108,8 @@ export default function Container(props: ContainerProps) {
       <div className="drawer">
         <input id="menu" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content">
-          <div className="w-full h-16 bg-base-200 flex flex-row items-center justify-between sticky top-0 z-10">
-            <div className="flex flex-row items-center justify-center">
+          <div className=" sm:w-full h-16 bg-base-200 flex flex-row items-center justify-between sticky top-0 z-10">
+            <div className="flex flex-row items-center sm:justify-center">
               {authenticated && !props.hideMenu ? (
                 <label htmlFor="menu" className="btn btn-ghost drawer-button">
                   <BiMenu className="text-3xl" />
@@ -117,7 +117,7 @@ export default function Container(props: ContainerProps) {
               ) : (
                 <></>
               )}
-              <Link href={"/"}>
+              <Link href={"/"} className="max-sm:hidden">
                 <h1 className="text-3xl mb-1 btn btn-ghost">
                   <BsGearFill className="hover:animate-spin"></BsGearFill>Gearbox{" "}
                   <span className="text-xl bg-accent px-3 p-2 rounded-full text-white">
@@ -127,11 +127,11 @@ export default function Container(props: ContainerProps) {
               </Link>
             </div>
 
-            <label className="input input-bordered flex items-center gap-2 w-1/4">
+            <label className="input input-bordered flex items-center sm:gap-2 sm:w-1/4">
               <input type="text" value={eventSearch} onChange={(e)=>{setEventSearch(e.target.value)}} className="grow bg-base-100" placeholder="Search an event" />
               <FaSearch></FaSearch>
               {
-                eventResults.length > 0 ? <div className="absolute -translate-x-5 translate-y-24 w-1/4 bg-base-300 rounded-b-lg p-2">
+                eventResults.length > 0 ? <div className="absolute -translate-x-5 translate-y-24 w-1/4 bg-base-300 rounded-b-lg sm:p-2">
                 <ul>
                   {eventResults.map((result) => <li key={result.pair.name}><a className="link" href={"/event/"+result.pair.tbaId}>{result.pair.name}</a></li>)}
                 </ul>
@@ -143,7 +143,7 @@ export default function Container(props: ContainerProps) {
                 <Link
                   href={"/profile"}
                   tabIndex={0}
-                  className="btn btn-ghost btn-circle avatar mr-5"
+                  className="btn btn-ghost btn-circle avatar sm:mr-5"
                 >
                   <div className="w-10 rounded-full">
                     <img src={user?.image} />
@@ -155,11 +155,11 @@ export default function Container(props: ContainerProps) {
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  <button className="btn btn-primary mr-4">Sign In</button>
+                  <button className="btn btn-primary sm:mr-4">Sign In</button>
                 </a>
               )}
 
-              <label className="swap swap-rotate mr-10">
+              <label className="max-sm:hidden swap swap-rotate sm:mr-10">
                 <input
                   type="checkbox"
                   className="theme-controller"
@@ -167,10 +167,10 @@ export default function Container(props: ContainerProps) {
                     setTheme(theme === "dark" ? "light" : "dark");
                   }}
                 />
+                
+                <IoSunny className="swap-on sm:w-10 h-10 "></IoSunny>
 
-                <IoSunny className="swap-on w-10 h-10 "></IoSunny>
-
-                <IoMoon className="swap-off w-10 h-10"></IoMoon>
+                <IoMoon className="swap-off sm:w-10 h-10"></IoMoon>
               </label>
             </div>
           </div>

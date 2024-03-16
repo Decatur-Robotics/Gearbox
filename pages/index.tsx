@@ -50,17 +50,17 @@ export default function Homepage() {
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
-      <div className="w-full min-h-screen flex lg:flex-row flex-col  ">
+      <div className="w-full min-h-screen flex lg:flex-row flex-col">
         <div className="hero min-h-screen bg-base-200 lg:w-1/2 w-full">
           <div className="hero-content">
             <div className="max-w-md flex flex-col items-center">
-              <h1 className="text-5xl font-bold">
+              <h1 className="text-3xl md:text-5xl font-bold">
                 Welcome to{" "}
-                <span className="text-8xl text-accent drop-shadow-glowAccent">
+                <span className="text-4xl md:text-8xl text-accent drop-shadow-glowAccent">
                   Gearbox
                 </span>
               </h1>
-              <p className="py-6 text-lg font-semibold">
+              <p className="py-6 text-lg font-semibold text-center sm:text-left items-center">
                 A fully customizable, modular scouting platform for{" "}
                 <Link
                   href={"https://www.firstinspires.org/robotics/frc"}
@@ -69,7 +69,6 @@ export default function Homepage() {
                   FIRST Robotics
                 </Link>
               </p>
-              <p className="font-mono text-yellow-500"></p>
               <div className="flex flex-row space-x-4">
                 <a
                   className="btn btn-lg btn-primary normal-case"
@@ -86,14 +85,14 @@ export default function Homepage() {
         </div>
         <div className="hero min-h-screen bg-base-200 lg:w-2/3 w-full">
           <div className="hero-content text-center w-full">
-            <div className="w-full flex flex-col items-center">
-              <div className="w-2/3 h-full mockup-browser border-2 border-slate-800">
+            <div className="w-full flex flex-col items-center sm:bg-base-200">
+              <div className=" max-sm:hidden sm:w-2/3 h-full mockup-browser border-2 border-slate-800">
                 <div className="mockup-browser-toolbar">
                   <div className="input border border-base-300">
                     https://4026.org
                   </div>
                 </div>
-                <div className="flex justify-center px-4 py-16 border-t border-base-100">
+                <div className="flex justify-center px-4 py-16 sm:border-t border-base-100">
                   <h1 className="z-10 absolute flex flex-row space-x-8 opacity-20">
                     <BsGearFill
                       size={200}
@@ -112,8 +111,21 @@ export default function Homepage() {
                   </div>
                 </div>
               </div>
+              <div className="sm:hidden mockup-phone">
+                <div className="camera"></div>
+                <div className="display">
+                  <div className="artboard artboard-demo phone-1">
+                    <div className="z-20 relative">
+                      <h1 className="text-4xl font-bold italic">
+                        {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
+                      </h1>
+                      <h1 className="text-lg font-light mt-2">- Team 4026</h1>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <div className="stats mt-6">
+              <div className="stats max-sm:stats-vertical mt-6">
                 <div className="stat place-items-center">
                   <div className="stat-title">Teams</div>
                   <div className="stat-figure text-primary">
@@ -171,8 +183,8 @@ export default function Homepage() {
         className={`z-30 hero py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${secondVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div className="hero-content w-full">
-          <div className="w-1/2 space-y-2">
-            <h1 className="text-5xl font-bold leading-relaxed">
+          <div className="w-2/3 sm:w-1/2 space-y-2">
+            <h1 className="text-4xl sm:text-5xl font-bold leading-relaxed">
               Feature-packed and blazing fast
               <span className="animate-pulse">🔥</span>
             </h1>
@@ -190,7 +202,7 @@ export default function Homepage() {
             </ul>
             <div className="divider translate-y-6"></div>
           </div>
-          <div className="w-1/2 grid space-x-8 space-y-8 grid-cols-2 grid-row-2">
+          <div className="max-sm:hidden w-1/2 grid space-x-8 space-y-8 grid-cols-2 grid-row-2">
             <div className="card-bordered glass rounded-lg w-full animate-float-offset ml-10">
               <div className="p-4 font-mono">
                 <span className="float-right -translate-y-2 ">
@@ -220,15 +232,15 @@ export default function Homepage() {
 
       <div
         ref={thirdSection}
-        className={`hero py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${thirdVisible ? "scale-100" : "scale-0"}`}
+        className={`hero py-14 sm:py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${thirdVisible ? "scale-100" : "scale-0"}`}
       >
-        <div className="hero-content w-full">
-          <div className="w-full space-y-2 grid grid-cols-3 grid-rows-2 space-x-10 z-20">
+        <div className="hero-content w-full max-sm:pb-14">
+          <div className="w-full space-y-2 grid grid-cols-1 sm:grid-cols-3 grid-rows-2 sm:space-x-10 z-20">
             <div className="relative w-full flex items-center justify-center">
               <div className="w-96 h-96 right-36 top-2 absolute bg-slate-600 opacity-20 rounded-xl animate-spin-slow -z-50"></div>
             </div>
 
-            <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+            <div className="w-full flex flex-col items-center text-center bg-base-300 sm:p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
               <p className="text-2xl font-bold">Insightful Visualizations</p>
               <div className="divider"></div>
               <p className="font-mono opacity-50">
