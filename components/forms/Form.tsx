@@ -1,6 +1,6 @@
 import { AllianceColor, Report, FormData } from "@/lib/Types";
 import { useCallback, useState, useEffect } from "react";
-import { AutoPage, EndPage, TeleopPage } from "./FormPages";
+import { AutoPage, EndPage, PrematchPage, TeleopPage } from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
@@ -20,7 +20,7 @@ export default function Form(props: { report: Report }) {
   const { session, status } = useCurrentSession();
   //const router = useRouter();
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [formData, setFormData] = useState<FormData>(props.report?.data);
   const [syncing, setSyncing] = useState(false);
 
@@ -53,6 +53,15 @@ export default function Form(props: { report: Report }) {
 
   return (
     <div className="w-full flex flex-col items-center space-y-2">
+      {page === 0 ? (
+        <PrematchPage
+          data={formData}
+          callback={setCallback}
+          alliance={alliance}
+        ></PrematchPage>
+      ) : (
+        <></>
+      )}
       {page === 1 ? (
         <AutoPage
           data={formData}
@@ -93,7 +102,7 @@ export default function Form(props: { report: Report }) {
             <div className="card-actions justify-between w-full">
               <button
                 className="btn btn-primary"
-                disabled={page === 1}
+                disabled={page === 0}
                 onClick={() => {
                   setPage(page - 1);
                 }}
