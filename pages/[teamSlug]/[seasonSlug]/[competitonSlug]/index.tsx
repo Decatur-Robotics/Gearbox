@@ -45,6 +45,8 @@ export default function Home(props: ResolvedUrlData) {
   const[loadingPitreports, setLoadingPitreports] = useState(true);
   const[submittedPitreports, setSubmittedPitreports] = useState(0);
 
+  const[updatingComp, setUpdatingComp] = useState("");
+
   useEffect(() => {
 
     const scoutingStats = (reps: Report[]) => {
@@ -147,6 +149,16 @@ export default function Home(props: ResolvedUrlData) {
     setAssigningMatches(false);
   };
 
+  const reloadCompetition = async () => {
+    setUpdatingComp("Checking for Updates...")
+    const res = await api.updateCompetition(comp?._id, comp?.tbaId);
+    if(res.result === "success") {
+      window.location.reload();
+    } else {
+      setUpdatingComp("None found")
+    }
+  }
+
   const { session, status } = useCurrentSession();
   
   return <Container requireAuthentication={true} hideMenu={false}>
@@ -159,9 +171,9 @@ export default function Home(props: ResolvedUrlData) {
               <div className="w-full flex flex-row items-center mt-4">
                 <a className="btn btn-primary" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches ? "btn-disabled": ""}`} >Stats <MdQueryStats size={30}/></a>
+                <a className={`btn btn-secondary ${noMatches || matchesAssigned ? "btn-disabled": ""}`} >Stats <MdQueryStats size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
+                <a className={`btn btn-secondary ${noMatches || matchesAssigned  ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
               </div>
             </div>
           </div>
@@ -230,7 +242,7 @@ export default function Home(props: ResolvedUrlData) {
               {loadingMatches || loadingReports || loadingUsers ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>:
               <div className="w-full flex flex-col items-center space-y-2">
                 {
-                  noMatches ? <div className="flex flex-col items-center justify-center font-bold space-y-4"><h1>No Match Schedule Available</h1><button className="btn btn-lg btn-primary"> <FaSync></FaSync> Refresh</button></div> : <div><div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box "}>
+                  noMatches ? <div className="flex flex-col items-center justify-center font-bold space-y-4"><h1>No Match Schedule Available</h1><button onClick={reloadCompetition} className="btn btn-lg btn-primary"> <FaSync></FaSync> Refresh</button><h1>{updatingComp}</h1></div> : <div><div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box "}>
                   {qualificationMatches.map((match) => <div className="carousel-item w-full flex flex-col items-center" key={match._id}>
 
                     <h1 className="text-lg font-light">Current Match:</h1>
@@ -281,7 +293,7 @@ export default function Home(props: ResolvedUrlData) {
                   </div>
                   </div>)}
                 </div>
-                <div>
+                <div className="w-full flex items-center justify-center mt-2">
                   <kbd className="kbd">← Scroll →</kbd>
                 </div>
                 </div>}

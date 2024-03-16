@@ -228,7 +228,6 @@ export namespace TheBlueAlliance {
 
     async getCompetitionAutofillData(tbaId: string): Promise<Competition> {
       var competitonData = await this.req.getCompetition(tbaId);
-      
 
       let competition = new Competition(
         competitonData.name,
@@ -255,7 +254,6 @@ export namespace TheBlueAlliance {
       );
     }
     
-
     async getCompetitionMatches(tbaId: string): Promise<Match[]> {
       let matches = (await this.req.getCompetitionMatches(tbaId)).map(
         (data) =>

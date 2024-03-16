@@ -349,6 +349,27 @@ export namespace API {
       return res.status(200).send(season);
     },
 
+
+    updateCompetition: async (req, res, {db, data, tba}) => {
+      // {comp id, tbaId}
+      var matches = await tba.getCompetitionMatches(data.tbaId);
+      if(!matches || matches.length <= 0) {
+        res.status(200).send({"result": "none"})
+        return;
+      }
+
+      matches.map(
+        async (match) =>
+          (await db.addObject<Match>(Collections.Matches, match))._id,
+      );
+
+      var pitreports = await tba.getCompetitionPitreports(data.tbaId);
+      pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id);
+
+      await db.updateObjectById(Collections.Competitions, new ObjectId(data.compId), {matches: matches.map((match) => String(match._id)), pitReports: pitreports.map((pit) => String(pit._id))});
+      res.status(200).send({"result": "success"})
+    },
+
     createCompetiton: async (req, res, { db, data, tba }) => {
       // {
       //     tbaId?
@@ -357,6 +378,7 @@ export namespace API {
       //     name
       //     seasonId
       // }
+      /*
       var matches = await tba.getCompetitionMatches(data.tbaId);
       matches.map(
         async (match) =>
@@ -365,6 +387,7 @@ export namespace API {
 
       var pitreports = await tba.getCompetitionPitreports(data.tbaId);
       pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id)
+      */
 
       var comp = await db.addObject<Competition>(
         Collections.Competitions,
@@ -374,8 +397,8 @@ export namespace API {
           data.tbaId,
           data.start,
           data.end,
-          pitreports.map((report) => String(report._id)),
-          matches.map((match) => String(match._id)),
+          //pitreports.map((report) => String(report._id)),
+          //matches.map((match) => String(match._id)),
         ),
       );
 

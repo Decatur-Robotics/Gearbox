@@ -207,6 +207,10 @@ export default class ClientAPI {
     });
   }
 
+  async updateCompetition(compId: string | undefined, tbaId: string | undefined) {
+    return await this.request("/updateCompetition", {compId: compId, tbaId: tbaId});
+  }
+
   async searchCompetitionByName(
     name: string | undefined,
   ): Promise<{ value: number; pair: CompetitonNameIdPair }[]> {
