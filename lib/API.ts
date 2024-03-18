@@ -11,6 +11,7 @@ import { getServerSession } from "next-auth";
 import Auth, { AuthenticationOptions } from "./Auth";
 
 import { Statbotics } from "./Statbotics";
+import { SerializeDatabaseObject } from './UrlResolver';
 
 
 export namespace API {
@@ -637,5 +638,28 @@ export namespace API {
         competitions: await competitionsPromise,
       });
     },
+
+    getCompExportRequestList: async (req, res, { db, data }) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const matches = (await db.findObjects<Match[]>(Collections.Matches, 
+        {_id: {$in: comp.matches.map((matchId) => new ObjectId(matchId))}}))
+        .flat();
+      const exportRequests = matches.map((match) => match.reports).flat();
+      
+      return res.status(200).send(exportRequests);
+    },
+
+    getReportAsCsv: async (req, res, { db, data }) => {
+      let report = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
+
+      if (!report.submitted) {
+        return res.status(200).send({ message: "Report not submitted" });
+      }
+      
+      report = SerializeDatabaseObject(report);
+      const csv = Object.values(report).join(",");
+
+      return res.status(200).send({csv});
+    }
   };
 }

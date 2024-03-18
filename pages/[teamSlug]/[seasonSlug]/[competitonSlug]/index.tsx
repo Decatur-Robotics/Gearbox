@@ -141,7 +141,7 @@ export default function Home(props: ResolvedUrlData) {
     }
 
     
-  }, [assigningMatches])
+  }, [assigningMatches]);
 
   const assignScouters = async () => {
     setAssigningMatches(true);
@@ -160,6 +160,104 @@ export default function Home(props: ResolvedUrlData) {
   }
 
   const { session, status } = useCurrentSession();
+
+  interface ExportData {
+    status: "InitialRequest" | "ReportRequests" | "Success" | "Error"
+    expectedReports: number;
+    reports: string[];
+    requestList: string[];
+  }
+
+  const [ exportData, setExportData ] = useState<ExportData | null>(null);
+
+  const sendCsvReportRequest = async (reportId: string) => {
+    api.getReportAsCsv(reportId).then((res) => {
+      setExportData((prev) => {
+        if (res && res.csv) {
+          if (prev === null) return null;
+
+          sendNextCsvReportRequest(prev);
+
+          prev.reports.push(res.csv);
+          return prev;
+        }
+
+        if (prev === null) return null;
+
+        sendNextCsvReportRequest(prev);
+
+        return {
+          ...prev,
+          expectedReports: (prev?.expectedReports ?? 1) - 1,
+        }
+      });
+    })
+    .catch((err: Error) => {
+      console.error(err);
+      setExportData((prev) => {
+        if (prev === null) return null;
+
+        sendNextCsvReportRequest(prev);
+
+        return {
+          ...prev,
+          expectedReports: (prev?.expectedReports ?? 1) - 1,
+        }
+      });
+    });
+  };
+  
+  const sendNextCsvReportRequest = async (prev: ExportData) => {
+    if (prev.requestList.length === 0) return;
+
+    console.log(prev.reports.length + "/" + prev.expectedReports);
+    sendCsvReportRequest(prev.requestList[0]);
+    setExportData((prev) => {
+      if (prev === null) return null;
+
+      prev.requestList.shift();
+      return prev;
+    });
+  }
+
+  const exportAsCsv = async () => {
+    console.log("Exporting data as .csv file");
+
+    const newExportData: ExportData = {
+      status: "InitialRequest",
+      expectedReports: 0,
+      reports: [],
+      requestList: [],
+    };
+
+    setExportData(newExportData);
+
+    const requestList = await api.getCompExportRequestList(comp?._id);
+
+    if(requestList.length > 0) {
+      setExportData((prev) => {
+        if (prev === null) return null;
+
+        console.log("Received request list");
+
+        // Send the first request
+        sendCsvReportRequest(requestList[0]);
+        console.log("Sent requests for each report");
+
+        prev.requestList.shift();
+
+        return {
+          ...prev,
+          status: "ReportRequests",
+          expectedReports: requestList.length,
+          requestList: requestList,
+        };
+      });
+    } else {
+      newExportData.status = "Error";
+      setExportData(newExportData);
+    }
+  }
   
   return <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-6 overflow-hidden sm:mb-4">
@@ -232,6 +330,18 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="stat-value text-accent">{!submittedPitreports ? "?": (submittedPitreports*8).toLocaleString()}</div>
                   </div>
                 </div>
+            </div>
+          </div>
+          <div className="w-full card bg-base-200 shadow-xl">
+            <div className="card-body flex flex-col sm:flex-row justify-between max-sm:justify-start">
+              <h1 className="card-title text-2xl font-bold">Export</h1>
+              {
+                exportData && exportData.status === "ReportRequests" &&
+                  <progress className="progress progress-primary w-full" value={exportData.reports.length} max={exportData.expectedReports}></progress>
+              }
+              <button className={`btn ${!exportData || exportData.status === "Error" ? "btn-primary" : "btn-disabled"} `} onClick={exportAsCsv}>
+                Download data as .csv file
+              </button>
             </div>
           </div>
         </div>
