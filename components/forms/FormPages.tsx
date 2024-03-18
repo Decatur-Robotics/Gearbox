@@ -21,10 +21,11 @@ export type EndPageProps = {
 export default function FormPage(props: {
   children: ReactNode;
   title: string;
+  height?: string;
 }) {
   return (
     <main className="w-full h-full flex-1">
-      <div className="card h-[650px] w-full bg-base-200 mt-2">
+      <div className={"card w-full h-" + (props.height ?? "[650px]") + " bg-base-200 mt-2" }>
         <div className="card-body h-full w-full flex flex-col items-center">
           <h1 className="text-5xl font-bold">{props.title}</h1>
           <hr className="w-2/3 border-slate-700 border-2"></hr>
@@ -67,7 +68,7 @@ export function TeleopPage(props: PageProps) {
 
 export function EndPage(props: EndPageProps) {
   return (
-    <FormPage title="Summary">
+    <FormPage title="Summary" height="full">
       <Checkbox
         label="Coopertition Activated"
         dataKey="Coopertition"
