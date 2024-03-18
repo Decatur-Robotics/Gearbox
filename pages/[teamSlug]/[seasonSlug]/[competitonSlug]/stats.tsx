@@ -62,16 +62,16 @@ export default function Stats(props: {
             setPage(1);
           }}
         >
-          Picklist
+          Picklist (Beta)
         </a>
         <a
           role="tab"
-          className={`tab tab-md ${page === 2 ? "tab-active" : ""}`}
+          className={`tab tab-disabled tab-md ${page === 2 ? "tab-active" : ""}`}
           onClick={() => {
-            setPage(2);
+            // setPage(2);
           }}
         >
-          Prediction
+          Prediction (Coming Soon!)
         </a>
         <a role="tab" className={`tab tab-md `} onClick={resync}>
           Resync{" "}

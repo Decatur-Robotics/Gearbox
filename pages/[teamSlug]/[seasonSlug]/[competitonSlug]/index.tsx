@@ -168,12 +168,14 @@ export default function Home(props: ResolvedUrlData) {
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
               <div className="divider"></div>
-              <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
-                <a className="btn btn-primary max-sm:w-4/5" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
-                <div className="max-sm:hidden divider divider-horizontal"></div>
-                <a className={`btn btn-secondary max-sm:w-4/5 ${noMatches || matchesAssigned ? "btn-disabled": ""}`} >Stats <MdQueryStats size={30}/></a>
-                <div className="max-sm:hidden divider divider-horizontal"></div>
-                <a className={`btn btn-secondary max-sm:w-4/5 ${noMatches || matchesAssigned  ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
+              <div className="w-full flex flex-row items-center mt-4">
+                <a className="btn btn-primary" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
+                <div className="divider divider-horizontal"></div>
+                <a className={`btn btn-secondary ${noMatches || !matchesAssigned ? "btn-disabled": ""}`} href={`${comp?.slug}/stats`}>
+                  Stats <MdQueryStats size={30}/>
+                </a>
+                <div className="divider divider-horizontal"></div>
+                <a className={`btn btn-secondary ${noMatches || !matchesAssigned || true ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
               </div>
             </div>
           </div>
