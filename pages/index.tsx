@@ -2,7 +2,6 @@ import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaDatabase, FaUserGroup } from "react-icons/fa6";
 import { FaUser, FaWifi } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
@@ -51,16 +50,16 @@ export default function Homepage() {
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
       <div className="w-full min-h-screen flex lg:flex-row flex-col">
-        <div className="hero min-h-screen bg-base-200 lg:w-1/2 w-full">
+        <div className="hero pt-10 pb-10 md:min-h-screen bg-base-200 lg:w-1/2 w-full">
           <div className="hero-content">
             <div className="max-w-md flex flex-col items-center">
-              <h1 className="text-3xl md:text-5xl font-bold">
+              <h1 className="text-4xl md:text-5xl font-bold">
                 Welcome to{" "}
-                <span className="text-4xl md:text-8xl text-accent drop-shadow-glowAccent">
-                  Gearbox
-                </span>
               </h1>
-              <p className="py-6 text-lg font-semibold text-center sm:text-left items-center">
+              <h1 className="font-bold text-6xl md:text-8xl text-accent drop-shadow-glowAccent">
+                  Gearbox
+              </h1>
+              <p className="py-6 text-lg font-semibold text-center items-center">
                 A fully customizable, modular scouting platform for{" "}
                 <Link
                   href={"https://www.firstinspires.org/robotics/frc"}
@@ -116,16 +115,31 @@ export default function Homepage() {
                 <div className="display">
                   <div className="artboard artboard-demo phone-1">
                     <div className="z-20 relative">
-                      <h1 className="text-4xl font-bold italic">
-                        {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
-                      </h1>
-                      <h1 className="text-lg font-light mt-2">- Team 4026</h1>
+                    <div className="flex justify-center px-4 py-16 sm:border-t border-base-100">
+                  <h1 className="z-10 absolute flex flex-col  md:flex-row space-x-8 opacity-20">
+                    <BsGearFill
+                      size={200}
+                      className="animate-spin-slow text-8xl"
+                    ></BsGearFill>
+                    <BsGearFill
+                      size={120}
+                      className="animate-spin-slow max-sm:hidden"
+                    ></BsGearFill>
+                  </h1>
+                  <div className="z-20 relative">
+                    <h1 className="text-4xl font-bold italic">
+                      {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
+                    </h1>
+                    <h1 className="text-lg font-light mt-2">- Team 4026</h1>
+                  </div>
+                </div>
                     </div>
+                    
                   </div>
                 </div>
               </div>
 
-              <div className="stats max-sm:stats-vertical mt-6">
+              <div className="stats max-sm:w-4/5 max-sm:stats-vertical mt-6">
                 <div className="stat place-items-center">
                   <div className="stat-title">Teams</div>
                   <div className="stat-figure text-primary">
@@ -180,11 +194,11 @@ export default function Homepage() {
 
       <div
         ref={secondSection}
-        className={`z-30 hero py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${secondVisible ? "opacity-100" : "opacity-0"}`}
+        className={`z-30 hero py-16 md:py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${secondVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div className="hero-content w-full">
-          <div className="w-2/3 sm:w-1/2 space-y-2">
-            <h1 className="text-4xl sm:text-5xl font-bold leading-relaxed">
+          <div className="w-2/3 space-y-2">
+            <h1 className="text-4xl max-sm:text-3xl font-bold leading-relaxed text-center">
               Feature-packed and blazing fast
               <span className="animate-pulse">🔥</span>
             </h1>

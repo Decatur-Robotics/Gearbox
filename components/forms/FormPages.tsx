@@ -38,6 +38,17 @@ export default function FormPage(props: {
   );
 }
 
+export function PrematchPage(props: PageProps) {
+  return <FormPage title="Pre-match">
+    <Checkbox
+        label="Climbed Stage"
+        dataKey="ClimbedStage"
+        data={props.data}
+        callback={props.callback}
+      ></Checkbox>
+  </FormPage>
+}
+
 export function AutoPage(props: PageProps) {
   return (
     <FormPage title="Auto">
