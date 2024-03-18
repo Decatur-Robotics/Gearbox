@@ -162,8 +162,8 @@ export default function Home(props: ResolvedUrlData) {
   const { session, status } = useCurrentSession();
   
   return <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen w-screen flex flex-row grow-0 items-center justify-center  space-x-6 space-y-6 overflow-hidden mb-4">
-        <div className="w-2/5 flex flex-col grow-0 space-y-4 h-screen ">
+      <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-6 overflow-hidden sm:mb-4">
+        <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-4 h-screen ">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
@@ -236,90 +236,110 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
 
-        <div className="w-1/2 flex flex-col grow-0 h-screen space-y-4">
+        <div className="w-full sm:w-1/2 flex flex-col grow-0 h-screen space-y-4">
           <div className=" w-full card bg-base-200 shadow-xl ">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{team?.name} - {team?.number}</h1>
               <div className="divider"></div>
-              {loadingMatches || loadingReports || loadingUsers ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>:
-              <div className="w-full flex flex-col items-center space-y-2">
-                {
-                  noMatches ? <div className="flex flex-col items-center justify-center font-bold space-y-4"><h1>No Match Schedule Available</h1><button onClick={reloadCompetition} className="btn btn-lg btn-primary"> <FaSync></FaSync> Refresh</button><h1>{updatingComp}</h1></div> : <div><div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-100 rounded-box "}>
-                  {qualificationMatches.map((match) => <div className="carousel-item w-full flex flex-col items-center" key={match._id}>
-
-                    <h1 className="text-lg font-light">Current Match:</h1>
-                    <h1 className="text-2xl font-bold mb-4">Match {match.number}</h1>
-                    <div className="flex flex-col items-center space-y-4 opa">
-                  <div className="w-full flex flex-row items-center space-x-2">
-                    {!matchesAssigned ? <div className="opacity-100 font-bold text-warning flex flex-col items-center space-y-2">
-                      Matches are not assigned
-                      <div className="divider "></div>
-                      <button className={"btn btn-primary " + (assigningMatches ? "disabled" : "")} onClick={assignScouters}>{!assigningMatches ? "Assign Matches": <BsGearFill className="animate-spin-slow" size={30}></BsGearFill>}</button>
-                    </div>: <></>}
+              {
+                loadingMatches || loadingReports || loadingUsers 
+                  ? <div className="w-full flex items-center justify-center">
+                      <BsGearFill className="animate-spin-slow" size={75}></BsGearFill>
+                    </div>
+                  : <div className="w-full flex flex-col items-center space-y-2">
                     {
-                      match.reports.map((reportId) => {
-                        const report = reportsById[reportId];
-                        const submitted = report.submitted;
-                        const mine = report.user === session.user?._id;
-                        let color = !submitted ? (report.color===AllianceColor.Red?"bg-red-500":"bg-blue-500"): "bg-slate-500";
+                      noMatches 
+                        ? <div className="flex flex-col items-center justify-center font-bold space-y-4">
+                            <h1>No Match Schedule Available</h1>
+                            <button onClick={reloadCompetition} className="btn btn-lg btn-primary">
+                              <FaSync></FaSync> Refresh
+                            </button>
+                            <h1>{updatingComp}</h1>
+                          </div>
+                        : <div>
+                            <div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-200 rounded-box "}>
+                              {qualificationMatches.map((match) =>
+                                <div className="carousel-item bg-base-200 w-full flex flex-col items-center" key={match._id}>
+                                  <h1 className="text-lg font-light">Current Match:</h1>
+                                  <h1 className="text-2xl font-bold mb-4">Match {match.number}</h1>
+                                  <div className="flex flex-col items-center space-y-4 opa">
+                                    <div className="w-full flex flex-row items-center space-x-2">
+                                      {!matchesAssigned ? <div className="opacity-100 font-bold text-warning flex flex-col items-center space-y-2">
+                                        Matches are not assigned
+                                        <div className="divider "></div>
+                                        <button className={"btn btn-primary " + (assigningMatches ? "disabled" : "")} onClick={assignScouters}>{!assigningMatches ? "Assign Matches": <BsGearFill className="animate-spin-slow" size={30}></BsGearFill>}</button>
+                                      </div>: <></>}
+                                      {
+                                        match.reports.map((reportId) => {
+                                          const report = reportsById[reportId];
+                                          const submitted = report.submitted;
+                                          const mine = report.user === session.user?._id;
+                                          let color = !submitted ? (report.color===AllianceColor.Red?"bg-red-500":"bg-blue-500"): "bg-slate-500";
 
-                        
-                        if(!report) return <></>
-                        return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`} key={reportId} className={`${color} ${mine && !submitted ? "drop-shadow-glowStrong": ""} rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}>
-                        <h1>{report.robotNumber}</h1>
-                      </Link>
-                      })
-                    }
-                  </div>
+                                          if(!report) return <></>
+                                          return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`} key={reportId} className={`${color} ${mine && !submitted ? "drop-shadow-glowStrong": ""} rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}>
+                                          <h1>{report.robotNumber}</h1>
+                                        </Link>
+                                        })
+                                      }
+                                    </div>
 
-                  <div className="w-full flex flex-row items-center space-x-4 ml-2">
+                                    <div className="w-full flex flex-row items-center space-x-4 ml-2">
 
-                      {match.reports.map((reportId) => {
-                        const report = reportsById[reportId];
-                        //@ts-ignore
-                        const user = usersById[report?.user];
-                        
-                        return <div className="tooltip tooltip-bottom" data-tip={user?.name} key={reportId}>
-                          <div className="avatar online">
-                            {/*Ternaries are fun*/}
-                            <div className="w-10 rounded-full">
-                              <img src={user?.image} onClick={()=>{user.slackId? session.user?.slackId? 
-                                api.remindSlack(user.slackId, session.user?.slackId) : console.log("Sender has no valid slackId") 
-                                : console.log("Scouter has no slackId")}}/>
+                                        {match.reports.map((reportId) => {
+                                          const report = reportsById[reportId];
+                                          //@ts-ignore
+                                          const user = usersById[report?.user];
+                                          
+                                          return <div className="tooltip tooltip-bottom" data-tip={user?.name} key={reportId}>
+                                            <div className="avatar online">
+                                              {/*Ternaries are fun*/}
+                                              <div className="w-10 rounded-full">
+                                                <img src={user?.image} onClick={()=>{user.slackId? session.user?.slackId? 
+                                                  api.remindSlack(user.slackId, session.user?.slackId) : console.log("Sender has no valid slackId") 
+                                                  : console.log("Scouter has no slackId")}}/>
+                                              </div>
+                                          </div>
+                                        </div>
+                                        })}
+                                
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                        </div>
-                      </div>
-                      })}
-              
-                  </div>
-                  </div>
-                  </div>)}
-                </div>
-                <div className="w-full flex items-center justify-center mt-2">
-                  <kbd className="kbd">← Scroll →</kbd>
-                </div>
-                </div>}
-              </div>}
+                            <div className="w-full flex items-center justify-center mt-2">
+                              <kbd className="kbd">← Scroll →</kbd>
+                            </div>
+                          </div>
+                    }
+                    </div>
+              }
             </div>
 
           </div>
 
-                       
-          <div className="w-full card bg-base-200 shadow-xl h-64">
-              <div className="card-body grow-0">
-                <h1 className="card-title">Pitscouting</h1>
-                <div className="overflow-x-scroll flex flex-row space-x-10 h-36">
-
-                {loadingPitreports ? <div className="w-full flex items-center justify-center"><BsGearFill className="animate-spin-slow" size={75}></BsGearFill></div>: 
-                    pitreports.map((report) => <Link className="avatar mt-2" href={window.location.href + `/pit/${report._id}`} key={report._id}>
-                      <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">{report.teamNumber}</div>
-                      <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
-                        <img src={report.image} />
-                      </div>
-                    </Link>)}
-                  
-                </div>
+          <div className="w-full sm:card bg-base-200 shadow-xl h-64">
+              <div className="sm:card-body grow-0">
+                <h1 className="max-sm:ml-3 card-title max-sm:pt-2">Pitscouting</h1>
+                <div className="overflow-x-scroll flex flex-row space-x-10 h-36 max-sm:ps-1">
+                { loadingPitreports 
+                  ? <div className="w-full flex items-center justify-center">
+                      <BsGearFill className="animate-spin-slow" size={75}></BsGearFill>
+                    </div>
+                  : pitreports.map((report) => 
+                      <Link className="avatar mt-2" href={window.location.href + `/pit/${report._id}`} key={report._id}>
+                        <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
+                          {report.teamNumber}
+                        </div>
+                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
+                          <img src={report.image} />
+                        </div>
+                      </Link>
+                    )
+                }
               </div>
+            </div>
           </div>
         </div>
 
