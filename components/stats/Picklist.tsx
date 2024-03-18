@@ -127,7 +127,7 @@ export default function PicklistScreen(props: { reports: Report[] }) {
       </div>
 
       <button
-        className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-0 animate-pulse font-bold "
+        className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-60 animate-pulse font-bold "
         onClick={addPicklist}
       >
         <FaPlus></FaPlus>
