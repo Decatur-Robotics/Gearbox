@@ -25,7 +25,7 @@ export default function FormPage(props: {
 }) {
   return (
     <main className="w-full h-full flex-1">
-      <div className={`card w-full h-${(props.height ?? "[650px]")} bg-base-200 mt-2`}>
+      <div className={`card w-full h-[650px] bg-base-200 mt-2`}>
         <div className="card-body h-full w-full flex flex-col items-center">
           <h1 className="text-5xl font-bold">{props.title}</h1>
           <hr className="w-2/3 border-slate-700 border-2"></hr>
@@ -41,22 +41,29 @@ export default function FormPage(props: {
 export function PrematchPage(props: PageProps) {
   return <FormPage title="Pre-match">
     <Checkbox
-        label="Climbed Stage"
-        dataKey="ClimbedStage"
+        label="Robot Present"
+        dataKey="Presented"
         data={props.data}
         callback={props.callback}
       ></Checkbox>
+      <StartingPosition
+        alliance={props.alliance}
+        data={props.data}
+        callback={props.callback}
+      ></StartingPosition>
   </FormPage>
 }
 
 export function AutoPage(props: PageProps) {
   return (
     <FormPage title="Auto">
-      <StartingPosition
-        alliance={props.alliance}
+      <Checkbox
+        label="Moved out of starting zone"
+        dataKey="MovedOut"
         data={props.data}
         callback={props.callback}
-      ></StartingPosition>
+      ></Checkbox>
+      <br></br>
       <AutoButtons data={props.data} callback={props.callback}></AutoButtons>
     </FormPage>
   );
@@ -86,8 +93,7 @@ export function EndPage(props: EndPageProps) {
         data={props.data}
         callback={props.callback}
       ></Checkbox>
-
-      <hr className="w-full border-slate-700 border-2"></hr>
+      
       <Checkbox
         label="Climbed Stage"
         dataKey="ClimbedStage"
@@ -106,9 +112,6 @@ export function EndPage(props: EndPageProps) {
         data={props.data}
         callback={props.callback}
       ></Checkbox>
-
-      <hr className="w-full border-slate-700 border-2"></hr>
-      <IntakeType data={props.data} callback={props.callback}></IntakeType>
 
       <CommentBox data={props.data} callback={props.callback}></CommentBox>
       <hr className="w-full border-slate-700 border-2"></hr>
