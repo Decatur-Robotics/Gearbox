@@ -74,8 +74,12 @@ export default function StartingPosition(props: PageProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-3xl w-fit h-fit">
-      <Sketch setup={setup} draw={draw} />
+    <div className="w-fit h-fit flex flex-col items-center">
+      <div className="overflow-hidden rounded-3xl w-fit h-fit">
+        <Sketch setup={setup} draw={draw} />
+      </div>
+      
+      <h1 className="font-semibold animate-pulse">Tap to set the starting position</h1>
     </div>
   );
 }
