@@ -1,6 +1,6 @@
 import { BsGearFill } from "react-icons/bs";
 import Image from "next/image";
-import { FaBug, FaFacebook, FaGithub, FaInstagram, FaList } from "react-icons/fa";
+import { FaBug, FaDiscord, FaFacebook, FaGithub, FaInstagram, FaList } from "react-icons/fa";
 import { TbUfo } from "react-icons/tb";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
@@ -25,6 +25,7 @@ export default function Footer() {
           <Link href={"https://www.instagram.com/decaturrobotics4026/?img_index=1"}><FaInstagram size={30} className="ml-4"></FaInstagram></Link>
           <Link href={"https://www.facebook.com/DecaturRobotics4026/"}><FaFacebook size={30}></FaFacebook></Link>
           <Link href={"https://github.com/Decatur-Robotics"}><FaGithub size={30}></FaGithub></Link>
+          <Link href={"https://discord.gg/dMNNbf7usj"}><FaDiscord size={30}></FaDiscord></Link>
         </div>
         
       </aside>

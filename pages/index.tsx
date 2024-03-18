@@ -289,7 +289,7 @@ export default function Homepage() {
           <div className="w-2/3 flex flex-row">
             <div>
               <h1 className="text-5xl font-bold">Realtime Support</h1>
-              <p className="mt-2">Join our Discord server for live support with our 4 support staff.</p>
+              <p className="mt-2">Join our Discord server for live support with our support staff.</p>
               <a href="https://discord.gg/dMNNbf7usj" className="btn btn-primary mt-4"><FaDiscord size={35}/> Join today</a>
             </div>
           </div>

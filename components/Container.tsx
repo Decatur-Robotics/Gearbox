@@ -177,9 +177,9 @@ export default function Container(props: ContainerProps) {
 
           {showAuthBlock ? (
             <div className="w-full h-full flex flex-col items-center justify-center">
-              <div className="card w-3/4 lg:w-1/4 bg-base-300 text-primary-content">
-                <div className="card-body flex items-center">
-                  <BsGearFill size={70} className="animate-spin-slow text-slate-700"></BsGearFill>
+              <div className="card w-3/4 lg:w-1/4 bg-base-200 text-primary-content">
+                <div className="card-body flex items-center text-white">
+                  <BsGearFill size={70} className="animate-spin-slow"></BsGearFill>
                   <h2 className="card-title">Wait a minute...</h2>
                   <p>You need to sign in first!</p>
                   <div className="card-actions justify-end">
