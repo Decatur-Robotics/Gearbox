@@ -181,7 +181,7 @@ export default function PublicEvent() {
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+      <div className="min-h-screen w-1/2 md:w-full flex flex-col items-center justify-center space-y-6">
         <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
           <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
           <div className="card-body">
@@ -208,7 +208,7 @@ export default function PublicEvent() {
 
         {
           Date.now() < startTime && (
-            <div className="card w-5/6 shadow-xl bg-base-200">
+            <div className="card w-5/6 shadow-xl bg-base-200 overflow-x-scroll">
               <div className="card-body items-center">
                 <div className="grid grid-flow-col gap-5 text-center auto-cols-max">
                   <div className="flex flex-col">
@@ -247,7 +247,7 @@ export default function PublicEvent() {
         }
 
         {first.length > 0 ? (
-          <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
+          <div className="card w-5/6 bg-base-200 shadow-xl mt-6 overflow-x-scroll">
             <div className="card-body">
               <h2 className="card-title font-bold text-4xl">Ranking</h2>
               {statbotics.length < first.length && (
