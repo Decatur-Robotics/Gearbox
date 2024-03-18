@@ -68,7 +68,7 @@ export default function Stats(props: {
           role="tab"
           className={`tab tab-disabled tab-md ${page === 2 ? "tab-active" : ""}`}
           onClick={() => {
-            setPage(2);
+            // setPage(2);
           }}
         >
           Prediction (Coming Soon!)
