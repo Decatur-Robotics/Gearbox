@@ -171,9 +171,9 @@ export default function Home(props: ResolvedUrlData) {
               <div className="w-full flex flex-row items-center mt-4">
                 <a className="btn btn-primary" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches || matchesAssigned ? "btn-disabled": ""}`} >Stats <MdQueryStats size={30}/></a>
+                <a className={`btn btn-secondary ${noMatches || !matchesAssigned ? "btn-disabled": ""}`} >Stats <MdQueryStats size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches || matchesAssigned  ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
+                <a className={`btn btn-secondary ${noMatches || !matchesAssigned  ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
               </div>
             </div>
           </div>
