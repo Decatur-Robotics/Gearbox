@@ -581,7 +581,7 @@ export namespace API {
       await slackClient.chat.postMessage({
         token: process.env.SLACK_KEY,
         channel: process.env.SLACK_CHANNEL,
-        text: `<@${data.slackId}> Please report to our section and prepare for scouting. Sent by ${data.senderSlackId}`,
+        text: `<@${data.slackId}> Please report to our section and prepare for scouting. Sent by @${data.senderSlackId}`,
       });
     },
 

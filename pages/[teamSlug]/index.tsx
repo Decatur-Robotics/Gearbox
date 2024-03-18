@@ -312,7 +312,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                     </td>
                     <td>
                       <div>Level {user.level} ({user.xp}/{user.level*100})</div>
-                      <progress className="progress progress-primary" value={25} max={100}>Hello</progress>
+                      <progress className="progress progress-primary" value={user.xp} max={user.level*100}>Hello</progress>
                     </td>
                     <td>
                       <input
