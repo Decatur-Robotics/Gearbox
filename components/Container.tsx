@@ -105,6 +105,9 @@ export default function Container(props: ContainerProps) {
 
   return (
     <div className="w-full h-screen flex flex-col overflow-x-hidden" data-theme={theme}>
+      {/*<div role="alert" className="alert alert-success rounded-none max-h-10 flex items-center">
+        <span className="text-2xl text-white font-mono font-bold align-bottom">🥳 <span className="">So excited to launch the public beta of Gearbox! </span></span>
+  </div>*/}
       <div className="drawer">
         <input id="menu" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content">
