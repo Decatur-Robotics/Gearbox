@@ -13,6 +13,7 @@ var db = GetDatabase();
 export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
+    /*
     Google({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
@@ -30,6 +31,7 @@ export const AuthenticationOptions: AuthOptions = {
         return user;
       },
     }),
+    */
     /*
         GitHubProvider({
           clientId: process.env.GITHUB_ID as string,
@@ -55,7 +57,7 @@ export const AuthenticationOptions: AuthOptions = {
           [],
           profile.sub,
           10,
-          1,
+          1
         );
         user.id = profile.sub;
         return user;
@@ -64,9 +66,10 @@ export const AuthenticationOptions: AuthOptions = {
   ],
   callbacks: {
     async session({ session, user }) {
-      session.user = await (
-        await db
-      ).findObjectById(Collections.Users, new ObjectId(user.id));
+      session.user = await (await db).findObjectById(
+        Collections.Users,
+        new ObjectId(user.id)
+      );
       return session;
     },
 
@@ -77,6 +80,6 @@ export const AuthenticationOptions: AuthOptions = {
   },
   debug: false,
   adapter: MongoDBAdapter(clientPromise, { databaseName: process.env.DB }),
-}
+};
 
 export default NextAuth(AuthenticationOptions);
