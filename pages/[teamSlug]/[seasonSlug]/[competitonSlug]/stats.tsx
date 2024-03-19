@@ -15,6 +15,7 @@ import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
 import ClientAPI from "@/lib/client/ClientAPI";
+import { AveragePoints, StandardDeviation, TotalPoints } from "@/lib/client/StatsMath";
 const api = new ClientAPI("gearboxiscool");
 
 export default function Stats(props: {

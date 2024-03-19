@@ -1,10 +1,13 @@
-import { Competition, Report } from "@/lib/Types";
+import { Competition, Defense, IntakeTypes, Report } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import {
   AveragePoints,
-  StringAverage,
+  MostCommonValue,
   BooleanAverage,
+  StandardDeviation,
+  TotalPoints,
+  Round,
 } from "@/lib/client/StatsMath";
 
 import Heatmap from "@/components/stats/Heatmap";
@@ -18,7 +21,55 @@ function TeamCard(props: {
   reports: Report[];
   onClick: () => void;
   selected: boolean;
+  compAvgPoints: number;
+  compPointsStDev: number;
 }) {
+  const avgPoints = AveragePoints(props.reports);
+  const defense = MostCommonValue("Defense", props.reports);
+  const intake = MostCommonValue("IntakeType", props.reports);
+  const cooperates = BooleanAverage("Coopertition", props.reports);
+  const climbs = BooleanAverage("ClimbedStage", props.reports);
+  const parks = BooleanAverage("ParkedStage", props.reports);
+  const understage = BooleanAverage("UnderStage", props.reports);
+
+  let defenseBadgeColor = "outline";
+  if (defense === Defense.Full)
+    defenseBadgeColor = "primary";
+  else if (defense === Defense.Partial)
+    defenseBadgeColor = "accent";
+
+  let intakeBadgeColor = "outline";
+  if (intake === IntakeTypes.Both)
+    intakeBadgeColor = "primary";
+  else if (intake === IntakeTypes.Ground)
+    intakeBadgeColor = "accent";
+  else if (intake === IntakeTypes.Human)
+    intakeBadgeColor = "secondary";
+
+  const pointsDiffFromAvg = Round(avgPoints - props.compAvgPoints);
+  const pointsDiffFromAvgFormatted = pointsDiffFromAvg > 0 ? `+${pointsDiffFromAvg}` : pointsDiffFromAvg;
+
+  let textColor = "info";
+  if (pointsDiffFromAvg > props.compPointsStDev) {
+    textColor = "primary";
+  }
+  else if (pointsDiffFromAvg > props.compPointsStDev / 2) {
+    textColor = "accent";
+  } else if (pointsDiffFromAvg < -props.compPointsStDev) {
+    textColor = "warning";
+  }
+
+  let badgeColor = "neutral";
+  if (props.rank === 1) {
+    badgeColor = "primary";
+  }
+  else if (props.rank === 2) {
+    badgeColor = "secondary";
+  }
+  else if (props.rank === 3) {
+    badgeColor = "accent";
+  }
+
   return (
     <div
       className={`card w-full bg-base-300 py-0 ${
@@ -27,38 +78,26 @@ function TeamCard(props: {
       onClick={props.onClick}
     >
       <div className="card-body">
-        <h2 className="card-title text-xl">
-          #{props.number}
-          <div className="badge badge-primary text-2xl p-3">{props.rank}st</div>
+        <h2 className={`card-title text-xl text-${textColor}`}>
+          <span className={`${props.rank === 1 && "drop-shadow-glowStrong"}`}>#{props.number}</span>
+          <div className={`badge badge-${badgeColor} text-2xl p-3`}>{props.rank}st</div>
         </h2>
-        <p>Avg Points: {AveragePoints(props.reports)}</p>
+        <p>Avg Points: {avgPoints} ({pointsDiffFromAvgFormatted})</p>
         <div className="card-actions">
-          <div className="badge badge-sm badge-outline">
-            {StringAverage("Defense", props.reports)} Defense
+          <div className={`badge badge-sm badge-${defenseBadgeColor}`}>
+            {defense} Defense
           </div>
-          <div className="badge badge-sm badge-outline">
-            {StringAverage("IntakeType", props.reports)} Intake
+          <div className={`badge badge-sm badge-${intakeBadgeColor}`}>
+            {intake} Intake
           </div>
-          {BooleanAverage("Coopertition", props.reports) ? (
-            <div className="badge badge-sm badge-primary">Cooperates</div>
-          ) : (
-            <></>
-          )}
-          {BooleanAverage("ClimbedStage", props.reports) ? (
-            <div className="badge badge-sm badge-secondary">Climbs</div>
-          ) : (
-            <></>
-          )}
-          {BooleanAverage("ParkedStage", props.reports) ? (
-            <div className="badge badge-sm badge-accent">Parks</div>
-          ) : (
-            <></>
-          )}
-          {BooleanAverage("UnderStage", props.reports) ? (
-            <div className="badge badge-sm badge-neutral">Small Profile</div>
-          ) : (
-            <></>
-          )}
+          { cooperates &&
+            <div className="badge badge-sm badge-primary">Cooperates</div>}
+          { climbs &&
+            <div className="badge badge-sm badge-secondary">Climbs</div>}
+          { parks &&
+            <div className="badge badge-sm badge-accent">Parks</div>}
+          { understage &&
+            <div className="badge badge-sm badge-neutral">Small Profile</div>}
         </div>
       </div>
     </div>
@@ -78,7 +117,6 @@ export default function TeamPage(props: { reports: Report[] }) {
 
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const selectedReports = teamReports[selectedTeam ? selectedTeam : 0];
-  console.log(selectedReports);
 
   const associateTeams = () => {
     setAssociatingTeams(true);
@@ -93,6 +131,13 @@ export default function TeamPage(props: { reports: Report[] }) {
 
     setAssociatingTeams(false);
   };
+
+  const pointTotals = reports.map((report) => TotalPoints([report]));
+  const avgPoints = AveragePoints(reports);
+  const stDev = StandardDeviation(pointTotals);
+
+  console.log("Average Points: ", avgPoints);
+  console.log("Standard Deviation: ", stDev);
 
   const rankTeams = () => {
     const ranked = Object.keys(teamReports).sort((a, b) => {
@@ -128,6 +173,8 @@ export default function TeamPage(props: { reports: Report[] }) {
             onClick={() => {
               setSelectedTeam(Number(number));
             }}
+            compAvgPoints={avgPoints}
+            compPointsStDev={stDev}
           ></TeamCard>
         ))}
       </div>

@@ -1,13 +1,14 @@
 import {
   BooleanAverage,
-  StringAverage,
+  MostCommonValue,
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Report } from "@/lib/Types";
+import { Defense, IntakeTypes, Report } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
+import { Round } from '../../lib/client/StatsMath';
 
 export default function TeamStats(props: {
   selectedTeam: number | undefined;
@@ -23,39 +24,49 @@ export default function TeamStats(props: {
     );
   }
 
+  const defense = MostCommonValue("Defense", props.selectedReports);
+  const intake = MostCommonValue("IntakeType", props.selectedReports);
+  const cooperates = BooleanAverage("Coopertition", props.selectedReports);
+  const climbs = BooleanAverage("ClimbedStage", props.selectedReports);
+  const parks = BooleanAverage("ParkedStage", props.selectedReports);
+  const understage = BooleanAverage("UnderStage", props.selectedReports);
+
+  let defenseBadgeColor = "outline";
+  if (defense === Defense.Full)
+    defenseBadgeColor = "primary";
+  else if (defense === Defense.Partial)
+    defenseBadgeColor = "accent";
+
+  let intakeBadgeColor = "outline";
+  if (intake === IntakeTypes.Both)
+    intakeBadgeColor = "primary";
+  else if (intake === IntakeTypes.Ground)
+    intakeBadgeColor = "accent";
+  else if (intake === IntakeTypes.Human)
+    intakeBadgeColor = "secondary";
+
   return (
     <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">
       <h1 className="text-3xl text-accent font-semibold">
         Team #{props.selectedTeam}
       </h1>
 
-      <div className="flex flex-row w-full space-x-2 mt-2 flex-wrap space-y-1">
-        <div className="badge badge-outline">
-          {StringAverage("Defense", props.selectedReports)} Defense
+      <div className="flex flex-row w-full space-x-2 mt-2 flex-wrap">
+        <div className={`badge badge-${defenseBadgeColor}`}>
+          {defense} Defense
         </div>
-        <div className="badge badge-outline">
-          {StringAverage("IntakeType", props.selectedReports)} Intake
+        <div className={`badge badge-${intakeBadgeColor}`}>
+          {intake} Intake
         </div>
-        {BooleanAverage("Coopertition", props.selectedReports) ? (
+        { cooperates && 
           <div className="badge badge-primary">Cooperates</div>
-        ) : (
-          <></>
-        )}
-        {BooleanAverage("ClimbedStage", props.selectedReports) ? (
-          <div className="badge badge-secondary">Climbs</div>
-        ) : (
-          <></>
-        )}
-        {BooleanAverage("ParkedStage", props.selectedReports) ? (
-          <div className="badge badge-accent">Parks</div>
-        ) : (
-          <></>
-        )}
-        {BooleanAverage("UnderStage", props.selectedReports) ? (
-          <div className="badge badge-neutral">Small Profile</div>
-        ) : (
-          <></>
-        )}
+        }
+        { climbs &&
+          <div className="badge badge-secondary">Climbs</div>}
+        { parks &&
+          <div className="badge badge-accent">Parks</div>}
+        { understage &&
+          <div className="badge badge-neutral">Small Profile</div>}
       </div>
 
       <div className="w-1/3 divider"></div>
@@ -70,9 +81,9 @@ export default function TeamStats(props: {
       </h1>
       <h1>
         Avg Starting Angle:{" "}
-        {NumericalAverage("AutoStartAngle", props.selectedReports) *
+        {Round(NumericalAverage("AutoStartAngle", props.selectedReports) *
           (180 / Math.PI) +
-          180}
+          180)}
         °
       </h1>
 
