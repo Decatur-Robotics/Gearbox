@@ -22,6 +22,11 @@ export default function Home(props: ResolvedUrlData) {
   const season = props.season;
   const comp = props.competition;
 
+  const { session, status } = useCurrentSession();
+  const isManager = session?.user?._id ? team?.owners.includes(session.user?._id) : false;
+
+  const[showSettings, setShowSettings] = useState(false);
+
   const[matches, setMatches] = useState<Match[]>([]);
   const[qualificationMatches, setQualificationMatches] = useState<Match[]>([]);6
   const[reports, setReports] = useState<Report[]>([]);
@@ -159,11 +164,12 @@ export default function Home(props: ResolvedUrlData) {
     }
   }
 
-  const { session, status } = useCurrentSession();
+
+  console.log(isManager)
   
   return <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-6 overflow-hidden sm:mb-4">
-        <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-4 h-screen ">
+      <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden sm:mb-4">
+        <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-14 h-screen ">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
@@ -180,8 +186,35 @@ export default function Home(props: ResolvedUrlData) {
             </div>
           </div>
     
-          <div className="w-full card bg-base-200 shadow-xl">
-            <div className="card-body">
+          <div className="w-full card rounded-tl-none bg-base-200 shadow-xl">
+            <div role="tablist" className="tabs tabs-boxed rounded-b-none bg-base-200 w-1/2 -translate-y-10">
+              <a role="tab" className={`tab ${!showSettings ? "tab-active": ""}`} onClick={()=>{setShowSettings(false)}}>Scouting Insights</a>
+              {isManager ? <a role="tab" className={`tab ${showSettings ? "tab-active": ""}`} onClick={()=>{setShowSettings(true)}}>Settings</a> : <a role="tab" className="tab tab-disabled">Settings</a>}
+            </div>
+            {showSettings ? <div className="card-body">
+            <h1 className="font-semibold text-xl">Settings</h1>
+            <button onClick={reloadCompetition} className="btn btn-md btn-primary">
+              <FaSync></FaSync> Refresh
+            </button>
+            <button className={"btn btn-primary " + (assigningMatches ? "disabled" : "")} onClick={assignScouters}>{!assigningMatches ? "Re-Assign Matches": <BsGearFill className="animate-spin-slow" size={30}></BsGearFill>}</button>
+            <div className="divider"></div>
+            <h1 className="font-semibold">Manually add matches</h1>
+            <div className="flex flex-row">
+              <div className="w-1/2">
+              <h1 className="text-red-500 font-bold">Red</h1>
+                <input type="text" placeholder="Team 1" className="input input-sm  input-bordered w-1/3" />
+                <input type="text" placeholder="Team 2" className="input input-sm  input-bordered w-1/3" />
+                <input type="text" placeholder="Team 3" className="input input-sm  input-bordered w-1/3" />
+              </div>
+              <div className="w-1/2">
+              <h1 className="text-blue-500 font-bold">Blue</h1>
+              <input type="text" placeholder="Team 1" className="input input-sm  input-bordered w-1/3" />
+                <input type="text" placeholder="Team 2" className="input input-sm  input-bordered w-1/3" />
+                <input type="text" placeholder="Team 3" className="input input-sm  input-bordered w-1/3" />
+              </div>
+            </div>
+            </div>
+            : <div className="card-body">
             <h1 className="font-semibold text-lg">Scouting Progress</h1>
             <div className="stats bg-base-300 w-full shadow-xl">
                 
@@ -232,7 +265,7 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="stat-value text-accent">{!submittedPitreports ? "?": (submittedPitreports*8).toLocaleString()}</div>
                   </div>
                 </div>
-            </div>
+            </div>}
           </div>
         </div>
 
