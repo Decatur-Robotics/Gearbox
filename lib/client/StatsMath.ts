@@ -26,18 +26,14 @@ export function TotalPoints(reports: Report[]) {
 }
 
 export function AveragePoints(reports: Report[]) {
-  const speakerAuto =
-    NumericalAverage("AutoScoredSpeaker", reports) * SpeakerAutoPoints;
-  const speakerTeleop =
-    NumericalAverage("TeleopScoredAmp", reports) * SpeakerTeleopPoints;
+  const totalPoints = reports.map((report) => TotalPoints([report]));
+  return Round(totalPoints.reduce((a, b) => a + b, 0) / reports.length);
+}
 
-  const ampAuto = NumericalAverage("AutoScoredAmp", reports) * AmpAutoPoints;
-  const ampTeleop =
-    NumericalAverage("TeleopScoredAmp", reports) * AmpTeleopPoints;
-
-  const trap = NumericalAverage("TeleopScoredTrap", reports) * TrapPoints;
-
-  return Round(speakerAuto + speakerTeleop + ampAuto + ampTeleop + trap);
+export function StandardDeviation(numbers: number[]) {
+  const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
+  const variance = numbers.reduce((a, b) => a + (b - mean) ** 2, 0) / numbers.length;
+  return Math.sqrt(variance);
 }
 
 export function NumericalTotal(field: string, reports: Report[]) {
@@ -46,19 +42,26 @@ export function NumericalTotal(field: string, reports: Report[]) {
   return Round(sum);
 }
 
-export function StringAverage(field: string, reports: Report[]) {
-  let strings: string[] = [];
-  reports?.forEach((report) => strings.push(report.data[field]));
-  const store: { [key: string]: number } = {};
-  strings.forEach((num) => (store[num] ? (store[num] += 1) : (store[num] = 1)));
-  return Object.keys(store).sort((a, b) => store[b] - store[a])[0];
+export function MostCommonValue(field: string, reports: Report[]) {
+  // Get a list of all values of the specified field
+  let values: string[] = [];
+  reports?.forEach((report) => values.push(report.data[field]));
+
+  // Count the occurrences of each value
+  const occurences: { [key: string]: number } = {};
+  values.forEach((num) => (occurences[num] ? (occurences[num] += 1) : (occurences[num] = 1)));
+
+  // Return the most common value
+  const sortedValues = Object.keys(occurences).sort((a, b) => occurences[b] - occurences[a]);
+  const mode = sortedValues[0];
+
+  return mode === "undefined" ? "Unknown" : mode;
 }
 
 export function BooleanAverage(field: string, reports: Report[]) {
-  const arr: boolean[] = [];
-  reports?.forEach((report) => arr.push(report.data[field]));
-  const count = arr.filter((value) => value).length;
-  return count > arr.length - count;
+  const trues = reports?.filter((report) => report.data[field] === true).length;
+
+  return trues / reports?.length > 0.5;
 }
 
 export function NumericalAverage(field: string, reports: Report[]) {
@@ -72,5 +75,10 @@ export function ComparativePercent(
 ) {
   const a = NumericalTotal(field1, reports);
   const b = NumericalTotal(field2, reports);
-  return Round(a / (b + a));
+
+  if (a === 0 && b === 0) {
+    return "0%";
+  }
+
+  return Round(a / (b + a) * 100) + "%";
 }

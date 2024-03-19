@@ -1,5 +1,5 @@
 import { Report } from "@/lib/Types";
-import { NumericalAverage, StringAverage } from "@/lib/client/StatsMath";
+import { NumericalAverage, MostCommonValue } from "@/lib/client/StatsMath";
 
 export default function Summary(props: { selectedReports: Report[] }) {
   if (!props.selectedReports) {
@@ -8,7 +8,7 @@ export default function Summary(props: { selectedReports: Report[] }) {
 
   const avgX = NumericalAverage("AutoStartX", props.selectedReports);
   const avgA = NumericalAverage("AutoStartAngle", props.selectedReports);
-  const intake = StringAverage("IntakeType", props.selectedReports);
+  const intake = MostCommonValue("IntakeType", props.selectedReports);
   const matches = props.selectedReports.length;
   const startingSide = avgX < 350 / 2 ? "left" : "right";
   const startingAngle = avgA < 180 ? "low" : "high";
@@ -23,7 +23,7 @@ export default function Summary(props: { selectedReports: Report[] }) {
       <span className="text-accent">
         {intake.charAt(0).toLowerCase() + intake.slice(1, intake.length)}
       </span>{" "}
-      intake, this robot is a <span className="text-accent">{"high"}</span> auto
+      intake, this robot is a <span className="text-accent">high</span> auto
       performer.
       {matches < 5 ? (
         <span className="text-warning">
