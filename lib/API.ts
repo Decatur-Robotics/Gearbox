@@ -662,7 +662,6 @@ export namespace API {
       for (const report of reports) {
         const row = {...report.data, timestamp: report.timestamp, team: report.robotNumber};
         rows.push(row);
-        console.log(row);
       }
 
       // Find headers
