@@ -21,7 +21,9 @@ function TeamCard(props: {
 }) {
   return (
     <div
-      className={`card w-full bg-base-300 py-0 ${props.selected ? "border-2 border-primary" : ""} hover:border-2 hover:border-primary`}
+      className={`card w-full bg-base-300 py-0 ${
+        props.selected ? "border-2 border-primary" : ""
+      } hover:border-2 hover:border-primary`}
       onClick={props.onClick}
     >
       <div className="card-body">
@@ -68,7 +70,7 @@ export default function TeamPage(props: { reports: Report[] }) {
 
   const [associatingTeams, setAssociatingTeams] = useState(true);
   const [teamReports, setTeamReports] = useState<{ [key: number]: Report[] }>(
-    {},
+    {}
   );
   const teamNumbers = Object.keys(teamReports);
 

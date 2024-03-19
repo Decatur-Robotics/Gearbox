@@ -11,7 +11,7 @@ import {
   MatchType,
   FormData,
   EventData,
-  Pitreport
+  Pitreport,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -26,7 +26,7 @@ export default class ClientAPI {
   // replace this with the process.env
   constructor(
     authKey = "",
-    baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api",
+    baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api"
   ) {
     this.authenticationKey = authKey;
     this.baseUrl = baseUrl;
@@ -39,7 +39,7 @@ export default class ClientAPI {
   async request(
     subUrl: string,
     body: any,
-    method: ClientRequestMethod = ClientRequestMethod.POST,
+    method: ClientRequestMethod = ClientRequestMethod.POST
   ) {
     const rawResponse = await fetch(this.baseUrl + subUrl, {
       method: method,
@@ -109,8 +109,6 @@ export default class ClientAPI {
     });
   }
 
-
-
   async allTeams(): Promise<Team[]> {
     return await this.request("/findAll", { collection: "Teams" });
   }
@@ -150,7 +148,7 @@ export default class ClientAPI {
     name: string,
     number: number,
     creator: string | undefined,
-    tbaId: undefined | string,
+    tbaId: undefined | string
   ) {
     return await this.request("/createTeam", {
       name: name,
@@ -180,7 +178,7 @@ export default class ClientAPI {
     number: number,
     type: MatchType,
     blueAlliance: number[],
-    redAlliance: number[],
+    redAlliance: number[]
   ) {
     return await this.request("/createMatch", {
       number: number,
@@ -196,7 +194,7 @@ export default class ClientAPI {
     tbaId: string | undefined,
     start: number,
     end: number,
-    seasonId: string | undefined,
+    seasonId: string | undefined
   ) {
     return await this.request("/createCompetiton", {
       name: name,
@@ -207,12 +205,18 @@ export default class ClientAPI {
     });
   }
 
-  async updateCompetition(compId: string | undefined, tbaId: string | undefined) {
-    return await this.request("/updateCompetition", {compId: compId, tbaId: tbaId});
+  async updateCompetition(
+    compId: string | undefined,
+    tbaId: string | undefined
+  ) {
+    return await this.request("/updateCompetition", {
+      compId: compId,
+      tbaId: tbaId,
+    });
   }
 
   async searchCompetitionByName(
-    name: string | undefined,
+    name: string | undefined
   ): Promise<{ value: number; pair: CompetitonNameIdPair }[]> {
     return await this.request("/searchCompetitionByName", { name: name });
   }
@@ -252,7 +256,7 @@ export default class ClientAPI {
   async assignScouters(
     teamId: string | undefined,
     compId: string | undefined,
-    shuffle: boolean = false,
+    shuffle: boolean = false
   ) {
     return await this.request("/assignScouters", {
       teamId: teamId,
@@ -264,7 +268,7 @@ export default class ClientAPI {
   async submitForm(
     reportId: string | undefined,
     formData: FormData | undefined,
-    userId: string | undefined,
+    userId: string | undefined
   ) {
     return await this.request("/submitForm", {
       reportId: reportId,
@@ -275,14 +279,13 @@ export default class ClientAPI {
 
   async updatePitreport(
     pitreportId: string | undefined,
-    data: object | undefined,
+    data: object | undefined
   ) {
     return await this.request("/update", {
       collection: "Pitreports",
       newValues: data,
-      id: pitreportId
+      id: pitreportId,
     });
-    
   }
 
   async competitionReports(compId: string | undefined, submitted: boolean) {
@@ -308,7 +311,10 @@ export default class ClientAPI {
     return await this.request("/updateCheckOut", { reportId });
   }
 
-  async remindSlack(slackId: string | undefined, senderSlackId: string | undefined) {
+  async remindSlack(
+    slackId: string | undefined,
+    senderSlackId: string | undefined
+  ) {
     return await this.request("/remindSlack", { slackId, senderSlackId });
   }
 
@@ -319,7 +325,7 @@ export default class ClientAPI {
   async updateOwebucks(
     userId: string | undefined,
     oweBucks: number | undefined,
-    oweBucksToAdd: number | undefined,
+    oweBucksToAdd: number | undefined
   ) {
     return await this.request("/setOwebucks", {
       userId,
@@ -334,7 +340,7 @@ export default class ClientAPI {
 
   async statboticsTeamEvent(
     eventKey: string,
-    team: string,
+    team: string
   ): Promise<Statbotics.TeamEvent> {
     return await this.request("/statboticsTeamEvent", {
       team,

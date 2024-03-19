@@ -45,7 +45,7 @@ export function SerializeDatabaseObject(object: any): any {
  */
 
 export default async function UrlResolver(
-  context: GetServerSidePropsContext,
+  context: GetServerSidePropsContext
 ): Promise<ResolvedUrlData> {
   const db = await gdb;
 
@@ -66,27 +66,27 @@ export default async function UrlResolver(
     // if they dont exist, simply return nothing
     var data: ResolvedUrlData = {
       team: SerializeDatabaseObject(
-        await db.findObject<Team>(Collections.Teams, { slug: teamSlug }),
+        await db.findObject<Team>(Collections.Teams, { slug: teamSlug })
       ),
       season: seasonSlug
         ? SerializeDatabaseObject(
             await db.findObject<Season>(Collections.Seasons, {
               slug: seasonSlug,
-            }),
+            })
           )
         : null,
       competition: competitionSlug
         ? SerializeDatabaseObject(
             await db.findObject<Competition>(Collections.Competitions, {
               slug: competitionSlug,
-            }),
+            })
           )
         : null,
       report: reportId
         ? SerializeDatabaseObject(
             await db.findObject<Report>(Collections.Reports, {
               _id: new ObjectId(reportId),
-            }),
+            })
           )
         : null,
     };
