@@ -3,7 +3,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { FaDatabase, FaUserGroup } from "react-icons/fa6";
-import { FaUser, FaWifi } from "react-icons/fa";
+import { FaDiscord, FaUser, FaWifi } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { IoPhonePortrait, IoPhonePortraitOutline } from "react-icons/io5";
@@ -278,6 +278,19 @@ export default function Homepage() {
               <p className="font-mono opacity-50">
                 Toggle and set responsibilities for your teammates
               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="hero w-full py-12 bg-base-300 mt-12">
+        <div className="hero-content flex-col sm:flex-row-reverse">
+          <iframe className="max-sm:hidden rounded-md" src="https://discord.com/widget?id=1219401473042157718&theme=dark" width="350" height="500" allowTransparency={true} sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+          <div className="w-2/3 flex flex-row">
+            <div>
+              <h1 className="text-5xl font-bold">Realtime Support</h1>
+              <p className="mt-2">Join our Discord server for live support with our support staff.</p>
+              <a href="https://discord.gg/dMNNbf7usj" className="btn btn-primary mt-4"><FaDiscord size={35}/> Join today</a>
             </div>
           </div>
         </div>

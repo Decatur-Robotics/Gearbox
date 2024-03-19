@@ -10,7 +10,7 @@ export default function DefenseSlider(props: SliderProps) {
 
   return (
     <div className="w-full text-center">
-      <h1 className="font-semibold text-xl mt-8 mb-2">Defense</h1>
+      <h1 className="font-semibold text-xl mb-2">Defense</h1>
       <input
         onChange={(e) => {
           props.callback("Defense", keys[e.target.valueAsNumber]);

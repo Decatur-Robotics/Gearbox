@@ -30,7 +30,7 @@
     "pages/[teamSlug]/[seasonSlug]/index.jsx",
     "pages/[teamSlug]/[seasonSlug]/[competitonSlug]/index.jsx",
     "lib/client/getSession.js",
-    "index.js",
+    "index.js", "pages/_error.js",
   ],
   "exclude": ["node_modules"],
 }

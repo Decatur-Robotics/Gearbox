@@ -296,12 +296,11 @@ export default function Home(props: ResolvedUrlData) {
                             <h1>{updatingComp}</h1>
                           </div>
                         : <div>
-                            <div className={"carousel carousel-center max-w-lg h-64 p-4 space-x-4 bg-base-200 rounded-box "}>
+                            <div className={"carousel carousel-center max-w-lg h-56 p-4 space-x-4 bg-base-200 rounded-box "}>
                               {qualificationMatches.map((match) =>
-                                <div className="carousel-item bg-base-200 w-full flex flex-col items-center" key={match._id}>
-                                  <h1 className="text-lg font-light">Current Match:</h1>
+                                <div className="carousel-item bg-base-20 w-full flex flex-col items-center" key={match._id}>
                                   <h1 className="text-2xl font-bold mb-4">Match {match.number}</h1>
-                                  <div className="flex flex-col items-center space-y-4 opa">
+                                  <div className="flex flex-col items-center space-y-4">
                                     <div className="w-full flex flex-row items-center space-x-2">
                                       {!matchesAssigned ? <div className="opacity-100 font-bold text-warning flex flex-col items-center space-y-2">
                                         Matches are not assigned
@@ -330,7 +329,7 @@ export default function Home(props: ResolvedUrlData) {
                                           //@ts-ignore
                                           const user = usersById[report?.user];
                                           
-                                          return <div className="tooltip tooltip-bottom" data-tip={user?.name} key={reportId}>
+                                          return <div className="tooltip tooltip-bottom " data-tip={user?.name} key={reportId}>
                                             <div className="avatar online">
                                               {/*Ternaries are fun*/}
                                               <div className="w-10 rounded-full">
@@ -372,7 +371,7 @@ export default function Home(props: ResolvedUrlData) {
                           {report.teamNumber}
                         </div>
                         <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
-                          <img src={report.image} />
+                          {report.image !== "/robot.jpg" ? <img src={report.image}></img> : <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">No Image</div>}
                         </div>
                       </Link>
                     )

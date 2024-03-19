@@ -13,8 +13,8 @@ export default function Checkbox(props: CheckboxProps) {
   //@ts-expect-error
   const checked = props.data[props.dataKey];
   return (
-    <label className="w-1/5 label cursor-pointer flex flex-row space-x-8">
-      <span className="label-text text-lg font-semibold ">{props.label}</span>
+    <label className="w-5/6 label cursor-pointer flex flex-row space-x-8  border-b-2 border-slate-600">
+      <span className="w-2/3 label-text text-lg font-semibold ">{props.label}</span>
 
       <input
         type="checkbox"

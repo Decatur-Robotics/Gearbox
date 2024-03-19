@@ -114,6 +114,8 @@ export enum IntakeTypes {
 export class FormData {
   [key: string]: any;
 
+  Presented: boolean = true;
+
   AutoStartX: number = 0; // pixel position of robot
   AutoStartY: number = 0;
   AutoStartAngle: number = 0; // stored... but probably wont ever be used
@@ -121,6 +123,7 @@ export class FormData {
   AutoMissedAmp: number = 0;
   AutoScoredSpeaker: number = 0;
   AutoMissedSpeaker: number = 0;
+  MovedOut: boolean = false;
 
   TeleopScoredAmp: number = 0;
   TeleopMissedAmp: number = 0;
