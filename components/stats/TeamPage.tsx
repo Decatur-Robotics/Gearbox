@@ -136,9 +136,6 @@ export default function TeamPage(props: { reports: Report[] }) {
   const avgPoints = AveragePoints(reports);
   const stDev = StandardDeviation(pointTotals);
 
-  console.log("Average Points: ", avgPoints);
-  console.log("Standard Deviation: ", stDev);
-
   const rankTeams = () => {
     const ranked = Object.keys(teamReports).sort((a, b) => {
       const a1 = AveragePoints(teamReports[Number(a)]);
