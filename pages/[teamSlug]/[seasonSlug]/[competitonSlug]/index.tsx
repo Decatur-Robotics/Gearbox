@@ -161,102 +161,31 @@ export default function Home(props: ResolvedUrlData) {
 
   const { session, status } = useCurrentSession();
 
-  interface ExportData {
-    status: "InitialRequest" | "ReportRequests" | "Success" | "Error"
-    expectedReports: number;
-    reports: string[];
-    requestList: string[];
-  }
-
-  const [ exportData, setExportData ] = useState<ExportData | null>(null);
-
-  const sendCsvReportRequest = async (reportId: string) => {
-    api.getReportAsCsv(reportId).then((res) => {
-      setExportData((prev) => {
-        if (res && res.csv) {
-          if (prev === null) return null;
-
-          sendNextCsvReportRequest(prev);
-
-          prev.reports.push(res.csv);
-          return prev;
-        }
-
-        if (prev === null) return null;
-
-        sendNextCsvReportRequest(prev);
-
-        return {
-          ...prev,
-          expectedReports: (prev?.expectedReports ?? 1) - 1,
-        }
-      });
-    })
-    .catch((err: Error) => {
-      console.error(err);
-      setExportData((prev) => {
-        if (prev === null) return null;
-
-        sendNextCsvReportRequest(prev);
-
-        return {
-          ...prev,
-          expectedReports: (prev?.expectedReports ?? 1) - 1,
-        }
-      });
-    });
-  };
-  
-  const sendNextCsvReportRequest = async (prev: ExportData) => {
-    if (prev.requestList.length === 0) return;
-
-    console.log(prev.reports.length + "/" + prev.expectedReports);
-    sendCsvReportRequest(prev.requestList[0]);
-    setExportData((prev) => {
-      if (prev === null) return null;
-
-      prev.requestList.shift();
-      return prev;
-    });
-  }
+  const [exportPending, setExportPending] = useState(false);
 
   const exportAsCsv = async () => {
-    console.log("Exporting data as .csv file");
+    setExportPending(true);
 
-    const newExportData: ExportData = {
-      status: "InitialRequest",
-      expectedReports: 0,
-      reports: [],
-      requestList: [],
-    };
+    const res = await api.exportCompAsCsv(comp?._id).catch((e) => {
+      console.error(e);
+    });
 
-    setExportData(newExportData);
-
-    const requestList = await api.getCompExportRequestList(comp?._id);
-
-    if(requestList.length > 0) {
-      setExportData((prev) => {
-        if (prev === null) return null;
-
-        console.log("Received request list");
-
-        // Send the first request
-        sendCsvReportRequest(requestList[0]);
-        console.log("Sent requests for each report");
-
-        prev.requestList.shift();
-
-        return {
-          ...prev,
-          status: "ReportRequests",
-          expectedReports: requestList.length,
-          requestList: requestList,
-        };
-      });
-    } else {
-      newExportData.status = "Error";
-      setExportData(newExportData);
+    if (res.csv) {
+      const blob = new Blob([res.csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${comp?.name}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
+    else {
+      console.error("No CSV data returned from server");
+
+      alert(res.error ?? "An error occurred while exporting the competition data");
+    }
+
+    setExportPending(false);
   }
   
   return <Container requireAuthentication={true} hideMenu={false}>
@@ -335,12 +264,12 @@ export default function Home(props: ResolvedUrlData) {
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body flex flex-col sm:flex-row justify-between max-sm:justify-start">
               <h1 className="card-title text-2xl font-bold">Export</h1>
+              <button className={`btn ${exportPending ? "btn-disabled" : "btn-primary"} `} onClick={exportAsCsv}>
               {
-                exportData && exportData.status === "ReportRequests" &&
-                  <progress className="progress progress-primary w-full" value={exportData.reports.length} max={exportData.expectedReports}></progress>
+                exportPending
+                  ? <div className="loading loading-bars loading-sm"></div>
+                  : "Export as CSV"
               }
-              <button className={`btn ${!exportData || exportData.status === "Error" ? "btn-primary" : "btn-disabled"} `} onClick={exportAsCsv}>
-                Download data as .csv file
               </button>
             </div>
           </div>

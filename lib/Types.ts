@@ -112,6 +112,8 @@ export enum IntakeTypes {
 }
 
 export class FormData {
+  [key: string]: any;
+
   AutoStartX: number = 0; // pixel position of robot
   AutoStartY: number = 0;
   AutoStartAngle: number = 0; // stored... but probably wont ever be used
