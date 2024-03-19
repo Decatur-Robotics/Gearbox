@@ -112,10 +112,9 @@ export enum IntakeTypes {
 }
 
 export class FormData {
+  [key: string]: any;
 
   Presented: boolean = true;
-
-
 
   AutoStartX: number = 0; // pixel position of robot
   AutoStartY: number = 0;

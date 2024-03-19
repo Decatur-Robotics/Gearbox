@@ -11,6 +11,9 @@ import { getServerSession } from "next-auth";
 import Auth, { AuthenticationOptions } from "./Auth";
 
 import { Statbotics } from "./Statbotics";
+import { SerializeDatabaseObject } from './UrlResolver';
+
+import { FormData } from "./Types";
 
 
 export namespace API {
@@ -637,5 +640,45 @@ export namespace API {
         competitions: await competitionsPromise,
       });
     },
+    
+    exportCompAsCsv: async (req, res, { db, data }) => {
+      // Get all the reports for the competition
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const matches = await db.findObjects<Match>(Collections.Matches, {_id: {$in: comp.matches.map((matchId) => new ObjectId(matchId))}});
+      const allReports = await db.findObjects<Report>(Collections.Reports, {match: {$in: matches.map((match) => match?._id?.toString())}});
+      const reports = allReports.filter((report) => report.submitted);
+
+      if (reports.length == 0) {
+        return res.status(200).send({error: "No reports found for competition"});
+      }
+
+      // Convert reports to row data
+      interface Row extends FormData {
+        timestamp: number | undefined;
+        team: number;
+      }  
+
+      const rows: Row[] = [];
+      for (const report of reports) {
+        const row = {...report.data, timestamp: report.timestamp, team: report.robotNumber};
+        rows.push(row);
+      }
+
+      // Find headers
+      const headers = Object.keys(rows[0]);
+
+      // Convert to CSV
+      let csv = headers.join(",") + "\n";
+
+      for (const row of rows) {
+        // Get values in same order as headers
+        const data = headers.map((header) => row[header]);
+
+        csv += data.join(",") + "\n";
+      }
+
+      // Send CSV
+      res.status(200).send({csv});
+    }
   };
 }

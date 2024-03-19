@@ -350,4 +350,8 @@ export default class ClientAPI {
   }> {
     return await this.request("/getMainPageCounterData", {});
   }
+
+  async exportCompAsCsv(compId: string | undefined) {
+    return await this.request("/exportCompAsCsv", { compId });
+  }
 }
