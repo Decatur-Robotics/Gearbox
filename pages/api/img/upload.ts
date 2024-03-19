@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Formidable } from "formidable";
 import { GetDatabase } from "@/lib/MongoDB";
 import { createReadStream } from "fs";
-import { GridFSBucket } from "mongodb";
+import { GridFSBucket, ObjectId } from "mongodb";
 import { API } from "@/lib/API";
 
 export const config = {
@@ -37,8 +37,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               console.log("fuck")
               return;
           }
-          const c = createReadStream(file.filepath).pipe(bucket.openUploadStream(file.originalFilename, {chunkSizeBytes:1048576, metadata:{}}));
-          return res.send({ status: 200, filename: file.originalFilename }); 
+
+          const filename = new ObjectId().toString();
+
+          const c = createReadStream(file.filepath).pipe(bucket.openUploadStream(filename, {chunkSizeBytes:1048576, metadata:{}}));
+          return res.send({ status: 200, filename: filename }); 
         } catch(e) {
           res.send({status: 500, message: e});
         }
@@ -50,4 +53,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
    
     
 }
-
