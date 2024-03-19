@@ -36,12 +36,12 @@ export async function AssignScoutersToCompetitionMatches(
 
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
 
+  
+
   for (const matchId of matchIds) {
     await AssignScoutersToMatch(matchId, scouters);
     RotateArray(scouters);
   }
-
-  // addd data and color field to Reports, fix report attachment to matches
 }
 
 export async function AssignScoutersToMatch(
@@ -55,6 +55,11 @@ export async function AssignScoutersToMatch(
     Collections.Matches,
     new ObjectId(matchId),
   );
+
+  for(const rep of match.reports) {
+    await db.deleteObjectById(Collections.Reports, new ObjectId(rep));
+  }
+    
   const bots = match.blueAlliance.concat(match.redAlliance);
 
   var newReports = [];

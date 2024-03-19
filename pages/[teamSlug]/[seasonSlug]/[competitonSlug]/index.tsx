@@ -26,6 +26,9 @@ export default function Home(props: ResolvedUrlData) {
   const isManager = session?.user?._id ? team?.owners.includes(session.user?._id) : false;
 
   const[showSettings, setShowSettings] = useState(false);
+  const[matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
+  const[blueAlliance, setBlueAlliance] = useState<number[] | undefined[]>([])
+  const[redAlliance, setRedAlliance] = useState<number[]>([])
 
   const[matches, setMatches] = useState<Match[]>([]);
   const[qualificationMatches, setQualificationMatches] = useState<Match[]>([]);6
@@ -164,8 +167,11 @@ export default function Home(props: ResolvedUrlData) {
     }
   }
 
+  const createMatch = async () => {
+    await api.createMatch(comp?._id, Number(matchNumber), MatchType.Qualifying, blueAlliance as number[], redAlliance as number[]);
+    location.reload();
+  }
 
-  console.log(isManager)
   
   return <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden sm:mb-4">
@@ -193,26 +199,69 @@ export default function Home(props: ResolvedUrlData) {
             </div>
             {showSettings ? <div className="card-body">
             <h1 className="font-semibold text-xl">Settings</h1>
-            <button onClick={reloadCompetition} className="btn btn-md btn-primary">
-              <FaSync></FaSync> Refresh
-            </button>
-            <button className={"btn btn-primary " + (assigningMatches ? "disabled" : "")} onClick={assignScouters}>{!assigningMatches ? "Re-Assign Matches": <BsGearFill className="animate-spin-slow" size={30}></BsGearFill>}</button>
+            <div className="flex flex-row space-x-2">
+              <button onClick={reloadCompetition} className="btn btn-md btn-primary w-1/2">
+                <FaSync></FaSync> Refresh
+              </button>
+              <button className={"btn btn-primary w-1/2 " + (assigningMatches ? "disabled" : "")} onClick={assignScouters}>{!assigningMatches ? "Re-Assign Matches": <BsGearFill className="animate-spin-slow" size={30}></BsGearFill>}</button>
+            </div>
+            
             <div className="divider"></div>
             <h1 className="font-semibold">Manually add matches</h1>
+            
             <div className="flex flex-row">
-              <div className="w-1/2">
-              <h1 className="text-red-500 font-bold">Red</h1>
-                <input type="text" placeholder="Team 1" className="input input-sm  input-bordered w-1/3" />
-                <input type="text" placeholder="Team 2" className="input input-sm  input-bordered w-1/3" />
-                <input type="text" placeholder="Team 3" className="input input-sm  input-bordered w-1/3" />
-              </div>
-              <div className="w-1/2">
-              <h1 className="text-blue-500 font-bold">Blue</h1>
-              <input type="text" placeholder="Team 1" className="input input-sm  input-bordered w-1/3" />
-                <input type="text" placeholder="Team 2" className="input input-sm  input-bordered w-1/3" />
-                <input type="text" placeholder="Team 3" className="input input-sm  input-bordered w-1/3" />
-              </div>
+              
+              <div className="w-1/2 flex flex-col items-center">
+                
+                <h1 className="text-red-500 font-bold text-xl">Red</h1>
+                  <div className="flex flex-row items-center justify-evenly">
+                    <input type="text" placeholder="Team 1" className="input input-sm  input-bordered w-1/4" value={redAlliance[0]} onChange={(e)=>{
+                      const c = structuredClone(redAlliance)
+                      c[0] = Number(e.target.value);
+                      setRedAlliance(c);
+                    }}  />
+                    <input type="text" placeholder="Team 2" className="input input-sm  input-bordered w-1/4" value={redAlliance[1]} onChange={(e)=>{
+                      const c = structuredClone(redAlliance)
+                      c[1] = Number(e.target.value);
+                      setRedAlliance(c);
+                    }}  />
+                    <input type="text" placeholder="Team 3" className="input input-sm  input-bordered w-1/4" value={redAlliance[2]} onChange={(e)=>{
+                      const c = structuredClone(redAlliance)
+                      c[2] = Number(e.target.value);
+                      setRedAlliance(c);
+                    }}  />
+                  </div>
+                
+                </div>
+                <div className="w-1/2 flex flex-col items-center">
+                
+                <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
+                  <div className="flex flex-row items-center justify-evenly">
+                  <input type="text" placeholder="Team 1" className="input input-sm  input-bordered w-1/4" value={blueAlliance[0]} onChange={(e)=>{
+                      const c = structuredClone(blueAlliance)
+                      c[0] = Number(e.target.value);
+                      setBlueAlliance(c);
+                    }}  />
+                    <input type="text" placeholder="Team 2" className="input input-sm  input-bordered w-1/4" value={blueAlliance[1]} onChange={(e)=>{
+                      const c = structuredClone(blueAlliance)
+                      c[1] = Number(e.target.value);
+                      setBlueAlliance(c);
+                    }}  />
+                    <input type="text" placeholder="Team 3" className="input input-sm  input-bordered w-1/4" value={blueAlliance[2]} onChange={(e)=>{
+                      const c = structuredClone(blueAlliance)
+                      c[2] = Number(e.target.value);
+                      setBlueAlliance(c);
+                    }}  />
+                  </div>
+                
+                </div>
+              
             </div>
+            <div className="flex items-center justify-center">
+            <input type="text" placeholder="Match Number" className="input input-md input-bordered w-1/4" value={matchNumber} onChange={(e)=>{setMatchNumber(Number(e.target.value))}}></input>
+            </div>
+            
+            <button className="btn btn-accent" disabled={!matchNumber} onClick={createMatch}>Create</button>
             </div>
             : <div className="card-body">
             <h1 className="font-semibold text-lg">Scouting Progress</h1>
@@ -306,10 +355,12 @@ export default function Home(props: ResolvedUrlData) {
                                           const report = reportsById[reportId];
                                           const submitted = report.submitted;
                                           const mine = report.user === session.user?._id;
+                                          const ours = report.robotNumber === team?.number;
                                           let color = !submitted ? (report.color===AllianceColor.Red?"bg-red-500":"bg-blue-500"): "bg-slate-500";
+                                          color = ours ? "bg-purple-500": color;
 
                                           if(!report) return <></>
-                                          return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`} key={reportId} className={`${color} ${mine && !submitted ? "drop-shadow-glowStrong": ""} rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}>
+                                          return <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`} key={reportId} className={`${color} ${mine && !submitted ? "drop-shadow-glowStrong": ""}  rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}>
                                           <h1>{report.robotNumber}</h1>
                                         </Link>
                                         })
