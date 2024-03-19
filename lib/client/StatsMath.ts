@@ -42,14 +42,12 @@ export function AveragePoints(reports: Report[]) {
 
 export function NumericalTotal(field: string, reports: Report[]) {
   let sum = 0;
-  //@ts-expect-error
   reports?.forEach((report) => (sum += report.data[field]));
   return Round(sum);
 }
 
 export function StringAverage(field: string, reports: Report[]) {
   let strings: string[] = [];
-  //@ts-expect-error
   reports?.forEach((report) => strings.push(report.data[field]));
   const store: { [key: string]: number } = {};
   strings.forEach((num) => (store[num] ? (store[num] += 1) : (store[num] = 1)));
@@ -58,7 +56,6 @@ export function StringAverage(field: string, reports: Report[]) {
 
 export function BooleanAverage(field: string, reports: Report[]) {
   const arr: boolean[] = [];
-  //@ts-expect-error
   reports?.forEach((report) => arr.push(report.data[field]));
   const count = arr.filter((value) => value).length;
   return count > arr.length - count;

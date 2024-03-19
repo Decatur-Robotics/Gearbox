@@ -141,7 +141,7 @@ export default function Home(props: ResolvedUrlData) {
     }
 
     
-  }, [assigningMatches])
+  }, [assigningMatches]);
 
   const assignScouters = async () => {
     setAssigningMatches(true);
@@ -160,6 +160,33 @@ export default function Home(props: ResolvedUrlData) {
   }
 
   const { session, status } = useCurrentSession();
+
+  const [exportPending, setExportPending] = useState(false);
+
+  const exportAsCsv = async () => {
+    setExportPending(true);
+
+    const res = await api.exportCompAsCsv(comp?._id).catch((e) => {
+      console.error(e);
+    });
+
+    if (res.csv) {
+      const blob = new Blob([res.csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${comp?.name}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+    else {
+      console.error("No CSV data returned from server");
+
+      alert(res.error ?? "An error occurred while exporting the competition data");
+    }
+
+    setExportPending(false);
+  }
   
   return <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-6 overflow-hidden sm:mb-4">
@@ -232,6 +259,18 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="stat-value text-accent">{!submittedPitreports ? "?": (submittedPitreports*8).toLocaleString()}</div>
                   </div>
                 </div>
+            </div>
+          </div>
+          <div className="w-full card bg-base-200 shadow-xl">
+            <div className="card-body flex flex-col sm:flex-row justify-between max-sm:justify-start">
+              <h1 className="card-title text-2xl font-bold">Export</h1>
+              <button className={`btn ${exportPending ? "btn-disabled" : "btn-primary"} `} onClick={exportAsCsv}>
+              {
+                exportPending
+                  ? <div className="loading loading-bars loading-sm"></div>
+                  : "Export as CSV"
+              }
+              </button>
             </div>
           </div>
         </div>

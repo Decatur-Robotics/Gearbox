@@ -6,12 +6,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 
-import { Socket } from "socket.io-client";
-import { ClientSocket } from "@/lib/client/ClientSocket";
-import { DefaultEventsMap } from "@socket.io/component-emitter";
-
 import ClientAPI from "@/lib/client/ClientAPI";
-import { useRouter } from "next/router";
 
 const api = new ClientAPI("gearboxiscool");
 //let io: Socket<DefaultEventsMap, DefaultEventsMap>;
@@ -42,7 +37,7 @@ export default function Form(props: { report: Report }) {
     (key: any, value: boolean | string | number) => {
       setFormData((old) => {
         let copy = structuredClone(old);
-        //@ts-expect-error
+        //@ts-ignore
         copy[key] = value;
         sync();
         return copy;
