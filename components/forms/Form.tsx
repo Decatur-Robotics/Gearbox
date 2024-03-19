@@ -52,7 +52,7 @@ export default function Form(props: { report: Report }) {
   );
 
   return (
-    <div className="w-full flex flex-col items-center space-y-2">
+    <div className="w-full h-screen flex flex-col items-center space-y-2">
       {page === 0 ? (
         <PrematchPage
           data={formData}
@@ -91,7 +91,7 @@ export default function Form(props: { report: Report }) {
         <></>
       )}
 
-      <footer className="w-full h-full">
+      <footer className="w-full h-full ">
         <div className="card w-full bg-base-200">
           <div className="card-body flex flex-col items-center">
             <h2
@@ -112,7 +112,7 @@ export default function Form(props: { report: Report }) {
               </button>
 
               {syncing ? (
-                <p className="mt-3 text-md text-center">
+                <p className="mt-3 text-sm md:text-md text-center">
                   {" "}
                   <TfiReload className="animate-spin inline-block"></TfiReload>{" "}
                   Syncing Changes
