@@ -62,7 +62,6 @@ export default function SmallGraph(props: { selectedReports: Report[] }) {
     datasets: [
       {
         label: key,
-        //@ts-expect-error
         data: props.selectedReports?.map((report) => report.data[key]),
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
