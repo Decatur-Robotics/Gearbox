@@ -70,6 +70,17 @@ function TeamCard(props: {
     badgeColor = "accent";
   }
 
+  let rankSuffix = "th";
+  if (props.rank === 1) {
+    rankSuffix = "st";
+  }
+  else if (props.rank === 2) {
+    rankSuffix = "nd";
+  }
+  else if (props.rank === 3) {
+    rankSuffix = "rd";
+  }
+
   return (
     <div
       className={`card w-full bg-base-300 py-0 ${
@@ -80,7 +91,7 @@ function TeamCard(props: {
       <div className="card-body">
         <h2 className={`card-title text-xl text-${textColor}`}>
           <span className={`${props.rank === 1 && "drop-shadow-glowStrong"}`}>#{props.number}</span>
-          <div className={`badge badge-${badgeColor} text-2xl p-3`}>{props.rank}st</div>
+          <div className={`badge badge-${badgeColor} text-2xl p-3`}>{props.rank}{rankSuffix}</div>
         </h2>
         <p>Avg Points: {avgPoints} ({pointsDiffFromAvgFormatted})</p>
         <div className="card-actions">
