@@ -11,7 +11,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlinePersonRemove } from "react-icons/md";
-import { xpRequiredForNextLevel, xpToLevel } from "@/lib/Xp";
+import { levelToClassName, xpRequiredForNextLevel, xpToLevel } from "@/lib/Xp";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -303,19 +303,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                   const level = xpToLevel(xp);
                   const xpForNextLevel = xpRequiredForNextLevel(level);
 
-                  let nameColor = "info";
-                  if (level >= 15) {
-                    nameColor = "primary";
-                  }
-                  else if (level >= 10)
-                  {
-                    nameColor = "secondary";
-                  }
-                  else if (level >= 5)
-                  {
-                    nameColor = "accent";
-                  }
-
                   return (
                     <tr key={user._id}>
                       <th>{index + 1}</th>
@@ -327,7 +314,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         </div>
                       </td>
                       <td>
-                        <div className={`pl-2 lg:pl-0 text-${nameColor}`}>{user.name}</div>
+                        <div className={`pl-2 lg:pl-0 ${levelToClassName(level)}`}>{user.name}</div>
                       </td>
                       <td>
                         <div>Level {level} ({xp}/{xpForNextLevel})</div>
