@@ -30,7 +30,6 @@ export async function AssignScoutersToCompetitionMatches(
   let scouters = team.scouters;
 
   if (scouters.length < MinimumNumberOfScouters) {
-    console.log("Um no");
     return "Cannot assign scouters: not enough scouters. You must have at least 6 scouters to assign to a competition.";
   }
 
