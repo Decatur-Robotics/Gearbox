@@ -30,9 +30,10 @@ export default function Container(props: ContainerProps) {
   const [loadingSeasons, setLoadingSeasons] = useState<boolean>(false);
   const [selectedTeamSeasons, setSelectedTeamSeasons] = useState<Season[]>([]);
 
-  const[eventSearch, setEventSearch] = useState<string>("");
-  const[eventResults, setEventResults] = useState<
-  { value: number; pair: CompetitonNameIdPair }[]>([]);
+  const [eventSearch, setEventSearch] = useState<string>("");
+  const [eventResults, setEventResults] = useState<
+    { value: number; pair: CompetitonNameIdPair }[]
+  >([]);
 
   const tLocal =
     typeof window !== "undefined"
@@ -40,17 +41,16 @@ export default function Container(props: ContainerProps) {
       : "dark";
   const [theme, setTheme] = useState<string>(tLocal ? tLocal : "dark");
 
-
   useEffect(() => {
     async function search() {
-      if(eventSearch === "") {
+      if (eventSearch === "") {
         setEventResults([]);
         return;
       }
       setEventResults(await api.searchCompetitionByName(eventSearch));
     }
     search();
-  }, [eventSearch])
+  }, [eventSearch]);
 
   useEffect(() => {
     if (window.location.href.includes("signin")) {
@@ -104,7 +104,10 @@ export default function Container(props: ContainerProps) {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col overflow-x-hidden" data-theme={theme}>
+    <div
+      className="w-full h-screen flex flex-col overflow-x-hidden"
+      data-theme={theme}
+    >
       {/*<div role="alert" className="alert alert-success rounded-none max-h-10 flex items-center">
         <span className="text-2xl text-white font-mono font-bold align-bottom">🥳 <span className="">So excited to launch the public beta of Gearbox! </span></span>
   </div>*/}
@@ -122,7 +125,8 @@ export default function Container(props: ContainerProps) {
               )}
               <Link href={"/"} className="max-sm:hidden">
                 <h1 className="text-3xl mb-1 btn btn-ghost">
-                  <BsGearFill className="hover:animate-spin"></BsGearFill>Gearbox{" "}
+                  <BsGearFill className="hover:animate-spin"></BsGearFill>
+                  Gearbox{" "}
                   <span className="text-xl bg-accent px-3 p-2 rounded-full text-white">
                     BETA
                   </span>
@@ -131,14 +135,34 @@ export default function Container(props: ContainerProps) {
             </div>
 
             <label className="input input-bordered flex items-center sm:gap-2 sm:w-1/4">
-              <input type="text" value={eventSearch} onChange={(e)=>{setEventSearch(e.target.value)}} className="grow bg-base-100" placeholder="Search an event" />
+              <input
+                type="text"
+                value={eventSearch}
+                onChange={(e) => {
+                  setEventSearch(e.target.value);
+                }}
+                className="grow bg-base-100"
+                placeholder="Search an event"
+              />
               <FaSearch></FaSearch>
-              {
-                eventResults.length > 0 ? <div className="absolute -translate-x-5 translate-y-24 w-1/4 bg-base-300 rounded-b-lg sm:p-2">
-                <ul>
-                  {eventResults.map((result) => <li key={result.pair.name}><a className="link" href={"/event/"+result.pair.tbaId}>{result.pair.name}</a></li>)}
-                </ul>
-              </div> : <></> }
+              {eventResults.length > 0 ? (
+                <div className="absolute -translate-x-5 translate-y-24 w-1/4 bg-base-300 rounded-b-lg sm:p-2">
+                  <ul>
+                    {eventResults.map((result) => (
+                      <li key={result.pair.name}>
+                        <a
+                          className="link"
+                          href={"/event/" + result.pair.tbaId}
+                        >
+                          {result.pair.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <></>
+              )}
             </label>
 
             <div>
@@ -162,6 +186,7 @@ export default function Container(props: ContainerProps) {
                 </a>
               )}
 
+              {/*
               <label className="max-sm:hidden swap swap-rotate sm:mr-10">
                 <input
                   type="checkbox"
@@ -170,11 +195,12 @@ export default function Container(props: ContainerProps) {
                     setTheme(theme === "dark" ? "light" : "dark");
                   }}
                 />
-                
+
                 <IoSunny className="swap-on sm:w-10 h-10 "></IoSunny>
 
                 <IoMoon className="swap-off sm:w-10 h-10"></IoMoon>
               </label>
+                */}
             </div>
           </div>
 
@@ -182,11 +208,14 @@ export default function Container(props: ContainerProps) {
             <div className="w-full h-full flex flex-col items-center justify-center">
               <div className="card w-3/4 lg:w-1/4 bg-base-200 text-primary-content">
                 <div className="card-body flex items-center text-white">
-                  <BsGearFill size={70} className="animate-spin-slow"></BsGearFill>
+                  <BsGearFill
+                    size={70}
+                    className="animate-spin-slow"
+                  ></BsGearFill>
                   <h2 className="card-title">Wait a minute...</h2>
                   <p>You need to sign in first!</p>
                   <div className="card-actions justify-end">
-                    <Link href={"/api/auth/signin/google"}>
+                    <Link href={"/api/auth/signin"}>
                       <button className="btn btn-primary">Sign In</button>
                     </Link>
                   </div>

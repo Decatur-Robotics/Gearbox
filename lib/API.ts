@@ -1,7 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Competition, Form, Match, Season, Team, User, Report, Pitreport } from "./Types";
+import {
+  Competition,
+  Form,
+  Match,
+  Season,
+  Team,
+  User,
+  Report,
+  Pitreport,
+} from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
@@ -11,10 +20,9 @@ import { getServerSession } from "next-auth";
 import Auth, { AuthenticationOptions } from "./Auth";
 
 import { Statbotics } from "./Statbotics";
-import { SerializeDatabaseObject } from './UrlResolver';
+import { SerializeDatabaseObject } from "./UrlResolver";
 
 import { FormData } from "./Types";
-
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -26,7 +34,7 @@ export namespace API {
       db: MongoDBInterface;
       tba: TheBlueAlliance.Interface;
       data: any;
-    },
+    }
   ) => Promise<void>;
   type RouteCollection = { [routeName: string]: Route };
 
@@ -34,7 +42,7 @@ export namespace API {
     constructor(
       res: NextApiResponse,
       errorCode: number = 500,
-      description: string = "The server encountered an error while processing the request",
+      description: string = "The server encountered an error while processing the request"
     ) {
       res.status(errorCode).send({ error: description });
     }
@@ -82,11 +90,14 @@ export namespace API {
 
       // ignore requests coming from anyone on the homepage
       //@ts-ignore
-      if(req.headers.referer?.split("/")[3].length > 0) {
-        
+      //prettier-ignore
+      if (!req.headers.referer?.includes("/event/") && req.headers.referer?.split("/")[3].length > 0) {
         const session = await getServerSession(req, res, AuthenticationOptions);
-      
-        if (req.headers[GearboxHeader]?.toString() !== process.env.API_KEY || !session) {
+
+        if (
+          req.headers[GearboxHeader]?.toString() !== process.env.API_KEY ||
+          !session
+        ) {
           new UnauthorizedError(res);
         }
       }
@@ -142,7 +153,7 @@ export namespace API {
       res
         .status(200)
         .send(
-          await db.updateObjectById(collection, new ObjectId(id), newValues),
+          await db.updateObjectById(collection, new ObjectId(id), newValues)
         );
     },
 
@@ -197,7 +208,7 @@ export namespace API {
 
       let team = await db.findObjectById<Team>(
         Collections.Teams,
-        new ObjectId(data.teamId),
+        new ObjectId(data.teamId)
       );
       team.requests = [...team.requests, data.userId];
 
@@ -207,8 +218,8 @@ export namespace API {
           await db.updateObjectById<Team>(
             Collections.Teams,
             new ObjectId(data.teamId),
-            team,
-          ),
+            team
+          )
         );
     },
 
@@ -221,11 +232,11 @@ export namespace API {
 
       let team = await db.findObjectById<Team>(
         Collections.Teams,
-        new ObjectId(data.teamId),
+        new ObjectId(data.teamId)
       );
       let user = await db.findObjectById<User>(
         Collections.Users,
-        new ObjectId(data.userId),
+        new ObjectId(data.userId)
       );
 
       team.requests.splice(team.requests.indexOf(data.userId), 1);
@@ -240,12 +251,12 @@ export namespace API {
       await db.updateObjectById<User>(
         Collections.Users,
         new ObjectId(data.userId),
-        user,
+        user
       );
       await db.updateObjectById<Team>(
         Collections.Teams,
         new ObjectId(data.teamId),
-        team,
+        team
       );
 
       return res.status(200).send(team);
@@ -298,13 +309,13 @@ export namespace API {
         data.number,
         [data.creator],
         [data.creator],
-        [data.creator],
+        [data.creator]
       );
       const team = await db.addObject<Team>(Collections.Teams, newTeamObj);
 
       var user = await db.findObjectById<User>(
         Collections.Users,
-        new ObjectId(data.creator),
+        new ObjectId(data.creator)
       );
       user.teams.push(team._id!.toString());
       user.owner.push(team._id!.toString());
@@ -312,7 +323,7 @@ export namespace API {
       await db.updateObjectById(
         Collections.Users,
         new ObjectId(user._id),
-        user,
+        user
       );
 
       if (process.env.FILL_TEAMS === "true") {
@@ -334,43 +345,52 @@ export namespace API {
         new Season(
           data.name,
           await GenerateSlug(Collections.Seasons, data.name),
-          data.year,
-        ),
+          data.year
+        )
       );
       var team = await db.findObjectById<Team>(
         Collections.Teams,
-        new ObjectId(data.teamId),
+        new ObjectId(data.teamId)
       );
       team.seasons = [...team.seasons, String(season._id)];
 
       await db.updateObjectById(
         Collections.Teams,
         new ObjectId(data.teamId),
-        team,
+        team
       );
 
       return res.status(200).send(season);
     },
 
-
-    updateCompetition: async (req, res, {db, data, tba}) => {
+    updateCompetition: async (req, res, { db, data, tba }) => {
       // {comp id, tbaId}
       var matches = await tba.getCompetitionMatches(data.tbaId);
-      if(!matches || matches.length <= 0) {
-        res.status(200).send({"result": "none"})
+      if (!matches || matches.length <= 0) {
+        res.status(200).send({ result: "none" });
         return;
       }
 
       matches.map(
         async (match) =>
-          (await db.addObject<Match>(Collections.Matches, match))._id,
+          (await db.addObject<Match>(Collections.Matches, match))._id
       );
 
       var pitreports = await tba.getCompetitionPitreports(data.tbaId);
-      pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id);
+      pitreports.map(
+        async (report) =>
+          (await db.addObject<Pitreport>(Collections.Pitreports, report))._id
+      );
 
-      await db.updateObjectById(Collections.Competitions, new ObjectId(data.compId), {matches: matches.map((match) => String(match._id)), pitReports: pitreports.map((pit) => String(pit._id))});
-      res.status(200).send({"result": "success"})
+      await db.updateObjectById(
+        Collections.Competitions,
+        new ObjectId(data.compId),
+        {
+          matches: matches.map((match) => String(match._id)),
+          pitReports: pitreports.map((pit) => String(pit._id)),
+        }
+      );
+      res.status(200).send({ result: "success" });
     },
 
     createCompetiton: async (req, res, { db, data, tba }) => {
@@ -399,22 +419,22 @@ export namespace API {
           await GenerateSlug(Collections.Competitions, data.name),
           data.tbaId,
           data.start,
-          data.end,
+          data.end
           //pitreports.map((report) => String(report._id)),
           //matches.map((match) => String(match._id)),
-        ),
+        )
       );
 
       var season = await db.findObjectById<Season>(
         Collections.Seasons,
-        new ObjectId(data.seasonId),
+        new ObjectId(data.seasonId)
       );
       season.competitions = [...season.competitions, String(comp._id)];
 
       await db.updateObjectById(
         Collections.Seasons,
         new ObjectId(season._id),
-        season,
+        season
       );
 
       return res.status(200).send(comp);
@@ -436,18 +456,18 @@ export namespace API {
           data.time,
           data.type,
           data.redAlliance,
-          data.blueAlliance,
-        ),
+          data.blueAlliance
+        )
       );
       var comp = await db.findObjectById<Competition>(
         Collections.Competitions,
-        new ObjectId(data.compId),
+        new ObjectId(data.compId)
       );
       comp.matches.push(match._id ? String(match._id) : "");
       await db.updateObjectById(
         Collections.Competitions,
         new ObjectId(comp._id),
-        comp,
+        comp
       );
 
       return res.status(200).send(match);
@@ -470,7 +490,7 @@ export namespace API {
       await AssignScoutersToCompetitionMatches(
         data.teamId,
         data.compId,
-        data.shuffle,
+        data.shuffle
       );
       return res.status(200).send({ result: "success" });
     },
@@ -483,7 +503,7 @@ export namespace API {
 
       var form = await db.findObjectById<Report>(
         Collections.Reports,
-        new ObjectId(data.reportId),
+        new ObjectId(data.reportId)
       );
       form.data = data.formData;
       form.submitted = true;
@@ -491,21 +511,21 @@ export namespace API {
       await db.updateObjectById(
         Collections.Reports,
         new ObjectId(data.reportId),
-        form,
+        form
       );
       let user = await db.findObjectById<User>(
         Collections.Users,
-        new ObjectId(data.userId),
+        new ObjectId(data.userId)
       );
-      user.xp = user.xp + Math.round(Math.random()*10)
-      if (user.xp>user.level*100){
-        user.level = Math.ceil((user.xp+1)/100)
+      user.xp = user.xp + Math.round(Math.random() * 10);
+      if (user.xp > user.level * 100) {
+        user.level = Math.ceil((user.xp + 1) / 100);
       }
       await db.updateObjectById(
         Collections.Users,
         new ObjectId(data.userId),
-        user,
-      )
+        user
+      );
       return res.status(200).send({ result: "success" });
     },
 
@@ -517,7 +537,7 @@ export namespace API {
 
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
-        new ObjectId(data.compId),
+        new ObjectId(data.compId)
       );
       const reports = await db.findObjects<Report[]>(Collections.Reports, {
         match: { $in: comp.matches },
@@ -533,7 +553,7 @@ export namespace API {
 
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
-        new ObjectId(data.compId),
+        new ObjectId(data.compId)
       );
       const matches = await db.findObjects<Match[]>(Collections.Matches, {
         _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
@@ -548,7 +568,7 @@ export namespace API {
 
       const match = await db.findObjectById<Match>(
         Collections.Matches,
-        new ObjectId(data.matchId),
+        new ObjectId(data.matchId)
       );
       const reports = await db.findObjects<Report[]>(Collections.Reports, {
         _id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
@@ -560,7 +580,7 @@ export namespace API {
       await db.updateObjectById<User>(
         Collections.Users,
         new ObjectId(data.userId),
-        { image: `${data.newImage}` },
+        { image: `${data.newImage}` }
       );
     },
 
@@ -568,7 +588,7 @@ export namespace API {
       await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId),
-        { checkedIn: true },
+        { checkedIn: true }
       );
     },
 
@@ -576,7 +596,7 @@ export namespace API {
       await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId),
-        { checkedIn: false },
+        { checkedIn: false }
       );
     },
 
@@ -592,7 +612,7 @@ export namespace API {
       await db.updateObjectById<User>(
         Collections.Users,
         new ObjectId(data.userId),
-        { slackId: data.slackId },
+        { slackId: data.slackId }
       );
     },
 
@@ -600,14 +620,14 @@ export namespace API {
       await db.updateObjectById<User>(
         Collections.Users,
         new ObjectId(data.userId),
-        { xp: data.oweBucks + data.oweBucksToAdd },
+        { xp: data.oweBucks + data.oweBucksToAdd }
       );
     },
 
     initialEventData: async (req, res, { tba, data }) => {
       const compRankingsPromise = tba.req.getCompetitonRanking(data.eventKey);
       const eventInformationPromise = tba.getCompetitionAutofillData(
-        data.eventKey,
+        data.eventKey
       );
       const tbaOPRPromise = tba.req.getCompetitonOPRS(data.eventKey);
 
@@ -622,7 +642,7 @@ export namespace API {
       const teamEvent = await Statbotics.getTeamEvent(data.eventKey, data.team);
       return res.status(200).send(teamEvent);
     },
-    
+
     getMainPageCounterData: async (req, res, { db, data }) => {
       const teamsPromise = db.countObjects(Collections.Teams, {});
       const usersPromise = db.countObjects(Collections.Users, {});
@@ -640,27 +660,40 @@ export namespace API {
         competitions: await competitionsPromise,
       });
     },
-    
+
     exportCompAsCsv: async (req, res, { db, data }) => {
       // Get all the reports for the competition
-      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
-      const matches = await db.findObjects<Match>(Collections.Matches, {_id: {$in: comp.matches.map((matchId) => new ObjectId(matchId))}});
-      const allReports = await db.findObjects<Report>(Collections.Reports, {match: {$in: matches.map((match) => match?._id?.toString())}});
+      const comp = await db.findObjectById<Competition>(
+        Collections.Competitions,
+        new ObjectId(data.compId)
+      );
+      const matches = await db.findObjects<Match>(Collections.Matches, {
+        _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
+      });
+      const allReports = await db.findObjects<Report>(Collections.Reports, {
+        match: { $in: matches.map((match) => match?._id?.toString()) },
+      });
       const reports = allReports.filter((report) => report.submitted);
 
       if (reports.length == 0) {
-        return res.status(200).send({error: "No reports found for competition"});
+        return res
+          .status(200)
+          .send({ error: "No reports found for competition" });
       }
 
       // Convert reports to row data
       interface Row extends FormData {
         timestamp: number | undefined;
         team: number;
-      }  
+      }
 
       const rows: Row[] = [];
       for (const report of reports) {
-        const row = {...report.data, timestamp: report.timestamp, team: report.robotNumber};
+        const row = {
+          ...report.data,
+          timestamp: report.timestamp,
+          team: report.robotNumber,
+        };
         rows.push(row);
       }
 
@@ -678,7 +711,7 @@ export namespace API {
       }
 
       // Send CSV
-      res.status(200).send({csv});
-    }
+      res.status(200).send({ csv });
+    },
   };
 }

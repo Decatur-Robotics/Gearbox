@@ -53,11 +53,9 @@ export default function Homepage() {
         <div className="hero pt-10 pb-10 md:min-h-screen bg-base-200 lg:w-1/2 w-full">
           <div className="hero-content">
             <div className="max-w-md flex flex-col items-center">
-              <h1 className="text-4xl md:text-5xl font-bold">
-                Welcome to{" "}
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold">Welcome to </h1>
               <h1 className="font-bold text-6xl md:text-8xl text-accent drop-shadow-glowAccent">
-                  Gearbox
+                Gearbox
               </h1>
               <p className="py-6 text-lg font-semibold text-center items-center">
                 A fully customizable, modular scouting platform for{" "}
@@ -75,7 +73,10 @@ export default function Homepage() {
                 >
                   Get Started
                 </a>
-                <a className="btn btn-lg btn-accent normal-case" href="profile">
+                <a
+                  className="btn btn-lg btn-accent normal-case btn-disabled"
+                  href="profile"
+                >
                   Guide
                 </a>
               </div>
@@ -115,26 +116,27 @@ export default function Homepage() {
                 <div className="display">
                   <div className="artboard artboard-demo phone-1">
                     <div className="z-20 relative">
-                    <div className="flex justify-center px-4 py-16 sm:border-t border-base-100">
-                  <h1 className="z-10 absolute flex flex-col  md:flex-row space-x-8 opacity-20">
-                    <BsGearFill
-                      size={200}
-                      className="animate-spin-slow text-8xl"
-                    ></BsGearFill>
-                    <BsGearFill
-                      size={120}
-                      className="animate-spin-slow max-sm:hidden"
-                    ></BsGearFill>
-                  </h1>
-                  <div className="z-20 relative">
-                    <h1 className="text-4xl font-bold italic">
-                      {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
-                    </h1>
-                    <h1 className="text-lg font-light mt-2">- Team 4026</h1>
-                  </div>
-                </div>
+                      <div className="flex justify-center px-4 py-16 sm:border-t border-base-100">
+                        <h1 className="z-10 absolute flex flex-col  md:flex-row space-x-8 opacity-20">
+                          <BsGearFill
+                            size={200}
+                            className="animate-spin-slow text-8xl"
+                          ></BsGearFill>
+                          <BsGearFill
+                            size={120}
+                            className="animate-spin-slow max-sm:hidden"
+                          ></BsGearFill>
+                        </h1>
+                        <div className="z-20 relative">
+                          <h1 className="text-4xl font-bold italic">
+                            {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
+                          </h1>
+                          <h1 className="text-lg font-light mt-2">
+                            - Team 4026
+                          </h1>
+                        </div>
+                      </div>
                     </div>
-                    
                   </div>
                 </div>
               </div>
@@ -194,7 +196,9 @@ export default function Homepage() {
 
       <div
         ref={secondSection}
-        className={`z-30 hero py-16 md:py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${secondVisible ? "opacity-100" : "opacity-0"}`}
+        className={`z-30 hero py-16 md:py-28 bg-base-300 w-full transition-opacity ease-in duration-1000 ${
+          secondVisible ? "opacity-100" : "opacity-0"
+        }`}
       >
         <div className="hero-content w-full">
           <div className="w-2/3 space-y-2">
@@ -246,7 +250,9 @@ export default function Homepage() {
 
       <div
         ref={thirdSection}
-        className={`hero py-14 sm:py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${thirdVisible ? "scale-100" : "scale-0"}`}
+        className={`hero py-14 sm:py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${
+          thirdVisible ? "scale-100" : "scale-0"
+        }`}
       >
         <div className="hero-content w-full max-sm:pb-14">
           <div className="w-full space-y-2 grid grid-cols-1 sm:grid-cols-3 grid-rows-2 sm:space-x-10 z-20">
@@ -285,12 +291,26 @@ export default function Homepage() {
 
       <div className="hero w-full py-12 bg-base-300 mt-12">
         <div className="hero-content flex-col sm:flex-row-reverse">
-          <iframe className="max-sm:hidden rounded-md" src="https://discord.com/widget?id=1219401473042157718&theme=dark" width="350" height="500" allowTransparency={true} sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+          <iframe
+            className="max-sm:hidden rounded-md"
+            src="https://discord.com/widget?id=1219401473042157718&theme=dark"
+            width="350"
+            height="500"
+            allowTransparency={true}
+            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+          ></iframe>
           <div className="w-2/3 flex flex-row">
             <div>
               <h1 className="text-5xl font-bold">Realtime Support</h1>
-              <p className="mt-2">Join our Discord server for live support with our support staff.</p>
-              <a href="https://discord.gg/dMNNbf7usj" className="btn btn-primary mt-4"><FaDiscord size={35}/> Join today</a>
+              <p className="mt-2">
+                Join our Discord server for live support with our support staff.
+              </p>
+              <a
+                href="https://discord.gg/dMNNbf7usj"
+                className="btn btn-primary mt-4"
+              >
+                <FaDiscord size={35} /> Join today
+              </a>
             </div>
           </div>
         </div>
