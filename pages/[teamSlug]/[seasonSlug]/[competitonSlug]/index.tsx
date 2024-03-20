@@ -9,7 +9,7 @@ import Container from "@/components/Container";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-import { MdAutoGraph, MdDriveEta, MdInsertPhoto, MdQueryStats } from "react-icons/md";
+import { MdAutoGraph, MdCoPresent, MdDriveEta, MdInsertPhoto, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
@@ -218,7 +218,7 @@ export default function Home(props: ResolvedUrlData) {
                   Stats <MdQueryStats size={30}/>
                 </a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches || !matchesAssigned || true ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
+                <a className={`btn btn-accent ${noMatches || !matchesAssigned ? "btn-disabled": ""}`} href={`${comp?.slug}/pitstats`}>Pit Stats <MdCoPresent size={30} /></a>
               </div>
             </div>
           </div>
