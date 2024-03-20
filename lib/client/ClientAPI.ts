@@ -322,7 +322,7 @@ export default class ClientAPI {
     return await this.request("/setSlackId", { userId, slackId });
   }
 
-  async updateOwebucks(
+  async updateXp(
     userId: string | undefined,
     oweBucks: number | undefined,
     oweBucksToAdd: number | undefined

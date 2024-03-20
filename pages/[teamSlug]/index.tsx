@@ -400,14 +400,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
         <div className="card-body">
           <h2 className="card-title text-3xl">
             Settings{" "}
-            <button
-              className="btn btn-ghost text-3xl"
-              onClick={() => {
-                setSelection(4);
-              }}
-            >
-              💸💸💸
-            </button>
           </h2>
           <p className="">Modify and Update Your Teams Information</p>
 
@@ -446,19 +438,27 @@ export default function TeamIndex(props: ResolvedUrlData) {
               Update
             </button>
           </div>
+          <button
+            className="btn btn-accent text-xl w-1/3 mt-4"
+            onClick={() => {
+              setSelection(4);
+            }}
+          >
+            Manage XP
+          </button>
         </div>
       </div>
     );
   };
 
-  const OwebucksAdmin = () => {
-    const [owebucksToChange, setOwebucksToChange] = useState<number>(20);
-    async function changeOweBucks(
+  const XpAdmin = () => {
+    const [xpToChange, setXpToChange] = useState<number>(20);
+    async function changeXp(
       userId: string | undefined,
-      oweBucks: number | undefined,
-      oweBucksToAdd: number | undefined,
+      xp: number | undefined,
+      xpToAdd: number | undefined,
     ) {
-      await api.updateOwebucks(userId, oweBucks, oweBucksToAdd);
+      await api.updateXp(userId, xp, xpToAdd);
     }
     return (
       <div className="card w-5/6 bg-base-200 shadow-xl">
@@ -545,10 +545,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <input
                         type="number"
                         placeholder="Name"
-                        value={owebucksToChange}
+                        value={xpToChange}
                         maxLength={50}
                         onChange={(e) => {
-                          setOwebucksToChange(e.target.valueAsNumber);
+                          setXpToChange(e.target.valueAsNumber);
                         }}
                         className="input input-bordered w-full max-w-xs"
                       />
@@ -557,10 +557,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          changeOweBucks(
+                          changeXp(
                             user._id,
                             user?.xp,
-                            owebucksToChange * -1,
+                            xpToChange * -1,
                           );
                         }}
                       >
@@ -571,10 +571,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          changeOweBucks(
+                          changeXp(
                             user._id,
                             user?.xp,
-                            owebucksToChange,
+                            xpToChange,
                           );
                         }}
                       >
@@ -670,7 +670,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
         {selection === 1 ? <Overview></Overview> : <></>}
         {selection === 2 ? <Roster></Roster> : <></>}
         {selection === 3 ? <Settings></Settings> : <></>}
-        {selection === 4 ? <OwebucksAdmin></OwebucksAdmin> : <></>}
+        {selection === 4 ? <XpAdmin></XpAdmin> : <></>}
       </div>
     </Container>
   );
