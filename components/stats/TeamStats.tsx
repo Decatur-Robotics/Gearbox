@@ -215,10 +215,10 @@ export default function TeamStats(props: {
 
       <div className="w-full h-fit flex flex-row items-center">
         <ul>
-          {props.selectedReports.map((report) => (
+          {props.selectedReports.map((report, index) => (
             <li className="mt-2" key={report._id}>
-              {report.data.comments?.length > 1
-                ? report.data.comments
+              {report.data.comments?.length > 0
+                ? `${index+1}: ${report.data.comments}`
                 : "[No Comment]"}
             </li>
           ))}
