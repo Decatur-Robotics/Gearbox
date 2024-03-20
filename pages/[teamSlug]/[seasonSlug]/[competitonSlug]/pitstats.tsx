@@ -123,11 +123,6 @@ function TeamSlide(props: {
         <p className="text-lg">
           Drivetrain: <span className="text-accent">{pit.drivetrain}</span>
         </p>
-
-        <p className="text-lg">Comments:</p>
-        <p className="text-accent">
-          {pit.comments.length > 0 ? pit.comments : "[None]"}
-        </p>
       </div>
     </div>
   );
