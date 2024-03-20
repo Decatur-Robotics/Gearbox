@@ -1,9 +1,11 @@
+const XP_PER_LEVEL = 20;
+
 export function xpToLevel(xp: number) {
-  return Math.floor(xp / 20);
+  return Math.floor(xp / XP_PER_LEVEL);
 }
 
 export function levelToXp(level: number) {
-  return level * 20;
+  return level * XP_PER_LEVEL;
 }
 
 export function xpRequiredForNextLevel(level: number) {
