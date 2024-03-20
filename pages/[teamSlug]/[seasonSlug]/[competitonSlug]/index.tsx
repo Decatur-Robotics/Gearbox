@@ -154,6 +154,11 @@ export default function Home(props: ResolvedUrlData) {
   const assignScouters = async () => {
     setAssigningMatches(true);
     const res = await api.assignScouters(team?._id, comp?._id, true);
+    
+    if (res.result !== "success") {
+      alert(res.result);
+    }
+
     setAssigningMatches(false);
   };
 
