@@ -154,6 +154,11 @@ export default function Home(props: ResolvedUrlData) {
   const assignScouters = async () => {
     setAssigningMatches(true);
     const res = await api.assignScouters(team?._id, comp?._id, true);
+    
+    if (res.result !== "success") {
+      alert(res.result);
+    }
+
     setAssigningMatches(false);
   };
 
@@ -201,7 +206,7 @@ export default function Home(props: ResolvedUrlData) {
   
   return <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden sm:mb-4">
-        <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-14 h-screen ">
+        <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
