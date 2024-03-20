@@ -465,7 +465,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
       xp: number | undefined,
       xpToAdd: number | undefined,
     ) {
-      await api.updateXp(userId, xpToAdd);
+      await api.addUserXp(userId, xpToAdd);
     }
     return (
       <div className="card w-5/6 bg-base-200 shadow-xl">

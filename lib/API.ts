@@ -630,7 +630,7 @@ export namespace API {
       );
     },
 
-    setOwebucks: async (req, res, { db, data }) => {
+    addUserXp: async (req, res, { db, data }) => {
       addXp(data.userId, data.oweBucksToAdd);
     },
 
