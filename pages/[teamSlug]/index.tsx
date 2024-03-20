@@ -11,6 +11,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlinePersonRemove } from "react-icons/md";
+import { levelToClassName, xpRequiredForNextLevel, xpToLevel } from "@/lib/Xp";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -297,68 +298,76 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user, index) => (
-                  <tr key={user._id}>
-                    <th>{index + 1}</th>
-                    <td className="flex flex-row items-center">
-                      <div className="avatar">
-                        <div className="w-10 rounded-full">
-                          <img src={user.image} />
+                {users.map((user, index) => {
+                  const xp = user.xp;
+                  const level = xpToLevel(xp);
+                  const xpForNextLevel = xpRequiredForNextLevel(level);
+
+                  return (
+                    <tr key={user._id}>
+                      <th>{index + 1}</th>
+                      <td className="flex flex-row items-center">
+                        <div className="avatar">
+                          <div className="w-10 rounded-full">
+                            <img src={user.image} />
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="pl-2 lg:pl-0">{user.name}</div>
-                    </td>
-                    <td>
-                      <div>Level {user.level} ({user.xp}/{user.level*100})</div>
-                      <progress className="progress progress-primary" value={user.xp} max={user.level*100}>Hello</progress>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="toggle toggle-accent"
-                        disabled={!owner}
-                        onChange={() => {
-                          updateScouter(user._id as string);
-                        }}
-                        checked={team?.scouters.includes(user._id as string)}
-                      />
-                    </td>
-                    {team?.owners.includes(session?.user?._id as string) ? (
+                      </td>
+                      <td>
+                        <div className={`pl-2 lg:pl-0 ${levelToClassName(level)}`}>{user.name}</div>
+                      </td>
+                      <td>
+                        <div>Level {level} ({xp}/{xpForNextLevel})</div>
+                        <progress className="progress progress-primary" value={xp} max={xpForNextLevel}></progress>
+                      </td>
                       <td>
                         <input
                           type="checkbox"
-                          className={`toggle toggle-${session.user?._id === user._id ? "disabled" : "secondary"}`}
+                 className={`toggle toggle-${session.user?._id === user._id ? "disabled" : "secondary"}`}
                           disabled={!owner || session.user?._id === user._id}
                           checked={team?.owners.includes(user._id as string)}
+
                           onChange={() => {
-                            updateOwner(user._id as string);
+                            updateScouter(user._id as string);
                           }}
+                          checked={team?.scouters.includes(user._id as string)}
                         />
                       </td>
-                    ) : (
+                      {team?.owners.includes(session?.user?._id as string) ? (
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="toggle toggle-secondary"
+                            disabled={!owner}
+                            checked={team?.owners.includes(user._id as string)}
+                            onChange={() => {
+                              updateOwner(user._id as string);
+                            }}
+                          />
+                        </td>
+                      ) : (
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="toggle toggle-secondary"
+                            checked={team?.owners.includes(user._id as string)}
+                          />
+                        </td>
+                      )}
                       <td>
-                        <input
-                          type="checkbox"
-                          className="toggle toggle-secondary"
-                          checked={team?.owners.includes(user._id as string)}
-                        />
+                        <button
+                          className="btn btn-outline btn-sm text-xl text-red-500"
+                          disabled={!owner}
+                          onClick={() => {
+                            deleteUser(user?._id, index);
+                          }}
+                        >
+                          <MdOutlinePersonRemove />
+                        </button>
                       </td>
-                    )}
-                    <td>
-                      <button
-                        className="btn btn-outline btn-sm text-xl text-red-500"
-                        disabled={!owner}
-                        onClick={() => {
-                          deleteUser(user?._id, index);
-                        }}
-                      >
-                        <MdOutlinePersonRemove />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -400,14 +409,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
         <div className="card-body">
           <h2 className="card-title text-3xl">
             Settings{" "}
-            <button
-              className="btn btn-ghost text-3xl"
-              onClick={() => {
-                setSelection(4);
-              }}
-            >
-              💸💸💸
-            </button>
           </h2>
           <p className="">Modify and Update Your Teams Information</p>
 
@@ -446,19 +447,27 @@ export default function TeamIndex(props: ResolvedUrlData) {
               Update
             </button>
           </div>
+          <button
+            className="btn btn-accent text-xl w-1/3 mt-4"
+            onClick={() => {
+              setSelection(4);
+            }}
+          >
+            Manage XP
+          </button>
         </div>
       </div>
     );
   };
 
-  const OwebucksAdmin = () => {
-    const [owebucksToChange, setOwebucksToChange] = useState<number>(20);
-    async function changeOweBucks(
+  const XpAdmin = () => {
+    const [xpToChange, setXpToChange] = useState<number>(20);
+    async function changeXp(
       userId: string | undefined,
-      oweBucks: number | undefined,
-      oweBucksToAdd: number | undefined,
+      xp: number | undefined,
+      xpToAdd: number | undefined,
     ) {
-      await api.updateOwebucks(userId, oweBucks, oweBucksToAdd);
+      await api.addUserXp(userId, xpToAdd);
     }
     return (
       <div className="card w-5/6 bg-base-200 shadow-xl">
@@ -545,10 +554,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <input
                         type="number"
                         placeholder="Name"
-                        value={owebucksToChange}
+                        value={xpToChange}
                         maxLength={50}
                         onChange={(e) => {
-                          setOwebucksToChange(e.target.valueAsNumber);
+                          setXpToChange(e.target.valueAsNumber);
                         }}
                         className="input input-bordered w-full max-w-xs"
                       />
@@ -557,10 +566,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          changeOweBucks(
+                          changeXp(
                             user._id,
                             user?.xp,
-                            owebucksToChange * -1,
+                            xpToChange * -1,
                           );
                         }}
                       >
@@ -571,10 +580,10 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          changeOweBucks(
+                          changeXp(
                             user._id,
                             user?.xp,
-                            owebucksToChange,
+                            xpToChange,
                           );
                         }}
                       >
@@ -670,7 +679,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
         {selection === 1 ? <Overview></Overview> : <></>}
         {selection === 2 ? <Roster></Roster> : <></>}
         {selection === 3 ? <Settings></Settings> : <></>}
-        {selection === 4 ? <OwebucksAdmin></OwebucksAdmin> : <></>}
+        {selection === 4 ? <XpAdmin></XpAdmin> : <></>}
       </div>
     </Container>
   );

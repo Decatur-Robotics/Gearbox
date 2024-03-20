@@ -23,6 +23,7 @@ import { Statbotics } from "./Statbotics";
 import { SerializeDatabaseObject } from "./UrlResolver";
 
 import { FormData } from "./Types";
+import { xpToLevel } from "./Xp";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -116,6 +117,20 @@ export namespace API {
         return;
       }
     }
+  }
+
+  async function addXp(userId: string, xp: number) {
+    const db = await GetDatabase();
+    const user = await db.findObjectById<User>(Collections.Users, new ObjectId(userId));
+
+    const newXp = user.xp + xp
+    const newLevel = xpToLevel(newXp);
+
+    await db.updateObjectById<User>(
+      Collections.Users,
+      new ObjectId(userId),
+      { xp: newXp, level: newLevel }
+    );
   }
 
   export const Routes: RouteCollection = {
@@ -517,10 +532,9 @@ export namespace API {
         Collections.Users,
         new ObjectId(data.userId)
       );
-      user.xp = user.xp + Math.round(Math.random() * 10);
-      if (user.xp > user.level * 100) {
-        user.level = Math.ceil((user.xp + 1) / 100);
-      }
+
+      addXp(data.userId, 10);
+
       await db.updateObjectById(
         Collections.Users,
         new ObjectId(data.userId),
@@ -616,12 +630,8 @@ export namespace API {
       );
     },
 
-    setOwebucks: async (req, res, { db, data }) => {
-      await db.updateObjectById<User>(
-        Collections.Users,
-        new ObjectId(data.userId),
-        { xp: data.oweBucks + data.oweBucksToAdd }
-      );
+    addUserXp: async (req, res, { db, data }) => {
+      addXp(data.userId, data.oweBucksToAdd);
     },
 
     initialEventData: async (req, res, { tba, data }) => {
