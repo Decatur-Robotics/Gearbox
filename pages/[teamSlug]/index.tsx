@@ -11,7 +11,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlinePersonRemove } from "react-icons/md";
-import { xpRequiredForNextLevel } from "@/lib/Xp";
+import { xpRequiredForNextLevel, xpToLevel } from "@/lib/Xp";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -298,68 +298,87 @@ export default function TeamIndex(props: ResolvedUrlData) {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user, index) => (
-                  <tr key={user._id}>
-                    <th>{index + 1}</th>
-                    <td className="flex flex-row items-center">
-                      <div className="avatar">
-                        <div className="w-10 rounded-full">
-                          <img src={user.image} />
+                {users.map((user, index) => {
+                  const xp = user.xp;
+                  const level = xpToLevel(xp);
+                  const xpForNextLevel = xpRequiredForNextLevel(level);
+
+                  let nameColor = "info";
+                  if (level >= 15) {
+                    nameColor = "primary";
+                  }
+                  else if (level >= 10)
+                  {
+                    nameColor = "secondary";
+                  }
+                  else if (level >= 5)
+                  {
+                    nameColor = "accent";
+                  }
+
+                  return (
+                    <tr key={user._id}>
+                      <th>{index + 1}</th>
+                      <td className="flex flex-row items-center">
+                        <div className="avatar">
+                          <div className="w-10 rounded-full">
+                            <img src={user.image} />
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="pl-2 lg:pl-0">{user.name}</div>
-                    </td>
-                    <td>
-                      <div>Level {user.level} ({user.xp}/{xpRequiredForNextLevel(user.level)})</div>
-                      <progress className="progress progress-primary" value={user.xp} max={xpRequiredForNextLevel(user.level)}>Hello</progress>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="toggle toggle-accent"
-                        disabled={!owner}
-                        onChange={() => {
-                          updateScouter(user._id as string);
-                        }}
-                        checked={team?.scouters.includes(user._id as string)}
-                      />
-                    </td>
-                    {team?.owners.includes(session?.user?._id as string) ? (
+                      </td>
+                      <td>
+                        <div className={`pl-2 lg:pl-0 text-${nameColor}`}>{user.name}</div>
+                      </td>
+                      <td>
+                        <div>Level {level} ({xp}/{xpForNextLevel})</div>
+                        <progress className="progress progress-primary" value={xp} max={xpForNextLevel}></progress>
+                      </td>
                       <td>
                         <input
                           type="checkbox"
-                          className="toggle toggle-secondary"
+                          className="toggle toggle-accent"
                           disabled={!owner}
-                          checked={team?.owners.includes(user._id as string)}
                           onChange={() => {
-                            updateOwner(user._id as string);
+                            updateScouter(user._id as string);
                           }}
+                          checked={team?.scouters.includes(user._id as string)}
                         />
                       </td>
-                    ) : (
+                      {team?.owners.includes(session?.user?._id as string) ? (
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="toggle toggle-secondary"
+                            disabled={!owner}
+                            checked={team?.owners.includes(user._id as string)}
+                            onChange={() => {
+                              updateOwner(user._id as string);
+                            }}
+                          />
+                        </td>
+                      ) : (
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="toggle toggle-secondary"
+                            checked={team?.owners.includes(user._id as string)}
+                          />
+                        </td>
+                      )}
                       <td>
-                        <input
-                          type="checkbox"
-                          className="toggle toggle-secondary"
-                          checked={team?.owners.includes(user._id as string)}
-                        />
+                        <button
+                          className="btn btn-outline btn-sm text-xl text-red-500"
+                          disabled={!owner}
+                          onClick={() => {
+                            deleteUser(user?._id, index);
+                          }}
+                        >
+                          <MdOutlinePersonRemove />
+                        </button>
                       </td>
-                    )}
-                    <td>
-                      <button
-                        className="btn btn-outline btn-sm text-xl text-red-500"
-                        disabled={!owner}
-                        onClick={() => {
-                          deleteUser(user?._id, index);
-                        }}
-                      >
-                        <MdOutlinePersonRemove />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
