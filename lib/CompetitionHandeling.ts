@@ -31,7 +31,7 @@ export async function AssignScoutersToCompetitionMatches(
 
   if (scouters.length < MinimumNumberOfScouters) {
     console.log("Um no");
-    return;
+    return "Cannot assign scouters: not enough scouters. You must have at least 6 scouters to assign to a competition.";
   }
 
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
@@ -42,6 +42,8 @@ export async function AssignScoutersToCompetitionMatches(
     await AssignScoutersToMatch(matchId, scouters);
     RotateArray(scouters);
   }
+
+  return "Success";
 }
 
 export async function AssignScoutersToMatch(

@@ -487,12 +487,12 @@ export namespace API {
       //    shuffle
       // }
 
-      await AssignScoutersToCompetitionMatches(
+      const result = await AssignScoutersToCompetitionMatches(
         data.teamId,
         data.compId,
         data.shuffle
       );
-      return res.status(200).send({ result: "success" });
+      return res.status(200).send({ result: result });
     },
 
     submitForm: async (req, res, { db, data }) => {
