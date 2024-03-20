@@ -330,7 +330,6 @@ export default function TeamIndex(props: ResolvedUrlData) {
                           onChange={() => {
                             updateScouter(user._id as string);
                           }}
-                          checked={team?.scouters.includes(user._id as string)}
                         />
                       </td>
                       {team?.owners.includes(session?.user?._id as string) ? (
