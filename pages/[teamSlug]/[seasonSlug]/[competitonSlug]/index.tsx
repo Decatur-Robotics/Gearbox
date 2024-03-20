@@ -211,14 +211,14 @@ export default function Home(props: ResolvedUrlData) {
             <div className="card-body">
               <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
               <div className="divider"></div>
-              <div className="w-full flex flex-row items-center mt-4">
-                <a className="btn btn-primary" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
+              <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
+                <a className="max-sm:w-full btn btn-primary" href={"/event/"+comp?.tbaId}>Rankings <MdAutoGraph size={30}/></a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches || !matchesAssigned ? "btn-disabled": ""}`} href={`${comp?.slug}/stats`}>
+                <a className={`max-sm:w-full btn btn-secondary ${noMatches || !matchesAssigned ? "btn-disabled": ""}`} href={`${comp?.slug}/stats`}>
                   Stats <MdQueryStats size={30}/>
                 </a>
                 <div className="divider divider-horizontal"></div>
-                <a className={`btn btn-secondary ${noMatches || !matchesAssigned || true ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
+                <a className={`max-sm:w-full btn btn-secondary ${noMatches || !matchesAssigned || true ? "btn-disabled": ""}`}>Driver Reports <MdDriveEta size={30}/></a>
               </div>
             </div>
           </div>
@@ -446,26 +446,32 @@ export default function Home(props: ResolvedUrlData) {
           </div>
 
           <div className="w-full sm:card bg-base-200 shadow-xl h-64">
-              <div className="sm:card-body grow-0">
-                <h1 className="max-sm:ml-3 card-title max-sm:pt-2">Pitscouting</h1>
-                <div className="overflow-x-scroll flex flex-row space-x-10 h-36 max-sm:ps-1">
-                { loadingPitreports 
-                  ? <div className="w-full flex items-center justify-center">
-                      <BsGearFill className="animate-spin-slow" size={75}></BsGearFill>
-                    </div>
-                  : pitreports.map((report) => 
-                      <Link className="avatar mt-2" href={window.location.href + `/pit/${report._id}`} key={report._id}>
-                        <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
-                          {report.teamNumber}
+            { pitreports.length === 0 
+              ? <div className="flex flex-col items-center justify-center h-full">
+                  <h1 className="text-2xl sm:text-3xl font-bold">Pitscouting not available</h1>
+                  <div>Could not fetch team list from TBA</div>
+                </div> 
+              : <div className="sm:card-body grow-0">
+                  <h1 className="max-sm:ml-3 card-title max-sm:pt-2">Pitscouting</h1>
+                  <div className="overflow-x-scroll flex flex-row space-x-10 h-36 max-sm:ps-1">
+                    { loadingPitreports 
+                      ? <div className="w-full flex items-center justify-center">
+                          <BsGearFill className="animate-spin-slow" size={75}></BsGearFill>
                         </div>
-                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
-                          {report.image !== "/robot.jpg" ? <img src={report.image}></img> : <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">No Image</div>}
-                        </div>
-                      </Link>
-                    )
-                }
-              </div>
-            </div>
+                      : pitreports.map((report) => 
+                          <Link className="avatar mt-2" href={window.location.href + `/pit/${report._id}`} key={report._id}>
+                            <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
+                              {report.teamNumber}
+                            </div>
+                            <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
+                              {report.image !== "/robot.jpg" ? <img src={report.image}></img> : <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">No Image</div>}
+                            </div>
+                          </Link>
+                        )
+                    }
+                  </div>
+                </div>
+            }
           </div>
         </div>
 
