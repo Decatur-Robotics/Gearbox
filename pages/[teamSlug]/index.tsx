@@ -329,8 +329,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <td>
                         <input
                           type="checkbox"
-                          className="toggle toggle-secondary"
-                          disabled={!owner}
+                          className={`toggle toggle-${session.user?._id === user._id ? "disabled" : "secondary"}`}
+                          disabled={!owner || session.user?._id === user._id}
                           checked={team?.owners.includes(user._id as string)}
                           onChange={() => {
                             updateOwner(user._id as string);
