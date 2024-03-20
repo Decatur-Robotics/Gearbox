@@ -324,12 +324,10 @@ export default class ClientAPI {
 
   async updateXp(
     userId: string | undefined,
-    oweBucks: number | undefined,
     oweBucksToAdd: number | undefined
   ) {
     return await this.request("/setOwebucks", {
       userId,
-      oweBucks,
       oweBucksToAdd,
     });
   }

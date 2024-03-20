@@ -11,6 +11,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlinePersonRemove } from "react-icons/md";
+import { xpRequiredForNextLevel } from "@/lib/Xp";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -311,8 +312,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <div className="pl-2 lg:pl-0">{user.name}</div>
                     </td>
                     <td>
-                      <div>Level {user.level} ({user.xp}/{user.level*100})</div>
-                      <progress className="progress progress-primary" value={user.xp} max={user.level*100}>Hello</progress>
+                      <div>Level {user.level} ({user.xp}/{xpRequiredForNextLevel(user.level)})</div>
+                      <progress className="progress progress-primary" value={user.xp} max={xpRequiredForNextLevel(user.level)}>Hello</progress>
                     </td>
                     <td>
                       <input
@@ -458,7 +459,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
       xp: number | undefined,
       xpToAdd: number | undefined,
     ) {
-      await api.updateXp(userId, xp, xpToAdd);
+      await api.updateXp(userId, xpToAdd);
     }
     return (
       <div className="card w-5/6 bg-base-200 shadow-xl">
