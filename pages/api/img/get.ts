@@ -17,11 +17,12 @@ export default async function handler(
   if (req.method === "GET") {
     console.log(req.query);
     const filename = req.query.image;
+    console.log("Filename: " + filename);
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
     const db = await GetDatabase();
     //@ts-ignore
     const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
-    console.log(filename);
+    console.log("Got bucket");
     try {
       // errors here
       bucket.openDownloadStreamByName(filename as string).pipe(res);
