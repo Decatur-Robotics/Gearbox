@@ -634,7 +634,7 @@ export default function Home(props: ResolvedUrlData) {
                                       data-tip={user?.name}
                                       key={reportId}
                                     >
-                                      <div className="avatar online">
+                                      <div className="avatar">
                                         {/*Ternaries are fun*/}
                                         <div className="w-10 rounded-full">
                                           <img
@@ -675,7 +675,7 @@ export default function Home(props: ResolvedUrlData) {
           </div>
 
           <div className=" max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl h-56">
-            {pitreports.length === 0 ? (
+            {pitreports.length === 0 && !loadingPitreports ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <h1 className="text-2xl sm:text-3xl font-bold">
                   Pitscouting not available

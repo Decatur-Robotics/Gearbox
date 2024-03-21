@@ -43,11 +43,11 @@ export default function Form(props: { report: Report }) {
         return copy;
       });
     },
-    [],
+    []
   );
 
   return (
-    <div className="w-full h-screen flex flex-col items-center space-y-2">
+    <div className="w-full h-fit flex flex-col items-center space-y-2 mb-2">
       {page === 0 ? (
         <PrematchPage
           data={formData}
@@ -86,11 +86,15 @@ export default function Form(props: { report: Report }) {
         <></>
       )}
 
-      <footer className="w-full h-full ">
+      <div className="w-full h-full">
         <div className="card w-full bg-base-200">
           <div className="card-body flex flex-col items-center">
             <h2
-              className={`${alliance === AllianceColor.Blue ? "text-blue-500" : "text-red-500"} font-bold text-5xl`}
+              className={`${
+                alliance === AllianceColor.Blue
+                  ? "text-blue-500"
+                  : "text-red-500"
+              } font-bold text-5xl`}
             >
               #{[props.report.robotNumber]}
             </h2>
@@ -129,7 +133,7 @@ export default function Form(props: { report: Report }) {
             </div>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

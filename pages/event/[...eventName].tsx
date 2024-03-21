@@ -14,10 +14,10 @@ const api = new ClientAPI("gearboxiscool");
 export default function PublicEvent() {
   const { session, status } = useCurrentSession();
   const [eventData, setEventData] = useState<EventData | undefined | null>(
-    null,
+    null
   );
   const [teamEvents, setTeamEvents] = useState<Statbotics.TeamEvent[] | null>(
-    null,
+    null
   );
   const stateRef = useRef(eventData); // Ref used for fetch timeouts
 
@@ -51,8 +51,8 @@ export default function PublicEvent() {
               } else {
                 return [...prev, teamEvent];
               }
-            }),
-          ),
+            })
+          )
       );
     }
   });
@@ -108,7 +108,8 @@ export default function PublicEvent() {
   const endTime = new Date(eventData!.comp.end).getTime();
 
   function getTimeLeft(): {
-    time: number, label: string
+    time: number;
+    label: string;
   } {
     const now = Date.now();
     let eventStatus = "upcoming";
@@ -121,11 +122,18 @@ export default function PublicEvent() {
 
     return {
       time: eventStatus === "upcoming" ? startTime - now : endTime - now,
-      label: eventStatus === "upcoming" ? "Starts in" : eventStatus === "ongoing" ? "Ends in" : "Ended",
-    }
+      label:
+        eventStatus === "upcoming"
+          ? "Starts in"
+          : eventStatus === "ongoing"
+          ? "Ends in"
+          : "Ended",
+    };
   }
 
-  function generateTimeLeft(timeLeft: number): {
+  function generateTimeLeft(
+    timeLeft: number
+  ): {
     days: number;
     hours: number;
     minutes: number;
@@ -151,21 +159,30 @@ export default function PublicEvent() {
   function updateCountdown() {
     const { time, label } = getTimeLeft();
     const { days, hours, minutes, seconds } = generateTimeLeft(time);
-    
+
     if (countdownRefs.days.current) {
       countdownRefs.days.current.style.setProperty("--value", days.toString());
     }
 
     if (countdownRefs.hours.current) {
-      countdownRefs.hours.current.style.setProperty("--value", hours.toString());
+      countdownRefs.hours.current.style.setProperty(
+        "--value",
+        hours.toString()
+      );
     }
 
     if (countdownRefs.minutes.current) {
-      countdownRefs.minutes.current.style.setProperty("--value", minutes.toString());
+      countdownRefs.minutes.current.style.setProperty(
+        "--value",
+        minutes.toString()
+      );
     }
 
     if (countdownRefs.seconds.current) {
-      countdownRefs.seconds.current.style.setProperty("--value", seconds.toString());
+      countdownRefs.seconds.current.style.setProperty(
+        "--value",
+        seconds.toString()
+      );
     }
 
     if (countdownRefs.label.current) {
@@ -181,7 +198,7 @@ export default function PublicEvent() {
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
-      <div className="min-h-screen w-1/2 md:w-full flex flex-col items-center justify-center space-y-6">
+      <div className="min-h-screen w-full md:w-1/2 flex flex-col items-center justify-center space-y-6">
         <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
           <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
           <div className="card-body">
@@ -195,56 +212,87 @@ export default function PublicEvent() {
                 <span ref={countdownRefs.label}></span>{" "}
                 <div className="countdown">
                   {/*@ts-ignore*/}
-                  <span ref={countdownRefs.days} style={{ "--value": 0 }}></span>d{/*@ts-ignore*/}
-                  <span ref={countdownRefs.hours} style={{ "--value": 0 }}></span>h{/*@ts-ignore*/}
-                  <span ref={countdownRefs.minutes} style={{ "--value": 0 }}></span>m{/*@ts-ignore*/}
-                  <span ref={countdownRefs.seconds} style={{ "--value": 0 }}></span>s
-                </div><br/>
-                <progress className="progress progress-secondary w-40" value={Date.now() - startTime} max={endTime - startTime}></progress>
+                  <span
+                    ref={countdownRefs.days}
+                    style={{ "--value": 0 }}
+                  ></span>
+                  d{/*@ts-ignore*/}
+                  <span
+                    ref={countdownRefs.hours}
+                    style={{ "--value": 0 }}
+                  ></span>
+                  h{/*@ts-ignore*/}
+                  <span
+                    ref={countdownRefs.minutes}
+                    style={{ "--value": 0 }}
+                  ></span>
+                  m{/*@ts-ignore*/}
+                  <span
+                    ref={countdownRefs.seconds}
+                    style={{ "--value": 0 }}
+                  ></span>
+                  s
+                </div>
+                <br />
+                <progress
+                  className="progress progress-secondary w-40"
+                  value={Date.now() - startTime}
+                  max={endTime - startTime}
+                ></progress>
               </div>
             )}
           </div>
         </div>
 
-        {
-          Date.now() < startTime && (
-            <div className="card w-5/6 shadow-xl bg-base-200 overflow-x-scroll">
-              <div className="card-body items-center">
-                <div className="grid grid-flow-col gap-5 text-center auto-cols-max">
-                  <div className="flex flex-col">
-                    <span className="countdown font-mono text-5xl">
-                      {/*@ts-ignore*/}
-                      <span style={{"--value":15}} ref={countdownRefs.days}></span>
-                    </span>
-                    days
-                  </div> 
-                  <div className="flex flex-col">
-                    <span className="countdown font-mono text-5xl">
-                      {/*@ts-ignore*/}
-                      <span style={{"--value":10}} ref={countdownRefs.hours}></span>
-                    </span>
-                    hours
-                  </div> 
-                  <div className="flex flex-col">
-                    <span className="countdown font-mono text-5xl">
-                      {/*@ts-ignore*/}
-                      <span style={{"--value":24}} ref={countdownRefs.minutes}></span>
-                    </span>
-                    min
-                  </div> 
-                  <div className="flex flex-col">
-                    <span className="countdown font-mono text-5xl">
-                      {/*@ts-ignore*/}
-                      <span style={{"--value":52}} ref={countdownRefs.seconds}></span>
-                    </span>
-                    sec
-                  </div>
+        {Date.now() < startTime && (
+          <div className="card w-5/6 shadow-xl bg-base-200 overflow-x-scroll">
+            <div className="card-body items-center">
+              <div className="grid grid-flow-col gap-5 text-center auto-cols-max">
+                <div className="flex flex-col">
+                  <span className="countdown font-mono text-5xl">
+                    {/*@ts-ignore*/}
+                    <span
+                      style={{ "--value": 15 }}
+                      ref={countdownRefs.days}
+                    ></span>
+                  </span>
+                  days
                 </div>
-                <h2 className="card-title">until event starts</h2>
+                <div className="flex flex-col">
+                  <span className="countdown font-mono text-5xl">
+                    {/*@ts-ignore*/}
+                    <span
+                      style={{ "--value": 10 }}
+                      ref={countdownRefs.hours}
+                    ></span>
+                  </span>
+                  hours
+                </div>
+                <div className="flex flex-col">
+                  <span className="countdown font-mono text-5xl">
+                    {/*@ts-ignore*/}
+                    <span
+                      style={{ "--value": 24 }}
+                      ref={countdownRefs.minutes}
+                    ></span>
+                  </span>
+                  min
+                </div>
+                <div className="flex flex-col">
+                  <span className="countdown font-mono text-5xl">
+                    {/*@ts-ignore*/}
+                    <span
+                      style={{ "--value": 52 }}
+                      ref={countdownRefs.seconds}
+                    ></span>
+                  </span>
+                  sec
+                </div>
               </div>
+              <h2 className="card-title">until event starts</h2>
             </div>
-          )
-        }
+          </div>
+        )}
 
         {first.length > 0 ? (
           <div className="card w-5/6 bg-base-200 shadow-xl mt-6 overflow-x-scroll">
@@ -294,24 +342,24 @@ export default function PublicEvent() {
                           </td>
                           <td>
                             {findStatboticsStats(
-                              ranking.team_key,
+                              ranking.team_key
                             )?.record.qual.winrate.toFixed(2) ?? "..."}
                           </td>
                           <td>{oprs![ranking.team_key].toFixed(2)}</td>
                           <td>
                             {findStatboticsStats(
-                              ranking.team_key,
+                              ranking.team_key
                             )?.epa.total_points.mean.toFixed(2) ?? "..."}
                           </td>
                           <td>
                             {findStatboticsStats(
-                              ranking.team_key,
+                              ranking.team_key
                             )?.epa.breakdown.teleop_points.mean.toFixed(2) ??
                               "..."}
                           </td>
                           <td>
                             {findStatboticsStats(
-                              ranking.team_key,
+                              ranking.team_key
                             )?.epa.breakdown.auto_points.mean.toFixed(2) ??
                               "..."}
                           </td>
