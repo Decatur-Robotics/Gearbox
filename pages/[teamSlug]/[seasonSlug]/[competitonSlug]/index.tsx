@@ -81,7 +81,9 @@ export default function Home(props: ResolvedUrlData) {
           submittedCount++;
         }
       });
-      setSubmissionRate(Round(submittedCount / reps.length));
+      setSubmissionRate(
+        Round(submittedCount / (qualificationMatches.length * 6))
+      );
       setSubmittedReports(submittedCount);
       setLoadingScoutStats(false);
     };
