@@ -717,7 +717,7 @@ export default function Home(props: ResolvedUrlData) {
                 <h1 className="max-sm:ml-3 card-title max-sm:pt-2">
                   Pitscouting
                 </h1>
-                <div className="overflow-x-scroll flex flex-row space-x-10 h-36 max-sm:ps-1">
+                <div className="overflow-x-scroll flex flex-row space-x-5 h-36 max-sm:ps-1">
                   {loadingPitreports ? (
                     <div className="w-full flex items-center justify-center">
                       <BsGearFill
@@ -728,14 +728,14 @@ export default function Home(props: ResolvedUrlData) {
                   ) : (
                     pitreports.map((report) => (
                       <Link
-                        className="avatar mt-2"
+                        className="card mt-2 bg-base-100 p-2 h-3/4"
                         href={window.location.href + `/pit/${report._id}`}
                         key={report._id}
                       >
-                        <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
+                        <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
                           {report.teamNumber}
                         </div>
-                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent ">
+                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent items-center">
                           {/* {report.image !== "/robot.jpg" ? (
                             <img src={report.image}></img>
                           ) : (
