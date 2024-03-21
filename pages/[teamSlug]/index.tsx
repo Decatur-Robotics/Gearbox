@@ -422,6 +422,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
       <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-3xl">Settings </h2>
+
           <p className="">Modify and Update Your Teams Information</p>
 
           <p className="text-error">{settingsError}</p>
@@ -459,6 +460,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
               Update
             </button>
           </div>
+          {/*
           <button
             className="btn btn-accent text-xl w-1/3 mt-4"
             onClick={() => {
@@ -467,6 +469,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
           >
             Manage XP
           </button>
+          */}
         </div>
       </div>
     );
