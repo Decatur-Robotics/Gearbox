@@ -103,6 +103,7 @@ export default function Home(props: ResolvedUrlData) {
 
     const loadMatches = async () => {
       setLoadingMatches(true);
+      window.location.hash = "";
       const matches: Match[] = await api.allCompetitionMatches(comp?._id);
       matches.sort((a, b) => {
         if (a.number < b.number) {
@@ -205,6 +206,29 @@ export default function Home(props: ResolvedUrlData) {
     );
     location.reload();
   };
+
+  useEffect(() => {
+    if (
+      qualificationMatches.length > 0 &&
+      Object.keys(reportsById).length > 0
+    ) {
+      const b = qualificationMatches.filter((match) => {
+        let s = true;
+        for (const id of match.reports) {
+          const r = reportsById[id];
+          if (!r.submitted) {
+            s = false;
+            console.log("broke");
+            break;
+          }
+        }
+        return !s;
+      });
+      if (b.length > 0) {
+        setQualificationMatches(b);
+      }
+    }
+  }, [reportsById, matches]);
 
   const [exportPending, setExportPending] = useState(false);
 
@@ -557,11 +581,17 @@ export default function Home(props: ResolvedUrlData) {
                           "carousel carousel-center max-w-lg  h-56 p-4 space-x-4 bg-base-200 rounded-box "
                         }
                       >
-                        {qualificationMatches.map((match) => (
+                        {qualificationMatches.map((match, index) => (
                           <div
-                            className="carousel-item bg-base-20 w-full flex flex-col items-center"
+                            className={
+                              "carousel-item bg-base-20 w-full flex flex-col items-center "
+                            }
                             key={match._id}
                           >
+                            <div
+                              id={`//match${index}`}
+                              className="md:relative md:-translate-y-80"
+                            ></div>
                             <h1 className="text-2xl font-bold mb-4">
                               Match {match.number}
                             </h1>
