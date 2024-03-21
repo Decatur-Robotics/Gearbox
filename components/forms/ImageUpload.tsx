@@ -3,7 +3,7 @@ import imageCompression from "browser-image-compression";
 import React, { useState } from "react";
 import { FaFileUpload, FaImage } from "react-icons/fa";
 
-const CompressionOptions = {
+const DefaultCompressionOptions = {
   maxSizeMB: 0.5,
   maxWidthOrHeight: 1920,
   useWebWorker: true,
@@ -22,7 +22,13 @@ export default function ImageUpload(props: {
     setUploadProgress(50);
     const data = event.target.files[0];
     console.log(`originalFile size ${data.size / 1024 / 1024} MB`);
-    const compressedFile = await imageCompression(data, CompressionOptions);
+
+    const compressionOptions = {
+      ...DefaultCompressionOptions,
+      fileType: (data.name as string).split(".").at(-1)
+    }
+
+    const compressedFile = await imageCompression(data, compressionOptions);
     console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`);
 
     const formData = new FormData();
