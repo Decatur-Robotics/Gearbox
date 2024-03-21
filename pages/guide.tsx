@@ -11,12 +11,13 @@ export default function Guide() {
         <div className="w-full md:w-1/2 min-h-screen flex flex-col items-center mt-4 indent-8">
           <h1 className="text-4xl font-bold">Gearbox Team Guide</h1>
           <p>
-            This quick guide will help you setup Gearbox for your team's needs
+            This quick guide will help you setup Gearbox for your team{"'"}s
+            needs
           </p>
           <div className="divider"></div>
           <p>
             Gearbox is a tool designed to make your scouting workforce as
-            efficient as possible. Gearboxes' goal is to make almost everything
+            efficient as possible. Gearboxes goal is to make almost everything
             automated so all you need to worry about is actually scouting. To do
             this however, some setup is required to make sure everything is
             ready to go.
