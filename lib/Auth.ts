@@ -13,7 +13,6 @@ var db = GetDatabase();
 export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
-    /*
     Google({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
@@ -25,13 +24,12 @@ export const AuthenticationOptions: AuthOptions = {
           false,
           await GenerateSlug(Collections.Users, profile.name),
           [],
-          [],
+          []
         );
         user.id = profile.sub;
         return user;
       },
     }),
-    */
     /*
         GitHubProvider({
           clientId: process.env.GITHUB_ID as string,

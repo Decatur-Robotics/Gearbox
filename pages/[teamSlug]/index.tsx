@@ -65,8 +65,8 @@ export default function TeamIndex(props: ResolvedUrlData) {
       if (cs.competitions.length > 0) {
         setUpcomingEvent(
           await api.findCompetitionById(
-            cs?.competitions[cs.competitions.length - 1],
-          ),
+            cs?.competitions[cs.competitions.length - 1]
+          )
         );
       }
     };
@@ -236,49 +236,55 @@ export default function TeamIndex(props: ResolvedUrlData) {
           <h1 className="card-title text-2xl">Team Roster</h1>
           <p>Manage your teams members</p>
 
-          <h1 className="text-lg">Requests:</h1>
-          {requests.length === 0 ? (
-            <p className="text-sm ml-4">No Requests</p>
+          {owner ? (
+            <div>
+              <h1 className="text-lg">Requests:</h1>
+              {requests.length === 0 ? (
+                <p className="text-sm ml-4">No Requests</p>
+              ) : (
+                <></>
+              )}
+
+              <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
+                {requests.map((user) => (
+                  <div className="card bg-base-300 w-full" key={user._id}>
+                    <div className="card-body">
+                      <div className="flex flex-row space-x-2">
+                        <div className="avatar">
+                          <div className="w-12 rounded-full">
+                            <img src={user.image} />
+                          </div>
+                        </div>
+
+                        <h1 className="card-title">{user.name}</h1>
+                      </div>
+
+                      <div className="card-actions justify-end">
+                        <button
+                          className="btn btn-success text-white"
+                          onClick={() => {
+                            handleRequest(user._id, true);
+                          }}
+                        >
+                          Add
+                        </button>
+                        <button
+                          className="btn btn-error text-white"
+                          onClick={() => {
+                            handleRequest(user._id, false);
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <></>
           )}
-
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-            {requests.map((user) => (
-              <div className="card bg-base-300 w-full" key={user._id}>
-                <div className="card-body">
-                  <div className="flex flex-row space-x-2">
-                    <div className="avatar">
-                      <div className="w-12 rounded-full">
-                        <img src={user.image} />
-                      </div>
-                    </div>
-
-                    <h1 className="card-title">{user.name}</h1>
-                  </div>
-
-                  <div className="card-actions justify-end">
-                    <button
-                      className="btn btn-success text-white"
-                      onClick={() => {
-                        handleRequest(user._id, true);
-                      }}
-                    >
-                      Add
-                    </button>
-                    <button
-                      className="btn btn-error text-white"
-                      onClick={() => {
-                        handleRequest(user._id, false);
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
           <div className="divider"></div>
 
@@ -314,19 +320,32 @@ export default function TeamIndex(props: ResolvedUrlData) {
                         </div>
                       </td>
                       <td>
-                        <div className={`pl-2 lg:pl-0 ${levelToClassName(level)}`}>{user.name}</div>
+                        <div
+                          className={`pl-2 lg:pl-0 ${levelToClassName(level)}`}
+                        >
+                          {user.name}
+                        </div>
                       </td>
                       <td>
-                        <div>Level {level} ({xp}/{xpForNextLevel})</div>
-                        <progress className="progress progress-primary" value={xp} max={xpForNextLevel}></progress>
+                        <div>
+                          Level {level} ({xp}/{xpForNextLevel})
+                        </div>
+                        <progress
+                          className="progress progress-primary"
+                          value={xp}
+                          max={xpForNextLevel}
+                        ></progress>
                       </td>
                       <td>
                         <input
                           type="checkbox"
-                 className={`toggle toggle-${session.user?._id === user._id ? "disabled" : "secondary"}`}
+                          className={`toggle toggle-${
+                            session.user?._id === user._id
+                              ? "disabled"
+                              : "secondary"
+                          }`}
                           disabled={!owner || session.user?._id === user._id}
                           checked={team?.owners.includes(user._id as string)}
-
                           onChange={() => {
                             updateScouter(user._id as string);
                           }}
@@ -397,7 +416,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
       await api.updateTeam(
         { name: nameChange, number: numberChange },
-        team?._id as string,
+        team?._id as string
       );
 
       location.reload();
@@ -406,9 +425,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     return (
       <div className="card w-5/6 bg-base-200 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title text-3xl">
-            Settings{" "}
-          </h2>
+          <h2 className="card-title text-3xl">Settings </h2>
           <p className="">Modify and Update Your Teams Information</p>
 
           <p className="text-error">{settingsError}</p>
@@ -464,7 +481,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
     async function changeXp(
       userId: string | undefined,
       xp: number | undefined,
-      xpToAdd: number | undefined,
+      xpToAdd: number | undefined
     ) {
       await api.addUserXp(userId, xpToAdd);
     }
@@ -565,11 +582,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          changeXp(
-                            user._id,
-                            user?.xp,
-                            xpToChange * -1,
-                          );
+                          changeXp(user._id, user?.xp, xpToChange * -1);
                         }}
                       >
                         Take
@@ -579,11 +592,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => {
-                          changeXp(
-                            user._id,
-                            user?.xp,
-                            xpToChange,
-                          );
+                          changeXp(user._id, user?.xp, xpToChange);
                         }}
                       >
                         Give
