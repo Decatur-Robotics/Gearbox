@@ -26,6 +26,7 @@ export default function Homepage(props: ResolvedUrlData) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  console.log("whoa whay did we erro");
   console.log(JSON.stringify(await UrlResolver(context)));
   return {
     props: await UrlResolver(context),
