@@ -157,7 +157,7 @@ export default function Home(props: ResolvedUrlData) {
       let submitted = 0;
       for (const pitreportId of comp?.pitReports) {
         const pitreport = await api.findPitreportById(pitreportId);
-        if (pitreport.image !== "/robot.jpg") {
+        if (pitreport.comments.length > 2) {
           submitted++;
         }
         newPitReports.push(pitreport);
