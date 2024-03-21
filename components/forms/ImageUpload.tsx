@@ -44,7 +44,7 @@ export default function ImageUpload(props: {
 
     if (res.status === 200) {
       const data = await res.json();
-      const url = `/api/img/${data.filename}`;
+      const url = `/api/img/get?image=${data.filename}`;
 
       setTimeout(() => {
         setImageUrl(url);
