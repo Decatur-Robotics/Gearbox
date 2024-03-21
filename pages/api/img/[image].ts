@@ -14,9 +14,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("Received image request");
   if (req.method === "GET") {
-    const { filename } = req.query;
+    console.log(req.query);
+    const filename = req.query.image;
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
     const db = await GetDatabase();
     //@ts-ignore
