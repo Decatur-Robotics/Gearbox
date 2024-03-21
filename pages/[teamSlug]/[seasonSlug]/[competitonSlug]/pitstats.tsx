@@ -9,8 +9,9 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
 import { Collections, GetDatabase } from "@/lib/MongoDB";
-import { NumericalAverage } from "@/lib/client/StatsMath";
+import { NumericalAverage, NumericalTotal } from "@/lib/client/StatsMath";
 import useIsVisible from "@/lib/client/useIsVisible";
+import Heatmap from "@/components/stats/Heatmap";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -33,6 +34,7 @@ function TeamSlide(props: {
   avgSpeaker: string[];
   avgAmp: string[];
   pitReport: Pitreport;
+  matchReports: Report[];
 }) {
   const [visible, setVisible] = useState(false);
   const stats = props.teamStatPairs[props.teamNumber];
@@ -111,11 +113,12 @@ function TeamSlide(props: {
         </div>
       </div>
       <div className="w-1/2 flex flex-col">
-        {pit.image !== "/robot.jpg" ? (
+        {/* {pit.image !== "/robot.jpg" ? (
           <img src={pit.image} className="rounded-xl w-[300px] h-64"></img>
         ) : (
           <div className="skeleton bg-base-300 w-[300px] h-64 rounded-xl"></div>
-        )}
+        )} */}
+        <BarGraph label="Scored in Both Amp & Speaker" data={props.matchReports.map((rep)=>rep.data.TeleopScoredSpeaker+rep.data.TeleopScoredAmp) } xlabels={props.matchReports.map((r, i)=>String(i+1))} />
         <h1 className="text-lg font-semibold">Robot Capabilities:</h1>
         <p className="text-lg">
           Intake Type: <span className="text-accent">{pit.intakeType}</span>
@@ -254,6 +257,7 @@ export default function Pitstats(props: { competition: Competition }) {
         avgAuto={avgAuto}
         avgSpeaker={avgSpeaker}
         pitReport={newPits[Number(key)]}
+        matchReports={reports.filter((r) => r.robotNumber === Number(key))}
       ></TeamSlide>
     ));
     setSlides(newSlides);
