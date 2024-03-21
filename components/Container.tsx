@@ -114,11 +114,11 @@ export default function Container(props: ContainerProps) {
     >
       <div
         role="alert"
-        className="alert rounded-none py-2  font-semibold alert-warning"
+        className="alert rounded-none py-1 sm:py-2  font-semibold alert-warning"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="stroke-current shrink-0 h-6 w-6"
+          className="max-sm:hidden stroke-current shrink-0 h-6 w-6"
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -130,7 +130,7 @@ export default function Container(props: ContainerProps) {
           />
         </svg>
         <span className="max-sm:text-sm">
-          Alert: FIRST APIs are experiencing high latency and unreliable data-
+          Alert: FIRST APIs are experiencing high latency and unreliable data -
           Teams may need to use manual match creation
         </span>
       </div>
