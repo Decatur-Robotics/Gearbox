@@ -267,7 +267,7 @@ export default function Home(props: ResolvedUrlData) {
                 >
                   Pit Stats <MdCoPresent size={30} />
                 </a>
-
+                <div className="divider divider-horizontal"></div>
                 <button
                   className={`btn ${
                     exportPending ? "btn-disabled" : "btn-primary"
@@ -612,9 +612,9 @@ export default function Home(props: ResolvedUrlData) {
                                       key={reportId}
                                       className={`${color} ${
                                         mine && !submitted
-                                          ? "drop-shadow-glowStrong"
-                                          : ""
-                                      }  rounded-lg w-12 h-12 flex items-center justify-center text-white border-2 border-white`}
+                                          ? "border-4"
+                                          : "border-2"
+                                      }  rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
                                     >
                                       <h1>{report.robotNumber}</h1>
                                     </Link>
