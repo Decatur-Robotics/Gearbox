@@ -26,7 +26,7 @@ import {
 } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
-import { FaUserGroup } from "react-icons/fa6";
+import { FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 
 const api = new ClientAPI("gearboxiscool");
@@ -735,14 +735,15 @@ export default function Home(props: ResolvedUrlData) {
                         <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
                           {report.teamNumber}
                         </div>
-                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent">
-                          {report.image !== "/robot.jpg" ? (
+                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent ">
+                          {/* {report.image !== "/robot.jpg" ? (
                             <img src={report.image}></img>
                           ) : (
                             <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">
                               No Image
                             </div>
-                          )}
+                          )} */}
+                          <FaRobot size={64} />
                         </div>
                       </Link>
                     ))
