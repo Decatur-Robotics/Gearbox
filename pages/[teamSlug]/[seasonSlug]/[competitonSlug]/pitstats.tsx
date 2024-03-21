@@ -118,7 +118,7 @@ function TeamSlide(props: {
         ) : (
           <div className="skeleton bg-base-300 w-[300px] h-64 rounded-xl"></div>
         )} */}
-        <BarGraph label="Scored in Both Amp & Speaker" data={props.matchReports.map((rep)=>rep.data.TeleopScoredSpeaker+rep.data.TeleopScoredAmp) } xlabels={props.matchReports.map((r, i)=>String(i+1))} />
+        <BarGraph label="Notes Scored in Both Amp & Speaker" data={props.matchReports.map((rep)=>rep.data.TeleopScoredSpeaker+rep.data.TeleopScoredAmp) } xlabels={props.matchReports.map((r, i)=>String(i+1))} />
         <h1 className="text-lg font-semibold">Robot Capabilities:</h1>
         <p className="text-lg">
           Intake Type: <span className="text-accent">{pit.intakeType}</span>
