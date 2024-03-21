@@ -10,9 +10,6 @@ import { GenerateSlug } from "./Utils";
 
 var db = GetDatabase();
 
-console.log(process.env.GOOGLE_ID);
-console.log(process.env.GOOGLE_SECRET);
-
 export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [

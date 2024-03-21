@@ -1,11 +1,17 @@
-import { Db, GridFSBucket, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
+import {
+  Db,
+  GridFSBucket,
+  MongoClient,
+  MongoClientOptions,
+  ObjectId,
+} from "mongodb";
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
 const uri = process.env.MONGODB_URI;
-const options: MongoClientOptions = { maxPoolSize: 3};
+const options: MongoClientOptions = { maxPoolSize: 3 };
 
 let client;
 let clientPromise: Promise<MongoClient>;
@@ -13,6 +19,9 @@ let clientPromise: Promise<MongoClient>;
 if (!global.clientPromise) {
   client = new MongoClient(uri, options);
   global.clientPromise = client.connect();
+
+  console.log("ID: " + process.env.GOOGLE_ID);
+  console.log("sec: " + process.env.GOOGLE_SECRET);
 }
 clientPromise = global.clientPromise;
 
@@ -28,7 +37,7 @@ export enum Collections {
   Accounts = "accounts",
   Sessions = "sessions",
   Forms = "Forms",
-  Pitreports = "Pitreports"
+  Pitreports = "Pitreports",
 }
 
 export async function GetDatabase(): Promise<MongoDBInterface> {
@@ -57,13 +66,13 @@ export class MongoDBInterface {
     this.client = await this.promise;
     this.db = this.client?.db(process.env.DB);
     //@ts-ignore
-    
+
     const collections = await this.db?.listCollections().toArray();
     if (collections?.length === 0) {
       try {
         Object.values(Collections).forEach(
           async (collectionName) =>
-            await this.db?.createCollection(collectionName),
+            await this.db?.createCollection(collectionName)
         );
       } catch (e) {
         console.log("Failed to create collections... (probably exist already)");
@@ -85,7 +94,7 @@ export class MongoDBInterface {
   async updateObjectById<Type>(
     collection: Collections,
     id: ObjectId,
-    newValues: object,
+    newValues: object
   ): Promise<Type> {
     var query = { _id: id };
     var updated = { $set: newValues };
@@ -96,7 +105,7 @@ export class MongoDBInterface {
 
   async findObjectById<Type>(
     collection: Collections,
-    id: ObjectId,
+    id: ObjectId
   ): Promise<Type> {
     var query = { _id: id };
     return (await this?.db?.collection(collection).findOne(query)) as Type;
@@ -104,14 +113,14 @@ export class MongoDBInterface {
 
   async findObject<Type>(
     collection: Collections,
-    query: object,
+    query: object
   ): Promise<Type> {
     return (await this?.db?.collection(collection).findOne(query)) as Type;
   }
 
   async findObjects<Type>(
     collection: Collections,
-    query: object,
+    query: object
   ): Promise<Type[]> {
     return (await this?.db
       ?.collection(collection)
@@ -119,7 +128,10 @@ export class MongoDBInterface {
       .toArray()) as Type[];
   }
 
-  async countObjects(collection: Collections, query: object): Promise<number | undefined> {
+  async countObjects(
+    collection: Collections,
+    query: object
+  ): Promise<number | undefined> {
     return await this?.db?.collection(collection).countDocuments(query);
   }
 }
