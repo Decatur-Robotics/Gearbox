@@ -244,14 +244,14 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
                 <a
-                  className="max-sm:w-full btn btn-primary"
+                  className="max-sm:w-full btn btn-md btn-primary"
                   href={"/event/" + comp?.tbaId}
                 >
                   Rankings <MdAutoGraph size={30} />
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`max-sm:w-full btn btn-secondary ${
+                  className={`max-sm:w-full btn btn-md btn-secondary ${
                     noMatches || !matchesAssigned ? "btn-disabled" : ""
                   }`}
                   href={`${comp?.slug}/stats`}
@@ -260,7 +260,7 @@ export default function Home(props: ResolvedUrlData) {
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`btn btn-accent ${
+                  className={`btn btn-accent btn-md ${
                     noMatches || !matchesAssigned ? "btn-disabled" : ""
                   }`}
                   href={`${comp?.slug}/pitstats`}
@@ -269,7 +269,7 @@ export default function Home(props: ResolvedUrlData) {
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <button
-                  className={`btn ${
+                  className={`btn btn-md ${
                     exportPending ? "btn-disabled" : "btn-primary"
                   } `}
                   onClick={exportAsCsv}
