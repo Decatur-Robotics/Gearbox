@@ -81,9 +81,7 @@ export default function Home(props: ResolvedUrlData) {
           submittedCount++;
         }
       });
-      setSubmissionRate(
-        Round(submittedCount / (qualificationMatches.length * 6))
-      );
+
       setSubmittedReports(submittedCount);
       setLoadingScoutStats(false);
     };
@@ -481,7 +479,12 @@ export default function Home(props: ResolvedUrlData) {
                       Competition Progress
                     </div>
                     <div className="stat-value text-accent">
-                      {!Number.isNaN(submissionRate) ? submissionRate : "?"}%
+                      {!Number.isNaN(submittedReports)
+                        ? Round(
+                            submittedReports / (qualificationMatches.length * 6)
+                          )
+                        : "?"}
+                      %
                     </div>
                     <div className="stat-desc"></div>
                   </div>
@@ -500,11 +503,17 @@ export default function Home(props: ResolvedUrlData) {
                     ) : (
                       <div>
                         <div className="stat-value text-primary">
-                          {!Number.isNaN(submissionRate) ? submissionRate : "?"}
+                          {!Number.isNaN(submittedReports)
+                            ? Round(
+                                submittedReports /
+                                  (qualificationMatches.length * 6)
+                              )
+                            : "?"}
                           %
                         </div>
                         <div className="stat-desc">
-                          {submittedReports}/{reports.length} Reports
+                          {submittedReports}/{qualificationMatches.length * 6}{" "}
+                          Reports
                         </div>
                       </div>
                     )}
@@ -518,16 +527,6 @@ export default function Home(props: ResolvedUrlData) {
                       <FaUserGroup size={40}></FaUserGroup>
                     </div>
                     <div className="stat-value text-primary">
-                      {!submittedPitreports ? "?" : submittedPitreports}
-                    </div>
-                  </div>
-
-                  <div className="stat place-items-center">
-                    <div className="stat-figure text-secondary">
-                      <MdInsertPhoto size={40}></MdInsertPhoto>
-                    </div>
-                    <div className="stat-title">Photos</div>
-                    <div className="stat-value text-secondary">
                       {!submittedPitreports ? "?" : submittedPitreports}
                     </div>
                   </div>
