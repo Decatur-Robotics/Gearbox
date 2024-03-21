@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { GetDatabase } from "@/lib/MongoDB";
 import { GridFSBucket, ObjectId } from "mongodb";
+import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
 export const config = {
   api: {
@@ -23,7 +24,8 @@ export default async function handler(
       res.send({ status: 404, message: "File Not Found" });
     }
 
-    console.log("Res: " + result);
+    console.log("Res: " + SerializeDatabaseObject(result));
+    console.log();
 
     bucket.openDownloadStream(result._id).pipe(res);
   } else {
