@@ -1,6 +1,4 @@
 
-
-
 function Error({statusCode}) {
   return <div className="w-screen h-screen bg-base-300 flex items-center justify-center">
     <div className="card w-5/6 md:w-1/4 bg-base-100 shadow-xl rounded-xl">
