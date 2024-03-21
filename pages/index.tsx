@@ -34,7 +34,7 @@ export default function Homepage() {
   });
 
   function formatDataPoint(num: number | null): string {
-    if (num === null) return "?";
+    if (num === null || num === undefined) return "?";
 
     return num.toLocaleString();
   }

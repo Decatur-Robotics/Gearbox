@@ -198,7 +198,7 @@ export default function PublicEvent() {
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
-      <div className="min-h-screen w-full md:w-1/2 flex flex-col items-center justify-center space-y-6">
+      <div className="min-h-screen w-full max-sm:w-screen flex flex-col items-center justify-center space-y-6">
         <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
           <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
           <div className="card-body">

@@ -26,7 +26,7 @@ import {
 } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
-import { FaRobot, FaUserGroup } from "react-icons/fa6";
+import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 
 const api = new ClientAPI("gearboxiscool");
@@ -718,7 +718,7 @@ export default function Home(props: ResolvedUrlData) {
                 <h1 className="max-sm:ml-3 card-title max-sm:pt-2">
                   Pitscouting
                 </h1>
-                <div className="overflow-x-scroll flex flex-row space-x-10 h-36 max-sm:ps-1">
+                <div className="overflow-x-scroll flex flex-row space-x-5 h-36 max-sm:ps-1">
                   {loadingPitreports ? (
                     <div className="w-full flex items-center justify-center">
                       <BsGearFill
@@ -729,14 +729,14 @@ export default function Home(props: ResolvedUrlData) {
                   ) : (
                     pitreports.map((report) => (
                       <Link
-                        className="avatar mt-2"
+                        className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
                         href={window.location.href + `/pit/${report._id}`}
                         key={report._id}
                       >
-                        <div className="relative bg-base-100 rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
+                        <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
                           {report.teamNumber}
                         </div>
-                        <div className="absolute w-24 rounded z-10 translate-y-4 hover:border-4 hover:border-accent ">
+                        <div className="absolute rounded z-10 translate-y-4 items-center">
                           {/* {report.image !== "/robot.jpg" ? (
                             <img src={report.image}></img>
                           ) : (
@@ -744,7 +744,11 @@ export default function Home(props: ResolvedUrlData) {
                               No Image
                             </div>
                           )} */}
-                          <FaRobot size={64} />
+                          {
+                            report.comments.length > 2 
+                              ? <FaCheck size={64} /> 
+                              : <FaRobot size={64} />
+                          }
                         </div>
                       </Link>
                     ))
