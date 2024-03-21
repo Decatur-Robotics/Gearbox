@@ -10,8 +10,6 @@ import {
   Pitreport,
 } from "./Types";
 
-global.compIdPairs = [];
-
 export namespace TheBlueAlliance {
   export interface SimpleTeam {
     key: string;
@@ -70,22 +68,22 @@ export namespace TheBlueAlliance {
   }
 
   export interface SimpleRank {
-    matches_played: number,
-    qual_average: number,
+    matches_played: number;
+    qual_average: number;
     record: {
-      losses: number,
-      wins: number,
-      ties: number,
-    },
-    rank: number,
-    dq: number,
-    team_key: string
+      losses: number;
+      wins: number;
+      ties: number;
+    };
+    rank: number;
+    dq: number;
+    team_key: string;
   }
 
   export interface OprRanking {
     oprs: {
       [key: string]: number;
-    } 
+    };
   }
 
   export interface SimpleMatch {
@@ -113,14 +111,14 @@ export namespace TheBlueAlliance {
     FRC = "frc",
   }
 
-  export type TeamArray = {[team_number: string]: number}[];
+  export type TeamArray = { [team_number: string]: number }[];
 
   export function ConvertDate(tbaDate: string): number {
     return Date.parse(tbaDate);
   }
 
   export function competitionLevelToMatchType(
-    matchType: CompetitionLevel,
+    matchType: CompetitionLevel
   ): MatchType {
     if (matchType === CompetitionLevel.QM) {
       return MatchType.Qualifying;
@@ -175,12 +173,14 @@ export namespace TheBlueAlliance {
       return this.request(`/event/${tbaId}/matches`);
     }
 
-    async getCompetitonRanking(tbaId: string): Promise<{rankings:SimpleRank[]}> {
-      return this.request(`/event/${tbaId}/rankings`)
+    async getCompetitonRanking(
+      tbaId: string
+    ): Promise<{ rankings: SimpleRank[] }> {
+      return this.request(`/event/${tbaId}/rankings`);
     }
 
     async getCompetitonOPRS(tbaId: string): Promise<OprRanking> {
-      return this.request(`/event/${tbaId}/oprs`)
+      return this.request(`/event/${tbaId}/oprs`);
     }
 
     async getMatch(tbaId: string): Promise<SimpleMatch> {
@@ -234,7 +234,7 @@ export namespace TheBlueAlliance {
         undefined,
         competitonData.key,
         ConvertDate(competitonData.start_date),
-        ConvertDate(competitonData.end_date),
+        ConvertDate(competitonData.end_date)
       );
 
       // maybe give automatic matches later, once scouting is more stabilized
@@ -250,10 +250,10 @@ export namespace TheBlueAlliance {
         data.time,
         competitionLevelToMatchType(data.comp_level),
         tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-        tbaIdsToTeamNumbers(data.alliances.red.team_keys),
+        tbaIdsToTeamNumbers(data.alliances.red.team_keys)
       );
     }
-    
+
     async getCompetitionMatches(tbaId: string): Promise<Match[]> {
       let matches = (await this.req.getCompetitionMatches(tbaId)).map(
         (data) =>
@@ -264,15 +264,17 @@ export namespace TheBlueAlliance {
             data.time,
             competitionLevelToMatchType(data.comp_level),
             tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-            tbaIdsToTeamNumbers(data.alliances.red.team_keys),
-          ),
+            tbaIdsToTeamNumbers(data.alliances.red.team_keys)
+          )
       );
       return matches;
     }
 
     async getCompetitionPitreports(tbaId: string): Promise<Pitreport[]> {
       var competitionTeams = await this.req.getCompetitionTeams(tbaId);
-      return competitionTeams.map(({team_number}) => new Pitreport(team_number))
+      return competitionTeams.map(
+        ({ team_number }) => new Pitreport(team_number)
+      );
     }
 
     async getMatchAndReportsAutofillData() {
@@ -300,12 +302,17 @@ export namespace TheBlueAlliance {
     }
 
     async loadCompetitionPairings() {
-      console.log("Loading Pairings For Competition Searches...");
-      const year = new Date().getFullYear();
-      const pairings = await this.allCompetitionsToPairings(year);
-      console.log(`Loaded ${pairings.length} Pairings!`);
-
-      this.competitionPairings = pairings;
+      if (global?.compIdPairs) {
+        console.log("using cache...");
+        this.competitionPairings = global.compIdPairs;
+      } else {
+        console.log("Loading Pairings For Competition Searches...");
+        const year = new Date().getFullYear();
+        const pairings = await this.allCompetitionsToPairings(year);
+        console.log(`Loaded ${pairings.length} Pairings!`);
+        this.competitionPairings = pairings;
+        global.compIdPairs = pairings;
+      }
     }
 
     async allCompetitionsToPairings(year: number) {
