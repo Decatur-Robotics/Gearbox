@@ -1,4 +1,5 @@
 
+/*
 
 function Error({statusCode}) {
   return <div className="w-screen h-screen bg-base-300 flex items-center justify-center">
@@ -14,10 +15,10 @@ function Error({statusCode}) {
 }
  
 Error.getInitialProps = ({ res, err }) => {
-  console.warn(err);
-  console.log(res.statusCode)
   const statusCode = res ? res.statusCode : err ? err.statusCode : 404
   return { statusCode }
 }
  
 export default Error
+
+*/
