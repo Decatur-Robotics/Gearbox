@@ -1,5 +1,5 @@
 
-/*
+
 
 function Error({statusCode}) {
   return <div className="w-screen h-screen bg-base-300 flex items-center justify-center">
@@ -19,6 +19,5 @@ Error.getInitialProps = ({ res, err }) => {
   return { statusCode }
 }
  
-export default Error
+//export default Error
 
-*/
