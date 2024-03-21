@@ -83,11 +83,11 @@ export default function Guide() {
             make everything scalable and organized. Currently there are
             only two options, the{" "}
             <span className="font-semibold">
-              off-season and the current (Crescendo) season.{" "}
+              off-season and the current season, Crescendo for us.{" "}
             </span>
             The off-season option is great for getting used to
             gearbox and scouting off-season competitions, but
-            you should use the current season(Crescendo) for official
+            you should use the current season, crescendo, for official
             competitions.
           </p>
 
@@ -98,8 +98,8 @@ export default function Guide() {
             Competitions hold all of the relavant data concerning your
             current matches and particpating teams. Statistics on your scouting
             performance will be displayed at the top of the page along with
-            buttons to view your competition stats, pit-stats (our slideshow for pit
-            display) and relevant rankings. When match data is available you
+            buttons to view your competition stats, pit-stats our slideshow for pit
+            display and relevant rankings. When match data is available you
             can click the refresh button which will attempt to pull the latest
             match data from FRC servers and automatically generate matches. 
             Once data is available, you can then assign scouters which,
@@ -110,7 +110,7 @@ export default function Guide() {
           <p>
             Pitscouting forms are available, which any member of the team can access.
             Pitscouting provides a seperate form you can upload an
-            image of the robot and record its capabilities(such as drivetrain,
+            image of the robot and record its capabilities such as drivetrain,
             climber status, and ability to fit under the stage.
           </p>
 
