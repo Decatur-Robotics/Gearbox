@@ -2,8 +2,8 @@ import { BsGearFill } from "react-icons/bs";
 
 export default function Pamphlet() {
   return (
-    <div>
-    <div className="h-[5.5in] w-[8.5in] bg-base-200">
+    <div className="bg-white text-black">
+    <div className="h-[5.5in] w-[8.5in]">
       <div className="card w-full h-full">
         <div className="px-4 py-2">
           <h1 className="font-bold text-7xl"><BsGearFill className="inline" /> Gearbox <span className="text-3xl relative bottom-2 bg-accent px-4 p-3 rounded-full text-white">
@@ -13,7 +13,7 @@ export default function Pamphlet() {
           
           <div className="relative -translate-y-4">
           <div className="divider"></div>
-          <p className="text-2xl font-semibold bg-base-100 p-4 rounded-xl -translate-y-2">Gearbox is a powerful plug-and-play scouting tool that automatically
+          <p className="text-2xl font-semibold bg-slate-200 p-4 rounded-xl -translate-y-2">Gearbox is a powerful plug-and-play scouting tool that automatically
             handles match creation, scouter assignment, and data visualization</p>
           <h1 className="text-2xl font-bold mt-6 -translate-y-7">Features: </h1>
           <ul className=" list-disc ml-12 font-mono -translate-y-7">
@@ -32,7 +32,7 @@ export default function Pamphlet() {
       </div>
     </div>
 
-    <div className="h-[5.5in] w-[8.5in] bg-base-200">
+    <div className="h-[5.5in] w-[8.5in]">
       <div className="card w-full h-full">
         <div className="px-4 py-2">
           <h1 className="font-bold text-7xl"><BsGearFill className="inline" /> Gearbox <span className="text-3xl relative bottom-2 bg-accent px-4 p-3 rounded-full text-white">
@@ -42,7 +42,7 @@ export default function Pamphlet() {
           
           <div className="relative -translate-y-4">
           <div className="divider"></div>
-          <p className="text-2xl font-semibold bg-base-100 p-4 rounded-xl -translate-y-2">Gearbox is a powerful plug-and-play scouting tool that automatically
+          <p className="text-2xl font-semibold bg-slate-200 p-4 rounded-xl -translate-y-2">Gearbox is a powerful plug-and-play scouting tool that automatically
             handles match creation, scouter assignment, and data visualization</p>
           <h1 className="text-2xl font-bold mt-6 -translate-y-7">Features: </h1>
           <ul className=" list-disc ml-12 font-mono -translate-y-7">
