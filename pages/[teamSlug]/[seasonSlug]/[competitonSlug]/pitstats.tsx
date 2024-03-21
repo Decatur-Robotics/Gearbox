@@ -171,7 +171,7 @@ export default function Pitstats(props: { competition: Competition }) {
           NumericalAverage("TeleopScoredAmp", teamReports),
         avgAuto:
           NumericalAverage("AutoScoredSpeaker", teamReports) +
-          NumericalAverage("AutoScoredAuto", teamReports),
+          NumericalAverage("AutoScoredAmp", teamReports),
         avgAmp:
           NumericalAverage("TeleopScoredAmp", teamReports) +
           NumericalAverage("AutoScoredAmp", teamReports),
