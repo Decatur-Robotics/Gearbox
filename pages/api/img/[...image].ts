@@ -14,14 +14,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
-    var imageId = req.url?.split("/api/img/")[1];
-    console.log(imageId);
+    var filename = req.url?.split("/api/img/")[1];
+    console.log(filename);
     const db = await GetDatabase();
     //@ts-ignore
     const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
-    const result = (
-      await bucket.find({ _id: new ObjectId(imageId) }).toArray()
-    )[0];
+    const result = (await bucket.find({ filename: filename }).toArray())[0];
 
     if (!result) {
       res.send({ status: 404, message: "File Not Found" });
