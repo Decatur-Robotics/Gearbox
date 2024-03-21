@@ -214,22 +214,26 @@ export default function PublicEvent() {
                   {/*@ts-ignore*/}
                   <span
                     ref={countdownRefs.days}
-                    style={{ "--value": 0 }}
+                    { /*@ts-ignore */ ...
+                    'style={{ "--value": 0 }}'}
                   ></span>
                   d{/*@ts-ignore*/}
                   <span
                     ref={countdownRefs.hours}
-                    style={{ "--value": 0 }}
+                    { /*@ts-ignore */ ...
+                    'style={{ "--value": 0 }}'}
                   ></span>
                   h{/*@ts-ignore*/}
                   <span
                     ref={countdownRefs.minutes}
-                    style={{ "--value": 0 }}
+                    { /*@ts-ignore */ ...
+                    'style={{ "--value": 0 }}'}
                   ></span>
                   m{/*@ts-ignore*/}
                   <span
                     ref={countdownRefs.seconds}
-                    style={{ "--value": 0 }}
+                    { /*@ts-ignore */ ...
+                    'style={{ "--value": 0 }}'}
                   ></span>
                   s
                 </div>
@@ -252,7 +256,8 @@ export default function PublicEvent() {
                   <span className="countdown font-mono text-5xl">
                     {/*@ts-ignore*/}
                     <span
-                      style={{ "--value": 15 }}
+                      { /*@ts-ignore */ ...
+                      'style={{ "--value": 0 }}'}
                       ref={countdownRefs.days}
                     ></span>
                   </span>
@@ -262,7 +267,8 @@ export default function PublicEvent() {
                   <span className="countdown font-mono text-5xl">
                     {/*@ts-ignore*/}
                     <span
-                      style={{ "--value": 10 }}
+                      { /*@ts-ignore */ ...
+                      'style={{ "--value": 10 }}'}
                       ref={countdownRefs.hours}
                     ></span>
                   </span>
@@ -272,7 +278,8 @@ export default function PublicEvent() {
                   <span className="countdown font-mono text-5xl">
                     {/*@ts-ignore*/}
                     <span
-                      style={{ "--value": 24 }}
+                      { /*@ts-ignore */ ...
+                      'style={{ "--value": 24 }}'}
                       ref={countdownRefs.minutes}
                     ></span>
                   </span>
@@ -282,7 +289,8 @@ export default function PublicEvent() {
                   <span className="countdown font-mono text-5xl">
                     {/*@ts-ignore*/}
                     <span
-                      style={{ "--value": 52 }}
+                      { /*@ts-ignore */ ...
+                      'style={{ "--value": 52 }}'}
                       ref={countdownRefs.seconds}
                     ></span>
                   </span>
