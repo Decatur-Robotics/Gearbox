@@ -26,6 +26,9 @@ export default function Guide() {
             Note: Gearbox is currently in Beta and reliablilty and performance
             is not guaranteed
           </p>
+          <p className="font-bold text-warning mt-2">
+            Note: Gearbox currently only supports Qualifying matches
+          </p>
           <div className="divider"></div>
           <h1 className="text-3xl font-semibold">Joining or Making a Team</h1>
           <h1 className="text-xl font-semibold mt-2">Create a New Team</h1>
@@ -88,15 +91,31 @@ export default function Guide() {
           <h1 className="text-3xl font-semibold mb-2">Competitions</h1>
           <img src="/createComp.png" className="w-1/2"></img>
           <p>
-            The page of your preferred season will then provide a link to a
-            wizard which will allow you to quickly create a competition. This is
-            how competitions are actually made in Gearbox. By entering the name
-            of the relevant competiton and selecting the result, Gearbox will
-            automatically fetch all relevant and available match/team
-            information.
+            Competitions hold all of your relavant data concerning the your
+            current matches and particpating teams. Statistics on your scouters
+            performances will be displayed at the start of page along with
+            buttons to view stats, pit-stats (our deployable slideshow for pit
+            deployment) and relevant rankings. When match data is avaiable you
+            can optionally click the refresh button which will pull the latest
+            data from FRC servers. Once data is available, you can then assign
+            scouters which will ensure that every selected scouter will have a
+            set of matches.
           </p>
           <br></br>
-          <p>This is crayz</p>
+          <p>
+            Pitscouting forms are available to any member of the team and once
+            clicked, will provide a seperate form where the user can upload an
+            image of the robot plus its capabilities.
+          </p>
+
+          <div className="divider"></div>
+          <h1 className="text-3xl font-semibold mb-2">Manual Match Creation</h1>
+          <img src="/createComp.png" className="w-1/2"></img>
+          <p>
+            In the abscence of automatically provided data, a manager can
+            manually create matches by entering the various teams and the match
+            number. Afterwards you may need to re-assign scouters.
+          </p>
         </div>
       </div>
     </Container>
