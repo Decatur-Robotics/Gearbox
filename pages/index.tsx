@@ -73,10 +73,7 @@ export default function Homepage() {
                 >
                   Get Started
                 </a>
-                <a
-                  className="btn btn-lg btn-accent normal-case btn-disabled"
-                  href="profile"
-                >
+                <a className="btn btn-lg btn-accent normal-case" href="/guide">
                   Guide
                 </a>
               </div>
@@ -250,17 +247,17 @@ export default function Homepage() {
 
       <div
         ref={thirdSection}
-        className={`hero py-14 sm:py-28 bg-base-100 w-full transition-transform ease-in duration-300 ${
+        className={`hero py-6 sm:py-8 bg-base-100 w-full transition-transform ease-in duration-300 ${
           thirdVisible ? "scale-100" : "scale-0"
         }`}
       >
         <div className="hero-content w-full max-sm:pb-14">
           <div className="w-full space-y-2 grid grid-cols-1 sm:grid-cols-3 grid-rows-2 sm:space-x-10 z-20">
             <div className="relative w-full flex items-center justify-center">
-              <div className="w-96 h-96 right-36 top-2 absolute bg-slate-600 opacity-20 rounded-xl animate-spin-slow -z-50"></div>
+              <div className="max-sm:hidden w-96 h-96 right-36 top-2 absolute bg-slate-600 opacity-20 rounded-xl animate-spin-slow -z-50"></div>
             </div>
 
-            <div className="w-full flex flex-col items-center text-center bg-base-300 sm:p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+            <div className=" w-full flex flex-col items-center text-center bg-base-300 sm:p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
               <p className="text-2xl font-bold">Insightful Visualizations</p>
               <div className="divider"></div>
               <p className="font-mono opacity-50">
@@ -268,7 +265,7 @@ export default function Homepage() {
               </p>
             </div>
             <div className="w-full flex items-center justify-center">
-              <div className="w-80 h-80 absolute mask mask-hexagon bottom-40 bg-slate-600 opacity-50 rounded-full animate-spin-slow -z-50"></div>
+              <div className="max-sm:hidden w-80 h-80 absolute mask mask-hexagon bottom-40 bg-slate-600 opacity-50 rounded-full animate-spin-slow -z-50"></div>
             </div>
             <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
               <p className="text-2xl font-bold">Minimal UI/UX</p>
