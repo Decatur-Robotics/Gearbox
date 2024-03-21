@@ -108,9 +108,29 @@ export default function Container(props: ContainerProps) {
       className="w-full h-screen flex flex-col overflow-x-hidden"
       data-theme={theme}
     >
-      {/*<div role="alert" className="alert alert-success rounded-none max-h-10 flex items-center">
-        <span className="text-2xl text-white font-mono font-bold align-bottom">🥳 <span className="">So excited to launch the public beta of Gearbox! </span></span>
-  </div>*/}
+      <div
+        role="alert"
+        className="alert rounded-none py-2  font-semibold alert-warning"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="stroke-current shrink-0 h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+        <span>
+          Alert: FIRST APIs are experiencing high latency and unreliable data-
+          users may need to use manual match creation
+        </span>
+      </div>
+
       <div className="drawer">
         <input id="menu" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content">

@@ -19,9 +19,6 @@ let clientPromise: Promise<MongoClient>;
 if (!global.clientPromise) {
   client = new MongoClient(uri, options);
   global.clientPromise = client.connect();
-
-  console.log("ID: " + process.env.GOOGLE_ID);
-  console.log("sec: " + process.env.GOOGLE_SECRET);
 }
 clientPromise = global.clientPromise;
 
