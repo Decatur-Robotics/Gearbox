@@ -284,7 +284,7 @@ export default function Pitstats(props: { competition: Competition }) {
   }, [slides]);
 
   return (
-    <Container hideMenu={true} requireAuthentication={true}>
+    <Container hideMenu={true} requireAuthentication={true} notForMobile={true}>
       <div className="w-full h-full flex flex-col items-center bg-base-300">
         <h1 className="text-4xl font-bold text-center mt-2 ">
           <BsGearFill className="inline animate-spin-slow"></BsGearFill> Gearbox

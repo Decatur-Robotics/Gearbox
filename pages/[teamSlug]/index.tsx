@@ -609,7 +609,7 @@ export default function TeamIndex(props: ResolvedUrlData) {
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="w-full h-full flex flex-col justify-center items-center space-y-6 pb-12 lg:pb-0">
+      <div className="w-full h-fit flex flex-col max-sm:mt-4 md:justify-center items-center space-y-6 pb-12">
         <div className="card w-5/6 bg-base-200 shadow-xl">
           <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
           <div className="card-body">

@@ -14,7 +14,9 @@ export default function Checkbox(props: CheckboxProps) {
   const checked = props.data[props.dataKey];
   return (
     <label className="w-5/6 label cursor-pointer flex flex-row space-x-8  border-b-2 border-slate-600">
-      <span className="w-2/3 label-text text-lg font-semibold ">{props.label}</span>
+      <span className="w-2/3 label-text text-lg font-semibold ">
+        {props.label}
+      </span>
 
       <input
         type="checkbox"
@@ -30,7 +32,7 @@ export default function Checkbox(props: CheckboxProps) {
 
 export function IntakeType(props: RadioProps) {
   return (
-    <div className="w-full grid grid-cols-2 grid-rows-4 text-xl">
+    <div className="w-full grid grid-cols-2 grid-rows-4 align-left  text-md md:text-xl">
       <span>No Intake: </span>
       <input
         type="radio"
@@ -40,7 +42,7 @@ export function IntakeType(props: RadioProps) {
         }}
         checked={props.data.intakeType === IntakeTypes.None}
       />
-      <span>Human</span>
+      <span>Human: </span>
       <input
         type="radio"
         className="radio radio-primary ml-10"
@@ -73,7 +75,7 @@ export function IntakeType(props: RadioProps) {
 
 export function DrivetrainType(props: RadioProps) {
   return (
-    <div className="w-full grid grid-cols-2 grid-rows-3 text-xl">
+    <div className="w-full grid grid-cols-2 grid-rows-3 max-sm:gap-1 text-md md:text-xl">
       <span>Tank Drive: </span>
       <input
         type="radio"
@@ -101,7 +103,6 @@ export function DrivetrainType(props: RadioProps) {
         }}
         checked={props.data.drivetrain === Drivetrain.Swerve}
       />
-      
     </div>
   );
 }

@@ -24,7 +24,6 @@ export default function Home(props: ResolvedUrlData) {
   const [comps, setComps] = useState<Competition[]>([]);
 
   useEffect(() => {
-
     const loadComps = async () => {
       var newComps: Competition[] = [];
 
@@ -41,10 +40,10 @@ export default function Home(props: ResolvedUrlData) {
 
     loadComps();
   }, []);
-  
+
   const Overview = () => {
     return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
+      <div className="card w-5/6 bg-base-200 shadow-xl ">
         <div className="card-body">
           <h2 className="card-title text-2xl">Overview</h2>
           <h1 className="text-xl">See your upcoming competitions</h1>
@@ -86,7 +85,7 @@ export default function Home(props: ResolvedUrlData) {
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-6 py-6">
         <div className="card w-5/6 bg-base-200 shadow-xl">
           <div className="card-body min-h-1/2 w-full bg-primary rounded-t-lg"></div>
           <div className="card-body">

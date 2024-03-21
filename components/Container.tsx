@@ -129,9 +129,9 @@ export default function Container(props: ContainerProps) {
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <span>
+        <span className="max-sm:text-sm">
           Alert: FIRST APIs are experiencing high latency and unreliable data-
-          users may need to use manual match creation
+          Teams may need to use manual match creation
         </span>
       </div>
 
@@ -257,7 +257,7 @@ export default function Container(props: ContainerProps) {
                       <div className="divider"></div>
                       <p>This page is not mobile friendly</p>
                       <p className="text-sm">
-                        For the best expierence, a computer is recomended
+                        For the best experience, a computer is recomended
                       </p>
                       <div className="card-actions justify-end">
                         <button

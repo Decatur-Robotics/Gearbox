@@ -44,7 +44,7 @@ export default function ImageUpload(props: {
         setImageUrl(url);
         props.callback("image", url);
         setUploadProgress(100);
-      }, 3500);
+      }, 1000);
     } else {
       setUploadProgress(-1);
     }

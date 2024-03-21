@@ -236,7 +236,7 @@ export default function Home(props: ResolvedUrlData) {
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden sm:mb-4">
+      <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
         <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
@@ -244,14 +244,14 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
                 <a
-                  className="max-sm:w-full btn btn-sm btn-primary"
+                  className="max-sm:w-full btn btn-primary"
                   href={"/event/" + comp?.tbaId}
                 >
                   Rankings <MdAutoGraph size={30} />
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`max-sm:w-full btn btn-sm btn-secondary ${
+                  className={`max-sm:w-full btn btn-secondary ${
                     noMatches || !matchesAssigned ? "btn-disabled" : ""
                   }`}
                   href={`${comp?.slug}/stats`}
@@ -260,26 +260,13 @@ export default function Home(props: ResolvedUrlData) {
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`btn btn-accent btn-sm ${
+                  className={`max-sm:w-full btn btn-accent ${
                     noMatches || !matchesAssigned ? "btn-disabled" : ""
                   }`}
                   href={`${comp?.slug}/pitstats`}
                 >
                   Pit Stats <MdCoPresent size={30} />
                 </a>
-                <div className="divider divider-horizontal"></div>
-                <button
-                  className={`btn btn-sm ${
-                    exportPending ? "btn-disabled" : "btn-primary"
-                  } `}
-                  onClick={exportAsCsv}
-                >
-                  {exportPending ? (
-                    <div className="loading loading-bars loading-sm"></div>
-                  ) : (
-                    "Export as CSV"
-                  )}
-                </button>
               </div>
             </div>
           </div>
@@ -287,7 +274,7 @@ export default function Home(props: ResolvedUrlData) {
           <div className="w-full card rounded-tl-none bg-base-200 shadow-xl">
             <div
               role="tablist"
-              className="tabs tabs-boxed rounded-b-none bg-base-200 w-1/2 -translate-y-10"
+              className="tabs tabs-boxed rounded-b-none bg-base-200 w-1/2 max-sm:w-full -translate-y-10"
             >
               <a
                 role="tab"
@@ -341,6 +328,19 @@ export default function Home(props: ResolvedUrlData) {
                     )}
                   </button>
                 </div>
+
+                <button
+                  className={`btn ${
+                    exportPending ? "btn-disabled" : "btn-primary"
+                  } `}
+                  onClick={exportAsCsv}
+                >
+                  {exportPending ? (
+                    <div className="loading loading-bars loading-sm"></div>
+                  ) : (
+                    "Export Scouting Data as CSV"
+                  )}
+                </button>
 
                 <div className="divider"></div>
                 <h1 className="font-semibold">Manually add matches</h1>
@@ -523,10 +523,10 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
 
-        <div className="w-full sm:w-1/2 flex flex-col grow-0 h-screen space-y-4">
+        <div className="w-full flex flex-col max-sm:items-center  h-screen space-y-4">
           <div className=" w-full card bg-base-200 shadow-xl ">
             <div className="card-body">
-              <h1 className="card-title text-3xl font-bold">
+              <h1 className="card-title text-2xl md:text-3xl font-bold">
                 {team?.name} - {team?.number}
               </h1>
               <div className="divider"></div>
@@ -554,7 +554,7 @@ export default function Home(props: ResolvedUrlData) {
                     <div>
                       <div
                         className={
-                          "carousel carousel-center max-w-lg h-56 p-4 space-x-4 bg-base-200 rounded-box "
+                          "carousel carousel-center max-w-lg  h-56 p-4 space-x-4 bg-base-200 rounded-box "
                         }
                       >
                         {qualificationMatches.map((match) => (
@@ -674,7 +674,7 @@ export default function Home(props: ResolvedUrlData) {
             </div>
           </div>
 
-          <div className="w-full sm:card bg-base-200 shadow-xl h-64">
+          <div className=" max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl h-56">
             {pitreports.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <h1 className="text-2xl sm:text-3xl font-bold">
