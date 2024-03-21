@@ -15,6 +15,7 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     var filename = req.url?.split("/api/img/")[1];
+    console.log(filename);
     const db = await GetDatabase();
     //@ts-ignore
     const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
@@ -24,8 +25,7 @@ export default async function handler(
       res.send({ status: 404, message: "File Not Found" });
     }
 
-    console.log("Res: " + SerializeDatabaseObject(result));
-    console.log();
+    console.log(Object.keys(result));
 
     bucket.openDownloadStream(result._id).pipe(res);
   } else {
