@@ -268,6 +268,13 @@ export default function Pitstats(props: { competition: Competition }) {
   }, []);
 
   useEffect(() => {
+    const i = setInterval(() => {
+      loadReports();
+    }, 60 * 1000);
+    return () => clearInterval(i);
+  }, []);
+
+  useEffect(() => {
     if (slides.length > 0) {
       const timer = setInterval(() => {
         setCurrentSlide((n) => (n < slides.length - 1 ? n + 1 : -1));

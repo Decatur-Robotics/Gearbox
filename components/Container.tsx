@@ -2,12 +2,13 @@ import { CompetitonNameIdPair, Season, Team } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
-import { BiMenu, BiPlus, BiHome } from "react-icons/bi";
+import { BiMenu, BiPlus, BiHome, BiSolidPhone } from "react-icons/bi";
 import { IoSunny, IoMoon } from "react-icons/io5";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
 import { FaSearch } from "react-icons/fa";
+import useCheckMobile from "@/lib/client/useCheckMobile";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -15,6 +16,7 @@ type ContainerProps = {
   children: ReactNode;
   requireAuthentication: boolean;
   hideMenu: boolean;
+  notForMobile?: boolean | undefined;
 };
 
 export default function Container(props: ContainerProps) {
@@ -23,6 +25,8 @@ export default function Container(props: ContainerProps) {
   const authenticated = status === "authenticated";
 
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
+  const [accepted, setAccepted] = useState(false);
+  const onMobile = useCheckMobile();
   const [teams, setTeams] = useState<Team[]>([]);
 
   const [selectedTeamIndex, setSelectedTeamIndex] = useState<number>(0);
@@ -244,7 +248,35 @@ export default function Container(props: ContainerProps) {
             </div>
           ) : (
             <>
-              {props.children} <Footer></Footer>{" "}
+              {props.notForMobile && !accepted && onMobile ? (
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                  <div className="card w-3/4 lg:w-1/4 bg-base-200 text-primary-content">
+                    <div className="card-body flex items-center text-white">
+                      <BiSolidPhone size={45}></BiSolidPhone>
+                      <h2 className="card-title">Warning</h2>
+                      <div className="divider"></div>
+                      <p>This page is not mobile friendly</p>
+                      <p className="text-sm">
+                        For the best expierence, a computer is recomended
+                      </p>
+                      <div className="card-actions justify-end">
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            setAccepted(true);
+                          }}
+                        >
+                          Ok
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {props.children} <Footer></Footer>
+                </>
+              )}
             </>
           )}
         </div>

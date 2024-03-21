@@ -15,7 +15,11 @@ import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import { AveragePoints, StandardDeviation, TotalPoints } from "@/lib/client/StatsMath";
+import {
+  AveragePoints,
+  StandardDeviation,
+  TotalPoints,
+} from "@/lib/client/StatsMath";
 const api = new ClientAPI("gearboxiscool");
 
 export default function Stats(props: {
@@ -45,7 +49,11 @@ export default function Stats(props: {
   };
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide}>
+    <Container
+      requireAuthentication={false}
+      hideMenu={!hide}
+      notForMobile={true}
+    >
       <div role="tablist" className="tabs tabs-boxed">
         <a
           role="tab"
@@ -67,7 +75,9 @@ export default function Stats(props: {
         </a>
         <a
           role="tab"
-          className={`tab tab-disabled tab-md ${page === 2 ? "tab-active" : ""}`}
+          className={`tab tab-disabled tab-md ${
+            page === 2 ? "tab-active" : ""
+          }`}
           onClick={() => {
             // setPage(2);
           }}
