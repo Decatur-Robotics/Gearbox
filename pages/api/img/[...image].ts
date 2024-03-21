@@ -19,7 +19,11 @@ export default async function handler(
     const db = await GetDatabase();
     //@ts-ignore
     const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
-    bucket.openDownloadStreamByName(filename).pipe(res);
+    try {
+      bucket.openDownloadStreamByName(filename).pipe(res);
+    } catch (e) {
+      return res.send({ status: 400, message: e });
+    }
   } else {
     return res.send({ status: 400, message: "Invalid Request" });
   }
