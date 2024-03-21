@@ -42,10 +42,9 @@ export default function ImageUpload(props: {
 
       setTimeout(() => {
         setImageUrl(url);
-      }, 1000);
-
-      props.callback("image", url);
-      setUploadProgress(100);
+        props.callback("image", url);
+        setUploadProgress(100);
+      }, 3500);
     } else {
       setUploadProgress(-1);
     }
