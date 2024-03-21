@@ -9,8 +9,6 @@ const DefaultCompressionOptions = {
   useWebWorker: true,
 };
 
-export const dynamic = "force-dynamic";
-
 export default function ImageUpload(props: {
   data: Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
