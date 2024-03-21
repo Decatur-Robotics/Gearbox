@@ -15,19 +15,11 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     var filename = req.url?.split("/api/img/")[1];
-    console.log(filename);
+    if (!filename) return res.send({ status: 400, message: "Invalid Request" });
     const db = await GetDatabase();
     //@ts-ignore
     const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
-    const result = (await bucket.find({ filename: filename }).toArray())[0];
-
-    if (!result) {
-      res.send({ status: 404, message: "File Not Found" });
-    }
-
-    console.log(Object.keys(result));
-
-    bucket.openDownloadStream(result._id).pipe(res);
+    bucket.openDownloadStreamByName(filename).pipe(res);
   } else {
     return res.send({ status: 400, message: "Invalid Request" });
   }
