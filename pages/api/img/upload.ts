@@ -5,6 +5,7 @@ import { GetDatabase } from "@/lib/MongoDB";
 import { createReadStream } from "fs";
 import { GridFSBucket, ObjectId } from "mongodb";
 import { API } from "@/lib/API";
+import { randomUUID } from "crypto";
 
 export const config = {
   api: {
@@ -40,7 +41,7 @@ export default async function handler(
         return;
       }
 
-      const filename = new ObjectId().toString();
+      const filename = randomUUID();
 
       const c = createReadStream(file.filepath).pipe(
         bucket.openUploadStream(filename, {
