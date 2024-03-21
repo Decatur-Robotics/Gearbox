@@ -16,8 +16,7 @@ export default async function handler(
 ) {
   console.log("Received image request");
   if (req.method === "GET") {
-    const router = useRouter();
-    var filename = router.query.slug as string;
+    const { filename } = req.query;
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
     const db = await GetDatabase();
     //@ts-ignore
@@ -25,7 +24,7 @@ export default async function handler(
     console.log(filename);
     try {
       // errors here
-      bucket.openDownloadStreamByName(filename).pipe(res);
+      bucket.openDownloadStreamByName(filename as string).pipe(res);
     } catch (e) {
       console.log(":error");
       return res.send({ status: 400, message: e });
