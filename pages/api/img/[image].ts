@@ -13,6 +13,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log("Received image request");
   if (req.method === "GET") {
     var filename = req.url?.split("/api/img/")[1];
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
