@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { GetDatabase } from "@/lib/MongoDB";
 import { GridFSBucket, ObjectId } from "mongodb";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import { useRouter } from "next/router";
 
 export const config = {
   api: {
@@ -15,7 +16,8 @@ export default async function handler(
 ) {
   console.log("Received image request");
   if (req.method === "GET") {
-    var filename = req.url?.split("/api/img/")[1];
+    const router = useRouter();
+    var filename = router.query.slug as string;
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
     const db = await GetDatabase();
     //@ts-ignore
