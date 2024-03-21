@@ -49,7 +49,7 @@ export default function Guide() {
           </p>
           <br></br>
           <p>
-            After reaching your profile you can then click the "create a team"
+            After reaching your profile you can then click the create a team
             button, then search for your teams number, click the
             your teams name, and Gearbox will generate a new team that is 
             prefilled with relevant properties.
