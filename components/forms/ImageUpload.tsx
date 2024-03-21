@@ -80,7 +80,7 @@ export default function ImageUpload(props: {
           <span className="label-text inline">
             <FaFileUpload className="inline mr-2"></FaFileUpload>Pick a Image
           </span>
-          <span className="label-text-alt">Only .png, .jpg, jpeg accepted</span>
+          <span className="label-text-alt">Only .png and .jpg accepted</span>
         </div>
         <input
           type="file"
