@@ -73,6 +73,8 @@ export default function Home(props: ResolvedUrlData) {
 
   const [updatingComp, setUpdatingComp] = useState("");
 
+  const [ranking, setRanking] = useState<{place: number, max: number} | null>(null);
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api.regeneratePitReports(comp?.tbaId, comp?._id).then(({ pitReports }: { pitReports: string[] }) => {
@@ -283,6 +285,14 @@ export default function Home(props: ResolvedUrlData) {
 
     setExportPending(false);
   };
+
+  useEffect(() => {
+    if (ranking || !comp?.tbaId || !team?.number) return;
+
+    api.teamCompRanking(comp?.tbaId, team?.number).then((res) => {
+      setRanking(res);
+    });
+  });
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
@@ -594,6 +604,7 @@ export default function Home(props: ResolvedUrlData) {
             <div className="card-body">
               <h1 className="card-title text-2xl md:text-3xl font-bold">
                 {team?.name} - {team?.number}
+                { ranking && <span className="text-accent">(#{ranking.place}/{ranking.max})</span>}
               </h1>
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? (

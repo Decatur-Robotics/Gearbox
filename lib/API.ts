@@ -743,5 +743,13 @@ export namespace API {
       // Send CSV
       res.status(200).send({ csv });
     },
+
+    teamCompRanking: async (req, res, { tba, data }) => {
+      const { rankings } = await tba.req.getCompetitonRanking(data.tbaId);
+      return res.status(200).send({
+        place: rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank,
+        max: rankings.length,
+      });
+    }
   };
 }
