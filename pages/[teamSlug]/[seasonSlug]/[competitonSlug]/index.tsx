@@ -501,7 +501,7 @@ export default function Home(props: ResolvedUrlData) {
                       {!Number.isNaN(submittedReports)
                         ? Round(
                             submittedReports / (qualificationMatches.length * 6)
-                          )
+                          ) * 100
                         : "?"}
                       %
                     </div>
@@ -526,7 +526,7 @@ export default function Home(props: ResolvedUrlData) {
                             ? Round(
                                 submittedReports /
                                   (qualificationMatches.length * 6)
-                              )
+                              ) * 100
                             : "?"}
                           %
                         </div>
@@ -598,13 +598,13 @@ export default function Home(props: ResolvedUrlData) {
                     <div>
                       <div
                         className={
-                          "carousel carousel-center max-w-lg  h-56 p-4 space-x-4 bg-base-200 rounded-box "
+                          "carousel carousel-center max-w-lg max-sm:max-w-sm h-56 p-4 space-x-4 bg-transparent rounded-box "
                         }
                       >
                         {qualificationMatches.map((match, index) => (
                           <div
                             className={
-                              "carousel-item bg-base-20 w-full flex flex-col items-center "
+                              "carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center "
                             }
                             key={match._id}
                           >
@@ -763,11 +763,11 @@ export default function Home(props: ResolvedUrlData) {
                               No Image
                             </div>
                           )} */}
-                          {
-                            report.comments.length > 2 
-                              ? <FaCheck size={64} /> 
-                              : <FaRobot size={64} />
-                          }
+                          {report.comments.length > 2 ? (
+                            <FaCheck size={64} />
+                          ) : (
+                            <FaRobot size={64} />
+                          )}
                         </div>
                       </Link>
                     ))
