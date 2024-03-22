@@ -245,6 +245,7 @@ export default function PublicEvent() {
                 ></progress>
               </div>
             )}
+            { !oprs && <div>OPR data not available. Check back after the event ends.</div> }
           </div>
         </div>
 
