@@ -303,7 +303,7 @@ export default function Homepage() {
                 Join our Discord server for live support with our support staff.
               </p>
               <a
-                href="https://discord.gg/dMNNbf7usj"
+                href="https://discord.gg/ha7AnqxFDD"
                 className="btn btn-primary mt-4"
               >
                 <FaDiscord size={35} /> Join today

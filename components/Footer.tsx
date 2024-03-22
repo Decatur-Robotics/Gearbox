@@ -38,7 +38,7 @@ export default function Footer() {
           <Link href={"https://github.com/Decatur-Robotics"}>
             <FaGithub size={30}></FaGithub>
           </Link>
-          <Link href={"https://discord.gg/dMNNbf7usj"}>
+          <Link href={"https://discord.gg/ha7AnqxFDD"}>
             <FaDiscord size={30}></FaDiscord>
           </Link>
         </div>
@@ -55,7 +55,7 @@ export default function Footer() {
           ></MdAlternateEmail>
           Contact
         </a>
-        <a className="link link-hover" href={"https://discord.gg/dMNNbf7usj"}>
+        <a className="link link-hover" href={"https://discord.gg/ha7AnqxFDD"}>
           <FaBug className="inline mr-1" size={16}></FaBug>
           Bug Report/Feature Request
         </a>

@@ -122,7 +122,7 @@ export default function Container(props: ContainerProps) {
           Alert: Join our Discord server to receive imporant announcements and receive support!
         </span>
           <a
-            href="https://discord.gg/dMNNbf7usj"
+            href="https://discord.gg/ha7AnqxFDD"
             className="btn btn-primary ml-4 max-sm:mt-1"
           >
             <FaDiscord size={24} /> Join today
