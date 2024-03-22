@@ -7,7 +7,7 @@ import { IoSunny, IoMoon } from "react-icons/io5";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
-import { FaSearch } from "react-icons/fa";
+import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
 
 const api = new ClientAPI("gearboxiscool");
@@ -114,25 +114,19 @@ export default function Container(props: ContainerProps) {
     >
       <div
         role="alert"
-        className="alert rounded-none py-1 sm:py-2  font-semibold alert-warning"
+        className="alert rounded-none py-1 sm:py-2 font-semibold alert-info"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="max-sm:hidden stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
+        <FaDiscord className="max-sm:hidden" size={32} />
+      
         <span className="max-sm:text-sm">
-          Alert: FIRST APIs are experiencing high latency and unreliable data -
-          Teams may need to use manual match creation
+          Alert: Join our Discord server to receive imporant announcements and receive support!
         </span>
+          <a
+            href="https://discord.gg/dMNNbf7usj"
+            className="btn btn-primary ml-4 max-sm:mt-1"
+          >
+            <FaDiscord size={24} /> Join today
+          </a>
       </div>
 
       <div className="drawer">
