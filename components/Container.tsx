@@ -120,7 +120,7 @@ export default function Container(props: ContainerProps) {
         <MdWarning className="max-sm:hidden" size={32} />
       
         <span className="max-sm:text-sm">
-          Alert: Blue Alliance data may be out of date.
+          Alert: We are experiencing delays with TBA data. Some data may be outdated.
         </span>
       </div>
 
