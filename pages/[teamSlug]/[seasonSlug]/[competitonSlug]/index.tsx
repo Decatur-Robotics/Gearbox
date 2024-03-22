@@ -708,18 +708,12 @@ export default function Home(props: ResolvedUrlData) {
                                           <img
                                             src={user?.image}
                                             onClick={() => {
-                                              user.slackId
-                                                ? session.user?.slackId
-                                                  ? api.remindSlack(
-                                                      user.slackId,
-                                                      session.user?.slackId
-                                                    )
-                                                  : console.log(
-                                                      "Sender has no valid slackId"
-                                                    )
-                                                : console.log(
-                                                    "Scouter has no slackId"
-                                                  );
+                                              if (user.slackId && session && team?.owners?.includes(session.user?._id ?? "") && confirm("Remind scouter on Slack?")) {
+                                                api.remindSlack(
+                                                  user.slackId,
+                                                  session.user?.slackId
+                                                );
+                                              }
                                             }}
                                           />
                                         </div>
