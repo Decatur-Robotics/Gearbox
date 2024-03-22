@@ -9,6 +9,10 @@ import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
 import { Round } from '../../lib/client/StatsMath';
+import { useEffect, useState } from "react";
+import ClientAPI from "@/lib/client/ClientAPI";
+
+const api = new ClientAPI("gearboxiscool");
 
 export default function TeamStats(props: {
   selectedTeam: number | undefined;
@@ -23,6 +27,30 @@ export default function TeamStats(props: {
       </div>
     );
   }
+
+  const [comments, setComments] = useState<{match: number, comment: string}[] | null>(null);
+  const [teamWeHaveCommentsFor, setTeamWeHaveCommentsFor] = useState<number>(0);
+
+  useEffect(() => {
+    if(teamWeHaveCommentsFor === props.selectedTeam) return;
+    setTeamWeHaveCommentsFor(props.selectedTeam ?? 0);
+    setComments(null);
+
+    const commentList = props.selectedReports.filter((report) => report.data.comments.length > 0);
+    if (commentList.length === 0) return setComments([]);
+
+    for (const report of commentList) {
+      api.findMatchById(report.match).then((match) => {
+        setComments((prev) => ([
+          ...prev ?? [],
+          {
+            match: match.number,
+            comment: report.data.comments
+          }
+        ]));
+      });
+    }
+  });
 
   const defense = MostCommonValue("Defense", props.selectedReports);
   const intake = MostCommonValue("IntakeType", props.selectedReports);
@@ -215,13 +243,20 @@ export default function TeamStats(props: {
 
       <div className="w-full h-fit flex flex-row items-center">
         <ul>
-          {props.selectedReports.map((report, index) => (
-            <li className="mt-2" key={report._id}>
-              {report.data.comments?.length > 0
-                ? `${index+1}: ${report.data.comments}`
-                : "[No Comment]"}
-            </li>
-          ))}
+          { comments
+            ? <li className="mt-2">
+                {comments.length === 0 
+                  ? "No comments." 
+                  : comments
+                      .sort((a, b) => a.match - b.match)
+                      .map((report) => <div key={report.match}>Match {report.match}: {report.comment}</div>)
+                }
+              </li>
+            : <div className="flex flex-row">
+                <div className="loading loading-spinner mr-2"></div>
+                <div>Loading comments...</div>
+              </div>
+          }
         </ul>
       </div>
     </div>
