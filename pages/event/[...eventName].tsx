@@ -353,7 +353,7 @@ export default function PublicEvent() {
                               ranking.team_key
                             )?.record.qual.winrate.toFixed(2) ?? "..."}
                           </td>
-                          <td>{oprs![ranking.team_key].toFixed(2)}</td>
+                          <td>{oprs ? oprs![ranking.team_key].toFixed(2) : "?"}</td>
                           <td>
                             {findStatboticsStats(
                               ranking.team_key
