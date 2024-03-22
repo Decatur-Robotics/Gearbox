@@ -73,6 +73,23 @@ export default function Home(props: ResolvedUrlData) {
 
   const [updatingComp, setUpdatingComp] = useState("");
 
+  const regeneratePitReports = async () => {
+    console.log("Regenerating pit reports...");
+    api.regeneratePitReports(comp?.tbaId, comp?._id).then(({ pitReports }: { pitReports: string[] }) => {
+      setAttemptedRegeneratingPitReports(true);
+      setLoadingPitreports(true);
+
+      // Fetch pit reports
+      const pitReportPromises = pitReports.map(async (id: string) => await api.findPitreportById(id));
+
+      Promise.all(pitReportPromises).then((reports) => {
+        console.log("Got all pit reports");
+        setPitreports(reports);
+        setLoadingPitreports(false);
+      });
+    });
+  }
+
   useEffect(() => {
     const scoutingStats = (reps: Report[]) => {
       setLoadingScoutStats(true);
@@ -177,20 +194,7 @@ export default function Home(props: ResolvedUrlData) {
 
     // Resync pit reports if none are present
     if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
-      console.log("Regenerating pit reports...");
-      api.regeneratePitReports(comp?.tbaId, comp._id).then(({ pitReports }: { pitReports: string[] }) => {
-        setAttemptedRegeneratingPitReports(true);
-        setLoadingPitreports(true);
-
-        // Fetch pit reports
-        const pitReportPromises = pitReports.map(async (id: string) => await api.findPitreportById(id));
-
-        Promise.all(pitReportPromises).then((reports) => {
-          console.log("Got all pit reports");
-          setPitreports(reports);
-          setLoadingPitreports(false);
-        });
-      });
+      regeneratePitReports();
     }
   }, [assigningMatches]);
 
@@ -384,6 +388,16 @@ export default function Home(props: ResolvedUrlData) {
                     "Export Scouting Data as CSV"
                   )}
                 </button>
+
+                <button
+                  className="btn btn-warning"
+                  onClick={() => {
+                    if (confirm("Are you sure you want to regenerate pit reports? Doing so will overwrite existing pit reports."))
+                      regeneratePitReports();
+                  }}
+                  >
+                    Regenerate Pit Reports
+                  </button>
 
                 <div className="divider"></div>
                 <h1 className="font-semibold">Manually add matches</h1>
@@ -750,7 +764,7 @@ export default function Home(props: ResolvedUrlData) {
                       ></BsGearFill>
                     </div>
                   ) : (
-                    pitreports.map((report) => (
+                    pitreports.sort((a, b) => a.teamNumber - b.teamNumber).map((report) => (
                       <Link
                         className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
                         href={window.location.href + `/pit/${report._id}`}

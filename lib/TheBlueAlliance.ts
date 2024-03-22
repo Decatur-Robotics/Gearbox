@@ -271,7 +271,7 @@ export namespace TheBlueAlliance {
     }
 
     async getCompetitionPitreports(tbaId: string): Promise<Pitreport[]> {
-      var competitionTeams = await this.req.getCompetitionTeams(tbaId);
+      const competitionTeams = await this.req.getCompetitionTeams(tbaId);
       return competitionTeams.map(
         ({ team_number }) => new Pitreport(team_number)
       );
