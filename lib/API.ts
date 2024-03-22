@@ -133,6 +133,13 @@ export namespace API {
     );
   }
 
+  async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string): Promise<string[]> {
+    var pitreports = await tba.getCompetitionPitreports(tbaId);
+    pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id)
+
+    return pitreports.map((pit) => String(pit._id));
+  }
+
   export const Routes: RouteCollection = {
     hello: async (req, res, { db, data }) => {
       res.status(200).send({
@@ -391,18 +398,14 @@ export namespace API {
           (await db.addObject<Match>(Collections.Matches, match))._id
       );
 
-      var pitreports = await tba.getCompetitionPitreports(data.tbaId);
-      pitreports.map(
-        async (report) =>
-          (await db.addObject<Pitreport>(Collections.Pitreports, report))._id
-      );
+      const pitReports = await generatePitReports(tba, db, data.tbaId);
 
       await db.updateObjectById(
         Collections.Competitions,
         new ObjectId(data.compId),
         {
           matches: matches.map((match) => String(match._id)),
-          pitReports: pitreports.map((pit) => String(pit._id)),
+          pitReports: pitReports,
         }
       );
       res.status(200).send({ result: "success" });
@@ -422,10 +425,8 @@ export namespace API {
         async (match) =>
           (await db.addObject<Match>(Collections.Matches, match))._id,
       );
-
-      var pitreports = await tba.getCompetitionPitreports(data.tbaId);
-      pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id)
       
+      const pitReports = await generatePitReports(tba, db, data.tbaId);
 
       var comp = await db.addObject<Competition>(
         Collections.Competitions,
@@ -435,7 +436,7 @@ export namespace API {
           data.tbaId,
           data.start,
           data.end,
-          pitreports.map((report) => String(report._id)),
+          pitReports,
           matches.map((match) => String(match._id)),
         )
       );
@@ -453,6 +454,18 @@ export namespace API {
       );
 
       return res.status(200).send(comp);
+    },
+
+    regeneratePitReports: async (req, res, { db, data, tba }) => {
+      const pitReports = await generatePitReports(tba, db, data.tbaId);
+
+      await db.updateObjectById(
+        Collections.Competitions,
+        new ObjectId(data.compId),
+        { pitReports: pitReports }
+      );
+
+      return res.status(200).send({ result: "success", pitReports });
     },
 
     createMatch: async (req, res, { db, data }) => {

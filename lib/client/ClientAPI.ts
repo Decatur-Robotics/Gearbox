@@ -358,4 +358,9 @@ export default class ClientAPI {
   async exportCompAsCsv(compId: string | undefined) {
     return await this.request("/exportCompAsCsv", { compId });
   }
+
+  async regeneratePitReports(tbaId: string | undefined, compId: string | undefined) {
+    return await this.request("/regeneratePitReports", { tbaId, compId });
+  }
+
 }

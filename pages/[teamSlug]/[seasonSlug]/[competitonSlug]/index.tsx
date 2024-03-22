@@ -69,6 +69,7 @@ export default function Home(props: ResolvedUrlData) {
   const [pitreports, setPitreports] = useState<Pitreport[]>([]);
   const [loadingPitreports, setLoadingPitreports] = useState(true);
   const [submittedPitreports, setSubmittedPitreports] = useState(0);
+  const [attemptedRegeneratingPitReports, setAttemptedRegeneratingPitReports] = useState(false);
 
   const [updatingComp, setUpdatingComp] = useState("");
 
@@ -172,6 +173,24 @@ export default function Home(props: ResolvedUrlData) {
       loadMatches();
       loadReports();
       loadPitreports();
+    }
+
+    // Resync pit reports if none are present
+    if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
+      console.log("Regenerating pit reports...");
+      api.regeneratePitReports(comp?.tbaId, comp._id).then(({ pitReports }: { pitReports: string[] }) => {
+        setAttemptedRegeneratingPitReports(true);
+        setLoadingPitreports(true);
+
+        // Fetch pit reports
+        const pitReportPromises = pitReports.map(async (id: string) => await api.findPitreportById(id));
+
+        Promise.all(pitReportPromises).then((reports) => {
+          console.log("Got all pit reports");
+          setPitreports(reports);
+          setLoadingPitreports(false);
+        });
+      });
     }
   }, [assigningMatches]);
 
