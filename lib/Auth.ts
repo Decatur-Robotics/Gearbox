@@ -78,6 +78,9 @@ export const AuthenticationOptions: AuthOptions = {
   },
   debug: false,
   adapter: MongoDBAdapter(clientPromise, { databaseName: process.env.DB }),
+  pages: {
+    signIn: "/signin",
+  },
 };
 
 export default NextAuth(AuthenticationOptions);

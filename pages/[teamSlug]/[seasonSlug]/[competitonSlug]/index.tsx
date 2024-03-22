@@ -482,7 +482,7 @@ export default function Home(props: ResolvedUrlData) {
                       {!Number.isNaN(submittedReports)
                         ? Round(
                             submittedReports / (qualificationMatches.length * 6)
-                          )
+                          ) * 100
                         : "?"}
                       %
                     </div>
@@ -507,7 +507,7 @@ export default function Home(props: ResolvedUrlData) {
                             ? Round(
                                 submittedReports /
                                   (qualificationMatches.length * 6)
-                              )
+                              ) * 100
                             : "?"}
                           %
                         </div>
@@ -744,11 +744,11 @@ export default function Home(props: ResolvedUrlData) {
                               No Image
                             </div>
                           )} */}
-                          {
-                            report.comments.length > 2 
-                              ? <FaCheck size={64} /> 
-                              : <FaRobot size={64} />
-                          }
+                          {report.comments.length > 2 ? (
+                            <FaCheck size={64} />
+                          ) : (
+                            <FaRobot size={64} />
+                          )}
                         </div>
                       </Link>
                     ))
