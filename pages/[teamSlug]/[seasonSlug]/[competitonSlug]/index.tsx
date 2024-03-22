@@ -237,6 +237,9 @@ export default function Home(props: ResolvedUrlData) {
     ) {
       const b = qualificationMatches.filter((match) => {
         let s = true;
+        if(match.number <= 7) {
+          return false;
+        }
         for (const id of match.reports) {
           const r = reportsById[id];
           if (!r.submitted) {
