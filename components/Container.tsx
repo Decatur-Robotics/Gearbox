@@ -119,7 +119,7 @@ export default function Container(props: ContainerProps) {
         <FaDiscord className="max-sm:hidden" size={32} />
       
         <span className="max-sm:text-sm">
-          Alert: Join our Discord server to receive imporant announcements and receive support!
+          Alert: Join our Discord server to receive important announcements and receive support!
         </span>
           <a
             href="https://discord.gg/ha7AnqxFDD"
