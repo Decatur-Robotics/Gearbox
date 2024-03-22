@@ -661,6 +661,11 @@ export namespace API {
       });
     },
 
+    compRankings: async (req, res, { tba, data }) => {
+      const compRankings = await tba.req.getCompetitonRanking(data.tbaId);
+      return res.status(200).send(compRankings.rankings);
+    },
+
     statboticsTeamEvent: async (req, res, { data }) => {
       const teamEvent = await Statbotics.getTeamEvent(data.eventKey, data.team);
       return res.status(200).send(teamEvent);

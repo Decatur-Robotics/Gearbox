@@ -12,6 +12,7 @@ import { Collections, GetDatabase } from "@/lib/MongoDB";
 import { NumericalAverage, NumericalTotal } from "@/lib/client/StatsMath";
 import useIsVisible from "@/lib/client/useIsVisible";
 import Heatmap from "@/components/stats/Heatmap";
+import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -35,6 +36,8 @@ function TeamSlide(props: {
   avgAmp: string[];
   pitReport: Pitreport;
   matchReports: Report[];
+  ranking: TheBlueAlliance.SimpleRank | undefined;
+  maxRanking: number;
 }) {
   const [visible, setVisible] = useState(false);
   const stats = props.teamStatPairs[props.teamNumber];
@@ -57,9 +60,10 @@ function TeamSlide(props: {
     >
       <div className="w-1/2">
         <h1 className="font-bold text-5xl text-accent">
-          Team {props.teamNumber}
+          Team {props.teamNumber} (#{props.ranking?.rank ?? "?"}/{props.maxRanking})
         </h1>
-        <h2 className="font-mono">Scouting + Pit-scouting data</h2>
+        <h2 className="font-mono">Scouting + Pit-scouting data<br/>
+          Record: {props.ranking?.record.wins}-{props.ranking?.record.losses}-{props.ranking?.record.ties}</h2>
         <div className="flex flex-row space-x-2">
           {pit?.canClimb ? (
             <div className="badge badge-primary">Can Climb</div>
@@ -110,6 +114,15 @@ function TeamSlide(props: {
               {length})
             </span>
           </p>
+          <div>
+            <h1 className="mt-4 text-lg font-semibold">Robot Capabilities:</h1>
+            <p className="text-lg">
+              Intake Type: <span className="text-accent">{pit.intakeType}</span>
+            </p>
+            <p className="text-lg">
+              Drivetrain: <span className="text-accent">{pit.drivetrain}</span>
+            </p>
+          </div>
         </div>
       </div>
       <div className="w-1/2 flex flex-col">
@@ -118,14 +131,7 @@ function TeamSlide(props: {
         ) : (
           <div className="skeleton bg-base-300 w-[300px] h-64 rounded-xl"></div>
         )} */}
-        <BarGraph label="Notes Scored in Both Amp & Speaker" data={props.matchReports.map((rep)=>rep.data.TeleopScoredSpeaker+rep.data.TeleopScoredAmp) } xlabels={props.matchReports.map((r, i)=>String(i+1))} />
-        <h1 className="text-lg font-semibold">Robot Capabilities:</h1>
-        <p className="text-lg">
-          Intake Type: <span className="text-accent">{pit.intakeType}</span>
-        </p>
-        <p className="text-lg">
-          Drivetrain: <span className="text-accent">{pit.drivetrain}</span>
-        </p>
+        <BarGraph label="Notes Scored in Both Amp & Speaker" data={props.matchReports.map((rep)=>rep.data.TeleopScoredSpeaker+rep.data.TeleopScoredAmp)} xlabels={props.matchReports.map((r, i)=>String(i+1))} />
       </div>
     </div>
   );
@@ -151,6 +157,8 @@ export default function Pitstats(props: { competition: Competition }) {
       comp._id,
       true
     )) as Report[];
+    
+    const rankings = await api.compRankings(comp.tbaId);
 
     var newPairs: TeamReportPair = {};
     newReports.forEach((report) => {
@@ -247,19 +255,23 @@ export default function Pitstats(props: { competition: Competition }) {
       newPits[c.teamNumber] = c;
     }
 
-    var newSlides = Object.keys(newStatPairs).map((key) => (
-      <TeamSlide
-        key={key}
-        teamNumber={Number(key)}
-        teamStatPairs={newStatPairs}
-        avgTeleop={avgTeleop}
-        avgAmp={avgAmp}
-        avgAuto={avgAuto}
-        avgSpeaker={avgSpeaker}
-        pitReport={newPits[Number(key)]}
-        matchReports={reports.filter((r) => r.robotNumber === Number(key))}
-      ></TeamSlide>
-    ));
+    var newSlides = Object.keys(newStatPairs).map((key) => {
+      return (
+        <TeamSlide
+          key={key}
+          teamNumber={Number(key)}
+          teamStatPairs={newStatPairs}
+          avgTeleop={avgTeleop}
+          avgAmp={avgAmp}
+          avgAuto={avgAuto}
+          avgSpeaker={avgSpeaker}
+          pitReport={newPits[Number(key)]}
+          matchReports={newReports.filter((r) => r.robotNumber === Number(key))}
+          ranking={rankings.find((r)=>r.team_key === `frc${key}`)}
+          maxRanking={rankings.length}
+        ></TeamSlide>
+      );
+    });
     setSlides(newSlides);
     setReports(newReports);
     setTeamReportPairs(newPairs);
@@ -305,7 +317,7 @@ export default function Pitstats(props: { competition: Competition }) {
         </div>
 
         <progress
-          className="progress progress-primary h-4 w-2/3 mt-2 "
+          className="progress progress-primary h-4 w-2/3 mt-2"
           value={(currentSlide / slides.length) * 100}
           max="100"
         ></progress>

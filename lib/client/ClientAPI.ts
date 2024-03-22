@@ -1,4 +1,5 @@
 import { Statbotics } from "../Statbotics";
+import { TheBlueAlliance } from '@/lib/TheBlueAlliance';
 import {
   Competition,
   Season,
@@ -334,6 +335,10 @@ export default class ClientAPI {
 
   async initialEventData(eventKey: string | undefined): Promise<EventData> {
     return await this.request("/initialEventData", { eventKey });
+  }
+
+  async compRankings(tbaId: string | undefined): Promise<TheBlueAlliance.SimpleRank[]> {
+    return await this.request("/compRankings", { tbaId });
   }
 
   async statboticsTeamEvent(
