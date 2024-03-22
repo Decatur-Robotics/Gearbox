@@ -203,7 +203,7 @@ export default function TeamPage(props: { reports: Report[] }) {
           </div>
         </div>
 
-        <SmallGraph selectedReports={selectedReports}></SmallGraph>
+        <SmallGraph selectedReports={selectedReports} team={selectedTeam ?? 0}></SmallGraph>
       </div>
     </div>
   );

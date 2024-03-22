@@ -1,4 +1,5 @@
 import { Report, FormData } from "@/lib/Types";
+import ClientAPI from "@/lib/client/ClientAPI";
 
 import {
   Chart as ChartJS,
@@ -9,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 
 ChartJS.register(
@@ -51,12 +52,15 @@ const options = {
   },
 };
 
-export default function SmallGraph(props: { selectedReports: Report[] }) {
+const api = new ClientAPI("gearboxiscool");
+
+export default function SmallGraph(props: { selectedReports: Report[], team: number }) {
   const [key, setKey] = useState("AutoStartX");
   const keys = Object.keys(new FormData());
-  const labels = props.selectedReports?.map(
-    (report, index) => `Match ${index}`,
-  );
+
+  const [labels, setLabels] = useState<string[] | null>(null);
+  const [currentTeam, setCurrentTeam] = useState<number>(0);
+  
   const data = {
     labels,
     datasets: [
@@ -67,6 +71,18 @@ export default function SmallGraph(props: { selectedReports: Report[] }) {
       },
     ],
   };
+
+  useEffect(() => {
+    if (!props.selectedReports || (labels && currentTeam === props.team)) return;
+
+    setLabels([]);
+    setCurrentTeam(props.team);
+    for (const report of props.selectedReports) {
+      api.findMatchById(report.match).then((match) => {
+        setLabels((prev) => [...prev ?? [], match.number.toString()]);
+      });
+    }
+  });
 
   if (!props.selectedReports) {
     return <></>;
@@ -90,7 +106,9 @@ export default function SmallGraph(props: { selectedReports: Report[] }) {
           </option>
         ))}
       </select>
-      <Bar options={options} data={data} />
+      <Bar options={options} data={{
+        ...data, labels: data.labels ?? ["Loading..."]
+      }} />
     </div>
   );
 }

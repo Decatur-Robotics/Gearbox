@@ -251,7 +251,7 @@ export default function Container(props: ContainerProps) {
                       <div className="divider"></div>
                       <p>This page is not mobile friendly</p>
                       <p className="text-sm">
-                        For the best experience, a computer is recomended
+                        For the best experience, a computer is recommended
                       </p>
                       <div className="card-actions justify-end">
                         <button
