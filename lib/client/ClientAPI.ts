@@ -368,7 +368,7 @@ export default class ClientAPI {
     return await this.request("/regeneratePitReports", { tbaId, compId });
   }
 
-  async teamCompRanking(tbaId: string, team: number): Promise<{ place: number, max: number }> {
+  async teamCompRanking(tbaId: string, team: number): Promise<{ place: number | string, max: number }> {
     return await this.request("/teamCompRanking", { tbaId, team });
   }
 

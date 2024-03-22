@@ -73,7 +73,7 @@ export default function Home(props: ResolvedUrlData) {
 
   const [updatingComp, setUpdatingComp] = useState("");
 
-  const [ranking, setRanking] = useState<{place: number, max: number} | null>(null);
+  const [ranking, setRanking] = useState<{place: number | string, max: number} | null>(null);
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");

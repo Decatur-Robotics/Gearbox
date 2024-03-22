@@ -746,6 +746,16 @@ export namespace API {
 
     teamCompRanking: async (req, res, { tba, data }) => {
       const { rankings } = await tba.req.getCompetitonRanking(data.tbaId);
+
+      const rank = rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank;
+
+      if (!rank) {
+        return res.status(200).send({
+          place: "?",
+          max: rankings.length,
+        });
+      }
+
       return res.status(200).send({
         place: rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank,
         max: rankings.length,
