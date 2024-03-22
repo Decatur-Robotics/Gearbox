@@ -363,6 +363,7 @@ export default function Home(props: ResolvedUrlData) {
                       "btn btn-primary w-1/2 " +
                       (assigningMatches ? "disabled" : "")
                     }
+                    disabled={true}
                     onClick={assignScouters}
                   >
                     {!assigningMatches ? (
