@@ -18,21 +18,11 @@ export default function TeamStats(props: {
   selectedTeam: number | undefined;
   selectedReports: Report[];
 }) {
-  if (!props.selectedTeam) {
-    return (
-      <div className="w-2/5 h-1/2 flex flex-col items-center justify-center bg-base-200">
-        <h1 className="text-3xl text-accent animate-bounce font-semibold">
-          Select A Team
-        </h1>
-      </div>
-    );
-  }
-
   const [comments, setComments] = useState<{match: number, comment: string}[] | null>(null);
   const [teamWeHaveCommentsFor, setTeamWeHaveCommentsFor] = useState<number>(0);
 
   useEffect(() => {
-    if(teamWeHaveCommentsFor === props.selectedTeam) return;
+    if(!props.selectedTeam || teamWeHaveCommentsFor === props.selectedTeam) return;
     setTeamWeHaveCommentsFor(props.selectedTeam ?? 0);
     setComments(null);
 
@@ -51,6 +41,16 @@ export default function TeamStats(props: {
       });
     }
   });
+
+  if (!props.selectedTeam) {
+    return (
+      <div className="w-2/5 h-1/2 flex flex-col items-center justify-center bg-base-200">
+        <h1 className="text-3xl text-accent animate-bounce font-semibold">
+          Select A Team
+        </h1>
+      </div>
+    );
+  }
 
   const defense = MostCommonValue("Defense", props.selectedReports);
   const intake = MostCommonValue("IntakeType", props.selectedReports);
