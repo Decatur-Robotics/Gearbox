@@ -58,11 +58,16 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
   const [key, setKey] = useState("AutoStartX");
   const keys = Object.keys(new FormData());
 
-  const [labels, setLabels] = useState<string[] | null>(null);
+  interface Datapoint {
+    x: number;
+    y: number;
+  }
+
+  const [datapoints, setDataPoints] = useState<Datapoint[] | null>(null);
   const [currentTeam, setCurrentTeam] = useState<number>(0);
   
   const data = {
-    labels,
+    labels: datapoints?.map((point) => point.x) ?? [],
     datasets: [
       {
         label: key,
@@ -73,13 +78,16 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
   };
 
   useEffect(() => {
-    if (!props.selectedReports || (labels && currentTeam === props.team)) return;
+    if (!props.selectedReports || (datapoints && currentTeam === props.team)) return;
 
-    setLabels([]);
+    setDataPoints([]);
     setCurrentTeam(props.team);
     for (const report of props.selectedReports) {
       api.findMatchById(report.match).then((match) => {
-        setLabels((prev) => [...prev ?? [], match.number.toString()]);
+        setDataPoints((prev) => [...prev ?? [], {
+          x: match.number,
+          y: report.data[key],
+        }].sort((a, b) => a.x - b.x));
       });
     }
   });
@@ -107,7 +115,7 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
         ))}
       </select>
       <Bar options={options} data={{
-        ...data, labels: data.labels ?? ["Loading..."]
+        ...data, labels: datapoints?.map((point) => point.x) ?? []
       }} />
     </div>
   );
