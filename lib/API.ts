@@ -434,9 +434,9 @@ export namespace API {
           await GenerateSlug(Collections.Competitions, data.name),
           data.tbaId,
           data.start,
-          data.end
-          //pitreports.map((report) => String(report._id)),
-          //matches.map((match) => String(match._id)),
+          data.end,
+          pitreports.map((report) => String(report._id)),
+          matches.map((match) => String(match._id)),
         )
       );
 

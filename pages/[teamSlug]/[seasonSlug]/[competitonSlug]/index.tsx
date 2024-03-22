@@ -549,7 +549,7 @@ export default function Home(props: ResolvedUrlData) {
         </div>
 
         <div className="w-full flex flex-col max-sm:items-center  h-screen space-y-4">
-          <div className=" w-full card bg-base-200 shadow-xl ">
+          <div className="max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl ">
             <div className="card-body">
               <h1 className="card-title text-2xl md:text-3xl font-bold">
                 {team?.name} - {team?.number}
@@ -705,7 +705,7 @@ export default function Home(props: ResolvedUrlData) {
             </div>
           </div>
 
-          <div className=" max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl h-56">
+          <div className="max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl h-56">
             {pitreports.length === 0 && !loadingPitreports ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <h1 className="text-2xl sm:text-3xl font-bold">
