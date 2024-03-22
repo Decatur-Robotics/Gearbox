@@ -249,7 +249,7 @@ export default function TeamStats(props: {
                   ? "No comments." 
                   : comments
                       .sort((a, b) => a.match - b.match)
-                      .map((report) => <div key={report.match} className="mb-1">Match {report.match}: {report.comment}</div>)
+                      .map((report) => <div key={report.match} className="mb-2">Match {report.match}: {report.comment}</div>)
                 }
               </li>
             : <div className="flex flex-row">
