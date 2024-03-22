@@ -170,7 +170,7 @@ export default function Container(props: ContainerProps) {
               />
               <FaSearch></FaSearch>
               {eventResults.length > 0 ? (
-                <div className="absolute -translate-x-5 translate-y-24 w-1/4 bg-base-300 rounded-b-lg sm:p-2">
+                <div className="absolute -translate-x-5 translate-y-20 sm:translate-y-24 w-1/2 sm:w-1/4 bg-base-300 rounded-b-lg sm:p-2">
                   <ul>
                     {eventResults.map((result) => (
                       <li key={result.pair.name}>

@@ -416,7 +416,7 @@ export namespace API {
       //     name
       //     seasonId
       // }
-      /*
+      
       var matches = await tba.getCompetitionMatches(data.tbaId);
       matches.map(
         async (match) =>
@@ -425,7 +425,7 @@ export namespace API {
 
       var pitreports = await tba.getCompetitionPitreports(data.tbaId);
       pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id)
-      */
+      
 
       var comp = await db.addObject<Competition>(
         Collections.Competitions,
@@ -434,9 +434,9 @@ export namespace API {
           await GenerateSlug(Collections.Competitions, data.name),
           data.tbaId,
           data.start,
-          data.end
-          //pitreports.map((report) => String(report._id)),
-          //matches.map((match) => String(match._id)),
+          data.end,
+          pitreports.map((report) => String(report._id)),
+          matches.map((match) => String(match._id)),
         )
       );
 
