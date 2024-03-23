@@ -528,7 +528,7 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="stat-value text-accent">
                       {!Number.isNaN(submittedReports)
                         ? Round(
-                            submittedReports / (qualificationMatches.length * 6)
+                            submittedReports / reports.length
                           ) * 100
                         : "?"}
                       %
@@ -552,14 +552,13 @@ export default function Home(props: ResolvedUrlData) {
                         <div className="stat-value text-primary">
                           {!Number.isNaN(submittedReports)
                             ? Round(
-                                submittedReports /
-                                  (qualificationMatches.length * 6)
+                                submittedReports / reports.length
                               ) * 100
                             : "?"}
                           %
                         </div>
                         <div className="stat-desc">
-                          {submittedReports}/{qualificationMatches.length * 6}{" "}
+                          {submittedReports}/{reports.length}{" "}
                           Reports
                         </div>
                       </div>
