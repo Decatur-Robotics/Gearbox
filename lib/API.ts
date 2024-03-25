@@ -233,9 +233,7 @@ export namespace API {
         new ObjectId(data.teamId)
       );
 
-      console.log(team.requests);
       team.requests = removeDuplicates([...team.requests, data.userId]);
-      console.log(team.requests);
 
       return res
         .status(200)
