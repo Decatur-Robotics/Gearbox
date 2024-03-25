@@ -11,7 +11,7 @@ import {
   Report,
   Pitreport,
 } from "./Types";
-import { GenerateSlug } from "./Utils";
+import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
@@ -232,7 +232,10 @@ export namespace API {
         Collections.Teams,
         new ObjectId(data.teamId)
       );
-      team.requests = [...team.requests, data.userId];
+
+      console.log(team.requests);
+      team.requests = removeDuplicates([...team.requests, data.userId]);
+      console.log(team.requests);
 
       return res
         .status(200)
@@ -264,10 +267,10 @@ export namespace API {
       team.requests.splice(team.requests.indexOf(data.userId), 1);
 
       if (data.accept) {
-        team.users.push(data.userId);
-        team.scouters.push(data.userId);
+        team.users = removeDuplicates(...team.users, data.userId);
+        team.scouters = removeDuplicates(...team.scouters, data.userId);
 
-        user.teams.push(data.teamId);
+        user.teams = removeDuplicates(...user.teams, data.teamId);
       }
 
       await db.updateObjectById<User>(
@@ -339,8 +342,8 @@ export namespace API {
         Collections.Users,
         new ObjectId(data.creator)
       );
-      user.teams.push(team._id!.toString());
-      user.owner.push(team._id!.toString());
+      user.teams = removeDuplicates(...user.teams, team._id!.toString());
+      user.owner = removeDuplicates(...user.owner, team._id!.toString());
 
       await db.updateObjectById(
         Collections.Users,
