@@ -1,123 +1,98 @@
-import { Season } from "../../lib/Types";
+import { Season, Team } from "../../lib/Types";
 import ClientAPI from "../../lib/client/ClientAPI";
 import { useEffect, useState } from "react";
-import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
+import UrlResolver, {
+  ResolvedUrlData,
+  SerializeDatabaseObjects,
+} from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
+import { Collections, GetDatabase } from "@/lib/MongoDB";
+import Flex from "@/components/Flex";
+import Card from "@/components/Card";
+import Image from "next/image";
+import { FaPlus } from "react-icons/fa";
+import { create } from "domain";
 
 const api = new ClientAPI("gearboxiscool");
+const CurrentSeason = new Season("Crescendo", undefined, 2024);
+const OffSeason = new Season("Offseason", undefined, 2024);
 
-export const CurrentSeason = new Season("Crescendo", undefined, 2024);
-export const OffSeason = new Season("Offseason", undefined, 2024);
+type CreateSeasonProps = { team: Team; existingSeasons: Season[] };
 
-export default function Home(props: ResolvedUrlData) {
+export default function CreateSeason(props: CreateSeasonProps) {
   const team = props.team;
-
-  const [year, setYear] = useState(CurrentSeason.year);
-  const [name, setName] = useState(CurrentSeason.name);
-  const [existingSeasons, setExistingSeasons] = useState<string[] | undefined>(
-    [],
+  const [existingSeasons, setExistingSeasons] = useState<string[]>(
+    props.existingSeasons.map((season) => season.name)
   );
 
   const createSeason = async (season: { name: string; year: number }) => {
     const s = await api.createSeason(
       season.name,
       season.year,
-      team?._id as string,
+      team?._id as string
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;
   };
 
-  useEffect(() => {
-    async function findSeasons() {
-      var newData = [];
-      if (!team?.seasons) {
-        return;
-      }
-      for (var id of team?.seasons) {
-        newData.push((await api.findSeasonById(id)).name);
-      }
-      setExistingSeasons(newData);
-    }
-
-    findSeasons();
-  }, []);
-
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="card w-5/6">
-          <div className="card-body flex flex-col items-center">
-            <h2 className="card-title text-3xl mb-10">Create a new Season</h2>
-
-            <div className="flex flex-col lg:flex-row space-y-10 lg:space-x-10 lg:justify-center items-center">
-              <div className="card lg:w-1/2 bg-base-200 shadow-xl">
-                <figure>
-                  <img
-                    className="h-64"
-                    src={
-                      "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png"
-                    }
-                    alt="Season Logo"
-                  />
-                </figure>
-                <div className="card-body">
-                  <h2 className="card-title text-2xl">{CurrentSeason.name}</h2>
-                  <p className="text-xl">
-                    FIRST Robotics{" "}
-                    <span className="text-accent">
-                      {CurrentSeason.year} Season
-                    </span>
-                  </p>
-                  <div className="card-actions justify-end">
-                    <button
-                      className={`btn ${existingSeasons?.includes(CurrentSeason.name) ? "btn-disabled disabled" : "btn-primary"} normal-case`}
-                      onClick={() => {
-                        createSeason(CurrentSeason);
-                      }}
-                    >
-                      Create
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="card lg:w-1/4 h-1/2 bg-base-200 shadow-xl">
-                <figure className="">
-                  <img
-                    className="h-64"
-                    src={
-                      "https://www.firstinspires.org/sites/default/files/open-graph-first-logo.png"
-                    }
-                    alt="Season Logo"
-                  />
-                </figure>
-                <div className="card-body">
-                  <h2 className="card-title text-2xl">{OffSeason.name}</h2>
-                  
-                  <div className="card-actions justify-end">
-                    <button
-                      className={`btn ${existingSeasons?.includes(OffSeason.name) ? "btn-disabled disabled" : "btn-primary"} normal-case`}
-                      onClick={() => {
-                        createSeason(OffSeason);
-                      }}
-                    >
-                      Create
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <Flex mode="row" center={true} className="h-fit py-24">
+        <div className="w-2/3 flex flex-row space-x-4">
+          <Card title={CurrentSeason.name} className="w-1/3 bg-base-300">
+            <h1 className="text-lg font-semibold">
+              Made for the{" "}
+              <span className="text-accent">{CurrentSeason.year}</span> season
+            </h1>
+            <img
+              className="w-fit h-auto"
+              src={
+                "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png"
+              }
+            ></img>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                createSeason(CurrentSeason);
+              }}
+            >
+              <FaPlus></FaPlus>Create
+            </button>
+          </Card>
+          <Card title={OffSeason.name} className="w-1/3 bg-base-300">
+            <h1 className="text-lg font-semibold">
+              Perfect for testing and off-season events
+            </h1>
+            <img
+              className="w-fit h-auto bg-white rounded-lg"
+              src={"/Offseason.png"}
+            ></img>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                createSeason(OffSeason);
+              }}
+            >
+              <FaPlus></FaPlus>Create
+            </button>
+          </Card>
         </div>
-      </div>
+      </Flex>
     </Container>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const db = await GetDatabase();
+  const resolved = await UrlResolver(context);
+  const existingSeasons = await db.findObjects(Collections.Seasons, {
+    _id: { $in: resolved.team?.seasons },
+  });
   return {
-    props: await UrlResolver(context),
+    props: {
+      team: resolved.team,
+      existingSeasons: SerializeDatabaseObjects(existingSeasons),
+    },
   };
 };

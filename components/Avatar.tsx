@@ -16,7 +16,7 @@ export default function Avatar(props: {
   console.log(props.scale);
 
   return (
-    <div className={"avatar scale-" + props.scale ?? "100"}>
+    <div className={"avatar " + props.scale ?? ""}>
       <div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
         LVL: {user?.level}
       </div>

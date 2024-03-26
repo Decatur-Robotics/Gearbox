@@ -59,7 +59,7 @@ export default function Profile(props: { teamList: Team[] }) {
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <Flex className="my-8 space-y-4" center={true} mode="col">
-        <Card title={user?.name} coloredTop="accent">
+        <Card title={user?.name} coloredTop="bg-accent">
           <Flex mode="row" className="space-x-4">
             <Avatar></Avatar>
             <div className="">

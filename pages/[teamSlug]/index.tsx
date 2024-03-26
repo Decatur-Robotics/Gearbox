@@ -266,7 +266,7 @@ function Roster(props: TeamPageProps) {
             >
               <th className="w-10">{index + 1}</th>
               <td className="absolute -translate-x-10 -translate-y-8">
-                <Avatar user={user} scale="50"></Avatar>
+                <Avatar user={user} scale="scale-50"></Avatar>
               </td>
               <td className="font-semibold">{user.name}</td>
               <td>
@@ -360,7 +360,7 @@ export default function TeamIndex(props: TeamPageProps) {
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <Flex mode={"col"} className="h-fit space-y-6 my-8 items-center">
-        <Card title={team?.name} coloredTop={"secondary"}>
+        <Card title={team?.name} coloredTop={"bg-secondary"}>
           <Flex mode="row" className="space-x-4">
             <h1 className="font-semibold text-lg">
               <FaRobot size={30} className="inline-block mr-2"></FaRobot>
