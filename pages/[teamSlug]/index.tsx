@@ -1,5 +1,4 @@
 import UrlResolver, {
-  ResolvedUrlData,
   SerializeDatabaseObject,
   SerializeDatabaseObjects,
 } from "@/lib/UrlResolver";
@@ -8,23 +7,29 @@ import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Competition, Season, Team, User } from "@/lib/Types";
-import { MonthString } from "@/lib/client/FormatTime";
-import { validName } from "@/lib/client/InputVerification";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { levelToClassName, xpRequiredForNextLevel, xpToLevel } from "@/lib/Xp";
 import { Collections, GetDatabase } from "@/lib/MongoDB";
 import { ObjectId } from "mongodb";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { FaAngleDown, FaRobot, FaUserFriends } from "react-icons/fa";
+import {
+  FaRobot,
+  FaSync,
+  FaUserFriends,
+  FaUserPlus,
+  FaUserTimes,
+} from "react-icons/fa";
 import CompetitionCard from "@/components/CompetitionCard";
 import SeasonCard from "@/components/SeasonCard";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
+import ConfirmModal from "@/lib/client/Confirm";
+import { team } from "slack";
+import { validName } from "@/lib/client/InputVerification";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -86,13 +91,15 @@ function Overview(props: TeamPageProps) {
 }
 
 function Roster(props: TeamPageProps) {
-  const team = props.team;
+  const { session, status } = useCurrentSession();
+
+  const [team, setTeam] = useState(props.team);
   const [users, setUsers] = useState(props.users ?? []);
 
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [requests, setRequests] = useState<User[]>([]);
 
-  // add scouting stuff and accept requests
+  const owner = team?.owners.includes(session.user?._id as string);
 
   useEffect(() => {
     const loadRequests = async () => {
@@ -108,6 +115,74 @@ function Roster(props: TeamPageProps) {
     loadRequests();
   }, []);
 
+  const handleTeamRequest = async (userId: string, accept: boolean) => {
+    await api.handleRequest(accept, userId as string, team?._id as string);
+
+    const reqClone = structuredClone(requests);
+    const userIndex = reqClone.findIndex((user) => userId === user._id);
+    const user = structuredClone(requests[userIndex]);
+    reqClone.splice(userIndex, 1);
+    setRequests(reqClone);
+
+    if (accept) {
+      setUsers([...users, user]);
+    }
+  };
+
+  const updateScouter = async (userId: string) => {
+    var teamClone = structuredClone(team);
+    var scouters = teamClone?.scouters;
+    if (scouters?.includes(userId)) {
+      scouters.splice(scouters.indexOf(userId), 1);
+    } else {
+      scouters?.push(userId);
+    }
+
+    await api.updateTeam({ scouters: scouters }, team?._id);
+    setTeam(teamClone);
+  };
+
+  const updateOwner = async (userId: string) => {
+    var teamClone = structuredClone(team);
+    var owners = teamClone?.owners;
+    if (owners?.includes(userId)) {
+      owners.splice(owners.indexOf(userId), 1);
+    } else {
+      owners?.push(userId);
+    }
+
+    await api.updateTeam({ owners: owners }, team?._id);
+    setTeam(teamClone);
+  };
+
+  const removeUser = async (userId: string) => {
+    const confirmed = ConfirmModal(
+      "Are you sure you want to remove this user?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    if (team?.owners.includes(userId)) {
+      await updateOwner(userId);
+    }
+    if (team?.scouters.includes(userId)) {
+      await updateScouter(userId);
+    }
+    var teamClone = structuredClone(team);
+    var newUsers = teamClone?.users;
+    newUsers?.splice(newUsers.indexOf(userId), 1);
+    await api.updateTeam({ users: newUsers }, team?._id);
+
+    setTeam(teamClone);
+
+    var userClone = [...users];
+    var index = userClone.findIndex((user) => user._id === userId);
+    userClone.splice(index, 1);
+    setUsers(userClone);
+  };
+
   return (
     <Card title="Team Roster" className="h-full">
       <h1 className="text-lg font-semibold">View and Manage your Team</h1>
@@ -115,37 +190,61 @@ function Roster(props: TeamPageProps) {
         <span className="text-accent">{users?.length}</span> total members
       </h1>
 
-      <div className="w-full collapse collapse-arrow bg-base-300">
-        <input type="checkbox" />
-        <div className="collapse-title text-lg font-medium">
-          Show Join Requests{" "}
-          {requests.length > 0 ? (
-            <div className="badge badge-primary ml-4">New</div>
-          ) : (
-            <></>
-          )}
+      {owner ? (
+        <div className="w-full collapse collapse-arrow bg-base-300">
+          <input type="checkbox" />
+          <div className="collapse-title text-lg font-medium">
+            Join Requests{" "}
+            {requests.length > 0 ? (
+              <div className="badge badge-primary ml-4">New</div>
+            ) : (
+              <></>
+            )}
+          </div>
+          <div className="collapse-content">
+            {loadingRequests ? (
+              <Loading></Loading>
+            ) : (
+              <div className="w-full grid grid-cols-2 grid-rows-1">
+                {requests.map((user) => (
+                  <Card className="" key={user._id}>
+                    <Flex mode="col" className="space-x-2">
+                      <div className="flex flex-row space-x-4 items-center">
+                        <img
+                          src={user.image}
+                          className="w-10 h-10 rounded-lg"
+                        ></img>
+                        <h1>{user.name}</h1>
+                      </div>
+                      <div className="divider"></div>
+                      <Flex mode="row" className="space-x-4">
+                        <button
+                          className="btn btn-success btn-outline"
+                          onClick={() => {
+                            handleTeamRequest(String(user._id), true);
+                          }}
+                        >
+                          Accept <FaUserPlus></FaUserPlus>
+                        </button>
+                        <button
+                          className="btn btn-error btn-outline"
+                          onClick={() => {
+                            handleTeamRequest(String(user._id), false);
+                          }}
+                        >
+                          Decline <FaUserTimes></FaUserTimes>
+                        </button>
+                      </Flex>
+                    </Flex>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="collapse-content">
-          {loadingRequests ? (
-            <Loading></Loading>
-          ) : (
-            <div className="w-full grid grid-cols-2 grid-rows-1">
-              {requests.map((user) => (
-                <Card className="" key={user._id}>
-                  <Flex mode="row" className="space-x-2 items-center">
-                    <img
-                      src={user.image}
-                      className="w-10 h-10 rounded-lg"
-                    ></img>
-
-                    <h1>{user.name}</h1>
-                  </Flex>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      ) : (
+        <></>
+      )}
 
       <div className="divider"></div>
       <table className="table">
@@ -174,18 +273,32 @@ function Roster(props: TeamPageProps) {
                 <input
                   type="checkbox"
                   className="toggle toggle-secondary"
-                  checked
+                  checked={team?.scouters.includes(user._id as string)}
+                  disabled={!owner}
+                  onChange={() => {
+                    updateScouter(user._id as string);
+                  }}
                 />
               </td>
               <td>
                 <input
                   type="checkbox"
-                  className="toggle toggle-secondary"
-                  checked
+                  className="toggle toggle-primary"
+                  checked={team?.owners.includes(user._id as string)}
+                  disabled={!owner}
+                  onChange={() => {
+                    updateOwner(user._id as string);
+                  }}
                 />
               </td>
               <td>
-                <button className="btn btn-outline btn-error">
+                <button
+                  className="btn btn-outline btn-error"
+                  disabled={!owner}
+                  onClick={() => {
+                    removeUser(user._id as string);
+                  }}
+                >
                   <MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
                 </button>
               </td>
@@ -197,11 +310,52 @@ function Roster(props: TeamPageProps) {
   );
 }
 
+function Settings(props: TeamPageProps) {
+  const [teamName, setTeamName] = useState(props.team?.name as string);
+  const [error, setError] = useState("");
+
+  const updateTeam = async () => {
+    setError("");
+    if (!validName(teamName)) {
+      setError("Invalid Team Name");
+      return;
+    }
+
+    await api.updateTeam({ name: teamName }, props.team?._id);
+    location.reload();
+  };
+
+  return (
+    <Card title="Settings">
+      <h1 className="font-semibold text-lg">Edit your teams configuration</h1>
+      <h1 className="text-md text-error">{error}</h1>
+      <div className="divider"></div>
+      <p>Set your Teams Name:</p>
+      <input
+        value={teamName}
+        maxLength={100}
+        onChange={(e) => {
+          setTeamName(e.target.value);
+        }}
+        type="text"
+        placeholder="Team Name"
+        className="input input-bordered w-full max-w-xs"
+      />
+      <div className="divider"></div>
+      <button className="btn btn-primary w-1/4" onClick={updateTeam}>
+        <FaSync></FaSync>Update Team
+      </button>
+    </Card>
+  );
+}
+
 export default function TeamIndex(props: TeamPageProps) {
   const { session, status } = useCurrentSession();
   const team = props.team;
 
   const isFrc = team?.tbaId?.startsWith("frc");
+
+  const [page, setPage] = useState(0);
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
@@ -243,8 +397,49 @@ export default function TeamIndex(props: TeamPageProps) {
           </Flex>
         </Card>
 
-        <Roster {...props}></Roster>
-        <Overview {...props}></Overview>
+        <div className="flex flex-row justify-start w-2/3 ">
+          <div className="w-full join grid grid-cols-3">
+            <button
+              className={
+                "join-item btn btn-outline normal-case " +
+                (page === 0 ? "btn-active" : "")
+              }
+              onClick={() => {
+                setPage(0);
+              }}
+            >
+              Overview
+            </button>
+            <button
+              className={
+                "join-item btn btn-outline normal-case inline " +
+                (page === 1 ? "btn-active" : "")
+              }
+              onClick={() => {
+                setPage(1);
+              }}
+            >
+              Roster{" "}
+            </button>
+
+            <button
+              className={
+                "join-item btn btn-outline normal-case " +
+                (page === 2 ? "btn-active" : "")
+              }
+              onClick={() => {
+                setPage(2);
+              }}
+              disabled={!team?.owners.includes(session?.user?._id as string)}
+            >
+              Settings
+            </button>
+          </div>
+        </div>
+
+        {page === 0 ? <Overview {...props}></Overview> : <></>}
+        {page === 1 ? <Roster {...props}></Roster> : <></>}
+        {page === 2 ? <Settings {...props}></Settings> : <></>}
       </Flex>
     </Container>
   );
