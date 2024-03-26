@@ -1,4 +1,3 @@
-import { validEmail, validName } from "@/lib/client/InputVerification";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState } from "react";
 
@@ -8,7 +7,6 @@ import Container from "@/components/Container";
 import Link from "next/link";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { levelToClassName } from "@/lib/Xp";
 import Avatar from "@/components/Avatar";
 import { IoCheckmarkCircle, IoMail } from "react-icons/io5";
 import Loading from "@/components/Loading";
@@ -16,6 +14,7 @@ import { FaPlus } from "react-icons/fa";
 import { Collections, GetDatabase } from "@/lib/MongoDB";
 import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import TeamCard from "@/components/TeamCard";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -52,7 +51,7 @@ export default function Profile(props: { teamList: Team[] }) {
 
   const requestTeam = async (teamId: string) => {
     setLoadingRequest(true);
-    //await api.teamRequest(user?._id, teamId);
+    await api.teamRequest(user?._id, teamId);
     setLoadingRequest(false);
     setSentRequest(true);
   };
@@ -94,17 +93,9 @@ export default function Profile(props: { teamList: Team[] }) {
             ) : (
               <Flex mode="col" center={true} className="space-y-2">
                 {teams.map((team) => (
-                  <Card
-                    title={team.name}
-                    key={team._id}
-                    className="w-full bg-base-300 border-4 border-base-300 transition ease-in hover:border-primary"
-                  >
-                    <h1 className="font-semibold">
-                      Team <span className="text-accent">{team.number}</span> -{" "}
-                      <span className="text-primary">{team.users.length}</span>{" "}
-                      members
-                    </h1>
-                  </Card>
+                  <Link href={"/" + team.slug} className="w-full">
+                    <TeamCard team={team} />
+                  </Link>
                 ))}
               </Flex>
             )}

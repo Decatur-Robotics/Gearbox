@@ -5,25 +5,30 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import Container from "@/components/Container";
+import Card from "@/components/Card";
+import Flex from "@/components/Flex";
+import Loading from "@/components/Loading";
+import { team } from "slack";
+import TeamCard from "@/components/TeamCard";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function CreateTeam() {
   const { session, status } = useCurrentSession();
 
-  const [teamNumber, setTeamNumber] = useState<number>();
+  const [teamNumber, setTeamNumber] = useState<string>();
   const [autoData, setAutoData] = useState<Team>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [wait, setWait] = useState<NodeJS.Timeout | undefined>();
 
   const searchTeam = async () => {
     if (!teamNumber) {
       return;
     }
 
+    setLoading(true);
     setAutoData(undefined);
-    let data = await api.getTeamAutofillData(teamNumber);
+    let data = await api.getTeamAutofillData(Number(teamNumber));
     if (data?.name) {
       setAutoData(data);
     }
@@ -35,7 +40,9 @@ export default function CreateTeam() {
       return;
     }
 
-    if (Object.keys(await api.findTeamByNumber(teamNumber)).length > 0) {
+    if (
+      Object.keys(await api.findTeamByNumber(Number(teamNumber))).length > 0
+    ) {
       setError("This Team Already Exists");
       return;
     }
@@ -44,7 +51,7 @@ export default function CreateTeam() {
       autoData.name,
       autoData.number,
       session.user._id,
-      autoData.tbaId,
+      autoData.tbaId
     );
 
     const win: Window = window;
@@ -52,58 +59,45 @@ export default function CreateTeam() {
   };
 
   useEffect(() => {
-    if (wait) {
-      setLoading(true);
-      clearTimeout(wait);
-      setWait(undefined);
-    }
-    setWait(setTimeout(searchTeam, 1000));
+    searchTeam();
   }, [teamNumber]);
 
   ///*** query and prevent dups! */
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="card w-3/4 bg-base-200 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-2xl">Create a new Team</h2>
-            <p>
-              Have a team number?{" "}
-              <span className="text-accent">
-                Automatically find your teams details
-              </span>
-            </p>
-            <p className="text-error">{error}</p>
-
-            <input
-              type="number"
-              placeholder="Team Number"
-              value={teamNumber}
-              onChange={(e) => setTeamNumber(e.target.valueAsNumber)}
-              className="input input-bordered input-primary w-full max-w-xs"
-            />
-
-            <span className="mt-2"></span>
-            {loading ? (
-              <span className="loading loading-spinner loading-md"></span>
-            ) : (
-              <></>
-            )}
-            {autoData ? (
-              <button
-                className="text-lg btn btn-ghost h-fit bg-base-300"
-                onClick={createTeam}
-              >
-                {autoData?.name} -{" "}
-                <span className="text-accent">#{autoData?.number}</span>
-              </button>
-            ) : (
-              <></>
-            )}
-          </div>
-        </div>
-      </div>
+      <Flex center={true} mode="col" className="h-full">
+        <Card title="Create a new Team">
+          <h1 className="font-semibold text-accent ml-4">
+            Search our database with your team's number
+          </h1>
+          <h1 className="text-error">{error}</h1>
+          <div className="divider"></div>
+          <input
+            className="input input-bordered w-1/2"
+            placeholder="Team Number"
+            maxLength={4}
+            minLength={1}
+            value={teamNumber}
+            onChange={(e) => {
+              setTeamNumber(e.target.value);
+            }}
+          ></input>
+          {teamNumber ? (
+            <div className="w-1/2 h-48 mt-10">
+              {loading ? (
+                <Loading></Loading>
+              ) : (
+                <div onClick={createTeam}>
+                  <TeamCard team={autoData}></TeamCard>
+                </div>
+              )}
+            </div>
+          ) : (
+            <></>
+          )}
+        </Card>
+      </Flex>
     </Container>
   );
 }
