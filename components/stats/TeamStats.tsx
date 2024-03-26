@@ -4,19 +4,21 @@ import {
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Defense, IntakeTypes, Report } from "@/lib/Types";
+import { Defense, Drivetrain, IntakeTypes, Pitreport, Report } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
 import { Round } from '../../lib/client/StatsMath';
 import { useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
+import Loading from "../Loading";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function TeamStats(props: {
   selectedTeam: number | undefined;
   selectedReports: Report[];
+  pitReport: Pitreport | null;
 }) {
   const [comments, setComments] = useState<{match: number, comment: string}[] | null>(null);
   const [teamWeHaveCommentsFor, setTeamWeHaveCommentsFor] = useState<number>(0);
@@ -44,7 +46,7 @@ export default function TeamStats(props: {
 
   if (!props.selectedTeam) {
     return (
-      <div className="w-2/5 h-1/2 flex flex-col items-center justify-center bg-base-200">
+      <div className="w-2/5 h-[700px] flex flex-col items-center justify-center bg-base-200">
         <h1 className="text-3xl text-accent animate-bounce font-semibold">
           Select A Team
         </h1>
@@ -52,12 +54,15 @@ export default function TeamStats(props: {
     );
   }
 
+  const pitReport = props.pitReport;
+
   const defense = MostCommonValue("Defense", props.selectedReports);
-  const intake = MostCommonValue("IntakeType", props.selectedReports);
+  const intake = pitReport?.intakeType //MostCommonValue("IntakeType", props.selectedReports);
   const cooperates = BooleanAverage("Coopertition", props.selectedReports);
   const climbs = BooleanAverage("ClimbedStage", props.selectedReports);
   const parks = BooleanAverage("ParkedStage", props.selectedReports);
   const understage = BooleanAverage("UnderStage", props.selectedReports);
+  const drivetrain = pitReport?.drivetrain;
 
   let defenseBadgeColor = "outline";
   if (defense === Defense.Full)
@@ -66,12 +71,21 @@ export default function TeamStats(props: {
     defenseBadgeColor = "accent";
 
   let intakeBadgeColor = "outline";
-  if (intake === IntakeTypes.Both)
-    intakeBadgeColor = "primary";
-  else if (intake === IntakeTypes.Ground)
-    intakeBadgeColor = "accent";
-  else if (intake === IntakeTypes.Human)
-    intakeBadgeColor = "secondary";
+  if (pitReport?.submitted) {
+    if (intake === IntakeTypes.Both)
+      intakeBadgeColor = "primary";
+    else if (intake === IntakeTypes.Ground)
+      intakeBadgeColor = "accent";
+    else if (intake === IntakeTypes.Human)
+      intakeBadgeColor = "secondary";
+    else if (intake === IntakeTypes.None)
+      intakeBadgeColor = "warning";
+  }
+
+  let drivetrainColor = "outline";
+  if (pitReport?.submitted) {
+    drivetrainColor = pitReport?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
+  }
 
   return (
     <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">
@@ -84,7 +98,7 @@ export default function TeamStats(props: {
           {defense} Defense
         </div>
         <div className={`badge badge-${intakeBadgeColor}`}>
-          {intake} Intake
+          {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
         </div>
         { cooperates && 
           <div className="badge badge-primary">Cooperates</div>
@@ -95,6 +109,9 @@ export default function TeamStats(props: {
           <div className="badge badge-accent">Parks</div>}
         { understage &&
           <div className="badge badge-neutral">Small Profile</div>}
+        <div className={`badge badge-${drivetrainColor}`}>
+          {pitReport ? (pitReport.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
+        </div>
       </div>
 
       <div className="w-1/3 divider"></div>
@@ -243,19 +260,26 @@ export default function TeamStats(props: {
 
       <div className="w-full h-fit flex flex-row items-center">
         <ul>
+          <li className="mt-2 mb-1">
+            {
+               pitReport
+                ? (pitReport.comments !== ""
+                  ? `Pit Report: ${pitReport.comments}`
+                  : "No pit report comments.")
+                : <Loading size={24} />
+            }
+          </li>
+
           { comments
             ? <li className="mt-2">
                 {comments.length === 0 
-                  ? "No comments." 
+                  ? "No match comments." 
                   : comments
                       .sort((a, b) => a.match - b.match)
                       .map((report) => <div key={report.match} className="mb-2">Match {report.match}: {report.comment}</div>)
                 }
               </li>
-            : <div className="flex flex-row">
-                <div className="loading loading-spinner mr-2"></div>
-                <div>Loading comments...</div>
-              </div>
+            : <Loading size={24} />
           }
         </ul>
       </div>
