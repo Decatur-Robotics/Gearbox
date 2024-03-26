@@ -93,7 +93,11 @@ export default function Profile(props: { teamList: Team[] }) {
             ) : (
               <Flex mode="col" center={true} className="space-y-2">
                 {teams.map((team) => (
-                  <Link href={"/" + team.slug} className="w-full">
+                  <Link
+                    href={"/" + team.slug}
+                    className="w-full"
+                    key={team._id}
+                  >
                     <TeamCard team={team} />
                   </Link>
                 ))}
@@ -132,6 +136,7 @@ export default function Profile(props: { teamList: Team[] }) {
                               onClick={() => {
                                 requestTeam(String(team._id));
                               }}
+                              key={team._id}
                             >
                               <h1>
                                 Team{" "}

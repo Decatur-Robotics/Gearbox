@@ -8,7 +8,6 @@ import Container from "@/components/Container";
 import Card from "@/components/Card";
 import Flex from "@/components/Flex";
 import Loading from "@/components/Loading";
-import { team } from "slack";
 import TeamCard from "@/components/TeamCard";
 
 const api = new ClientAPI("gearboxiscool");
@@ -69,7 +68,7 @@ export default function CreateTeam() {
       <Flex center={true} mode="col" className="h-full">
         <Card title="Create a new Team">
           <h1 className="font-semibold text-accent ml-4">
-            Search our database with your team's number
+            Search our database with your teams number
           </h1>
           <h1 className="text-error">{error}</h1>
           <div className="divider"></div>

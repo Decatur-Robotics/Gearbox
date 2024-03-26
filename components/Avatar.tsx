@@ -1,16 +1,20 @@
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { User } from "@/lib/Types";
 import { levelToClassName } from "@/lib/Xp";
 import { BsGearFill } from "react-icons/bs";
 
-export default function Avatar(props: {}) {
+export default function Avatar(props: {
+  user?: User | undefined;
+  scale?: string | undefined;
+}) {
   const { session, status } = useCurrentSession();
-  const user = session?.user;
+  const user = props.user ?? session?.user;
   const image = user?.image ?? "/user.jpg";
   const levelClass = levelToClassName(10);
   const admin = user?.admin;
 
   return (
-    <div className={"avatar "}>
+    <div className={"avatar scale-" + props.scale ?? "100"}>
       <div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
         LVL: {user?.level}
       </div>
