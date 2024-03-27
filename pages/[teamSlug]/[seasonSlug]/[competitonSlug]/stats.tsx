@@ -36,9 +36,12 @@ export default function Stats(props: {
   const [page, setPage] = useState(0);
 
   useEffect(() => {
-    setInterval(() => {
+    const i = setInterval(() => {
       resync();
     }, 15000);
+    return () => {
+      clearInterval(i);
+    };
   });
 
   const resync = async () => {
