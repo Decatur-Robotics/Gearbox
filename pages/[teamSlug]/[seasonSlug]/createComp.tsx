@@ -29,7 +29,12 @@ export default function CreateComp(props: ResolvedUrlData) {
     setLoading(true);
     setSelection(undefined);
     let data = await api.searchCompetitionByName(name);
-    setResults(data);
+    if (Object.keys(data).length === 0) {
+      setResults([]);
+    } else {
+      setResults(data);
+    }
+
     setLoading(false);
   };
 
@@ -70,16 +75,17 @@ export default function CreateComp(props: ResolvedUrlData) {
             className="input input-bordered"
             placeholder={"Competition Name"}
           ></input>
-          <div className="w-full h-86 space-y-2 ">
-            {loading || name.length > 3 ? (
-              <h1 className="h-full">
-                <div className="loading loading-spinner loading-md"></div>
-              </h1>
+          <div className="w-full h-64 space-y-2 ">
+            {loading || name.length < 3 ? (
+              <Loading></Loading>
             ) : (
               results.map((e, i) => (
                 <h1
                   className={
-                    "bg-base-300 p-4 rounded-lg border-4 border-base-300 transition ease-in  "
+                    "bg-base-300 text-sm p-2 rounded-lg border-4 border-base-300 " +
+                    (selection === i
+                      ? "border-primary"
+                      : "hover:border-primary")
                   }
                   onClick={() => {
                     setSelection(i);
@@ -90,6 +96,13 @@ export default function CreateComp(props: ResolvedUrlData) {
               ))
             )}
           </div>
+          {selection ? (
+            <button className="btn btn-primary w-full" onClick={createComp}>
+              Create Competition
+            </button>
+          ) : (
+            <></>
+          )}
         </Card>
       </Flex>
     </Container>
