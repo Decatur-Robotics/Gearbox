@@ -12,7 +12,6 @@ export default function Card(props: CardProps) {
   const children = props.children;
   const color = props.coloredTop;
 
-  console.log(color ? color : "");
 
   return (
     <div
