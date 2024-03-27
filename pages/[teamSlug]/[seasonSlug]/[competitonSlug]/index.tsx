@@ -5,7 +5,6 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
 import {
   AllianceColor,
-  Form,
   Match,
   MatchType,
   Pitreport,
@@ -17,13 +16,7 @@ import Container from "@/components/Container";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-import {
-  MdAutoGraph,
-  MdCoPresent,
-  MdDriveEta,
-  MdInsertPhoto,
-  MdQueryStats,
-} from "react-icons/md";
+import { MdAutoGraph, MdCoPresent, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
@@ -69,28 +62,38 @@ export default function Home(props: ResolvedUrlData) {
   const [pitreports, setPitreports] = useState<Pitreport[]>([]);
   const [loadingPitreports, setLoadingPitreports] = useState(true);
   const [submittedPitreports, setSubmittedPitreports] = useState(0);
-  const [attemptedRegeneratingPitReports, setAttemptedRegeneratingPitReports] = useState(false);
+  const [
+    attemptedRegeneratingPitReports,
+    setAttemptedRegeneratingPitReports,
+  ] = useState(false);
 
   const [updatingComp, setUpdatingComp] = useState("");
 
-  const [ranking, setRanking] = useState<{place: number | string, max: number} | null>(null);
+  const [ranking, setRanking] = useState<{
+    place: number | string;
+    max: number;
+  } | null>(null);
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
-    api.regeneratePitReports(comp?.tbaId, comp?._id).then(({ pitReports }: { pitReports: string[] }) => {
-      setAttemptedRegeneratingPitReports(true);
-      setLoadingPitreports(true);
+    api
+      .regeneratePitReports(comp?.tbaId, comp?._id)
+      .then(({ pitReports }: { pitReports: string[] }) => {
+        setAttemptedRegeneratingPitReports(true);
+        setLoadingPitreports(true);
 
-      // Fetch pit reports
-      const pitReportPromises = pitReports.map(async (id: string) => await api.findPitreportById(id));
+        // Fetch pit reports
+        const pitReportPromises = pitReports.map(
+          async (id: string) => await api.findPitreportById(id)
+        );
 
-      Promise.all(pitReportPromises).then((reports) => {
-        console.log("Got all pit reports");
-        setPitreports(reports);
-        setLoadingPitreports(false);
+        Promise.all(pitReportPromises).then((reports) => {
+          console.log("Got all pit reports");
+          setPitreports(reports);
+          setLoadingPitreports(false);
+        });
       });
-    });
-  }
+  };
 
   useEffect(() => {
     const scoutingStats = (reps: Report[]) => {
@@ -177,7 +180,7 @@ export default function Home(props: ResolvedUrlData) {
       let submitted = 0;
       for (const pitreportId of comp?.pitReports) {
         const pitreport = await api.findPitreportById(pitreportId);
-        if (pitreport.comments.length > 2) {
+        if (pitreport.submitted) {
           submitted++;
         }
         newPitReports.push(pitreport);
@@ -239,7 +242,7 @@ export default function Home(props: ResolvedUrlData) {
     ) {
       const b = qualificationMatches.filter((match) => {
         let s = true;
-        if(match.number <= 11) {
+        if (match.number <= 11) {
           return false;
         }
         for (const id of match.reports) {
@@ -362,7 +365,7 @@ export default function Home(props: ResolvedUrlData) {
               )}
             </div>
             {showSettings ? (
-              <div className="card-body">
+              <div className="card-body md:min-w-[40rem]">
                 <h1 className="font-semibold text-xl">Settings</h1>
                 <div className="flex flex-row space-x-2">
                   <button
@@ -406,12 +409,16 @@ export default function Home(props: ResolvedUrlData) {
                 <button
                   className="btn btn-warning"
                   onClick={() => {
-                    if (confirm("Are you sure you want to regenerate pit reports? Doing so will overwrite existing pit reports."))
+                    if (
+                      confirm(
+                        "Are you sure you want to regenerate pit reports? Doing so will overwrite existing pit reports."
+                      )
+                    )
                       regeneratePitReports();
                   }}
-                  >
-                    Regenerate Pit Reports
-                  </button>
+                >
+                  Regenerate Pit Reports
+                </button>
 
                 <div className="divider"></div>
                 <h1 className="font-semibold">Manually add matches</h1>
@@ -515,7 +522,7 @@ export default function Home(props: ResolvedUrlData) {
                 </button>
               </div>
             ) : (
-              <div className="card-body">
+              <div className="card-body ">
                 <h1 className="font-semibold text-lg">Scouting Progress</h1>
                 <div className="stats bg-base-300 w-full shadow-xl">
                   <div className="stat space-y-2">
@@ -527,9 +534,7 @@ export default function Home(props: ResolvedUrlData) {
                     </div>
                     <div className="stat-value text-accent">
                       {!Number.isNaN(submittedReports)
-                        ? Round(
-                            submittedReports / reports.length
-                          ) * 100
+                        ? Round(submittedReports / reports.length) * 100
                         : "?"}
                       %
                     </div>
@@ -551,15 +556,12 @@ export default function Home(props: ResolvedUrlData) {
                       <div>
                         <div className="stat-value text-primary">
                           {!Number.isNaN(submittedReports)
-                            ? Round(
-                                submittedReports / reports.length
-                              ) * 100
+                            ? Round(submittedReports / reports.length) * 100
                             : "?"}
                           %
                         </div>
                         <div className="stat-desc">
-                          {submittedReports}/{reports.length}{" "}
-                          Reports
+                          {submittedReports}/{reports.length} Reports
                         </div>
                       </div>
                     )}
@@ -573,7 +575,8 @@ export default function Home(props: ResolvedUrlData) {
                       <FaUserGroup size={40}></FaUserGroup>
                     </div>
                     <div className="stat-value text-primary">
-                      {!submittedPitreports ? "?" : submittedPitreports}/{!pitreports ? "?" : pitreports.length}
+                      {!submittedPitreports ? "?" : submittedPitreports}/
+                      {!pitreports ? "?" : pitreports.length}
                     </div>
                   </div>
 
@@ -603,7 +606,11 @@ export default function Home(props: ResolvedUrlData) {
             <div className="card-body">
               <h1 className="card-title text-2xl md:text-3xl font-bold">
                 {team?.name} - {team?.number}
-                { ranking && <span className="text-accent">(#{ranking.place}/{ranking.max})</span>}
+                {ranking && (
+                  <span className="text-accent">
+                    (#{ranking.place}/{ranking.max})
+                  </span>
+                )}
               </h1>
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
@@ -722,7 +729,16 @@ export default function Home(props: ResolvedUrlData) {
                                           <img
                                             src={user?.image}
                                             onClick={() => {
-                                              if (user.slackId && session && team?.owners?.includes(session.user?._id ?? "") && confirm("Remind scouter on Slack?")) {
+                                              if (
+                                                user.slackId &&
+                                                session &&
+                                                team?.owners?.includes(
+                                                  session.user?._id ?? ""
+                                                ) &&
+                                                confirm(
+                                                  "Remind scouter on Slack?"
+                                                )
+                                              ) {
                                                 api.remindSlack(
                                                   user.slackId,
                                                   session.user?.slackId
@@ -772,31 +788,33 @@ export default function Home(props: ResolvedUrlData) {
                       ></BsGearFill>
                     </div>
                   ) : (
-                    pitreports.sort((a, b) => a.teamNumber - b.teamNumber).map((report) => (
-                      <Link
-                        className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
-                        href={window.location.href + `/pit/${report._id}`}
-                        key={report._id}
-                      >
-                        <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
-                          {report.teamNumber}
-                        </div>
-                        <div className="absolute rounded z-10 translate-y-4 items-center">
-                          {/* {report.image !== "/robot.jpg" ? (
+                    pitreports
+                      .sort((a, b) => a.teamNumber - b.teamNumber)
+                      .map((report) => (
+                        <Link
+                          className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
+                          href={window.location.href + `/pit/${report._id}`}
+                          key={report._id}
+                        >
+                          <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
+                            {report.teamNumber}
+                          </div>
+                          <div className="absolute rounded z-10 translate-y-4 items-center">
+                            {/* {report.image !== "/robot.jpg" ? (
                             <img src={report.image}></img>
                           ) : (
                             <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">
                               No Image
                             </div>
                           )} */}
-                          {report.comments.length > 2 ? (
-                            <FaCheck size={64} />
-                          ) : (
-                            <FaRobot size={64} />
-                          )}
-                        </div>
-                      </Link>
-                    ))
+                            {report.submitted ? (
+                              <FaCheck size={64} />
+                            ) : (
+                              <FaRobot size={64} />
+                            )}
+                          </div>
+                        </Link>
+                      ))
                   )}
                 </div>
               </div>
