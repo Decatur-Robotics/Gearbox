@@ -7,7 +7,7 @@ import UrlResolver, {
 } from "@/lib/UrlResolver";
 
 import { GetDatabase, Collections } from "@/lib/MongoDB";
-import { Competition, Report } from "@/lib/Types";
+import { Competition, Pitreport, Report } from "@/lib/Types";
 import { useEffect, useState } from "react";
 import TeamPage from "@/components/stats/TeamPage";
 import PicklistScreen from "@/components/stats/Picklist";
@@ -24,6 +24,7 @@ const api = new ClientAPI("gearboxiscool");
 
 export default function Stats(props: {
   reports: Report[];
+  pitReports: Pitreport[];
   competition: Competition;
   time: number;
 }) {
@@ -33,17 +34,30 @@ export default function Stats(props: {
   const [update, setUpdate] = useState(props.time);
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
+  const [pitReports, setPitReports] = useState(props.pitReports);
   const [page, setPage] = useState(0);
 
-  useEffect(() => {
-    setInterval(() => {
-      resync();
-    }, 15000);
-  });
+  // useEffect(() => {
+  //   setInterval(() => {
+  //     try {
+  //       resync();
+  //     }
+  //     catch (e) {
+  //       console.error(e);
+  //     }
+  //   }, 15000);
+  // });
 
   const resync = async () => {
     setUpdating(true);
-    setReports(await api.competitionReports(props.competition._id, true));
+
+    const promises = [
+      api.competitionReports(props.competition._id, true).then((data) => setReports(data)),
+      pitReports.length === 0 && props.competition.pitReports.map((id) => api.findPitreportById(id).then((data) => setPitReports((prev) => [...prev, data])))
+    ].flat();
+    
+    await Promise.all(promises);
+
     setUpdate(Date.now());
     setUpdating(false);
   };
@@ -84,18 +98,18 @@ export default function Stats(props: {
         >
           Prediction (Coming Soon!)
         </a>
-        <a role="tab" className={`tab tab-md `} onClick={resync}>
-          Resync{" "}
+        {/* <a role="tab" className={`tab tab-md `} onClick={resync}>
+          Resync {" "}
           <span className={`ml-2 ${updating ? "animate-spin" : ""}`}>
             <FaSync></FaSync>
           </span>{" "}
           <span className="italic text-sm ml-2">
             (Last Updated: {TimeString(update)})
           </span>
-        </a>
+        </a> */}
       </div>
-
-      {page === 0 ? <TeamPage reports={reports}></TeamPage> : <></>}
+      
+      {page === 0 ? <TeamPage reports={reports} pitReports={pitReports}></TeamPage> : <></>}
       {page === 1 ? <PicklistScreen reports={reports}></PicklistScreen> : <></>}
     </Container>
   );
@@ -104,12 +118,22 @@ export default function Stats(props: {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await GetDatabase();
   const url = await UrlResolver(context);
+
   const dbReports = await db.findObjects<Report>(Collections.Reports, {
     match: { $in: url.competition?.matches },
     submitted: true,
   });
   const reports = dbReports.map((report) => SerializeDatabaseObject(report));
+
+  const pitReportList = url.competition?.pitReports ?? [];
+  const dbPitReports = await db.findObjects<Pitreport>(
+    Collections.Pitreports,
+    {
+      _id: { $in: pitReportList },
+    }
+  );
+
   return {
-    props: { reports: reports, competition: url.competition, time: Date.now() },
+    props: { reports: reports, pitReports: dbPitReports, competition: url.competition, time: Date.now() },
   };
 };
