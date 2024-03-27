@@ -47,7 +47,7 @@ export default function Home(props: SeasonPageProps) {
             <></>
           )}
           {comp.map((comp) => (
-            <CompetitionCard comp={comp}></CompetitionCard>
+            <CompetitionCard comp={comp} key={comp._id}></CompetitionCard>
           ))}
           {owner ? (
             <Flex center={true} className="mt-4">

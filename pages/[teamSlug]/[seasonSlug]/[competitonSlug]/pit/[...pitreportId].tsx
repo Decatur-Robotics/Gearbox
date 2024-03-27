@@ -94,7 +94,9 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
               onChange={(e) => setCallback("motorType", e.target.value)}
             >
               {Object.values(Motors).map((val) => (
-                <option value={val}>{val}</option>
+                <option value={val} key={val}>
+                  {val}
+                </option>
               ))}
             </select>
             <h1 className="font-mono mt-4">Swerve Level:</h1>
@@ -104,7 +106,9 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
               onChange={(e) => setCallback("swerveLevel", e.target.value)}
             >
               {Object.values(SwerveLevel).map((val) => (
-                <option value={val}>{val}</option>
+                <option value={val} key={val}>
+                  {val}
+                </option>
               ))}
             </select>
           </div>

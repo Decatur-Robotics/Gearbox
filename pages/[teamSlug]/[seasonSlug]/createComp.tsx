@@ -81,6 +81,7 @@ export default function CreateComp(props: ResolvedUrlData) {
             ) : (
               results.map((e, i) => (
                 <h1
+                  key={e.pair.name}
                   className={
                     "bg-base-300 text-sm p-2 rounded-lg border-4 border-base-300 " +
                     (selection === i
