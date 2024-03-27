@@ -148,6 +148,19 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
               callback={setCallback}
             ></Checkbox>
           </div>
+          <h1 className="font-semibold text-lg mt-8">Auto: </h1>
+          <div className="translate-x-10">
+            <h1 className="font-mono mt-4">Ideal Auto Notes:</h1>
+            <input
+              value={pitreport.autoNotes}
+              onChange={(e) => {
+                setCallback("autoNotes", e.target.value);
+              }}
+              type="number"
+              className="input input-bordered"
+              placeholder="Auto Notes"
+            ></input>
+          </div>
           <div className="w-full text-lg flex flex-col items-center justify-center">
             <CommentBox data={pitreport} callback={setCallback}></CommentBox>
           </div>

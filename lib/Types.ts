@@ -215,6 +215,7 @@ export class Pitreport {
   canScoreFromDistance: boolean = false;
   submitted: boolean = true;
   underBumperIntake: boolean = false;
+  autoNotes: number = 0;
   comments: string = "";
 
   constructor(teamNumber: number) {
