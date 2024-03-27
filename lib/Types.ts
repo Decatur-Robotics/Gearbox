@@ -47,7 +47,7 @@ export class User implements NextAuthUser {
     owner: string[] = [],
     slackId: string = "",
     xp: number = 10,
-    level: number = 1,
+    level: number = 1
   ) {
     this.name = name;
     this.email = email;
@@ -84,7 +84,7 @@ export class Team {
     users: string[] = [],
     scouters: string[] = [],
     requests: string[] = [],
-    seasons: string[] = [],
+    seasons: string[] = []
   ) {
     this.name = name;
     this.slug = slug;
@@ -105,7 +105,7 @@ export enum Defense {
 }
 
 export enum IntakeTypes {
-  None="None",
+  None = "None",
   Human = "Human",
   Ground = "Ground",
   Both = "Both",
@@ -170,7 +170,7 @@ export class Season {
     name: string,
     slug: string | undefined,
     year: number,
-    competitions: string[] = [],
+    competitions: string[] = []
   ) {
     this.name = name;
     this.slug = slug;
@@ -180,20 +180,41 @@ export class Season {
 }
 
 export enum Drivetrain {
-  Tank="Tank",
-  Swerve="Swerve",
-  Mecanum="Mecanum",
+  Tank = "Tank",
+  Swerve = "Swerve",
+  Mecanum = "Mecanum",
+}
+
+export enum Motors {
+  CIMs = "CIM",
+  Krakens = "Krakens",
+  Falcons = "Falcons",
+  Talons = "Talons",
+  Neos = "Neos",
+}
+
+export enum SwerveLevel {
+  None = "None",
+  L1 = "L1",
+  L2 = "L2",
+  L3 = "L3",
 }
 
 export class Pitreport {
   _id: string | undefined;
   teamNumber: number;
-  image: string = "/robot.jpg"
-  intakeType: IntakeTypes = IntakeTypes.None
+  image: string = "/robot.jpg";
+  intakeType: IntakeTypes = IntakeTypes.None;
   canClimb: boolean = false;
   drivetrain: Drivetrain = Drivetrain.Tank;
+  motorType: Motors = Motors.Talons;
+  swerveLevel: SwerveLevel = SwerveLevel.None;
+  fixedShooter: boolean = false;
   canScoreAmp: boolean = false;
-  canScoreSpeaker: boolean = false
+  canScoreSpeaker: boolean = false;
+  canScoreFromDistance: boolean = false;
+  submitted: boolean = true;
+  underBumperIntake: boolean = false;
   comments: string = "";
 
   constructor(teamNumber: number) {
@@ -220,7 +241,7 @@ export class Competition {
     start: number,
     end: number,
     pitReports: string[] = [],
-    matches: string[] = [],
+    matches: string[] = []
   ) {
     this.name = name;
     this.slug = slug;
@@ -269,7 +290,7 @@ export class Match {
     blueAlliance: Alliance,
     redAlliance: Alliance,
     reports: string[] = [],
-    scouters: string[] = [],
+    scouters: string[] = []
   ) {
     this.number = number;
     this.tbaId = tbaId;
@@ -304,7 +325,7 @@ export class Report {
     color: AllianceColor,
     match: string,
     timestamp: number = 0,
-    checkedIn: boolean,
+    checkedIn: boolean
   ) {
     this.timestamp = timestamp;
     this.user = user;

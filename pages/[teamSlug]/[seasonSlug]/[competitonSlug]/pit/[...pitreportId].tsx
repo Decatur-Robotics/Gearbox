@@ -1,5 +1,5 @@
 import { Collections, GetDatabase } from "@/lib/MongoDB";
-import { Pitreport } from "@/lib/Types";
+import { Motors, Pitreport, SwerveLevel } from "@/lib/Types";
 import { ObjectId } from "mongodb";
 import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
@@ -7,15 +7,16 @@ import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useCallback, useState } from "react";
-import ImageUpload from "@/components/forms/ImageUpload";
 import Checkbox, {
   DrivetrainType,
   IntakeType,
 } from "@/components/forms/Checkboxes";
 import { CommentBox } from "@/components/forms/Comment";
 import ClientAPI from "@/lib/client/ClientAPI";
+import Flex from "@/components/Flex";
+import Card from "@/components/Card";
+import { FaRobot } from "react-icons/fa";
 
-const gdb = GetDatabase();
 const api = new ClientAPI("gearboxiscool");
 
 export default function PitreportForm(props: { pitreport: Pitreport }) {
@@ -54,36 +55,61 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
-      <div className="w-screen flex flex-col items-center justify-center space-y-4">
-        <div className="card w-11/12 md:w-2/3 bg-base-200 mt-2">
-          <div className="card-body">
-            <div className="text-center">
-              <p className="text-xl font-mono">Currently Pit-scouting</p>
-              <h1 className="text-5xl font-bold">{pitreport.teamNumber}</h1>
-            </div>
-          </div>
-        </div>
+      <Flex mode="col" className="items-center w-screen h-full space-y-4">
+        <Card className="w-1/4" coloredTop="bg-accent">
+          <Flex center={true} mode="col">
+            <h1 className="text-4xl font-semibold">Pitscouting</h1>
+            <div className="divider"></div>
+            <h1 className="font-semibold text-2xl">
+              <FaRobot className="inline mr-2" size={30}></FaRobot>
+              Team <span className="text-accent">{pitreport.teamNumber}</span>
+            </h1>
+          </Flex>
+        </Card>
 
-        <div className="card w-11/12 md:w-2/3 bg-base-200 mb-2">
-          <div className="card-body w-full flex flex-col justify-center items-center text-center">
-            <h1>Physical Attributes: </h1>
+        <Card>
+          <h1 className="text-2xl font-semibold">Physical Attributes:</h1>
+          <div className="divider"></div>
 
-            <div className="translate-x-2">
-              <h1 className="font-semibold text-lg">Intake Style: </h1>
-              <IntakeType data={pitreport} callback={setCallback}></IntakeType>
-              <h1 className="font-semibold text-lg mt-8">Drivetrain Style: </h1>
-              <DrivetrainType
-                data={pitreport}
-                callback={setCallback}
-              ></DrivetrainType>
-            </div>
-
+          <h1 className="font-semibold text-lg">Intake: </h1>
+          <div className="translate-x-10">
+            <IntakeType data={pitreport} callback={setCallback}></IntakeType>
             <Checkbox
-              label="Can Climb"
-              dataKey="canClimb"
+              label="Under Bumper Intake"
+              dataKey="underBumperIntake"
               data={pitreport}
               callback={setCallback}
             ></Checkbox>
+          </div>
+          <h1 className="font-semibold text-lg mt-8">Drivetrain: </h1>
+          <div className="translate-x-10">
+            <DrivetrainType
+              data={pitreport}
+              callback={setCallback}
+            ></DrivetrainType>
+            <h1 className="font-mono mt-4">Drive Motor Type:</h1>
+            <select
+              className=" w-1/3 select select-bordered"
+              value={pitreport.motorType}
+              onChange={(e) => setCallback("motorType", e.target.value)}
+            >
+              {Object.values(Motors).map((val) => (
+                <option value={val}>{val}</option>
+              ))}
+            </select>
+            <h1 className="font-mono mt-4">Swerve Level:</h1>
+            <select
+              className=" w-1/3 select select-bordered"
+              value={pitreport.swerveLevel}
+              onChange={(e) => setCallback("swerveLevel", e.target.value)}
+            >
+              {Object.values(SwerveLevel).map((val) => (
+                <option value={val}>{val}</option>
+              ))}
+            </select>
+          </div>
+          <h1 className="font-semibold text-lg mt-8">Shooter: </h1>
+          <div className="translate-x-10">
             <Checkbox
               label="Can Score Amp"
               dataKey="canScoreAmp"
@@ -96,23 +122,42 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
               data={pitreport}
               callback={setCallback}
             ></Checkbox>
-
-            <div className="w-11/12 md:w-1/2">
-              <CommentBox data={pitreport} callback={setCallback}></CommentBox>
-            </div>
-
-            <button className="btn btn-wide btn-primary " onClick={submit}>
-              Submit
-            </button>
+            <Checkbox
+              label="Fixed Angle Shooter"
+              dataKey="fixedShooter"
+              data={pitreport}
+              callback={setCallback}
+            ></Checkbox>
+            <Checkbox
+              label="Can Score From Distance"
+              dataKey="fixedShooter"
+              data={pitreport}
+              callback={setCallback}
+            ></Checkbox>
           </div>
-        </div>
-      </div>
+          <h1 className="font-semibold text-lg mt-8">Climber: </h1>
+          <div className="translate-x-10">
+            <Checkbox
+              label="Can Climb"
+              dataKey="canClimb"
+              data={pitreport}
+              callback={setCallback}
+            ></Checkbox>
+          </div>
+          <div className="w-full text-lg flex flex-col items-center justify-center">
+            <CommentBox data={pitreport} callback={setCallback}></CommentBox>
+          </div>
+          <button className="btn btn-primary " onClick={submit}>
+            Submit
+          </button>
+        </Card>
+      </Flex>
     </Container>
   );
 }
 
 async function getPitreport(id: string) {
-  const db = await gdb;
+  const db = await GetDatabase();
   return await db.findObjectById<Pitreport>(
     Collections.Pitreports,
     new ObjectId(id)

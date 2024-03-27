@@ -96,7 +96,7 @@ export default function CreateComp(props: ResolvedUrlData) {
               ))
             )}
           </div>
-          {selection ? (
+          {selection !== undefined && selection >= 0 ? (
             <button className="btn btn-primary w-full" onClick={createComp}>
               Create Competition
             </button>
