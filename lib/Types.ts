@@ -236,7 +236,7 @@ export enum AllianceColor {
   Red = "Red",
   Blue = "Blue",
 }
-export type Alliance = [];
+export type Alliance = number[];
 
 export enum MatchType {
   Qualifying = "Qualifying",

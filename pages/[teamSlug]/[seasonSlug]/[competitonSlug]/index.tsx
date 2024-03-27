@@ -244,7 +244,7 @@ export default function Home(props: ResolvedUrlData) {
         }
         for (const id of match.reports) {
           const r = reportsById[id];
-          if (!r.submitted) {
+          if (!r?.submitted) {
             s = false;
             console.log("broke");
             break;
@@ -367,16 +367,16 @@ export default function Home(props: ResolvedUrlData) {
                 <div className="flex flex-row space-x-2">
                   <button
                     onClick={reloadCompetition}
-                    className="btn btn-md btn-primary w-1/2"
+                    className="btn btn-md btn-primary w-[49%]"
                   >
                     <FaSync></FaSync> Refresh
                   </button>
                   <button
                     className={
-                      "btn btn-primary w-1/2 " +
+                      "btn btn-primary w-[49%] " +
                       (assigningMatches ? "disabled" : "")
                     }
-                    disabled={true}
+                    // disabled={true}
                     onClick={assignScouters}
                   >
                     {!assigningMatches ? (
