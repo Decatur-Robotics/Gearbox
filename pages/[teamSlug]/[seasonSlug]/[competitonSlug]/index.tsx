@@ -64,11 +64,11 @@ export default function Home(props: ResolvedUrlData) {
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   const [submissionRate, setSubmissionRate] = useState(0);
-  const [submittedReports, setSubmittedReports] = useState(0);
+  const [submittedReports, setSubmittedReports] = useState<number | undefined>(undefined);
 
   const [pitreports, setPitreports] = useState<Pitreport[]>([]);
   const [loadingPitreports, setLoadingPitreports] = useState(true);
-  const [submittedPitreports, setSubmittedPitreports] = useState(0);
+  const [submittedPitreports, setSubmittedPitreports] = useState<number | undefined>(undefined);
   const [attemptedRegeneratingPitReports, setAttemptedRegeneratingPitReports] = useState(false);
 
   const [updatingComp, setUpdatingComp] = useState("");
@@ -528,7 +528,7 @@ export default function Home(props: ResolvedUrlData) {
                         Competition Progress
                       </div>
                       <div className="stat-value text-accent">
-                        {!Number.isNaN(submittedReports)
+                        {submittedReports && !Number.isNaN(submittedReports)
                           ? Round(
                               submittedReports / reports.length
                             ) * 100
@@ -552,7 +552,7 @@ export default function Home(props: ResolvedUrlData) {
                       ) : (
                         <div>
                           <div className="stat-value text-primary">
-                            {!Number.isNaN(submittedReports)
+                            {submittedReports && !Number.isNaN(submittedReports)
                               ? Round(
                                   submittedReports / reports.length
                                 ) * 100
@@ -568,14 +568,14 @@ export default function Home(props: ResolvedUrlData) {
                     </div>
                   </div>
                   <h1 className="font-semibold text-lg">Pitscouting Progress</h1>
-                  <div className="stats mt-2">
+                  <div className="stats mt-2 w-full">
                     <div className="stat place-items-center">
                       <div className="stat-title">Teams</div>
                       <div className="stat-figure text-primary">
                         <FaUserGroup size={40}></FaUserGroup>
                       </div>
                       <div className="stat-value text-primary">
-                        {!submittedPitreports ? "?" : submittedPitreports}/{!pitreports ? "?" : pitreports.length}
+                        {!submittedPitreports ? "?" : submittedPitreports}/{!pitreports || pitreports.length === 0 ? "?" : pitreports.length}
                       </div>
                     </div>
 
@@ -589,7 +589,7 @@ export default function Home(props: ResolvedUrlData) {
                           ? "?"
                           : (submittedPitreports * 8).toLocaleString()}
                         /
-                        {!pitreports
+                        {!pitreports || pitreports.length === 0
                           ? "?"
                           : (pitreports.length * 8).toLocaleString()}
                       </div>
