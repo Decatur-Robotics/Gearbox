@@ -30,7 +30,6 @@ app.prepare().then(() => {
 
   createServer(httpsOptions, async (req, res) => {
     const parsedUrl = parse(req.url, true);
-    console.log("Request received: " + parsedUrl.pathname);
     await handle(req, res, parsedUrl);
   }).listen(port, (err) => {
     if (err) {
@@ -43,6 +42,8 @@ app.prepare().then(() => {
         port,
     );
   });
+
+  console.log("Server created");
 });
 
 console.log("App preparing...");
