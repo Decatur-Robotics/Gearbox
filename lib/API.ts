@@ -516,11 +516,15 @@ export namespace API {
       //    shuffle
       // }
 
+      console.log(data);
+
       const result = await AssignScoutersToCompetitionMatches(
         data.teamId,
         data.compId,
         data.shuffle
       );
+
+      console.log(result);
       return res.status(200).send({ result: result });
     },
 
