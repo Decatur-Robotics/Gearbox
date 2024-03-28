@@ -60,22 +60,32 @@ export default function Profile(props: { teamList: Team[] }) {
     <Container requireAuthentication={true} hideMenu={false}>
       <Flex className="my-8 space-y-4" center={true} mode="col">
         <Card title={user?.name} coloredTop="bg-accent">
-          <Flex mode="row" className="space-x-4">
+          <Flex
+            mode="row"
+            className="space-x-4 max-sm:flex-col max-sm:items-center"
+          >
             <Avatar></Avatar>
             <div className="">
-              <h1 className="italic text-lg">Known as: {user?.slug}</h1>
-              <h1 className="text-lg">
-                <IoMail className="inline" size={24} /> {user?.email}
+              <h1 className="italic text-lg max-sm:text-sm">
+                Known as: {user?.slug}
+              </h1>
+              <h1 className="text-lg max-sm:text-sm">
+                <IoMail className="inline text-lg max-sm:text-md" />{" "}
+                {user?.email}
               </h1>
               <Flex mode="row" className="mt-4 space-x-2">
                 {member ? (
-                  <div className="badge badge-neutral">Team Member</div>
+                  <div className="badge badge-md md:badge-lg badge-neutral">
+                    Member
+                  </div>
                 ) : (
                   <></>
                 )}
 
                 {owner ? (
-                  <div className="badge badge-primary">Team Owner</div>
+                  <div className="badge badge-md md:badge-lg badge-primary">
+                    Team Owner
+                  </div>
                 ) : (
                   <></>
                 )}
@@ -117,11 +127,11 @@ export default function Profile(props: { teamList: Team[] }) {
               ) : (
                 <Card title="Add Team" className="bg-base-300 w-full">
                   <div className="divider"></div>
-                  <Flex mode="row">
-                    <div className="w-1/2">
+                  <Flex mode="row" className="max-sm:flex-col">
+                    <div className="w-1/2 max-sm:w-full">
                       <h1 className="font-semibold text-xl">Join a Team</h1>
                       <p className="mb-2">Select your Team</p>
-                      <div className="w-full h-48 bg-base-100 rounded-xl overflow-y-scroll flex flex-col items-center">
+                      <div className="w-full h-48 max-sm:h-fit py-2 bg-base-100 rounded-xl md:overflow-y-scroll max-sm:overflow-x-scroll flex flex-col max-sm:flex-row items-center">
                         {sentRequest ? (
                           <div className="alert alert-success w-full h-full text-white flex flex-col text-xl justify-center">
                             <IoCheckmarkCircle size={48}></IoCheckmarkCircle>
@@ -138,7 +148,7 @@ export default function Profile(props: { teamList: Team[] }) {
                               }}
                               key={team._id}
                             >
-                              <h1>
+                              <h1 className="max-sm:text-sm h-10">
                                 Team{" "}
                                 <span className="text-primary">
                                   {team.number}
@@ -149,11 +159,11 @@ export default function Profile(props: { teamList: Team[] }) {
                         )}
                       </div>
                     </div>
-                    <div className="divider divider-horizontal"></div>
+                    <div className="divider md:divider-horizontal max-sm:divider-vertical"></div>
                     <Flex className="w-1/2" center={true}>
                       <Link
                         href={"/createTeam"}
-                        className="btn btn-primary btn-wide text-white"
+                        className="btn btn-primary md:btn-wide text-white"
                       >
                         Create a Team
                       </Link>

@@ -12,10 +12,9 @@ export default function Card(props: CardProps) {
   const children = props.children;
   const color = props.coloredTop;
 
-
   return (
     <div
-      className={`card bg-base-200 shadow-xl w-2/3 max-sm:w-5/6 ${className}`}
+      className={`card bg-base-200 shadow-xl w-2/3 max-sm:w-full ${className}`}
     >
       {color ? (
         <div
