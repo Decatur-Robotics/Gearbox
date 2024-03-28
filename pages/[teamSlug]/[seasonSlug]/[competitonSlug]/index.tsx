@@ -575,7 +575,8 @@ export default function Home(props: ResolvedUrlData) {
                         <FaUserGroup size={40}></FaUserGroup>
                       </div>
                       <div className="stat-value text-primary">
-                        {!submittedPitreports ? "?" : submittedPitreports}/{!pitreports || pitreports.length === 0 ? "?" : pitreports.length}
+                        {!submittedPitreports && submittedPitreports !== 0 ? "?" : submittedPitreports}
+                        /{!pitreports || pitreports.length === 0 ? "?" : pitreports.length}
                       </div>
                     </div>
 
@@ -585,7 +586,7 @@ export default function Home(props: ResolvedUrlData) {
                       </div>
                       <div className="stat-title">Datapoints</div>
                       <div className="stat-value text-accent">
-                        {!submittedPitreports
+                        {!submittedPitreports && submittedPitreports !== 0
                           ? "?"
                           : (submittedPitreports * 8).toLocaleString()}
                         /
