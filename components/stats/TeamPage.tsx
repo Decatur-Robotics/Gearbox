@@ -1,4 +1,4 @@
-import { Competition, Defense, IntakeTypes, Report } from "@/lib/Types";
+import { Competition, Defense, Drivetrain, IntakeTypes, Pitreport, Report } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import {
@@ -14,23 +14,30 @@ import Heatmap from "@/components/stats/Heatmap";
 import TeamStats from "@/components/stats/TeamStats";
 import Summary from "@/components/stats/Summary";
 import SmallGraph from "@/components/stats/SmallGraph";
+import Loading from "../Loading";
 
 function TeamCard(props: {
   number: number;
   rank: number;
   reports: Report[];
+  pitReport: Pitreport;
   onClick: () => void;
   selected: boolean;
   compAvgPoints: number;
   compPointsStDev: number;
 }) {
+  const pitReport = props.pitReport;
+
   const avgPoints = AveragePoints(props.reports);
   const defense = MostCommonValue("Defense", props.reports);
-  const intake = MostCommonValue("IntakeType", props.reports);
+  const intake = pitReport?.intakeType; //MostCommonValue("IntakeType", props.reports);
   const cooperates = BooleanAverage("Coopertition", props.reports);
   const climbs = BooleanAverage("ClimbedStage", props.reports);
   const parks = BooleanAverage("ParkedStage", props.reports);
   const understage = BooleanAverage("UnderStage", props.reports);
+  const drivetrain = pitReport?.drivetrain ?? (
+    <Loading size={12} bg="" fill="text-base-300" className="mr-1" />
+  );
 
   let defenseBadgeColor = "outline";
   if (defense === Defense.Full)
@@ -39,12 +46,16 @@ function TeamCard(props: {
     defenseBadgeColor = "accent";
 
   let intakeBadgeColor = "outline";
-  if (intake === IntakeTypes.Both)
-    intakeBadgeColor = "primary";
-  else if (intake === IntakeTypes.Ground)
-    intakeBadgeColor = "accent";
-  else if (intake === IntakeTypes.Human)
-    intakeBadgeColor = "secondary";
+  if (pitReport?.submitted) {
+    if (intake === IntakeTypes.Both)
+      intakeBadgeColor = "primary";
+    else if (intake === IntakeTypes.Ground)
+      intakeBadgeColor = "accent";
+    else if (intake === IntakeTypes.Human)
+      intakeBadgeColor = "secondary";
+    else if (intake === IntakeTypes.None)
+      intakeBadgeColor = "warning";
+  }
 
   const pointsDiffFromAvg = Round(avgPoints - props.compAvgPoints);
   const pointsDiffFromAvgFormatted = pointsDiffFromAvg > 0 ? `+${pointsDiffFromAvg}` : pointsDiffFromAvg;
@@ -81,6 +92,11 @@ function TeamCard(props: {
     rankSuffix = "rd";
   }
 
+  let drivetrainColor = "outline";
+  if (pitReport?.submitted) {
+    drivetrainColor = pitReport?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
+  }
+
   return (
     <div
       className={`card w-full bg-base-300 py-0 ${
@@ -99,7 +115,7 @@ function TeamCard(props: {
             {defense} Defense
           </div>
           <div className={`badge badge-sm badge-${intakeBadgeColor}`}>
-            {intake} Intake
+            {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
           </div>
           { cooperates &&
             <div className="badge badge-sm badge-primary">Cooperates</div>}
@@ -109,19 +125,25 @@ function TeamCard(props: {
             <div className="badge badge-sm badge-accent">Parks</div>}
           { understage &&
             <div className="badge badge-sm badge-neutral">Small Profile</div>}
+          { drivetrain && 
+              <div className={`badge badge-sm badge-${drivetrainColor}`}>
+                {pitReport ? (pitReport?.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
+              </div>}
         </div>
       </div>
     </div>
   );
 }
 
-export default function TeamPage(props: { reports: Report[] }) {
+export default function TeamPage(props: { reports: Report[], pitReports: Pitreport[]}) {
   const reports = props.reports;
+  const pitReports: { [key: number]: Pitreport } = {};
 
   const [associatingTeams, setAssociatingTeams] = useState(true);
   const [teamReports, setTeamReports] = useState<{ [key: number]: Report[] }>(
     {}
   );
+
   const teamNumbers = Object.keys(teamReports);
 
   const [teamRanking, setTeamRanking] = useState<string[]>([]);
@@ -168,8 +190,13 @@ export default function TeamPage(props: { reports: Report[] }) {
     }
   });
 
+  // Associate pit reports
+  props.pitReports.forEach((pitReport) => {
+    pitReports[pitReport.teamNumber] = pitReport;
+  });
+
   return (
-    <div className="w-full h-full flex flex-row space-x-4">
+    <div className="w-full h-min flex flex-row space-x-4">
       <div className="w-1/5 h-[50rem] flex flex-col space-y-4 overflow-y-scroll">
         {teamRanking.map((number, index) => (
           <TeamCard
@@ -177,6 +204,7 @@ export default function TeamPage(props: { reports: Report[] }) {
             number={Number(number)}
             selected={selectedTeam === Number(number)}
             reports={teamReports[Number(number)]}
+            pitReport={pitReports[Number(number)]}
             rank={index + 1}
             onClick={() => {
               setSelectedTeam(Number(number));
@@ -190,6 +218,7 @@ export default function TeamPage(props: { reports: Report[] }) {
       <TeamStats
         selectedReports={selectedReports}
         selectedTeam={selectedTeam}
+        pitReport={pitReports[selectedTeam ?? 0]}
       ></TeamStats>
 
       <div className="w-5/12 h-full flex flex-col space-y-4">

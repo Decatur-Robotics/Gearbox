@@ -195,6 +195,7 @@ export class Pitreport {
   canScoreAmp: boolean = false;
   canScoreSpeaker: boolean = false
   comments: string = "";
+  submitted: boolean = false;
 
   constructor(teamNumber: number) {
     this.teamNumber = teamNumber;

@@ -45,6 +45,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
       canScoreAmp: pitreport.canScoreAmp,
       canScoreSpeaker: pitreport.canScoreSpeaker,
       comments: pitreport.comments,
+      submitted: true,
     });
     location.href = location.href.substring(
       0,

@@ -372,4 +372,8 @@ export default class ClientAPI {
     return await this.request("/teamCompRanking", { tbaId, team });
   }
 
+  async getPitReports(reportIds: string[]) {
+    return await this.request("/getPitReports", { reportIds });
+  }
+
 }

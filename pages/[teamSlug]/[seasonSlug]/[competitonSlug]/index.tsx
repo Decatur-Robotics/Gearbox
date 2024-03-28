@@ -177,7 +177,7 @@ export default function Home(props: ResolvedUrlData) {
       let submitted = 0;
       for (const pitreportId of comp?.pitReports) {
         const pitreport = await api.findPitreportById(pitreportId);
-        if (pitreport.comments.length > 2) {
+        if (pitreport.submitted) {
           submitted++;
         }
         newPitReports.push(pitreport);
@@ -792,7 +792,7 @@ export default function Home(props: ResolvedUrlData) {
                               No Image
                             </div>
                           )} */}
-                          {report.comments.length > 2 ? (
+                          {report.submitted ? (
                             <FaCheck size={64} />
                           ) : (
                             <FaRobot size={64} />
