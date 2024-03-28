@@ -1,12 +1,18 @@
+console.log("Starting server...");
+
 const { createServer } = require("https");
 const { parse } = require("url");
 const next = require("next");
 const fs = require("fs");
 
+console.log("Imports compete");
+
 const dev = process.env.NODE_ENV !== "production";
 const port = dev ? 3000 : 443;
 const app = next({ dev });
 const handle = app.getRequestHandler();
+
+console.log("Constants set");
 
 const httpsOptions = {
   key: dev
@@ -17,12 +23,17 @@ const httpsOptions = {
     : fs.readFileSync("./certs/production.pem"),
 };
 
+console.log("HTTPS options set");
+
 app.prepare().then(() => {
   createServer(httpsOptions, async (req, res) => {
     const parsedUrl = parse(req.url, true);
     await handle(req, res, parsedUrl);
   }).listen(port, (err) => {
-    if (err) throw err;
+    if (err) {
+      console.error(err);
+      throw err;
+    }
     console.log(
       process.env.NODE_ENV +
         " HTTPS Server Running At: https://localhost:" +
@@ -30,3 +41,5 @@ app.prepare().then(() => {
     );
   });
 });
+
+console.log("App prepared");
