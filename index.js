@@ -41,6 +41,9 @@ app.prepare().then(() => {
         " HTTPS Server Running At: https://localhost:" +
         port,
     );
+  }).on("error", (err) => {
+    console.log(err);
+    throw err;
   });
 
   console.log("Server created. Listening: " + server.listening);
