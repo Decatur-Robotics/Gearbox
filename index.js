@@ -26,6 +26,8 @@ const httpsOptions = {
 console.log("HTTPS options set");
 
 app.prepare().then(() => {
+  console.log("App prepared. Creating server...");
+
   createServer(httpsOptions, async (req, res) => {
     const parsedUrl = parse(req.url, true);
     await handle(req, res, parsedUrl);
@@ -42,4 +44,4 @@ app.prepare().then(() => {
   });
 });
 
-console.log("App prepared");
+console.log("App preparing...");
