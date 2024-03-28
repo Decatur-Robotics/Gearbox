@@ -16,7 +16,7 @@ export default function Footer() {
     <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
       <aside className="max-sm:pl-8 flex flex-col -space-x-4">
         <p className="text-lg">
-          Version 0.1.2 made with <span className="">❤️</span> by{" "}
+          Version 0.1.3 made with <span className="">❤️</span> by{" "}
           <a
             href="https://www.decaturrobotics.org/"
             className="inline-block text-bold text-accent"
