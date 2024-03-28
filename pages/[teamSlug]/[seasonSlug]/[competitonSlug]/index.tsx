@@ -57,15 +57,17 @@ export default function Home(props: ResolvedUrlData) {
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   const [submissionRate, setSubmissionRate] = useState(0);
-  const [submittedReports, setSubmittedReports] = useState(0);
+  const [submittedReports, setSubmittedReports] = useState<number | undefined>(undefined);
 
   const [pitreports, setPitreports] = useState<Pitreport[]>([]);
   const [loadingPitreports, setLoadingPitreports] = useState(true);
+
   const [submittedPitreports, setSubmittedPitreports] = useState(0);
   const [
     attemptedRegeneratingPitReports,
     setAttemptedRegeneratingPitReports,
   ] = useState(false);
+
 
   const [updatingComp, setUpdatingComp] = useState("");
 
@@ -247,7 +249,7 @@ export default function Home(props: ResolvedUrlData) {
         }
         for (const id of match.reports) {
           const r = reportsById[id];
-          if (!r.submitted) {
+          if (!r?.submitted) {
             s = false;
             console.log("broke");
             break;
@@ -334,33 +336,20 @@ export default function Home(props: ResolvedUrlData) {
             </div>
           </div>
 
-          <div className="w-full card rounded-tl-none bg-base-200 shadow-xl">
-            <div
-              role="tablist"
-              className="tabs tabs-boxed rounded-b-none bg-base-200 w-1/2 max-sm:w-full -translate-y-10"
-            >
-              <a
-                role="tab"
-                className={`tab ${!showSettings ? "tab-active" : ""}`}
-                onClick={() => {
-                  setShowSettings(false);
-                }}
+          <div className="w-full card bg-base-200 shadow-xl">
+            <div className="card-body w-full">
+              <div
+                role="tablist"
+                className="mt-3 tabs tabs-boxed rounded-b-none bg-base-200 w-full max-sm:w-full -translate-y-10"
               >
-                Scouting Insights
-              </a>
-              {isManager ? (
                 <a
                   role="tab"
-                  className={`tab ${showSettings ? "tab-active" : ""}`}
+                  className={`tab ${!showSettings ? "tab-active" : ""}`}
                   onClick={() => {
-                    setShowSettings(true);
+                    setShowSettings(false);
                   }}
                 >
-                  Settings
-                </a>
-              ) : (
-                <a role="tab" className="tab tab-disabled">
-                  Settings
+                  Scouting Insights
                 </a>
               )}
             </div>
@@ -499,19 +488,64 @@ export default function Home(props: ResolvedUrlData) {
                         }}
                       />
                     </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center">
-                  <input
-                    type="text"
-                    placeholder="Match Number"
-                    className="input input-md input-bordered w-1/4"
-                    value={matchNumber}
-                    onChange={(e) => {
-                      setMatchNumber(Number(e.target.value));
+                {isManager ? (
+                  <a
+                    role="tab"
+                    className={`tab ${showSettings ? "tab-active" : ""}`}
+                    onClick={() => {
+                      setShowSettings(true);
                     }}
-                  ></input>
-                </div>
+                  >
+                    Settings
+                  </a>
+                ) : (
+                  <a role="tab" className="tab tab-disabled">
+                    Settings
+                  </a>
+                )}
+              </div>
+              <div className="divider"></div>
+              {showSettings ? (
+                <div className="w-full">
+                  <h1 className="font-semibold text-xl">Settings</h1>
+                  <div className="flex flex-col space-y-2 mt-1">
+                    <button
+                      onClick={reloadCompetition}
+                      className="btn btn-md btn-primary w-full"
+                    >
+                      <FaSync></FaSync> Refresh
+                    </button>
+                    <button
+                      className={
+                        "btn btn-primary w-full " +
+                        (assigningMatches ? "disabled" : "")
+                      }
+                      // disabled={true}
+                      onClick={() => confirm("Are you sure? This cannot be undone!") && assignScouters()}
+                    >
+                      {!assigningMatches ? (
+                        "Re-Assign Matches"
+                      ) : (
+                        <BsGearFill
+                          className="animate-spin-slow"
+                          size={30}
+                        ></BsGearFill>
+                      )}
+                    </button>
+
+                    <button
+                      className={`btn ${
+                        exportPending ? "btn-disabled" : "btn-primary"
+                      } `}
+                      onClick={exportAsCsv}
+                    >
+                      {exportPending ? (
+                        <div className="loading loading-bars loading-sm"></div>
+                      ) : (
+                        "Export Scouting Data as CSV"
+                      )}
+                    </button>
+                  </div>
 
                 <button
                   className="btn btn-accent"
@@ -537,23 +571,147 @@ export default function Home(props: ResolvedUrlData) {
                         ? Round(submittedReports / reports.length) * 100
                         : "?"}
                       %
+                  {/* <button
+                    className="btn btn-warning"
+                    onClick={() => {
+                      if (confirm("Are you sure you want to regenerate pit reports? Doing so will overwrite existing pit reports."))
+                        regeneratePitReports();
+                    }}
+                    >
+                      Regenerate Pit Reports
+                  </button> */}
+
+                  <div className="divider"></div>
+                  <h1 className="font-semibold">Manually add matches</h1>
+
+                  <div className="flex flex-row">
+                    <div className="w-1/2 flex flex-col items-center">
+                      <h1 className="text-red-500 font-bold text-xl">Red</h1>
+                      <div className="flex flex-row items-center justify-evenly">
+                        <input
+                          type="text"
+                          placeholder="Team 1"
+                          className="input input-sm  input-bordered w-1/4"
+                          value={redAlliance[0]}
+                          onChange={(e) => {
+                            const c = structuredClone(redAlliance);
+                            c[0] = Number(e.target.value);
+                            setRedAlliance(c);
+                          }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Team 2"
+                          className="input input-sm  input-bordered w-1/4"
+                          value={redAlliance[1]}
+                          onChange={(e) => {
+                            const c = structuredClone(redAlliance);
+                            c[1] = Number(e.target.value);
+                            setRedAlliance(c);
+                          }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Team 3"
+                          className="input input-sm  input-bordered w-1/4"
+                          value={redAlliance[2]}
+                          onChange={(e) => {
+                            const c = structuredClone(redAlliance);
+                            c[2] = Number(e.target.value);
+                            setRedAlliance(c);
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="stat-desc"></div>
+                    <div className="w-1/2 flex flex-col items-center">
+                      <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
+                      <div className="flex flex-row items-center justify-evenly">
+                        <input
+                          type="text"
+                          placeholder="Team 1"
+                          className="input input-sm  input-bordered w-1/4"
+                          value={blueAlliance[0]}
+                          onChange={(e) => {
+                            const c = structuredClone(blueAlliance);
+                            c[0] = Number(e.target.value);
+                            setBlueAlliance(c);
+                          }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Team 2"
+                          className="input input-sm  input-bordered w-1/4"
+                          value={blueAlliance[1]}
+                          onChange={(e) => {
+                            const c = structuredClone(blueAlliance);
+                            c[1] = Number(e.target.value);
+                            setBlueAlliance(c);
+                          }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Team 3"
+                          className="input input-sm  input-bordered w-1/4"
+                          value={blueAlliance[2]}
+                          onChange={(e) => {
+                            const c = structuredClone(blueAlliance);
+                            c[2] = Number(e.target.value);
+                            setBlueAlliance(c);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="text"
+                      placeholder="Match #"
+                      className="input input-md input-bordered w-1/3 mt-2"
+                      value={matchNumber}
+                      onChange={(e) => {
+                        setMatchNumber(Number(e.target.value));
+                      }}
+                    ></input>
                   </div>
 
-                  <div className="stat space-y-2">
-                    <div className="stat-figure text-primary">
-                      <FaUserCheck size={65}></FaUserCheck>
-                    </div>
-                    <div className="stat-title text-slate-400">
-                      Scouter Submission
-                    </div>
-                    {loadingScoutStats ? (
-                      <div className="stat-value text-primary">
-                        <BsGearFill size={45} className="animate-spin-slow" />
+                  <button
+                    className="btn btn-accent w-full mt-2"
+                    disabled={!matchNumber}
+                    onClick={createMatch}
+                  >
+                    Create
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <h1 className="font-semibold text-lg">Scouting Progress</h1>
+                  <div className="stats bg-base-300 w-full shadow-xl">
+                    <div className="stat space-y-2">
+                      <div className="stat-figure text-accent">
+                        <BsClipboard2Check size={65}></BsClipboard2Check>
                       </div>
-                    ) : (
-                      <div>
+                      <div className="stat-title text-slate-400">
+                        Competition Progress
+                      </div>
+                      <div className="stat-value text-accent">
+                        {submittedReports && !Number.isNaN(submittedReports)
+                          ? Round(
+                              submittedReports / reports.length
+                            ) * 100
+                          : "?"}
+                        %
+                      </div>
+                      <div className="stat-desc"></div>
+                    </div>
+
+                    <div className="stat space-y-2">
+                      <div className="stat-figure text-primary">
+                        <FaUserCheck size={65}></FaUserCheck>
+                      </div>
+                      <div className="stat-title text-slate-400">
+                        Scouter Submission
+                      </div>
+                      {loadingScoutStats ? (
                         <div className="stat-value text-primary">
                           {!Number.isNaN(submittedReports)
                             ? Round(submittedReports / reports.length) * 100
@@ -577,27 +735,60 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="stat-value text-primary">
                       {!submittedPitreports ? "?" : submittedPitreports}/
                       {!pitreports ? "?" : pitreports.length}
+
+                          <BsGearFill size={45} className="animate-spin-slow" />
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="stat-value text-primary">
+                            {submittedReports && !Number.isNaN(submittedReports)
+                              ? Round(
+                                  submittedReports / reports.length
+                                ) * 100
+                              : "?"}
+                            %
+                          </div>
+                          <div className="stat-desc">
+                            {submittedReports}/{reports.length}{" "}
+                            Reports
+                          </div>
+                        </div>
+                      )}
+
                     </div>
                   </div>
-
-                  <div className="stat place-items-center">
-                    <div className="stat-figure text-accent">
-                      <FaDatabase size={40}></FaDatabase>
+                  <h1 className="font-semibold text-lg">Pitscouting Progress</h1>
+                  <div className="stats mt-2 w-full">
+                    <div className="stat place-items-center">
+                      <div className="stat-title">Teams</div>
+                      <div className="stat-figure text-primary">
+                        <FaUserGroup size={40}></FaUserGroup>
+                      </div>
+                      <div className="stat-value text-primary">
+                        {!submittedPitreports && submittedPitreports !== 0 ? "?" : submittedPitreports}
+                        /{!pitreports || pitreports.length === 0 ? "?" : pitreports.length}
+                      </div>
                     </div>
-                    <div className="stat-title">Datapoints</div>
-                    <div className="stat-value text-accent">
-                      {!submittedPitreports
-                        ? "?"
-                        : (submittedPitreports * 8).toLocaleString()}
-                      /
-                      {!pitreports
-                        ? "?"
-                        : (pitreports.length * 8).toLocaleString()}
+
+                    <div className="stat place-items-center">
+                      <div className="stat-figure text-accent">
+                        <FaDatabase size={40}></FaDatabase>
+                      </div>
+                      <div className="stat-title">Datapoints</div>
+                      <div className="stat-value text-accent">
+                        {!submittedPitreports && submittedPitreports !== 0
+                          ? "?"
+                          : (submittedPitreports * 8).toLocaleString()}
+                        /
+                        {!pitreports || pitreports.length === 0
+                          ? "?"
+                          : (pitreports.length * 8).toLocaleString()}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -807,6 +998,7 @@ export default function Home(props: ResolvedUrlData) {
                               No Image
                             </div>
                           )} */}
+
                             {report.submitted ? (
                               <FaCheck size={64} />
                             ) : (

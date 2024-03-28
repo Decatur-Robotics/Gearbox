@@ -217,6 +217,7 @@ export class Pitreport {
   underBumperIntake: boolean = false;
   autoNotes: number = 0;
   comments: string = "";
+  submitted: boolean = false;
 
   constructor(teamNumber: number) {
     this.teamNumber = teamNumber;
@@ -258,7 +259,7 @@ export enum AllianceColor {
   Red = "Red",
   Blue = "Blue",
 }
-export type Alliance = [];
+export type Alliance = number[];
 
 export enum MatchType {
   Qualifying = "Qualifying",
