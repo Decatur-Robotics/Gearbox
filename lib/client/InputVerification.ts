@@ -3,7 +3,6 @@ export const MinimumNameLength = 3;
 
 export function validName(name: string): boolean {
   if (!name.match(/^[a-z ,.'-]+$/i)) {
-    console.log("eee");
     return false;
   }
 
@@ -17,7 +16,7 @@ export function validName(name: string): boolean {
 export function validEmail(email: string): boolean {
   if (
     !email.match(
-      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     )
   ) {
     return false;

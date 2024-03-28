@@ -1,13 +1,9 @@
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { GetServerSideProps } from "next";
-import UrlResolver, {
-  ResolvedUrlData,
-  SerializeDatabaseObject,
-} from "@/lib/UrlResolver";
+import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
 import { GetDatabase, Collections } from "@/lib/MongoDB";
-import { Competition, Report } from "@/lib/Types";
+import { Competition, Pitreport, Report } from "@/lib/Types";
 import { useEffect, useState } from "react";
 import TeamPage from "@/components/stats/TeamPage";
 import PicklistScreen from "@/components/stats/Picklist";
@@ -15,35 +11,49 @@ import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import {
-  AveragePoints,
-  StandardDeviation,
-  TotalPoints,
-} from "@/lib/client/StatsMath";
+
 const api = new ClientAPI("gearboxiscool");
 
-export default function Stats(props: {
+type StatsPageProps = {
   reports: Report[];
+  pitreports: Pitreport[];
   competition: Competition;
   time: number;
-}) {
-  const { session, status } = useCurrentSession();
-  const hide = status === "authenticated";
+};
 
+export default function Stats(props: StatsPageProps) {
   const [update, setUpdate] = useState(props.time);
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
+  const [pitReports, setPitReports] = useState(props.pitreports);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
-    setInterval(() => {
+    const i = setInterval(() => {
       resync();
     }, 15000);
+    return () => {
+      clearInterval(i);
+    };
   });
 
   const resync = async () => {
     setUpdating(true);
-    setReports(await api.competitionReports(props.competition._id, true));
+
+    const promises = [
+      api
+        .competitionReports(props.competition._id, true)
+        .then((data) => setReports(data)),
+      pitReports.length === 0 &&
+        props.competition.pitReports.map((id) =>
+          api
+            .findPitreportById(id)
+            .then((data) => setPitReports((prev) => [...prev, data]))
+        ),
+    ].flat();
+
+    await Promise.all(promises);
+
     setUpdate(Date.now());
     setUpdating(false);
   };
@@ -51,7 +61,7 @@ export default function Stats(props: {
   return (
     <Container
       requireAuthentication={false}
-      hideMenu={!hide}
+      hideMenu={true}
       notForMobile={true}
     >
       <div role="tablist" className="tabs tabs-boxed">
@@ -84,18 +94,22 @@ export default function Stats(props: {
         >
           Prediction (Coming Soon!)
         </a>
-        <a role="tab" className={`tab tab-md `} onClick={resync}>
-          Resync{" "}
+        {/* <a role="tab" className={`tab tab-md `} onClick={resync}>
+          Resync {" "}
           <span className={`ml-2 ${updating ? "animate-spin" : ""}`}>
             <FaSync></FaSync>
           </span>{" "}
           <span className="italic text-sm ml-2">
             (Last Updated: {TimeString(update)})
           </span>
-        </a>
+        </a> */}
       </div>
 
-      {page === 0 ? <TeamPage reports={reports}></TeamPage> : <></>}
+      {page === 0 ? (
+        <TeamPage reports={reports} pitReports={pitReports}></TeamPage>
+      ) : (
+        <></>
+      )}
       {page === 1 ? <PicklistScreen reports={reports}></PicklistScreen> : <></>}
     </Container>
   );
@@ -104,12 +118,19 @@ export default function Stats(props: {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await GetDatabase();
   const url = await UrlResolver(context);
-  const dbReports = await db.findObjects<Report>(Collections.Reports, {
+  const reports = await db.findObjects<Report>(Collections.Reports, {
     match: { $in: url.competition?.matches },
     submitted: true,
   });
-  const reports = dbReports.map((report) => SerializeDatabaseObject(report));
+  // const pitreports = await db.findObjects<Pitreport>(Collections.Pitreports, {
+  //   _id: { $in: url.competition?.pitReports },
+  // });
   return {
-    props: { reports: reports, competition: url.competition, time: Date.now() },
+    props: {
+      reports: SerializeDatabaseObjects(reports),
+      competition: url.competition,
+      time: Date.now(),
+      pitreports: [],
+    },
   };
 };

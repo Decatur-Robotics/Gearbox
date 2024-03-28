@@ -35,8 +35,6 @@ export async function AssignScoutersToCompetitionMatches(
 
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
 
-  
-
   for (const matchId of matchIds) {
     await AssignScoutersToMatch(matchId, scouters);
     RotateArray(scouters);
@@ -57,34 +55,53 @@ export async function AssignScoutersToMatch(
     new ObjectId(matchId),
   );
 
-  for(const rep of match.reports) {
-    await db.deleteObjectById(Collections.Reports, new ObjectId(rep));
-  }
+  const existingReportPromises = match.reports.map((r) =>
+    db.findObjectById<Report>(Collections.Reports, new ObjectId(r)));
+  const existingReports = await Promise.all(existingReportPromises);
     
   const bots = match.blueAlliance.concat(match.redAlliance);
 
-  var newReports = [];
+  const reports = [];
   for (let i = 0; i < 6; i++) {
+    const teamNumber = bots[i];
     const scouter = scouters[i];
-    const color = match.blueAlliance.includes(bots[i])
+    const color = match.blueAlliance.includes(teamNumber)
       ? AllianceColor.Blue
       : AllianceColor.Red;
-    const newReport = new Report(
-      scouter,
-      new FormData(),
-      bots[i],
-      color,
-      String(match._id),
-      0,
-      false,
-    );
 
-    newReports.push(
-      String((await db.addObject<Report>(Collections.Reports, newReport))._id),
-    );
+    const oldReport = existingReports.find((r) => r.robotNumber === teamNumber);
+
+    if (!oldReport) {
+      // Create a new report
+
+      const newReport = new Report(
+        scouter,
+        new FormData(),
+        teamNumber,
+        color,
+        String(match._id),
+        0,
+        false,
+      );
+
+      reports.push(
+        String((await db.addObject<Report>(Collections.Reports, newReport))._id),
+      );
+    }
+    else {
+      // Update existing report
+      oldReport.user = scouter;
+
+      const updated = await db.updateObjectById<Report>(
+        Collections.Reports,
+        new ObjectId(oldReport._id),
+        oldReport,
+      );
+      reports.push(oldReport._id);
+    }
   }
 
-  match.reports = newReports;
+  match.reports = reports.filter((r) => r !== undefined) as string[];
   await db.updateObjectById<Match>(
     Collections.Matches,
     new ObjectId(matchId),

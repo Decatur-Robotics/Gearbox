@@ -1,368 +1,193 @@
-import { validEmail, validName } from "@/lib/client/InputVerification";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import { Team, User } from "@/lib/Types";
+import { Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
+import Flex from "@/components/Flex";
+import Card from "@/components/Card";
+import Avatar from "@/components/Avatar";
+import { IoCheckmarkCircle, IoMail } from "react-icons/io5";
+import Loading from "@/components/Loading";
+import { FaPlus } from "react-icons/fa";
+import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { GetServerSideProps } from "next";
+import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import TeamCard from "@/components/TeamCard";
+import { ChangesModal } from "@/components/Modal";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Profile() {
+export default function Profile(props: { teamList: Team[] }) {
   const { session, status } = useCurrentSession();
+  const user = session?.user;
+  const teamList = props.teamList;
 
-  // Top User Card
-  const userImageUrl = session?.user?.image || "/user.jpg";
+  const owner = user?.owner ? user?.owner.length > 0 : false;
+  const member = user?.teams ? user.teams.length > 0 : false;
 
-  var teamMember = false;
-  var teamOwner = false;
-  var admin = false;
-
-  if (session?.user) {
-    teamMember = session?.user?.teams.length > 0;
-    teamOwner = session?.user?.owner.length > 0;
-    admin = session?.user?.admin;
-  }
-
-  // switch between main/settings
-  const [showSettings, setShowSettings] = useState(false);
-
-  //main
-
-  
-
-  const Main = () => {
-    const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [teams, setTeams] = useState<Team[]>([]);
-  
+  const [loadingTeams, setLoadingTeams] = useState(true);
+  const [loadingRequest, setLoadingRequest] = useState(false);
+  const [sentRequest, setSentRequest] = useState(false);
+
+  const [addTeam, setAddTeam] = useState(false);
 
   useEffect(() => {
     const loadTeams = async () => {
-      if (!session?.user) {
-        return;
-      }
       setLoadingTeams(true);
       var newTeams: Team[] = [];
-
-      for (const id in session.user.teams) {
-        newTeams.push(await api.findTeamById(session.user.teams[id]));
+      for (const id in user?.teams) {
+        newTeams.push(await api.findTeamById(user?.teams[Number(id)]));
       }
-
       setTeams(newTeams);
       setLoadingTeams(false);
     };
 
-    if (teams.length === 0) {
+    if (user?.teams) {
       loadTeams();
     }
-  }, []);
-  
-    const [teamNumber, setTeamNumber] = useState<number>();
-    const [foundTeam, setFoundTeam] = useState<Team>();
-    const [request, setRequest] = useState();
+  }, [session?.user]);
 
-    const findTeam = async (num: number) => {
-      setTeamNumber(num);
-      const team = await api.findTeamByNumber(num);
-      setFoundTeam(Object.keys(team).length > 0 ? team : undefined);
-    };
-
-    const requestTeam = async () => {
-      setRequest(await api.teamRequest(session?.user?._id, foundTeam?._id));
-      setFoundTeam(undefined);
-      setTeamNumber(undefined);
-    };
-
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title text-3xl">Your Teams</h2>
-          <p className="">Navigate to your current Team</p>
-
-          <div className="flex flex-col items-center mt-4">
-            <div className="w-full p-4 min-h-max bg-base-300 rounded-lg">
-              {!teamMember ? (
-                <p>
-                  No Teams -{" "}
-                  <a href="#join" className="text-accent">
-                    Join a Team
-                  </a>
-                </p>
-              ) : (
-                <></>
-              )}
-              {loadingTeams ? (
-                <span className="loading loading-spinner loading-lg"></span>
-              ) : (
-                <></>
-              )}
-              {teams.map((team, index) => (
-                <a href={`/${team.slug}`} key={team._id}>
-                  <div className="card w-full bg-base-200 shadow-xl mt-2">
-                    <div className="card-body">
-                      <h2 className="card-title text">
-                        {team.name}{" "}
-                        <span className="text-accent">#{team.number}</span>
-                      </h2>
-
-                      <p className="italic">Recently Updated</p>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="divider">OR</div>
-
-        <div className="card-body" id="join">
-          <h2 className="card-title text-3xl">Join a Team</h2>
-          <p className="">
-            Your Team does not exist?{" "}
-            <Link href="/createTeam" className="text-accent">
-              Create It!
-            </Link>
-          </p>
-          <div className="flex flex-row items-center mt-4 space-x-2">
-            <input
-              type="number"
-              placeholder="Team Number"
-              value={teamNumber}
-              onChange={(e) => {
-                findTeam(e.target.valueAsNumber);
-              }}
-              className="input input-bordered input-primary w-full max-w-xs"
-            />
-          </div>
-
-          {foundTeam ? (
-            <div>
-              <p>Results:</p>
-              <span className="text-accent text-lg">
-                <h1>
-                  {foundTeam.name} - {foundTeam.number}
-                </h1>
-              </span>
-              {!session?.user?.teams.includes(
-                foundTeam._id ? foundTeam._id : "",
-              ) ? (
-                <button
-                  className="btn btn-secondary normal-case"
-                  onClick={requestTeam}
-                >
-                  Request to Join
-                </button>
-              ) : (
-                <button className="btn btn-disabled normal-case">
-                  Already Joined
-                </button>
-              )}
-            </div>
-          ) : (
-            <p className="text-warning">
-              {teamNumber ? "Team does not exist" : ""}
-            </p>
-          )}
-
-          {request ? (
-            <div className="alert alert-success">
-              <span>Team Request Sent!</span>
-            </div>
-          ) : (
-            <></>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // settings
-
-  const Settings = () => {
-    const [nameChange, setNameChange] = useState(session?.user?.name);
-    const [emailChange, setEmailChange] = useState(session?.user?.email);
-    const [newPicUrl, setNewPicUrl] = useState<string>(userImageUrl);
-    const [newSlackId, setNewSlackId] = useState<string>();
-
-    useEffect(() => {
-      setNameChange(session?.user?.name);
-      setEmailChange(session?.user?.email);
-    }, [session]);
-
-    const [settingsError, setSettingsError] = useState("");
-
-    const changePFP = async () => {
-      api.changePFP(session?.user?._id, newPicUrl);
-    };
-
-    const changeSlackId = async () => {
-      api.setSlackId(session?.user?._id, newSlackId);
-    };
-
-    const updateSettings = async () => {
-      setSettingsError("");
-      if (!validName(nameChange as string)) {
-        setSettingsError("Invalid Name");
-        return;
-      }
-
-      if (!validEmail(emailChange as string)) {
-        setSettingsError("Invalid Email");
-        return;
-      }
-
-      if (!newPicUrl || newPicUrl.length < 10) {
-        setSettingsError("Invalid Image URL");
-        return;
-      }
-
-      await api.updateUser(
-        { name: nameChange, email: emailChange },
-        session?.user?._id as string,
-      );
-      changePFP();
-      location.reload();
-    };
-
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title text-3xl">Settings</h2>
-          <p className="">Modify and Update Your Profile Information</p>
-
-          <p className="text-sm">
-            Login Information is not stored by Gearbox, it is provided by your{" "}
-            <span className="text-accent">Sign-In Provider</span>
-          </p>
-
-          <p className="text-error">{settingsError}</p>
-
-          <label className="mt-4">Name: </label>
-          <input
-            type="text"
-            placeholder="Name"
-            value={nameChange}
-            onChange={(e) => {
-              setNameChange(e.target.value);
-            }}
-            className="input input-bordered w-full max-w-xs"
-          />
-
-          <label className="mt-2">Email: </label>
-          <input
-            type="email"
-            placeholder="Email"
-            value={emailChange}
-            onChange={(e) => {
-              setEmailChange(e.target.value);
-            }}
-            className="input input-bordered w-full max-w-xs"
-          />
-
-          <br />
-          <label className="mt-2">Profile Picture:</label>
-          <img
-            src={session?.user?.image}
-            height="100"
-            width="100"
-            className="ms-2 rounded-full"
-          ></img>
-          <input
-            type="text"
-            value={newPicUrl}
-            onChange={(e) => {
-              setNewPicUrl(e.target.value);
-            }}
-            className="input input-bordered w-full max-w-xs"
-          ></input>
-          <div className="card-actions justify-start">
-            <button
-              className="btn btn-primary normal mt-5"
-              onClick={updateSettings}
-            >
-              Update Settings
-            </button>
-          </div>
-          <br />
-        </div>
-      </div>
-    );
+  const requestTeam = async (teamId: string) => {
+    setLoadingRequest(true);
+    await api.teamRequest(user?._id, teamId);
+    setLoadingRequest(false);
+    setSentRequest(true);
   };
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
-        <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
-          <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>
-          <div className="card-body">
-            <div className="avatar">
-              <div className="w-20 rounded-full">
-                <img src={userImageUrl} alt="Profile Picture" />
-              </div>
+      <ChangesModal></ChangesModal>
+      <Flex className="my-8 space-y-4" center={true} mode="col">
+        <Card title={user?.name} coloredTop="bg-accent">
+          <div className="divider"></div>
+          <Flex
+            mode="row"
+            className="space-x-4 max-sm:flex-col max-sm:items-center"
+          >
+            <Avatar></Avatar>
+            <div className="">
+              <h1 className="italic text-lg max-sm:text-sm">
+                Known as: {user?.slug}
+              </h1>
+              <h1 className="text-lg max-sm:text-sm">
+                <IoMail className="inline text-lg max-sm:text-md" />{" "}
+                {user?.email}
+              </h1>
+              <Flex mode="row" className="mt-4 space-x-2">
+                {member ? (
+                  <div className="badge badge-md md:badge-lg badge-neutral">
+                    Member
+                  </div>
+                ) : (
+                  <></>
+                )}
+
+                {owner ? (
+                  <div className="badge badge-md md:badge-lg badge-primary">
+                    Team Owner
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </Flex>
             </div>
+          </Flex>
+        </Card>
 
-            <h2 className="card-title">
-              {session?.user?.name}{" "}
-              <Link
-                href={"/api/auth/signout"}
-                className="btn btn-sm btn-outline"
-              >
-                Sign Out
-              </Link>
-            </h2>
-            <p className="italic">Known as: {session?.user?.slug}</p>
+        <Card title="Your Teams">
+          <p>Select your current team:</p>
+          <div className="divider mt-2" />
+          <div className="w-full h-full">
+            {loadingTeams ? (
+              <Loading></Loading>
+            ) : (
+              <Flex mode="col" center={true} className="space-y-2">
+                {teams.map((team) => (
+                  <Link
+                    href={"/" + team.slug}
+                    className="w-full"
+                    key={team._id}
+                  >
+                    <TeamCard team={team} />
+                  </Link>
+                ))}
+              </Flex>
+            )}
 
-            <div className="card-actions justify-start">
-              {teamMember ? (
-                <div className="badge badge-neutral">Team Member</div>
+            <Flex center={true} className="mt-8">
+              {!addTeam ? (
+                <button
+                  className="btn btn-circle bg-primary"
+                  onClick={() => {
+                    setAddTeam(true);
+                  }}
+                >
+                  <FaPlus className="text-white"></FaPlus>
+                </button>
               ) : (
-                <></>
+                <Card title="Add Team" className="bg-base-300 w-full">
+                  <div className="divider"></div>
+                  <Flex mode="row" className="max-sm:flex-col">
+                    <div className="w-1/2 max-sm:w-full">
+                      <h1 className="font-semibold text-xl">Join a Team</h1>
+                      <p className="mb-2">Select your Team</p>
+                      <div className="w-full h-48 max-sm:h-fit py-2 bg-base-100 rounded-xl md:overflow-y-scroll max-sm:overflow-x-scroll flex flex-col max-sm:flex-row items-center">
+                        {sentRequest ? (
+                          <div className="alert alert-success w-full h-full text-white flex flex-col text-xl justify-center">
+                            <IoCheckmarkCircle size={48}></IoCheckmarkCircle>
+                            Team Request Sent
+                          </div>
+                        ) : loadingRequest ? (
+                          <Loading></Loading>
+                        ) : (
+                          teamList.map((team) => (
+                            <div
+                              className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
+                              onClick={() => {
+                                requestTeam(String(team._id));
+                              }}
+                              key={team._id}
+                            >
+                              <h1 className="max-sm:text-sm h-10">
+                                Team{" "}
+                                <span className="text-primary">
+                                  {team.number}
+                                </span>
+                              </h1>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                    <div className="divider md:divider-horizontal max-sm:divider-vertical"></div>
+                    <Flex className="w-1/2" center={true}>
+                      <Link
+                        href={"/createTeam"}
+                        className="btn btn-primary md:btn-wide text-white"
+                      >
+                        Create a Team
+                      </Link>
+                    </Flex>
+                  </Flex>
+                </Card>
               )}
-              {teamOwner ? (
-                <div className="badge badge-primary">Team Owner</div>
-              ) : (
-                <></>
-              )}
-              {admin ? (
-                <div className="badge badge-secondary">Admin</div>
-              ) : (
-                <></>
-              )}
-            </div>
+            </Flex>
           </div>
-        </div>
-
-        <div className="flex flex-row justify-start w-5/6 ">
-          <div className="w-full lg:w-1/3 join grid grid-cols-2 ">
-            <button
-              className={
-                "join-item btn btn-outline normal-case" +
-                (!showSettings ? " btn-active" : "")
-              }
-              onClick={() => {
-                setShowSettings(false);
-              }}
-            >
-              Main
-            </button>
-            <button
-              className={
-                "join-item btn btn-outline normal-case" +
-                (showSettings ? " btn-active" : "")
-              }
-              onClick={() => {
-                setShowSettings(true);
-              }}
-            >
-              Settings
-            </button>
-          </div>
-        </div>
-
-        {!showSettings ? <Main></Main> : <Settings></Settings>}
-      </div>
+        </Card>
+      </Flex>
     </Container>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const db = await GetDatabase();
+  const teams = await db.findObjects(Collections.Teams, {});
+  const serializedTeams = teams.map((team) => SerializeDatabaseObject(team));
+
+  return {
+    props: { teamList: serializedTeams },
+  };
+};

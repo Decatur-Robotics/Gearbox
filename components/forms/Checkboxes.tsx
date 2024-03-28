@@ -32,11 +32,11 @@ export default function Checkbox(props: CheckboxProps) {
 
 export function IntakeType(props: RadioProps) {
   return (
-    <div className="w-full grid grid-cols-2 grid-rows-4 align-left  text-md md:text-xl">
+    <div className=" font-mono w-full grid grid-cols-2 grid-rows-4 align-left  text-md md:text-xl">
       <span>No Intake: </span>
       <input
         type="radio"
-        className="radio radio-primary ml-10"
+        className="radio radio-neutral-content ml-10"
         onClick={() => {
           props.callback("intakeType", IntakeTypes.None);
         }}
@@ -75,7 +75,7 @@ export function IntakeType(props: RadioProps) {
 
 export function DrivetrainType(props: RadioProps) {
   return (
-    <div className="w-full grid grid-cols-2 grid-rows-3 max-sm:gap-1 text-md md:text-xl">
+    <div className="font-mono w-full grid grid-cols-2 grid-rows-3 max-sm:gap-1 text-md md:text-xl">
       <span>Tank Drive: </span>
       <input
         type="radio"

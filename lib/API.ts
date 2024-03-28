@@ -516,11 +516,15 @@ export namespace API {
       //    shuffle
       // }
 
+      console.log(data);
+
       const result = await AssignScoutersToCompetitionMatches(
         data.teamId,
         data.compId,
         data.shuffle
       );
+
+      console.log(result);
       return res.status(200).send({ result: result });
     },
 
@@ -761,6 +765,16 @@ export namespace API {
         place: rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank,
         max: rankings.length,
       });
+    },
+
+    getPitReports: async (req, res, { db, data }) => {
+      const objIds = data.reportIds.map((reportId: string) => new ObjectId(reportId));
+
+      const pitReports = await db.findObjects<Pitreport>(Collections.Pitreports, {
+        _id: { $in: objIds },
+      });
+
+      return res.status(200).send(pitReports);
     }
   };
 }
