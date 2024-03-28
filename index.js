@@ -5,7 +5,7 @@ const { parse } = require("url");
 const next = require("next");
 const fs = require("fs");
 
-console.log("Imports compete");
+console.log("Imports complete");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = dev ? 3000 : 443;
