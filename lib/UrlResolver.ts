@@ -27,10 +27,18 @@ export interface ResolvedUrlData {
  * @returns - The same object, but with `_id` set as a string
  */
 export function SerializeDatabaseObject(object: any): any {
+  if (!object) {
+    return null;
+  }
   if (object?._id) {
     object._id = object?._id.toString();
   }
+
   return object;
+}
+
+export function SerializeDatabaseObjects(objectArray: any[]): any[] {
+  return objectArray.map((obj) => SerializeDatabaseObject(obj));
 }
 
 /**

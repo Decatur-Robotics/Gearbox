@@ -5,7 +5,6 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
 import {
   AllianceColor,
-  Form,
   Match,
   MatchType,
   Pitreport,
@@ -17,13 +16,7 @@ import Container from "@/components/Container";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-import {
-  MdAutoGraph,
-  MdCoPresent,
-  MdDriveEta,
-  MdInsertPhoto,
-  MdQueryStats,
-} from "react-icons/md";
+import { MdAutoGraph, MdCoPresent, MdQueryStats } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
@@ -68,29 +61,41 @@ export default function Home(props: ResolvedUrlData) {
 
   const [pitreports, setPitreports] = useState<Pitreport[]>([]);
   const [loadingPitreports, setLoadingPitreports] = useState(true);
-  const [submittedPitreports, setSubmittedPitreports] = useState<number | undefined>(undefined);
-  const [attemptedRegeneratingPitReports, setAttemptedRegeneratingPitReports] = useState(false);
+
+  const [submittedPitreports, setSubmittedPitreports] = useState(0);
+  const [
+    attemptedRegeneratingPitReports,
+    setAttemptedRegeneratingPitReports,
+  ] = useState(false);
+
 
   const [updatingComp, setUpdatingComp] = useState("");
 
-  const [ranking, setRanking] = useState<{place: number | string, max: number} | null>(null);
+  const [ranking, setRanking] = useState<{
+    place: number | string;
+    max: number;
+  } | null>(null);
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
-    api.regeneratePitReports(comp?.tbaId, comp?._id).then(({ pitReports }: { pitReports: string[] }) => {
-      setAttemptedRegeneratingPitReports(true);
-      setLoadingPitreports(true);
+    api
+      .regeneratePitReports(comp?.tbaId, comp?._id)
+      .then(({ pitReports }: { pitReports: string[] }) => {
+        setAttemptedRegeneratingPitReports(true);
+        setLoadingPitreports(true);
 
-      // Fetch pit reports
-      const pitReportPromises = pitReports.map(async (id: string) => await api.findPitreportById(id));
+        // Fetch pit reports
+        const pitReportPromises = pitReports.map(
+          async (id: string) => await api.findPitreportById(id)
+        );
 
-      Promise.all(pitReportPromises).then((reports) => {
-        console.log("Got all pit reports");
-        setPitreports(reports);
-        setLoadingPitreports(false);
+        Promise.all(pitReportPromises).then((reports) => {
+          console.log("Got all pit reports");
+          setPitreports(reports);
+          setLoadingPitreports(false);
+        });
       });
-    });
-  }
+  };
 
   useEffect(() => {
     const scoutingStats = (reps: Report[]) => {
@@ -239,7 +244,7 @@ export default function Home(props: ResolvedUrlData) {
     ) {
       const b = qualificationMatches.filter((match) => {
         let s = true;
-        if(match.number <= 11) {
+        if (match.number <= 11) {
           return false;
         }
         for (const id of match.reports) {
@@ -346,6 +351,143 @@ export default function Home(props: ResolvedUrlData) {
                 >
                   Scouting Insights
                 </a>
+              )}
+            </div>
+            {showSettings ? (
+              <div className="card-body md:min-w-[40rem]">
+                <h1 className="font-semibold text-xl">Settings</h1>
+                <div className="flex flex-row space-x-2">
+                  <button
+                    onClick={reloadCompetition}
+                    className="btn btn-md btn-primary w-1/2"
+                  >
+                    <FaSync></FaSync> Refresh
+                  </button>
+                  <button
+                    className={
+                      "btn btn-primary w-1/2 " +
+                      (assigningMatches ? "disabled" : "")
+                    }
+                    disabled={true}
+                    onClick={assignScouters}
+                  >
+                    {!assigningMatches ? (
+                      "Re-Assign Matches"
+                    ) : (
+                      <BsGearFill
+                        className="animate-spin-slow"
+                        size={30}
+                      ></BsGearFill>
+                    )}
+                  </button>
+                </div>
+
+                <button
+                  className={`btn ${
+                    exportPending ? "btn-disabled" : "btn-primary"
+                  } `}
+                  onClick={exportAsCsv}
+                >
+                  {exportPending ? (
+                    <div className="loading loading-bars loading-sm"></div>
+                  ) : (
+                    "Export Scouting Data as CSV"
+                  )}
+                </button>
+
+                <button
+                  className="btn btn-warning"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "Are you sure you want to regenerate pit reports? Doing so will overwrite existing pit reports."
+                      )
+                    )
+                      regeneratePitReports();
+                  }}
+                >
+                  Regenerate Pit Reports
+                </button>
+
+                <div className="divider"></div>
+                <h1 className="font-semibold">Manually add matches</h1>
+
+                <div className="flex flex-row">
+                  <div className="w-1/2 flex flex-col items-center">
+                    <h1 className="text-red-500 font-bold text-xl">Red</h1>
+                    <div className="flex flex-row items-center justify-evenly">
+                      <input
+                        type="text"
+                        placeholder="Team 1"
+                        className="input input-sm  input-bordered w-1/4"
+                        value={redAlliance[0]}
+                        onChange={(e) => {
+                          const c = structuredClone(redAlliance);
+                          c[0] = Number(e.target.value);
+                          setRedAlliance(c);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Team 2"
+                        className="input input-sm  input-bordered w-1/4"
+                        value={redAlliance[1]}
+                        onChange={(e) => {
+                          const c = structuredClone(redAlliance);
+                          c[1] = Number(e.target.value);
+                          setRedAlliance(c);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Team 3"
+                        className="input input-sm  input-bordered w-1/4"
+                        value={redAlliance[2]}
+                        onChange={(e) => {
+                          const c = structuredClone(redAlliance);
+                          c[2] = Number(e.target.value);
+                          setRedAlliance(c);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="w-1/2 flex flex-col items-center">
+                    <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
+                    <div className="flex flex-row items-center justify-evenly">
+                      <input
+                        type="text"
+                        placeholder="Team 1"
+                        className="input input-sm  input-bordered w-1/4"
+                        value={blueAlliance[0]}
+                        onChange={(e) => {
+                          const c = structuredClone(blueAlliance);
+                          c[0] = Number(e.target.value);
+                          setBlueAlliance(c);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Team 2"
+                        className="input input-sm  input-bordered w-1/4"
+                        value={blueAlliance[1]}
+                        onChange={(e) => {
+                          const c = structuredClone(blueAlliance);
+                          c[1] = Number(e.target.value);
+                          setBlueAlliance(c);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Team 3"
+                        className="input input-sm  input-bordered w-1/4"
+                        value={blueAlliance[2]}
+                        onChange={(e) => {
+                          const c = structuredClone(blueAlliance);
+                          c[2] = Number(e.target.value);
+                          setBlueAlliance(c);
+                        }}
+                      />
+                    </div>
                 {isManager ? (
                   <a
                     role="tab"
@@ -405,6 +547,30 @@ export default function Home(props: ResolvedUrlData) {
                     </button>
                   </div>
 
+                <button
+                  className="btn btn-accent"
+                  disabled={!matchNumber}
+                  onClick={createMatch}
+                >
+                  Create
+                </button>
+              </div>
+            ) : (
+              <div className="card-body ">
+                <h1 className="font-semibold text-lg">Scouting Progress</h1>
+                <div className="stats bg-base-300 w-full shadow-xl">
+                  <div className="stat space-y-2">
+                    <div className="stat-figure text-accent">
+                      <BsClipboard2Check size={65}></BsClipboard2Check>
+                    </div>
+                    <div className="stat-title text-slate-400">
+                      Competition Progress
+                    </div>
+                    <div className="stat-value text-accent">
+                      {!Number.isNaN(submittedReports)
+                        ? Round(submittedReports / reports.length) * 100
+                        : "?"}
+                      %
                   {/* <button
                     className="btn btn-warning"
                     onClick={() => {
@@ -547,6 +713,29 @@ export default function Home(props: ResolvedUrlData) {
                       </div>
                       {loadingScoutStats ? (
                         <div className="stat-value text-primary">
+                          {!Number.isNaN(submittedReports)
+                            ? Round(submittedReports / reports.length) * 100
+                            : "?"}
+                          %
+                        </div>
+                        <div className="stat-desc">
+                          {submittedReports}/{reports.length} Reports
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <h1 className="font-semibold text-lg">Pitscouting Progress</h1>
+                <div className="stats mt-2">
+                  <div className="stat place-items-center">
+                    <div className="stat-title">Teams</div>
+                    <div className="stat-figure text-primary">
+                      <FaUserGroup size={40}></FaUserGroup>
+                    </div>
+                    <div className="stat-value text-primary">
+                      {!submittedPitreports ? "?" : submittedPitreports}/
+                      {!pitreports ? "?" : pitreports.length}
+
                           <BsGearFill size={45} className="animate-spin-slow" />
                         </div>
                       ) : (
@@ -565,6 +754,7 @@ export default function Home(props: ResolvedUrlData) {
                           </div>
                         </div>
                       )}
+
                     </div>
                   </div>
                   <h1 className="font-semibold text-lg">Pitscouting Progress</h1>
@@ -607,7 +797,11 @@ export default function Home(props: ResolvedUrlData) {
             <div className="card-body">
               <h1 className="card-title text-2xl md:text-3xl font-bold">
                 {team?.name} - {team?.number}
-                { ranking && <span className="text-accent">(#{ranking.place}/{ranking.max})</span>}
+                {ranking && (
+                  <span className="text-accent">
+                    (#{ranking.place}/{ranking.max})
+                  </span>
+                )}
               </h1>
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
@@ -726,7 +920,16 @@ export default function Home(props: ResolvedUrlData) {
                                           <img
                                             src={user?.image}
                                             onClick={() => {
-                                              if (user.slackId && session && team?.owners?.includes(session.user?._id ?? "") && confirm("Remind scouter on Slack?")) {
+                                              if (
+                                                user.slackId &&
+                                                session &&
+                                                team?.owners?.includes(
+                                                  session.user?._id ?? ""
+                                                ) &&
+                                                confirm(
+                                                  "Remind scouter on Slack?"
+                                                )
+                                              ) {
                                                 api.remindSlack(
                                                   user.slackId,
                                                   session.user?.slackId
@@ -776,31 +979,34 @@ export default function Home(props: ResolvedUrlData) {
                       ></BsGearFill>
                     </div>
                   ) : (
-                    pitreports.sort((a, b) => a.teamNumber - b.teamNumber).map((report) => (
-                      <Link
-                        className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
-                        href={window.location.href + `/pit/${report._id}`}
-                        key={report._id}
-                      >
-                        <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
-                          {report.teamNumber}
-                        </div>
-                        <div className="absolute rounded z-10 translate-y-4 items-center">
-                          {/* {report.image !== "/robot.jpg" ? (
+                    pitreports
+                      .sort((a, b) => a.teamNumber - b.teamNumber)
+                      .map((report) => (
+                        <Link
+                          className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
+                          href={window.location.href + `/pit/${report._id}`}
+                          key={report._id}
+                        >
+                          <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
+                            {report.teamNumber}
+                          </div>
+                          <div className="absolute rounded z-10 translate-y-4 items-center">
+                            {/* {report.image !== "/robot.jpg" ? (
                             <img src={report.image}></img>
                           ) : (
                             <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">
                               No Image
                             </div>
                           )} */}
-                          {report.submitted ? (
-                            <FaCheck size={64} />
-                          ) : (
-                            <FaRobot size={64} />
-                          )}
-                        </div>
-                      </Link>
-                    ))
+
+                            {report.submitted ? (
+                              <FaCheck size={64} />
+                            ) : (
+                              <FaRobot size={64} />
+                            )}
+                          </div>
+                        </Link>
+                      ))
                   )}
                 </div>
               </div>

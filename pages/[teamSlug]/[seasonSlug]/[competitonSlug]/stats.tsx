@@ -1,10 +1,6 @@
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { GetServerSideProps } from "next";
-import UrlResolver, {
-  ResolvedUrlData,
-  SerializeDatabaseObject,
-} from "@/lib/UrlResolver";
+import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
 import { GetDatabase, Collections } from "@/lib/MongoDB";
 import { Competition, Pitreport, Report } from "@/lib/Types";
@@ -15,38 +11,31 @@ import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import {
-  AveragePoints,
-  StandardDeviation,
-  TotalPoints,
-} from "@/lib/client/StatsMath";
+
 const api = new ClientAPI("gearboxiscool");
 
-export default function Stats(props: {
+type StatsPageProps = {
   reports: Report[];
-  pitReports: Pitreport[];
+  pitreports: Pitreport[];
   competition: Competition;
   time: number;
-}) {
-  const { session, status } = useCurrentSession();
-  const hide = status === "authenticated";
+};
 
+export default function Stats(props: StatsPageProps) {
   const [update, setUpdate] = useState(props.time);
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
   const [pitReports, setPitReports] = useState(props.pitReports);
   const [page, setPage] = useState(0);
 
-  // useEffect(() => {
-  //   setInterval(() => {
-  //     try {
-  //       resync();
-  //     }
-  //     catch (e) {
-  //       console.error(e);
-  //     }
-  //   }, 15000);
-  // });
+  useEffect(() => {
+    const i = setInterval(() => {
+      resync();
+    }, 15000);
+    return () => {
+      clearInterval(i);
+    };
+  });
 
   const resync = async () => {
     setUpdating(true);
@@ -65,7 +54,7 @@ export default function Stats(props: {
   return (
     <Container
       requireAuthentication={false}
-      hideMenu={!hide}
+      hideMenu={true}
       notForMobile={true}
     >
       <div role="tablist" className="tabs tabs-boxed">
@@ -118,22 +107,19 @@ export default function Stats(props: {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await GetDatabase();
   const url = await UrlResolver(context);
-
-  const dbReports = await db.findObjects<Report>(Collections.Reports, {
+  const reports = await db.findObjects<Report>(Collections.Reports, {
     match: { $in: url.competition?.matches },
     submitted: true,
   });
-  const reports = dbReports.map((report) => SerializeDatabaseObject(report));
-
-  const pitReportList = url.competition?.pitReports ?? [];
-  const dbPitReports = await db.findObjects<Pitreport>(
-    Collections.Pitreports,
-    {
-      _id: { $in: pitReportList },
-    }
-  );
-
+  // const pitreports = await db.findObjects<Pitreport>(Collections.Pitreports, {
+  //   _id: { $in: url.competition?.pitReports },
+  // });
   return {
-    props: { reports: reports, pitReports: dbPitReports, competition: url.competition, time: Date.now() },
+    props: {
+      reports: SerializeDatabaseObjects(reports),
+      competition: url.competition,
+      time: Date.now(),
+      pitreports: [],
+    }
   };
 };

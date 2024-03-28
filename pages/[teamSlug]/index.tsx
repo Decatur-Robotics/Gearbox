@@ -1,649 +1,414 @@
-import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
+import UrlResolver, {
+  SerializeDatabaseObject,
+  SerializeDatabaseObjects,
+} from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import { Competition, Season, User } from "@/lib/Types";
-import { MonthString } from "@/lib/client/FormatTime";
-import { validName } from "@/lib/client/InputVerification";
+import { Competition, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
-import { MdOutlinePersonRemove } from "react-icons/md";
-import { levelToClassName, xpRequiredForNextLevel, xpToLevel } from "@/lib/Xp";
+import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
+import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { ObjectId } from "mongodb";
+import Flex from "@/components/Flex";
+import Card from "@/components/Card";
+import {
+  FaRobot,
+  FaSync,
+  FaUserFriends,
+  FaUserPlus,
+  FaUserTimes,
+} from "react-icons/fa";
+import CompetitionCard from "@/components/CompetitionCard";
+import SeasonCard from "@/components/SeasonCard";
+import Avatar from "@/components/Avatar";
+import Loading from "@/components/Loading";
+import ConfirmModal from "@/lib/client/Confirm";
+import { team } from "slack";
+import { validName } from "@/lib/client/InputVerification";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function TeamIndex(props: ResolvedUrlData) {
-  const { session, status } = useCurrentSession();
-  const [team, setTeam] = useState(props.team);
-  const numberOfMembers = team?.users.length;
-  const isFrc = props.team?.tbaId?.includes("frc");
-  const currentSeasonId = props.team?.seasons[props.team.seasons.length - 1];
-  const newRequests = team ? team.requests.length > 0 : undefined;
+type TeamPageProps = {
+  team: Team | undefined;
+  currentSeason: Season | undefined;
+  currentCompetition: Competition | undefined;
+  pastSeasons: Season[] | undefined;
+  users: User[] | undefined;
+};
 
-  const [users, setUsers] = useState<User[]>([]);
+function Overview(props: TeamPageProps) {
+  return (
+    <Card title="Overview" className="h-fit">
+      <Flex mode="row" className=" min-h-[12rem] mb-8 max-sm:flex-col">
+        <div className="w-full md:w-1/2">
+          <h1 className="font-semibold text-lg mb-2">Latest Competition:</h1>
+          <Link
+            href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
+          >
+            <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
+          </Link>
+        </div>
+        <div className="divider divider-horizontal max-sm:divider-vertical"></div>
+        <div className="w-full md:w-1/2">
+          <h1 className="font-semibold text-lg mb-2">Current Season:</h1>
+          {!props.currentSeason ? (
+            <Link href={`/${props.team?.slug}/createSeason`}>
+              <button className="btn btn-primary btn-wide">
+                Create a Season
+              </button>
+            </Link>
+          ) : (
+            <Flex mode="col" className="space-y-4">
+              <Link href={`/${props.team?.slug}/${props.currentSeason?.slug}`}>
+                <SeasonCard season={props.currentSeason}></SeasonCard>
+              </Link>
+              <div>
+                <h1 className="text-md font-semibold">Past Seasons:</h1>
+                <ul className="list-disc ml-8">
+                  {props.pastSeasons?.map((season) => (
+                    <li key={season._id}>
+                      <Link
+                        href={`/${props.team?.slug}/${season.slug}`}
+                        className="text-accent"
+                      >
+                        {season.name} - {season.year}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Flex>
+          )}
+        </div>
+      </Flex>
+    </Card>
+  );
+}
+
+function Roster(props: TeamPageProps) {
+  const { session, status } = useCurrentSession();
+
+  const [team, setTeam] = useState(props.team);
+  const [users, setUsers] = useState(props.users ?? []);
+
+  const [loadingRequests, setLoadingRequests] = useState(true);
   const [requests, setRequests] = useState<User[]>([]);
 
-  const [currentSeason, setCurrentSeason] = useState<Season>();
-  const [upcomingEvent, setUpcomingEvent] = useState<Competition>();
-  const [pastSeasons, setPastSeasons] = useState<Season[]>();
-
-  const owner = team?.owners.includes(session?.user?._id as string);
+  const owner = team?.owners.includes(session.user?._id as string);
 
   useEffect(() => {
-    if (
-      session?.user &&
-      !session?.user?.teams.includes(team?._id ? team?._id : "")
-    ) {
-      location.href = "/";
-    }
-
-    const loadUsers = async () => {
-      var newData: User[] = [];
-      team?.users.forEach(async (userId) => {
-        newData.push(await api.findUserById(userId));
-      });
-      setUsers(newData);
-    };
-
     const loadRequests = async () => {
+      setLoadingRequests(true);
       var newData: User[] = [];
-      team?.requests.forEach(async (userId) => {
-        newData.push(await api.findUserById(userId));
-      });
+      for (const i in team?.requests) {
+        newData.push(await api.findUserById(team?.requests[Number(i)]));
+      }
       setRequests(newData);
+      setLoadingRequests(false);
     };
 
-    const loadCurrentSeason = async () => {
-      if (!currentSeasonId) {
-        return;
-      }
-      const cs = await api.findSeasonById(currentSeasonId);
-      setCurrentSeason(cs);
-      if (cs.competitions.length > 0) {
-        setUpcomingEvent(
-          await api.findCompetitionById(
-            cs?.competitions[cs.competitions.length - 1]
-          )
-        );
-      }
-    };
-
-    const loadPastSeasons = async () => {
-      var newData: Season[] = [];
-      team?.seasons.forEach(async (seasonId) => {
-        newData.push(await api.findSeasonById(seasonId));
-      });
-      setPastSeasons(newData);
-    };
-
-    loadUsers();
     loadRequests();
-    loadCurrentSeason();
-    loadPastSeasons();
-  }, [session?.user]);
+  }, []);
 
-  const [selection, setSelection] = useState(1);
+  const handleTeamRequest = async (userId: string, accept: boolean) => {
+    await api.handleRequest(accept, userId as string, team?._id as string);
 
-  const Overview = () => {
-    const seasonUrl = `/${team?.slug}/${currentSeason?.slug}`;
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
-        <div className="card-body">
-          <div className="w-full flex flex-col lg:flex-row">
-            <div className="lg:w-1/2">
-              <h1 className="text-xl mb-2">Upcoming Events:</h1>
-              {upcomingEvent ? (
-                <a href={seasonUrl + `/${upcomingEvent.slug}`}>
-                  <div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
-                    <div className="card-body">
-                      <h1 className="card-title text-xl">
-                        {upcomingEvent.name}
-                      </h1>
-                      <h2 className="ml-3">
-                        {MonthString(upcomingEvent.start)}
-                      </h2>
-                    </div>
-                  </div>
-                </a>
-              ) : (
-                <p className="text-sm ml-4">No Upcoming Events</p>
-              )}
-            </div>
+    const reqClone = structuredClone(requests);
+    const userIndex = reqClone.findIndex((user) => userId === user._id);
+    const user = structuredClone(requests[userIndex]);
+    reqClone.splice(userIndex, 1);
+    setRequests(reqClone);
 
-            <div className="divider lg:divider-horizontal"></div>
-
-            <div className="lg:w-1/2">
-              <h1 className="text-xl ">Current Season:</h1>
-              {owner ? (
-                <h1 className="text-md mb-2">
-                  You can always{" "}
-                  <a
-                    href={`/${team?.slug}/createSeason`}
-                    className="text-accent"
-                  >
-                    create a season
-                  </a>
-                </h1>
-              ) : (
-                <></>
-              )}
-              {currentSeason?.name ? (
-                <a href={seasonUrl}>
-                  <div className="card bg-base-300 border-2 border-base-300 hover:border-accent">
-                    <div className="card-body">
-                      <h1 className="card-title text-2xl">
-                        {currentSeason.name}
-                      </h1>
-                      <h2 className="ml-3">
-                        The{" "}
-                        <span className="text-accent">
-                          {currentSeason.year}
-                        </span>{" "}
-                        Season
-                      </h2>
-                    </div>
-                  </div>
-                </a>
-              ) : (
-                <p className="text-sm ml-4">No Seasons</p>
-              )}
-
-              <br></br>
-              <h1 className="text-md">Past Seasons:</h1>
-
-              <ul className="list-disc">
-                {pastSeasons?.map((season) => (
-                  <li key={season.slug} className="ml-4">
-                    <Link
-                      href={`/${team?.slug}/${season.slug}`}
-                      className="text-accent"
-                    >
-                      {season.name} ({season.year})
-                    </Link>
-                  </li>
-                ))}
-                {pastSeasons?.length === 0 ? <p>Nothing Here</p> : <></>}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    if (accept) {
+      setUsers([...users, user]);
+    }
   };
 
   const updateScouter = async (userId: string) => {
-    if (!team) {
-      return;
-    }
-    var newTeam = structuredClone(team);
-    var newArray = [...team.scouters];
-    if (!team.scouters.includes(userId)) {
-      newArray.push(userId);
+    var teamClone = structuredClone(team);
+    var scouters = teamClone?.scouters;
+    if (scouters?.includes(userId)) {
+      scouters.splice(scouters.indexOf(userId), 1);
     } else {
-      newArray.splice(newArray.indexOf(userId), 1);
+      scouters?.push(userId);
     }
 
-    await api.updateTeam({ scouters: newArray }, team._id);
-    newTeam.scouters = newArray;
-    setTeam(newTeam);
+    await api.updateTeam({ scouters: scouters }, team?._id);
+    setTeam(teamClone);
   };
 
   const updateOwner = async (userId: string) => {
-    if (!team) {
-      return;
-    }
-    var newTeam = structuredClone(team);
-    var newArray = [...team.owners];
-    if (!team.owners.includes(userId)) {
-      newArray.push(userId);
+    var teamClone = structuredClone(team);
+    var owners = teamClone?.owners;
+    if (owners?.includes(userId)) {
+      owners.splice(owners.indexOf(userId), 1);
     } else {
-      newArray.splice(newArray.indexOf(userId), 1);
+      owners?.push(userId);
     }
 
-    await api.updateTeam({ owners: newArray }, team._id);
-    newTeam.owners = newArray;
-    setTeam(newTeam);
+    await api.updateTeam({ owners: owners }, team?._id);
+    setTeam(teamClone);
   };
 
-  const deleteUser = async (id: string | undefined, index: number) => {
-    if (!team || !id) {
+  const removeUser = async (userId: string) => {
+    const confirmed = ConfirmModal(
+      "Are you sure you want to remove this user?"
+    );
+
+    if (!confirmed) {
       return;
     }
-    var newTeam = structuredClone(team);
-    var newUsers = [...team.users];
-    if (newUsers.indexOf(id) === index) {
-      newUsers.splice(index, 1);
+
+    if (team?.owners.includes(userId)) {
+      await updateOwner(userId);
     }
-    await api.updateTeam({ users: newUsers }, team._id);
-    newTeam.users = newUsers;
-    setTeam(newTeam);
-
-    location.reload();
-  };
-
-  const handleRequest = async (userId: string | undefined, accept: boolean) => {
-    await api.handleRequest(accept, userId as string, team?._id as string);
-    location.reload();
-  };
-
-  const Roster = () => {
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
-        <div className="card-body">
-          <h1 className="card-title text-2xl">Team Roster</h1>
-          <p>Manage your teams members</p>
-
-          {owner ? (
-            <div>
-              <h1 className="text-lg">Requests:</h1>
-              {requests.length === 0 ? (
-                <p className="text-sm ml-4">No Requests</p>
-              ) : (
-                <></>
-              )}
-
-              <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-                {requests.map((user) => (
-                  <div className="card bg-base-300 w-full" key={user._id}>
-                    <div className="card-body">
-                      <div className="flex flex-row space-x-2">
-                        <div className="avatar">
-                          <div className="w-12 rounded-full">
-                            <img src={user.image} />
-                          </div>
-                        </div>
-
-                        <h1 className="card-title">{user.name}</h1>
-                      </div>
-
-                      <div className="card-actions justify-end">
-                        <button
-                          className="btn btn-success text-white"
-                          onClick={() => {
-                            handleRequest(user._id, true);
-                          }}
-                        >
-                          Add
-                        </button>
-                        <button
-                          className="btn btn-error text-white"
-                          onClick={() => {
-                            handleRequest(user._id, false);
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <></>
-          )}
-
-          <div className="divider"></div>
-
-          <h1 className="text-lg">Members:</h1>
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Picture </th>
-                  <th>Name</th>
-                  <th>XP</th>
-
-                  <th>Scouter</th>
-                  <th>Manager</th>
-                  <th>Remove</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, index) => {
-                  const xp = user.xp;
-                  const level = xpToLevel(xp);
-                  const xpForNextLevel = xpRequiredForNextLevel(level);
-
-                  return (
-                    <tr key={user._id}>
-                      <th>{index + 1}</th>
-                      <td className="flex flex-row items-center">
-                        <div className="avatar">
-                          <div className="w-10 rounded-full">
-                            <img src={user.image} />
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div
-                          className={`pl-2 lg:pl-0 ${levelToClassName(level)}`}
-                        >
-                          {user.name}
-                        </div>
-                      </td>
-                      <td>
-                        <div>
-                          Level {level} ({xp}/{xpForNextLevel})
-                        </div>
-                        <progress
-                          className="progress progress-primary"
-                          value={xp}
-                          max={xpForNextLevel}
-                        ></progress>
-                      </td>
-                      <td>
-                        <input
-                          type="checkbox"
-                          className={`toggle`}
-                          disabled={!owner}
-                          checked={team?.scouters.includes(user._id as string)}
-                          onChange={() => {
-                            updateScouter(user._id as string);
-                          }}
-                        />
-                      </td>
-                      {team?.owners.includes(session?.user?._id as string) ? (
-                        <td>
-                          <input
-                            type="checkbox"
-                            className="toggle toggle-secondary"
-                            disabled={!owner}
-                            checked={team?.owners.includes(user._id as string)}
-                            onChange={() => {
-                              updateOwner(user._id as string);
-                            }}
-                          />
-                        </td>
-                      ) : (
-                        <td>
-                          <input
-                            type="checkbox"
-                            className="toggle toggle-secondary"
-                            checked={team?.owners.includes(user._id as string)}
-                          />
-                        </td>
-                      )}
-                      <td>
-                        <button
-                          className="btn btn-outline btn-sm text-xl text-red-500"
-                          disabled={!owner}
-                          onClick={() => {
-                            deleteUser(user?._id, index);
-                          }}
-                        >
-                          <MdOutlinePersonRemove />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const Settings = () => {
-    const [nameChange, setNameChange] = useState(team?.name);
-    const [numberChange, setNumberChange] = useState(team?.number);
-    const [settingsError, setSettingsError] = useState("");
-
-    const updateSettings = async () => {
-      setSettingsError("");
-      if (!validName(nameChange as string)) {
-        setSettingsError("Invalid Name");
-        return;
-      }
-
-      if (
-        (numberChange && numberChange <= 0) ||
-        Object.keys(await api.findTeamByNumber(numberChange)).length > 0
-      ) {
-        setSettingsError("Invalid Number");
-        return;
-      }
-
-      await api.updateTeam(
-        { name: nameChange, number: numberChange },
-        team?._id as string
-      );
-
-      location.reload();
-    };
-
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title text-3xl">Settings </h2>
-
-          <p className="">Modify and Update Your Teams Information</p>
-
-          <p className="text-error">{settingsError}</p>
-
-          <label className="mt-4">Name: </label>
-          <input
-            type="text"
-            placeholder="Name"
-            value={nameChange}
-            maxLength={40}
-            onChange={(e) => {
-              setNameChange(e.target.value);
-            }}
-            className="input input-bordered w-full max-w-xs"
-          />
-
-          <label className="mt-2">Number: </label>
-          <input
-            type="number"
-            placeholder="Team Number"
-            value={numberChange}
-            min={1}
-            max={9999}
-            onChange={(e) => {
-              setNumberChange(e.target.valueAsNumber);
-            }}
-            className="input input-bordered w-full max-w-xs"
-          />
-
-          <div className="card-actions justify-end">
-            <button
-              className="btn btn-primary normal-case"
-              onClick={updateSettings}
-            >
-              Update
-            </button>
-          </div>
-          {/*
-          <button
-            className="btn btn-accent text-xl w-1/3 mt-4"
-            onClick={() => {
-              setSelection(4);
-            }}
-          >
-            Manage XP
-          </button>
-          */}
-        </div>
-      </div>
-    );
-  };
-
-  const XpAdmin = () => {
-    const [xpToChange, setXpToChange] = useState<number>(20);
-    async function changeXp(
-      userId: string | undefined,
-      xp: number | undefined,
-      xpToAdd: number | undefined
-    ) {
-      await api.addUserXp(userId, xpToAdd);
+    if (team?.scouters.includes(userId)) {
+      await updateScouter(userId);
     }
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl">
-        <div className="card-body">
-          <h1 className="card-title text-2xl">XP</h1>
-          <p>Manually edit team XP</p>
+    var teamClone = structuredClone(team);
+    var newUsers = teamClone?.users;
+    newUsers?.splice(newUsers.indexOf(userId), 1);
+    await api.updateTeam({ users: newUsers }, team?._id);
 
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-            {requests.map((user) => (
-              <div className="card bg-base-300 w-full" key={user._id}>
-                <div className="card-body">
-                  <div className="flex flex-row space-x-2">
-                    <div className="avatar">
-                      <div className="w-12 rounded-full">
-                        <img src={user.image} />
-                      </div>
-                    </div>
+    setTeam(teamClone);
 
-                    <h1 className="card-title">{user.name}</h1>
-                  </div>
-
-                  <div className="card-actions justify-end">
-                    <button
-                      className="btn btn-success text-white"
-                      onClick={() => {
-                        handleRequest(user._id, true);
-                      }}
-                    >
-                      Add
-                    </button>
-                    <button
-                      className="btn btn-error text-white"
-                      onClick={() => {
-                        handleRequest(user._id, false);
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="divider"></div>
-
-          <h1 className="text-lg">Members:</h1>
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Picture </th>
-                  <th>Name</th>
-                  <th>XP</th>
-
-                  <th>How Many</th>
-                  <th>Remove</th>
-                  <th>Add</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, index) => (
-                  <tr key={user._id}>
-                    <th>{index + 1}</th>
-                    <td className="flex flex-row items-center justify-evenly">
-                      <div className="avatar">
-                        <div className="w-10 rounded-full">
-                          <img src={user.image} />
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="pl-2 lg:pl-0">{user.name}</div>
-                    </td>
-                    <td>
-                      {user.xp > 0 ? (
-                        <div>{user.xp}</div>
-                      ) : (
-                        <div style={{ color: "red" }}>{user.xp}</div>
-                      )}
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        placeholder="Name"
-                        value={xpToChange}
-                        maxLength={50}
-                        onChange={(e) => {
-                          setXpToChange(e.target.valueAsNumber);
-                        }}
-                        className="input input-bordered w-full max-w-xs"
-                      />
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-outline btn-sm"
-                        onClick={() => {
-                          changeXp(user._id, user?.xp, xpToChange * -1);
-                        }}
-                      >
-                        Take
-                      </button>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-outline btn-sm"
-                        onClick={() => {
-                          changeXp(user._id, user?.xp, xpToChange);
-                        }}
-                      >
-                        Give
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
+    var userClone = [...users];
+    var index = userClone.findIndex((user) => user._id === userId);
+    userClone.splice(index, 1);
+    setUsers(userClone);
   };
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
-      <div className="w-full h-fit flex flex-col max-sm:mt-4 md:justify-center items-center space-y-6 pb-12">
-        <div className="card w-5/6 bg-base-200 shadow-xl">
-          <div className="card-body min-h-1/2 w-full bg-secondary rounded-t-lg"></div>
-          <div className="card-body">
-            <h2 className="card-title text-4xl">
-              {team?.name} <span className="text-accent">#{team?.number}</span>
-            </h2>
-            <p>{numberOfMembers} Members</p>
+    <Card title="Team Roster" className="h-full ">
+      <h1 className="text-lg font-semibold">View and Manage your Team</h1>
+      <h1>
+        <span className="text-accent">{users?.length}</span> total members
+      </h1>
 
-            <div className="card-action space-x-2">
-              {team?.tbaId ? (
-                <a href={`https://www.thebluealliance.com/team/${team.number}`}>
-                  <div className="badge badge-outline link">Linked To TBA</div>
-                </a>
-              ) : (
-                <></>
-              )}
-              {isFrc ? (
-                <div className="badge badge-secondary">FIRST FRC</div>
-              ) : (
-                <></>
-              )}
-            </div>
+      {owner ? (
+        <div className="w-full collapse collapse-arrow bg-base-300">
+          <input type="checkbox" />
+          <div className="collapse-title text-lg font-medium">
+            Join Requests{" "}
+            {requests.length > 0 ? (
+              <div className="badge badge-primary ml-4">New</div>
+            ) : (
+              <></>
+            )}
+          </div>
+          <div className="collapse-content">
+            {loadingRequests ? (
+              <Loading></Loading>
+            ) : (
+              <div className="w-full grid grid-cols-2 grid-rows-1">
+                {requests.map((user) => (
+                  <Card className="" key={user._id}>
+                    <Flex mode="col" className="space-x-2">
+                      <div className="flex flex-row space-x-4 items-center">
+                        <img
+                          src={user.image}
+                          className="w-10 h-10 rounded-lg"
+                        ></img>
+                        <h1>{user.name}</h1>
+                      </div>
+                      <div className="divider"></div>
+                      <Flex mode="row" className="space-x-4">
+                        <button
+                          className="btn btn-success btn-outline"
+                          onClick={() => {
+                            handleTeamRequest(String(user._id), true);
+                          }}
+                        >
+                          Accept <FaUserPlus></FaUserPlus>
+                        </button>
+                        <button
+                          className="btn btn-error btn-outline"
+                          onClick={() => {
+                            handleTeamRequest(String(user._id), false);
+                          }}
+                        >
+                          Decline <FaUserTimes></FaUserTimes>
+                        </button>
+                      </Flex>
+                    </Flex>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+      ) : (
+        <></>
+      )}
 
-        <div className="flex flex-row justify-start w-5/6 ">
+      <div className="divider"></div>
+      <kbd className="kbd md:hidden">← Scroll →</kbd>
+      <div className="w-full overflow-x-scroll overflow-y-hidden">
+        <table className="table">
+          <thead>
+            <tr>
+              <th className="">Index</th>
+              <th className="">Profile</th>
+              <th className="">Name</th>
+              <th className="">Scouter</th>
+              <th className="">Manager</th>
+              <th className="">Kick</th>
+            </tr>
+          </thead>
+          <tbody className="">
+            {users.map((user, index) => (
+              <tr
+                key={user._id}
+                className="p-0 h-20 even:bg-base-100 odd:bg-base-200 max-sm:text-xs"
+              >
+                <th className="w-10">{index + 1}</th>
+                <td className="absolute -translate-x-10 -translate-y-8">
+                  <Avatar user={user} scale="scale-50"></Avatar>
+                </td>
+                <td className="font-semibold">{user.name}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary"
+                    checked={team?.scouters.includes(user._id as string)}
+                    disabled={!owner}
+                    onChange={() => {
+                      updateScouter(user._id as string);
+                    }}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={team?.owners.includes(user._id as string)}
+                    disabled={!owner}
+                    onChange={() => {
+                      updateOwner(user._id as string);
+                    }}
+                  />
+                </td>
+                <td>
+                  <button
+                    className="btn btn-outline btn-error"
+                    disabled={!owner}
+                    onClick={() => {
+                      removeUser(user._id as string);
+                    }}
+                  >
+                    <MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+function Settings(props: TeamPageProps) {
+  const [teamName, setTeamName] = useState(props.team?.name as string);
+  const [error, setError] = useState("");
+
+  const updateTeam = async () => {
+    setError("");
+    if (!validName(teamName)) {
+      setError("Invalid Team Name");
+      return;
+    }
+
+    await api.updateTeam({ name: teamName }, props.team?._id);
+    location.reload();
+  };
+
+  return (
+    <Card title="Settings">
+      <h1 className="font-semibold text-lg">Edit your teams configuration</h1>
+      <h1 className="text-md text-error">{error}</h1>
+      <div className="divider"></div>
+      <p>Set your Teams Name:</p>
+      <input
+        value={teamName}
+        maxLength={100}
+        onChange={(e) => {
+          setTeamName(e.target.value);
+        }}
+        type="text"
+        placeholder="Team Name"
+        className="input input-bordered w-full max-w-xs"
+      />
+      <div className="divider"></div>
+      <button className="btn btn-primary md:w-1/4" onClick={updateTeam}>
+        <FaSync></FaSync>Update Team
+      </button>
+    </Card>
+  );
+}
+
+export default function TeamIndex(props: TeamPageProps) {
+  const { session, status } = useCurrentSession();
+  const team = props.team;
+
+  const isFrc = team?.tbaId?.startsWith("frc");
+
+  const [page, setPage] = useState(0);
+
+  return (
+    <Container requireAuthentication={true} hideMenu={false}>
+      <Flex mode={"col"} className="h-fit space-y-6 my-8 items-center">
+        <Card title={team?.name} coloredTop={"bg-secondary"}>
+          <Flex mode="row" className="md:space-x-4 max-sm:flex-col">
+            <h1 className="font-semibold text-lg">
+              <FaRobot size={30} className="inline-block mr-2"></FaRobot>
+              Team <span className="text-accent">{team?.number}</span>
+            </h1>
+            <div className="divider divider-horizontal max-sm:divider-vertical"></div>
+            <h1 className="font-semibold text-xg">
+              <FaUserFriends
+                className="inline-block mr-2"
+                size={30}
+              ></FaUserFriends>
+              <span className="text-accent">{team?.users.length}</span> Active
+              Members
+            </h1>
+          </Flex>
+
+          <div className="divider"></div>
+          <Flex mode="row" className="space-x-4">
+            {isFrc ? (
+              <div className="badge badge-secondary md:badge-lg">FRC</div>
+            ) : (
+              <></>
+            )}
+            <Link
+              href={"https://www.thebluealliance.com/team/4026"}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <div className="badge badge-primary text-white underline md:badge-lg">
+                <MdOutlineOpenInNew />
+                TBA
+              </div>
+            </Link>
+          </Flex>
+        </Card>
+
+        <div className="flex flex-row justify-start w-2/3 max-sm:w-11/12 ">
           <div className="w-full join grid grid-cols-3">
             <button
               className={
                 "join-item btn btn-outline normal-case " +
-                (selection === 1 ? "btn-active" : "")
+                (page === 0 ? "btn-active" : "")
               }
               onClick={() => {
-                setSelection(1);
+                setPage(0);
               }}
             >
               Overview
@@ -651,49 +416,79 @@ export default function TeamIndex(props: ResolvedUrlData) {
             <button
               className={
                 "join-item btn btn-outline normal-case inline " +
-                (selection === 2 ? "btn-active" : "")
+                (page === 1 ? "btn-active" : "")
               }
               onClick={() => {
-                setSelection(2);
+                setPage(1);
               }}
             >
               Roster{" "}
-              {newRequests ? (
-                <span className="badge badge-primary inline-block">New </span>
-              ) : (
-                <></>
-              )}{" "}
             </button>
-            {team?.owners.includes(session?.user?._id as string) ? (
-              <button
-                className={
-                  "join-item btn btn-outline normal-case " +
-                  (selection === 3 ? "btn-active" : "")
-                }
-                onClick={() => {
-                  setSelection(3);
-                }}
-                disabled={!owner}
-              >
-                Settings
-              </button>
-            ) : (
-              <></>
-            )}
+
+            <button
+              className={
+                "join-item btn btn-outline normal-case " +
+                (page === 2 ? "btn-active" : "")
+              }
+              onClick={() => {
+                setPage(2);
+              }}
+              disabled={!team?.owners.includes(session?.user?._id as string)}
+            >
+              Settings
+            </button>
           </div>
         </div>
 
-        {selection === 1 ? <Overview></Overview> : <></>}
-        {selection === 2 ? <Roster></Roster> : <></>}
-        {selection === 3 ? <Settings></Settings> : <></>}
-        {selection === 4 ? <XpAdmin></XpAdmin> : <></>}
-      </div>
+        {page === 0 ? <Overview {...props}></Overview> : <></>}
+        {page === 1 ? <Roster {...props}></Roster> : <></>}
+        {page === 2 ? <Settings {...props}></Settings> : <></>}
+      </Flex>
     </Container>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const db = await GetDatabase();
+  const resolved = await UrlResolver(context);
+
+  const seasonIds = resolved.team?.seasons.map(
+    (seasonId) => new ObjectId(seasonId)
+  );
+  const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
+  const seasons = await db.findObjects<Season>(Collections.Seasons, {
+    _id: { $in: seasonIds },
+  });
+
+  var users = await db.findObjects<User>(Collections.Users, {
+    _id: { $in: userIds },
+  });
+
+  users = users.map((user) => {
+    var c = structuredClone(user);
+    c._id = user?._id?.toString();
+    c.teams = user.teams.map((id) => String(id));
+    return c;
+  });
+
+  const currentSeason = seasons[seasons.length - 1];
+  var comp = undefined;
+  if (currentSeason) {
+    comp = await db.findObjectById<Competition>(
+      Collections.Competitions,
+      new ObjectId(
+        currentSeason.competitions[currentSeason.competitions.length - 1]
+      )
+    );
+  }
+
   return {
-    props: await UrlResolver(context),
+    props: {
+      team: resolved.team,
+      users: users,
+      currentCompetition: SerializeDatabaseObject(comp),
+      currentSeason: SerializeDatabaseObject(currentSeason),
+      pastSeasons: SerializeDatabaseObjects(seasons),
+    },
   };
 };

@@ -1,149 +1,87 @@
 import ClientAPI from "@/lib/client/ClientAPI";
-import { useEffect, useState } from "react";
-import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
+import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
-import { Competition, Form } from "@/lib/Types";
-import { MonthString } from "@/lib/client/FormatTime";
+import { Competition, Form, Season, Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
-import { ClientSocket } from "@/lib/client/ClientSocket";
-import { DefaultEventsMap } from "@socket.io/component-emitter";
-import { Socket } from "socket.io-client";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import Flex from "@/components/Flex";
+import Card from "@/components/Card";
+import { Collections, GetDatabase } from "@/lib/MongoDB";
+import CompetitionCard from "@/components/CompetitionCard";
+import Loading from "@/components/Loading";
+import { FaPlus } from "react-icons/fa";
+import { ObjectId } from "mongodb";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Home(props: ResolvedUrlData) {
+type SeasonPageProps = {
+  team: Team;
+  season: Season;
+  competitions: Competition[];
+};
+
+export default function Home(props: SeasonPageProps) {
   const { session, status } = useCurrentSession();
   const team = props.team;
-  const owner = team?.owners.includes(session?.user?._id as string);
-
   const season = props.season;
-
-  const [selection, setSelection] = useState(1);
-  const [comps, setComps] = useState<Competition[]>([]);
-
-  useEffect(() => {
-    const loadComps = async () => {
-      var newComps: Competition[] = [];
-
-      if (!season) {
-        return;
-      }
-
-      for (const id of season?.competitions) {
-        newComps.push(await api.findCompetitionById(id));
-      }
-
-      setComps(newComps);
-    };
-
-    loadComps();
-  }, []);
-
-  const Overview = () => {
-    return (
-      <div className="card w-5/6 bg-base-200 shadow-xl ">
-        <div className="card-body">
-          <h2 className="card-title text-2xl">Overview</h2>
-          <h1 className="text-xl">See your upcoming competitions</h1>
-
-          {owner ? (
-            <h3>
-              No Competitions?{" "}
-              <a
-                className="text-accent"
-                href={`/${team?.slug}/${season?.slug}/createComp`}
-              >
-                Create a new one
-              </a>
-            </h3>
-          ) : (
-            <></>
-          )}
-          <div className="divider"></div>
-          {comps.map((comp) => (
-            <Link
-              href={`/${team?.slug}/${season?.slug}/${comp.slug}`}
-              key={comp._id}
-            >
-              <div className="card w-5/6 bg-base-300">
-                <div className="card-body">
-                  <h1 className="card-title">{comp.name}</h1>
-
-                  <h1>
-                    {MonthString(comp.start)} - {MonthString(comp.end)}
-                  </h1>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const comp = props.competitions;
+  const owner = team?.owners.includes(session?.user?._id as string);
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-6 py-6">
-        <div className="card w-5/6 bg-base-200 shadow-xl">
-          <div className="card-body min-h-1/2 w-full bg-primary rounded-t-lg"></div>
-          <div className="card-body">
-            <h2 className="card-title text-4xl">{season?.name} </h2>
-            <h1 className="text-2xl">
-              The <span className="text-accent">{season?.year}</span> Season
-            </h1>
+      <Flex mode="col" className="space-y-4 py-20 min-h-screen items-center">
+        <Card title={season.name} coloredTop="bg-primary">
+          <h1 className="font-semibold text-lg">
+            The <span className="text-accent">{season.year}</span> Season
+          </h1>
+          <div className="divider"></div>
+        </Card>
 
-            <div className="card-action space-x-2">
-              {team?.tbaId ? (
-                <a href={`https://www.thebluealliance.com/team/${team.number}`}>
-                  <div className="badge badge-outline link">Linked To TBA</div>
-                </a>
-              ) : (
-                <></>
-              )}
-              <div className="badge badge-secondary">FIRST FRC</div>
+        <Card title={"Season Overview"}>
+          <h1 className="font-semibold text-lg">Select a Competition</h1>
+          {comp?.length === 0 || !comp ? (
+            <div className="w-full h-32">
+              <Loading></Loading>
             </div>
-          </div>
-        </div>
-
-        <div className="flex flex-row justify-start w-5/6 ">
-          <div className="w-3/8 join grid grid-cols-3">
-            <button
-              className={
-                "join-item btn btn-outline normal-case " +
-                (selection === 1 ? "btn-active" : "")
-              }
-              onClick={() => {
-                setSelection(1);
-              }}
-            >
-              Overview
-            </button>
-            <button
-              className={
-                "join-item btn btn-outline normal-case " +
-                (selection === 3 ? "btn-active" : "")
-              }
-              onClick={() => {
-                setSelection(3);
-              }}
-              disabled
-            >
-              Season-Wide Stats
-            </button>
-          </div>
-        </div>
-
-        {selection === 1 ? <Overview></Overview> : <></>}
-        {selection === 3 ? <></> : <></>}
-      </div>
+          ) : (
+            <></>
+          )}
+          {comp.map((comp) => (
+            <CompetitionCard comp={comp} key={comp._id}></CompetitionCard>
+          ))}
+          {owner ? (
+            <Flex center={true} className="mt-4">
+              <Link href={`/${team.slug}/${season.slug}/createComp`}>
+                <button className="btn btn-circle bg-primary">
+                  <FaPlus className="text-white"></FaPlus>
+                </button>
+              </Link>
+            </Flex>
+          ) : (
+            <></>
+          )}
+        </Card>
+      </Flex>
     </Container>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const db = await GetDatabase();
+  const resolved = await UrlResolver(context);
+  const team = resolved.team;
+  const season = resolved.season;
+
+  const comp = await db.findObjects(Collections.Competitions, {
+    _id: { $in: season?.competitions.map((id) => new ObjectId(id)) },
+  });
+
   return {
-    props: await UrlResolver(context),
+    props: {
+      team: team,
+      season: season,
+      competitions: SerializeDatabaseObjects(comp),
+    },
   };
 };

@@ -12,23 +12,19 @@ export function xpRequiredForNextLevel(level: number) {
   return levelToXp(level + 1);
 }
 
-export function levelToClassName(level: number) {
-  let className = "text-";
+export function levelToClassName(level: number | undefined) {
+  if (!level) {
+    return "border-neutral";
+  }
+  let className = "border-";
 
-  if (level >= 20)
-    className += "primary";
-  else if (level >= 15)
-    className += "secondary";
-  else if (level >= 10)
-    className += "accent";
-  else if (level >= 5)
-    className += "error";
-  else if (level >= 3)
-    className += "warning";
-  else if (level >= 1)
-    className += "success";
-  else
-    className += "info";
+  if (level >= 20) className += "primary";
+  else if (level >= 15) className += "secondary";
+  else if (level >= 10) className += "accent";
+  else if (level >= 5) className += "error";
+  else if (level >= 3) className += "warning";
+  else if (level >= 1) className += "success";
+  else className += "info";
 
   return className;
 }
