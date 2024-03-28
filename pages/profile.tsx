@@ -15,6 +15,7 @@ import { Collections, GetDatabase } from "@/lib/MongoDB";
 import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
+import { ChangesModal } from "@/components/Modal";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -58,8 +59,10 @@ export default function Profile(props: { teamList: Team[] }) {
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
+      <ChangesModal></ChangesModal>
       <Flex className="my-8 space-y-4" center={true} mode="col">
         <Card title={user?.name} coloredTop="bg-accent">
+          <div className="divider"></div>
           <Flex
             mode="row"
             className="space-x-4 max-sm:flex-col max-sm:items-center"

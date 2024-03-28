@@ -10,7 +10,7 @@ export default function Avatar(props: {
   const { session, status } = useCurrentSession();
   const user = props.user ?? session?.user;
   const image = user?.image ?? "/user.jpg";
-  const levelClass = levelToClassName(10);
+  const levelClass = levelToClassName(user?.level);
   const admin = user?.admin;
 
   console.log(props.scale);
