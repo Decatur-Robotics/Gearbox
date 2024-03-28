@@ -28,7 +28,7 @@ console.log("HTTPS options set");
 app.prepare().then(() => {
   console.log("App prepared. Creating server...");
 
-  createServer(httpsOptions, async (req, res) => {
+  const server = createServer(httpsOptions, async (req, res) => {
     const parsedUrl = parse(req.url, true);
     await handle(req, res, parsedUrl);
   }).listen(port, (err) => {
@@ -43,7 +43,7 @@ app.prepare().then(() => {
     );
   });
 
-  console.log("Server created");
+  console.log("Server created. Listening: " + server.listening);
 });
 
 console.log("App preparing...");
