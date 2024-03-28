@@ -44,17 +44,17 @@ type TeamPageProps = {
 function Overview(props: TeamPageProps) {
   return (
     <Card title="Overview" className="h-fit">
-      <Flex mode="row" className=" min-h-[12rem] mb-8">
-        <div className="w-1/2">
-          <h1 className="font-semibold text-lg mb-2">Current Competition:</h1>
+      <Flex mode="row" className=" min-h-[12rem] mb-8 max-sm:flex-col">
+        <div className="w-full md:w-1/2">
+          <h1 className="font-semibold text-lg mb-2">Latest Competition:</h1>
           <Link
             href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
           >
             <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
           </Link>
         </div>
-        <div className="divider divider-horizontal"></div>
-        <div className="w-1/2">
+        <div className="divider divider-horizontal max-sm:divider-vertical"></div>
+        <div className="w-full md:w-1/2">
           <h1 className="font-semibold text-lg mb-2">Current Season:</h1>
           {!props.currentSeason ? (
             <Link href={`/${props.team?.slug}/createSeason`}>
@@ -184,7 +184,7 @@ function Roster(props: TeamPageProps) {
   };
 
   return (
-    <Card title="Team Roster" className="h-full">
+    <Card title="Team Roster" className="h-full ">
       <h1 className="text-lg font-semibold">View and Manage your Team</h1>
       <h1>
         <span className="text-accent">{users?.length}</span> total members
@@ -247,65 +247,68 @@ function Roster(props: TeamPageProps) {
       )}
 
       <div className="divider"></div>
-      <table className="table">
-        <thead>
-          <tr>
-            <th className="">Index</th>
-            <th className="">Profile</th>
-            <th className="">Name</th>
-            <th className="">Scouter</th>
-            <th className="">Manager</th>
-            <th className="">Kick</th>
-          </tr>
-        </thead>
-        <tbody className="">
-          {users.map((user, index) => (
-            <tr
-              key={user._id}
-              className="p-0 h-20 even:bg-base-100 odd:bg-base-200"
-            >
-              <th className="w-10">{index + 1}</th>
-              <td className="absolute -translate-x-10 -translate-y-8">
-                <Avatar user={user} scale="scale-50"></Avatar>
-              </td>
-              <td className="font-semibold">{user.name}</td>
-              <td>
-                <input
-                  type="checkbox"
-                  className="toggle toggle-secondary"
-                  checked={team?.scouters.includes(user._id as string)}
-                  disabled={!owner}
-                  onChange={() => {
-                    updateScouter(user._id as string);
-                  }}
-                />
-              </td>
-              <td>
-                <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={team?.owners.includes(user._id as string)}
-                  disabled={!owner}
-                  onChange={() => {
-                    updateOwner(user._id as string);
-                  }}
-                />
-              </td>
-              <td>
-                <button
-                  className="btn btn-outline btn-error"
-                  disabled={!owner}
-                  onClick={() => {
-                    removeUser(user._id as string);
-                  }}
-                >
-                  <MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
-                </button>
-              </td>
+      <kbd className="kbd md:hidden">← Scroll →</kbd>
+      <div className="w-full overflow-x-scroll overflow-y-hidden">
+        <table className="table">
+          <thead>
+            <tr>
+              <th className="">Index</th>
+              <th className="">Profile</th>
+              <th className="">Name</th>
+              <th className="">Scouter</th>
+              <th className="">Manager</th>
+              <th className="">Kick</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="">
+            {users.map((user, index) => (
+              <tr
+                key={user._id}
+                className="p-0 h-20 even:bg-base-100 odd:bg-base-200 max-sm:text-xs"
+              >
+                <th className="w-10">{index + 1}</th>
+                <td className="absolute -translate-x-10 -translate-y-8">
+                  <Avatar user={user} scale="scale-50"></Avatar>
+                </td>
+                <td className="font-semibold">{user.name}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary"
+                    checked={team?.scouters.includes(user._id as string)}
+                    disabled={!owner}
+                    onChange={() => {
+                      updateScouter(user._id as string);
+                    }}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={team?.owners.includes(user._id as string)}
+                    disabled={!owner}
+                    onChange={() => {
+                      updateOwner(user._id as string);
+                    }}
+                  />
+                </td>
+                <td>
+                  <button
+                    className="btn btn-outline btn-error"
+                    disabled={!owner}
+                    onClick={() => {
+                      removeUser(user._id as string);
+                    }}
+                  >
+                    <MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }
@@ -342,7 +345,7 @@ function Settings(props: TeamPageProps) {
         className="input input-bordered w-full max-w-xs"
       />
       <div className="divider"></div>
-      <button className="btn btn-primary w-1/4" onClick={updateTeam}>
+      <button className="btn btn-primary md:w-1/4" onClick={updateTeam}>
         <FaSync></FaSync>Update Team
       </button>
     </Card>
@@ -361,13 +364,13 @@ export default function TeamIndex(props: TeamPageProps) {
     <Container requireAuthentication={true} hideMenu={false}>
       <Flex mode={"col"} className="h-fit space-y-6 my-8 items-center">
         <Card title={team?.name} coloredTop={"bg-secondary"}>
-          <Flex mode="row" className="space-x-4">
+          <Flex mode="row" className="md:space-x-4 max-sm:flex-col">
             <h1 className="font-semibold text-lg">
               <FaRobot size={30} className="inline-block mr-2"></FaRobot>
               Team <span className="text-accent">{team?.number}</span>
             </h1>
-            <div className="divider divider-horizontal"></div>
-            <h1 className="font-semibold text-lg">
+            <div className="divider divider-horizontal max-sm:divider-vertical"></div>
+            <h1 className="font-semibold text-xg">
               <FaUserFriends
                 className="inline-block mr-2"
                 size={30}
@@ -380,7 +383,7 @@ export default function TeamIndex(props: TeamPageProps) {
           <div className="divider"></div>
           <Flex mode="row" className="space-x-4">
             {isFrc ? (
-              <div className="badge badge-secondary">FIRST FRC</div>
+              <div className="badge badge-secondary md:badge-lg">FRC</div>
             ) : (
               <></>
             )}
@@ -389,15 +392,15 @@ export default function TeamIndex(props: TeamPageProps) {
               rel="noopener noreferrer"
               target="_blank"
             >
-              <div className="badge badge-primary text-white underline">
+              <div className="badge badge-primary text-white underline md:badge-lg">
                 <MdOutlineOpenInNew />
-                Linked to The Blue Alliance
+                TBA
               </div>
             </Link>
           </Flex>
         </Card>
 
-        <div className="flex flex-row justify-start w-2/3 ">
+        <div className="flex flex-row justify-start w-2/3 max-sm:w-11/12 ">
           <div className="w-full join grid grid-cols-3">
             <button
               className={

@@ -65,15 +65,18 @@ export default function CreateTeam() {
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <Flex center={true} mode="col" className="h-full">
-        <Card title="Create a new Team">
-          <h1 className="font-semibold text-accent ml-4">
+      <Flex
+        mode="col"
+        className="md:h-full items-center md:justify-center max-sm:py-10"
+      >
+        <Card title="Create a Team" className="">
+          <h1 className="font-semibold text-accent md:ml-4">
             Search our database with your teams number
           </h1>
           <h1 className="text-error">{error}</h1>
           <div className="divider"></div>
           <input
-            className="input input-bordered w-1/2"
+            className="input input-bordered md:w-1/2"
             placeholder="Team Number"
             maxLength={4}
             minLength={1}
@@ -83,7 +86,7 @@ export default function CreateTeam() {
             }}
           ></input>
           {teamNumber ? (
-            <div className="w-1/2 h-48 mt-10">
+            <div className="md:w-1/2 h-48 mt-10">
               {loading ? (
                 <Loading></Loading>
               ) : (

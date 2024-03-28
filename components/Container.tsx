@@ -118,9 +118,10 @@ export default function Container(props: ContainerProps) {
         className="alert rounded-none py-1 sm:py-2 font-semibold alert-warning"
       >
         <MdWarning className="max-sm:hidden" size={32} />
-      
+
         <span className="max-sm:text-sm">
-          Alert: We are experiencing delays with TBA data. Some data may be outdated.
+          Alert: We are experiencing delays with TBA data. Some data may be
+          outdated.
         </span>
       </div>
 
@@ -147,7 +148,7 @@ export default function Container(props: ContainerProps) {
               </Link>
             </div>
 
-            <label className="input input-bordered flex items-center sm:gap-2 sm:w-1/4">
+            <label className="input input-bordered flex items-center sm:gap-2 w-1/2 max-sm:w-1/2">
               <input
                 type="text"
                 value={eventSearch}

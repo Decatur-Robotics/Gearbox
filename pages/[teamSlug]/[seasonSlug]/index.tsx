@@ -11,6 +11,7 @@ import { Collections, GetDatabase } from "@/lib/MongoDB";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
+import { ObjectId } from "mongodb";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -73,7 +74,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const season = resolved.season;
 
   const comp = await db.findObjects(Collections.Competitions, {
-    _id: { $in: season?.competitions },
+    _id: { $in: season?.competitions.map((id) => new ObjectId(id)) },
   });
 
   return {

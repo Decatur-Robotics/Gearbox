@@ -29,7 +29,7 @@ export default function CompetitionCard(props: {
       )}
       {coming ? <div className="badge badge-accent">Incoming</div> : <></>}
       <div className="divider my-1"></div>
-      <h1 className="font-semibold text-neutral-content">
+      <h1 className="font-semibold text-neutral-content max-sm:text-xs">
         {MonthString(comp.start)} - {MonthString(comp.end)}
       </h1>
     </Card>

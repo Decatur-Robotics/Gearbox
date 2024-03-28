@@ -19,7 +19,7 @@ export default function CreateComp(props: ResolvedUrlData) {
   const [results, setResults] = useState<
     { value: number; pair: CompetitonNameIdPair }[]
   >([]);
-  const [selection, setSelection] = useState<number | undefined>(0);
+  const [selection, setSelection] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
 
   const searchComp = async () => {

@@ -38,8 +38,8 @@ export default function CreateSeason(props: CreateSeasonProps) {
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <Flex mode="row" center={true} className="h-fit py-24">
-        <div className="w-2/3 flex flex-row space-x-4">
+      <Flex mode="row" center={true} className="h-fit py-12 md:py-24">
+        <div className="w-2/3 max-sm:w-11/12 flex flex-row max-sm:flex-col max-sm:space-y-4 md:space-x-4">
           <Card title={CurrentSeason.name} className="w-1/3 bg-base-300">
             <h1 className="text-lg font-semibold">
               Made for the{" "}
