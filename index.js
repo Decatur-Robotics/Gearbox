@@ -33,7 +33,7 @@ app.prepare().then(() => {
     await handle(req, res, parsedUrl);
   }).listen(port, (err) => {
     if (err) {
-      console.error(err);
+      console.log(err);
       throw err;
     }
     console.log(
