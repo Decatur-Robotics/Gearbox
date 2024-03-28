@@ -25,7 +25,7 @@ export default function Stats(props: StatsPageProps) {
   const [update, setUpdate] = useState(props.time);
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
-  const [pitReports, setPitReports] = useState(props.pitReports);
+  const [pitReports, setPitReports] = useState(props.pitreports);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
@@ -41,10 +41,17 @@ export default function Stats(props: StatsPageProps) {
     setUpdating(true);
 
     const promises = [
-      api.competitionReports(props.competition._id, true).then((data) => setReports(data)),
-      pitReports.length === 0 && props.competition.pitReports.map((id) => api.findPitreportById(id).then((data) => setPitReports((prev) => [...prev, data])))
+      api
+        .competitionReports(props.competition._id, true)
+        .then((data) => setReports(data)),
+      pitReports.length === 0 &&
+        props.competition.pitReports.map((id) =>
+          api
+            .findPitreportById(id)
+            .then((data) => setPitReports((prev) => [...prev, data]))
+        ),
     ].flat();
-    
+
     await Promise.all(promises);
 
     setUpdate(Date.now());
@@ -97,8 +104,12 @@ export default function Stats(props: StatsPageProps) {
           </span>
         </a> */}
       </div>
-      
-      {page === 0 ? <TeamPage reports={reports} pitReports={pitReports}></TeamPage> : <></>}
+
+      {page === 0 ? (
+        <TeamPage reports={reports} pitReports={pitReports}></TeamPage>
+      ) : (
+        <></>
+      )}
       {page === 1 ? <PicklistScreen reports={reports}></PicklistScreen> : <></>}
     </Container>
   );
@@ -120,6 +131,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       competition: url.competition,
       time: Date.now(),
       pitreports: [],
-    }
+    },
   };
 };

@@ -1,1 +1,1 @@
-//npx cloc ./ --exclude-dir=.github,.vscode,certs,node_modules --exclude-ext=json
+//npx cloc ./ --exclude-dir=.github,.vscode,certs,node_modules,.next --exclude-ext=json

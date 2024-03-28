@@ -217,7 +217,6 @@ export class Pitreport {
   underBumperIntake: boolean = false;
   autoNotes: number = 0;
   comments: string = "";
-  submitted: boolean = false;
 
   constructor(teamNumber: number) {
     this.teamNumber = teamNumber;

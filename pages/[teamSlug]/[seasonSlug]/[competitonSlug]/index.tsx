@@ -5,6 +5,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
 import {
   AllianceColor,
+  Form,
   Match,
   MatchType,
   Pitreport,
@@ -16,7 +17,13 @@ import Container from "@/components/Container";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-import { MdAutoGraph, MdCoPresent, MdQueryStats } from "react-icons/md";
+import {
+  MdAutoGraph,
+  MdCoPresent,
+  MdDriveEta,
+  MdInsertPhoto,
+  MdQueryStats,
+} from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
@@ -57,17 +64,19 @@ export default function Home(props: ResolvedUrlData) {
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   const [submissionRate, setSubmissionRate] = useState(0);
-  const [submittedReports, setSubmittedReports] = useState<number | undefined>(undefined);
+  const [submittedReports, setSubmittedReports] = useState<number | undefined>(
+    undefined
+  );
 
   const [pitreports, setPitreports] = useState<Pitreport[]>([]);
   const [loadingPitreports, setLoadingPitreports] = useState(true);
-
-  const [submittedPitreports, setSubmittedPitreports] = useState(0);
+  const [submittedPitreports, setSubmittedPitreports] = useState<
+    number | undefined
+  >(undefined);
   const [
     attemptedRegeneratingPitReports,
     setAttemptedRegeneratingPitReports,
   ] = useState(false);
-
 
   const [updatingComp, setUpdatingComp] = useState("");
 
@@ -351,143 +360,6 @@ export default function Home(props: ResolvedUrlData) {
                 >
                   Scouting Insights
                 </a>
-              )}
-            </div>
-            {showSettings ? (
-              <div className="card-body md:min-w-[40rem]">
-                <h1 className="font-semibold text-xl">Settings</h1>
-                <div className="flex flex-row space-x-2">
-                  <button
-                    onClick={reloadCompetition}
-                    className="btn btn-md btn-primary w-1/2"
-                  >
-                    <FaSync></FaSync> Refresh
-                  </button>
-                  <button
-                    className={
-                      "btn btn-primary w-1/2 " +
-                      (assigningMatches ? "disabled" : "")
-                    }
-                    disabled={true}
-                    onClick={assignScouters}
-                  >
-                    {!assigningMatches ? (
-                      "Re-Assign Matches"
-                    ) : (
-                      <BsGearFill
-                        className="animate-spin-slow"
-                        size={30}
-                      ></BsGearFill>
-                    )}
-                  </button>
-                </div>
-
-                <button
-                  className={`btn ${
-                    exportPending ? "btn-disabled" : "btn-primary"
-                  } `}
-                  onClick={exportAsCsv}
-                >
-                  {exportPending ? (
-                    <div className="loading loading-bars loading-sm"></div>
-                  ) : (
-                    "Export Scouting Data as CSV"
-                  )}
-                </button>
-
-                <button
-                  className="btn btn-warning"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Are you sure you want to regenerate pit reports? Doing so will overwrite existing pit reports."
-                      )
-                    )
-                      regeneratePitReports();
-                  }}
-                >
-                  Regenerate Pit Reports
-                </button>
-
-                <div className="divider"></div>
-                <h1 className="font-semibold">Manually add matches</h1>
-
-                <div className="flex flex-row">
-                  <div className="w-1/2 flex flex-col items-center">
-                    <h1 className="text-red-500 font-bold text-xl">Red</h1>
-                    <div className="flex flex-row items-center justify-evenly">
-                      <input
-                        type="text"
-                        placeholder="Team 1"
-                        className="input input-sm  input-bordered w-1/4"
-                        value={redAlliance[0]}
-                        onChange={(e) => {
-                          const c = structuredClone(redAlliance);
-                          c[0] = Number(e.target.value);
-                          setRedAlliance(c);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Team 2"
-                        className="input input-sm  input-bordered w-1/4"
-                        value={redAlliance[1]}
-                        onChange={(e) => {
-                          const c = structuredClone(redAlliance);
-                          c[1] = Number(e.target.value);
-                          setRedAlliance(c);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Team 3"
-                        className="input input-sm  input-bordered w-1/4"
-                        value={redAlliance[2]}
-                        onChange={(e) => {
-                          const c = structuredClone(redAlliance);
-                          c[2] = Number(e.target.value);
-                          setRedAlliance(c);
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="w-1/2 flex flex-col items-center">
-                    <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
-                    <div className="flex flex-row items-center justify-evenly">
-                      <input
-                        type="text"
-                        placeholder="Team 1"
-                        className="input input-sm  input-bordered w-1/4"
-                        value={blueAlliance[0]}
-                        onChange={(e) => {
-                          const c = structuredClone(blueAlliance);
-                          c[0] = Number(e.target.value);
-                          setBlueAlliance(c);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Team 2"
-                        className="input input-sm  input-bordered w-1/4"
-                        value={blueAlliance[1]}
-                        onChange={(e) => {
-                          const c = structuredClone(blueAlliance);
-                          c[1] = Number(e.target.value);
-                          setBlueAlliance(c);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Team 3"
-                        className="input input-sm  input-bordered w-1/4"
-                        value={blueAlliance[2]}
-                        onChange={(e) => {
-                          const c = structuredClone(blueAlliance);
-                          c[2] = Number(e.target.value);
-                          setBlueAlliance(c);
-                        }}
-                      />
-                    </div>
                 {isManager ? (
                   <a
                     role="tab"
@@ -521,7 +393,10 @@ export default function Home(props: ResolvedUrlData) {
                         (assigningMatches ? "disabled" : "")
                       }
                       // disabled={true}
-                      onClick={() => confirm("Are you sure? This cannot be undone!") && assignScouters()}
+                      onClick={() =>
+                        confirm("Are you sure? This cannot be undone!") &&
+                        assignScouters()
+                      }
                     >
                       {!assigningMatches ? (
                         "Re-Assign Matches"
@@ -547,30 +422,6 @@ export default function Home(props: ResolvedUrlData) {
                     </button>
                   </div>
 
-                <button
-                  className="btn btn-accent"
-                  disabled={!matchNumber}
-                  onClick={createMatch}
-                >
-                  Create
-                </button>
-              </div>
-            ) : (
-              <div className="card-body ">
-                <h1 className="font-semibold text-lg">Scouting Progress</h1>
-                <div className="stats bg-base-300 w-full shadow-xl">
-                  <div className="stat space-y-2">
-                    <div className="stat-figure text-accent">
-                      <BsClipboard2Check size={65}></BsClipboard2Check>
-                    </div>
-                    <div className="stat-title text-slate-400">
-                      Competition Progress
-                    </div>
-                    <div className="stat-value text-accent">
-                      {!Number.isNaN(submittedReports)
-                        ? Round(submittedReports / reports.length) * 100
-                        : "?"}
-                      %
                   {/* <button
                     className="btn btn-warning"
                     onClick={() => {
@@ -695,9 +546,7 @@ export default function Home(props: ResolvedUrlData) {
                       </div>
                       <div className="stat-value text-accent">
                         {submittedReports && !Number.isNaN(submittedReports)
-                          ? Round(
-                              submittedReports / reports.length
-                            ) * 100
+                          ? Round(submittedReports / reports.length) * 100
                           : "?"}
                         %
                       </div>
@@ -713,51 +562,26 @@ export default function Home(props: ResolvedUrlData) {
                       </div>
                       {loadingScoutStats ? (
                         <div className="stat-value text-primary">
-                          {!Number.isNaN(submittedReports)
-                            ? Round(submittedReports / reports.length) * 100
-                            : "?"}
-                          %
-                        </div>
-                        <div className="stat-desc">
-                          {submittedReports}/{reports.length} Reports
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <h1 className="font-semibold text-lg">Pitscouting Progress</h1>
-                <div className="stats mt-2">
-                  <div className="stat place-items-center">
-                    <div className="stat-title">Teams</div>
-                    <div className="stat-figure text-primary">
-                      <FaUserGroup size={40}></FaUserGroup>
-                    </div>
-                    <div className="stat-value text-primary">
-                      {!submittedPitreports ? "?" : submittedPitreports}/
-                      {!pitreports ? "?" : pitreports.length}
-
                           <BsGearFill size={45} className="animate-spin-slow" />
                         </div>
                       ) : (
                         <div>
                           <div className="stat-value text-primary">
                             {submittedReports && !Number.isNaN(submittedReports)
-                              ? Round(
-                                  submittedReports / reports.length
-                                ) * 100
+                              ? Round(submittedReports / reports.length) * 100
                               : "?"}
                             %
                           </div>
                           <div className="stat-desc">
-                            {submittedReports}/{reports.length}{" "}
-                            Reports
+                            {submittedReports}/{reports.length} Reports
                           </div>
                         </div>
                       )}
-
                     </div>
                   </div>
-                  <h1 className="font-semibold text-lg">Pitscouting Progress</h1>
+                  <h1 className="font-semibold text-lg">
+                    Pitscouting Progress
+                  </h1>
                   <div className="stats mt-2 w-full">
                     <div className="stat place-items-center">
                       <div className="stat-title">Teams</div>
@@ -765,8 +589,13 @@ export default function Home(props: ResolvedUrlData) {
                         <FaUserGroup size={40}></FaUserGroup>
                       </div>
                       <div className="stat-value text-primary">
-                        {!submittedPitreports && submittedPitreports !== 0 ? "?" : submittedPitreports}
-                        /{!pitreports || pitreports.length === 0 ? "?" : pitreports.length}
+                        {!submittedPitreports && submittedPitreports !== 0
+                          ? "?"
+                          : submittedPitreports}
+                        /
+                        {!pitreports || pitreports.length === 0
+                          ? "?"
+                          : pitreports.length}
                       </div>
                     </div>
 
@@ -998,7 +827,6 @@ export default function Home(props: ResolvedUrlData) {
                               No Image
                             </div>
                           )} */}
-
                             {report.submitted ? (
                               <FaCheck size={64} />
                             ) : (
