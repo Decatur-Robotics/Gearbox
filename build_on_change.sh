@@ -1,6 +1,6 @@
 #!/bin/bash
 REMOTE=origin
-BRANCH=master
+BRANCH=main
 git fetch
 if [[ "$(git rev-parse $BRANCH)" != "$(git rev-parse "$REMOTE/$BRANCH")" ]]; then
   echo "Changes detected"
