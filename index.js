@@ -28,25 +28,30 @@ console.log("HTTPS options set");
 app.prepare().then(() => {
   console.log("App prepared. Creating server...");
 
-  const server = createServer(httpsOptions, async (req, res) => {
-    const parsedUrl = parse(req.url, true);
-    await handle(req, res, parsedUrl);
-  }).listen(port, (err) => {
-    if (err) {
+  try {
+    const server = createServer(httpsOptions, async (req, res) => {
+      const parsedUrl = parse(req.url, true);
+      await handle(req, res, parsedUrl);
+    }).listen(port, (err) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+      console.log(
+        process.env.NODE_ENV +
+          " HTTPS Server Running At: https://localhost:" +
+          port,
+      );
+    }).on("error", (err) => {
       console.log(err);
       throw err;
-    }
-    console.log(
-      process.env.NODE_ENV +
-        " HTTPS Server Running At: https://localhost:" +
-        port,
-    );
-  }).on("error", (err) => {
+    });
+
+    console.log("Server created. Listening: " + server.listening);
+  } catch (err) {
     console.log(err);
     throw err;
-  });
-
-  console.log("Server created. Listening: " + server.listening);
+  }
 });
 
 console.log("App preparing...");
