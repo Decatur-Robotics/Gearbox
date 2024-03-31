@@ -28,6 +28,7 @@ import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
 import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
+import Avatar from "@/components/Avatar";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -731,7 +732,7 @@ export default function Home(props: ResolvedUrlData) {
                                 })}
                               </div>
 
-                              <div className="w-full flex flex-row items-center space-x-4 ml-2">
+                              <div className="w-full flex flex-row items-center space-x-2">
                                 {match.reports.map((reportId) => {
                                   const report = reportsById[reportId];
                                   //@ts-ignore
@@ -743,31 +744,22 @@ export default function Home(props: ResolvedUrlData) {
                                       data-tip={user?.name}
                                       key={reportId}
                                     >
-                                      <div className="avatar">
-                                        {/*Ternaries are fun*/}
-                                        <div className="w-10 rounded-full">
-                                          <img
-                                            src={user?.image}
-                                            onClick={() => {
-                                              if (
-                                                user.slackId &&
-                                                session &&
-                                                team?.owners?.includes(
-                                                  session.user?._id ?? ""
-                                                ) &&
-                                                confirm(
-                                                  "Remind scouter on Slack?"
-                                                )
-                                              ) {
-                                                api.remindSlack(
-                                                  user.slackId,
-                                                  session.user?.slackId
-                                                );
-                                              }
-                                            }}
-                                          />
-                                        </div>
-                                      </div>
+                                      <Avatar user={user} scale="w-12" imgHeightOverride="h-12" showLevel={false} borderThickness={2} onClick={() => {
+                                        if (
+                                          user.slackId &&
+                                          session &&
+                                          team?.owners?.includes(
+                                            session.user?._id ?? ""
+                                          ) &&
+                                          confirm(
+                                            "Remind scouter on Slack?"
+                                          )
+                                        ) {
+                                          api.remindSlack(
+                                            user.slackId,
+                                            session.user?.slackId
+                                          );
+                                        }}} />
                                     </div>
                                   );
                                 })}

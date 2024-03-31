@@ -10,6 +10,7 @@ import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
 import { MdWarning } from "react-icons/md";
+import Avatar from "./Avatar";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -181,15 +182,18 @@ export default function Container(props: ContainerProps) {
 
             <div>
               {authenticated ? (
-                <Link
-                  href={"/profile"}
-                  tabIndex={0}
-                  className="btn btn-ghost btn-circle avatar sm:mr-5"
-                >
-                  <div className="w-10 rounded-full">
-                    <img src={user?.image} />
-                  </div>
+                <Link href={"/profile"} tabIndex={0} className="mr-3 sm:mr-5">
+                  <Avatar user={user!} className="translate-y-1" scale="w-11" imgHeightOverride="h-11" showLevel={false} borderThickness={2} />
                 </Link>
+                // <Link
+                //   href={"/profile"}
+                //   tabIndex={0}
+                //   className="btn btn-ghost btn-circle avatar sm:mr-5"
+                // >
+                //   <div className="w-10 rounded-full">
+                //     <img src={user?.image} />
+                //   </div>
+                // </Link>
               ) : (
                 <a
                   href={"/api/auth/signin"}
