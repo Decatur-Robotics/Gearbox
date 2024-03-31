@@ -1,5 +1,6 @@
 git pull
 /home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm ci
 /home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm run build
-sudo kill $(sudo lsof -t -i:443)
+PID=$(sudo lsof -t -i:443)
+sudo kill $PID
 /home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm run start
