@@ -16,7 +16,7 @@ export default function Footer() {
     <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
       <aside className="max-sm:pl-8 flex flex-col -space-x-4">
         <p className="text-lg">
-          Version 0.1.3 made with <span className="">❤️</span> by{" "}
+          Made with <span className="">❤️</span> by{" "}
           <a
             href="https://www.decaturrobotics.org/"
             className="inline-block text-bold text-accent"
@@ -68,6 +68,7 @@ export default function Footer() {
         >
           <FaList className="inline mr-1" size={16}></FaList>About Us
         </a>
+        <div>Version 1.6</div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <a
