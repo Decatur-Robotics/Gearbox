@@ -68,7 +68,7 @@ export default function Footer() {
         >
           <FaList className="inline mr-1" size={16}></FaList>About Us
         </a>
-        <div>Version 1.6.17</div>
+        <div>Version 1.6.18</div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <a
