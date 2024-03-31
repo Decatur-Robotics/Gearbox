@@ -2,7 +2,7 @@ import useLocalStorage from "@/lib/client/useLocalStorage";
 import { useEffect, useRef } from "react";
 import Flex from "./Flex";
 
-const UPDATEKEY = "gb-updatev0.5";
+const UPDATEKEY = "gb-updatev0.51";
 
 export function ChangesModal(props: {}) {
   const modalRef = useRef<HTMLDialogElement>(null);
