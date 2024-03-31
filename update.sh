@@ -1,5 +1,4 @@
-git pull
-npm ci
-npm run build
+/home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm ci
+/home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm run build
 sudo kill $(sudo lsof -t -i:443)
-npm run start
+/home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm run start

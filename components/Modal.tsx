@@ -1,7 +1,8 @@
 import useLocalStorage from "@/lib/client/useLocalStorage";
 import { useEffect, useRef } from "react";
+import Flex from "./Flex";
 
-const UPDATEKEY = "gb-updatev0.5";
+const UPDATEKEY = "gb-updatev0.51";
 
 export function ChangesModal(props: {}) {
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -16,7 +17,7 @@ export function ChangesModal(props: {}) {
   });
 
   return (
-    <div className="overflow-x-clip">
+    <div className="">
       <dialog className="modal shadow-lg bg-transparent " ref={modalRef}>
         <div className="modal-box">
           <form method="dialog">
@@ -24,6 +25,9 @@ export function ChangesModal(props: {}) {
               ✕
             </button>
           </form>
+          <Flex center={true}>
+            <img src="/art/BrokenRobot.svg" className="w-1/2"></img>
+          </Flex>
           <h3 className="font-bold text-lg">Whats New?</h3>
           <p className="py-4">We have been working hard to improve Gearbox</p>
           <div className="divider"></div>
