@@ -62,7 +62,6 @@ export default function Profile(props: { teamList: Team[] }) {
       <ChangesModal></ChangesModal>
       <Flex className="my-8 space-y-4" center={true} mode="col">
         <Card title={user?.name} coloredTop="bg-accent">
-          <div className="divider"></div>
           <Flex
             mode="row"
             className="space-x-4 max-sm:flex-col max-sm:items-center"
