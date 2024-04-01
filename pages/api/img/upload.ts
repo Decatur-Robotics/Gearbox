@@ -3,8 +3,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Formidable } from "formidable";
 import * as fs from "fs";
 import { API } from "@/lib/API";
-import { randomUUID } from "crypto";
-import PersistentFile from "formidable/PersistentFile";
 
 export const config = {
   api: {
