@@ -25,8 +25,8 @@ export default function ImageUpload(props: {
 
     const compressionOptions = {
       ...DefaultCompressionOptions,
-      fileType: (data.name as string).split(".").at(-1)
-    }
+      fileType: (data.name as string).split(".").at(-1),
+    };
 
     const compressedFile = await imageCompression(data, compressionOptions);
     console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`);
@@ -44,7 +44,7 @@ export default function ImageUpload(props: {
 
     if (res.status === 200) {
       const data = await res.json();
-      const url = `/api/img/get?image=${data.filename}`;
+      const url = `/api/img/get?filename=${data.filename}`;
 
       setTimeout(() => {
         setImageUrl(url);

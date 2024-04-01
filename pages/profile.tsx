@@ -162,7 +162,8 @@ export default function Profile(props: { teamList: Team[] }) {
                       </div>
                     </div>
                     <div className="divider md:divider-horizontal max-sm:divider-vertical"></div>
-                    <Flex className="w-1/2" center={true}>
+                    <Flex mode="col" className="w-1/2 items-center space-y-4">
+                      <img src="/art/4026.svg" className="w-1/2 h-auto"></img>
                       <Link
                         href={"/createTeam"}
                         className="btn btn-primary md:btn-wide text-white"

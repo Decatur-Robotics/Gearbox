@@ -1,11 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { Formidable } from "formidable";
-import { GetDatabase } from "@/lib/MongoDB";
-import { createReadStream } from "fs";
-import { GridFSBucket, ObjectId } from "mongodb";
+import * as fs from "fs";
 import { API } from "@/lib/API";
 import { randomUUID } from "crypto";
+import PersistentFile from "formidable/PersistentFile";
 
 export const config = {
   api: {
@@ -22,34 +21,23 @@ export default async function handler(
       if (req.headers[API.GearboxHeader]?.toString() !== process.env.API_KEY) {
         res.send({ status: 400, message: "Invalid Request" });
       }
-      const data: any = await new Promise((resolve, reject) => {
+      const form: any = await new Promise((resolve, reject) => {
         const form = new Formidable();
-
         form.parse(req, (err: any, fields: any, files: any) => {
           if (err) reject({ err });
-          resolve({ err, fields, files });
+          resolve({ fields, files });
         });
       });
+      const files = form.files.files;
+      const file = files[0];
 
-      const db = await GetDatabase();
-      //@ts-ignore
-      const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
+      var filetype = file.mimetype.split("image/")[1];
+      var filename = `\\${file.newFilename}.${filetype}`;
 
-      const file = data.files.files[0] as any;
-      if (!bucket) {
-        console.log("fuck");
-        return;
-      }
-
-      const filename = randomUUID();
-
-      const c = createReadStream(file.filepath).pipe(
-        bucket.openUploadStream(filename, {
-          chunkSizeBytes: 1048576,
-          metadata: {},
-        })
-      );
-      return res.send({ status: 200, filename: filename });
+      var tempFile = fs.readFileSync(file.filepath);
+      fs.writeFile(process.env.IMAGE_UPLOAD_DIR + filename, tempFile, (err) => {
+        res.send({ status: 200, filename: filename });
+      });
     } catch (e) {
       res.send({ status: 500, message: e });
     }

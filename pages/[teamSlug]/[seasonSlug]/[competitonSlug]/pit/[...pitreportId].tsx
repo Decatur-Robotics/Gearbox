@@ -16,6 +16,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { FaRobot } from "react-icons/fa";
+import ImageUpload from "@/components/forms/ImageUpload";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -71,6 +72,8 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
         <Card>
           <h1 className="text-2xl font-semibold">Physical Attributes:</h1>
           <div className="divider"></div>
+
+          <ImageUpload data={pitreport} callback={setCallback}></ImageUpload>
 
           <h1 className="font-semibold text-lg">Intake: </h1>
           <div className="translate-x-10">

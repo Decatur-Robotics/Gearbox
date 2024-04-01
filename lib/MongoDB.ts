@@ -11,7 +11,7 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI;
-const options: MongoClientOptions = { maxPoolSize: 1 };
+const options: MongoClientOptions = { maxPoolSize: 3 };
 
 let client;
 let clientPromise: Promise<MongoClient>;

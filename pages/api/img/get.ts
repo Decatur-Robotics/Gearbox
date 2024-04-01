@@ -1,8 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { GetDatabase } from "@/lib/MongoDB";
-import { GridFSBucket, ObjectId } from "mongodb";
-import { SerializeDatabaseObject } from "@/lib/UrlResolver";
-import { useRouter } from "next/router";
+import * as fs from "fs";
 
 export const config = {
   api: {
@@ -15,21 +12,18 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
-    console.log(req.query);
-    const filename = req.query.image;
-    console.log("Filename: " + filename);
+    const filename = req.query.filename;
+    console.log(filename);
+
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
-    const db = await GetDatabase();
-    //@ts-ignore
-    const bucket = new GridFSBucket(db.db, { bucketName: "bucket" });
-    console.log("Got bucket");
-    try {
-      // errors here
-      bucket.openDownloadStreamByName(filename as string).pipe(res);
-    } catch (e) {
-      console.log(":error");
-      return res.send({ status: 400, message: e });
-    }
+
+    var s = fs.createReadStream(process.env.IMAGE_UPLOAD_DIR + `/${filename}`);
+    s.on("open", function () {
+      s.pipe(res);
+    });
+    s.on("error", function () {
+      res.send({ status: 404, message: "File Not Found" });
+    });
   } else {
     return res.send({ status: 400, message: "Invalid Request" });
   }

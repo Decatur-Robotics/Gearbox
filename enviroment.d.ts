@@ -18,6 +18,7 @@ declare global {
       API_KEY: string;
 
       DEFAULT_IMAGE: string;
+      IMAGE_UPLOAD_DIR: string;
 
       FILL_TEAMS: string;
 
