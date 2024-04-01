@@ -31,6 +31,7 @@ export default async function handler(
       var filetype = file.mimetype.split("image/")[1];
       var filename = `/${file.newFilename}.${filetype}`;
       console.log(process.env.IMAGE_UPLOAD_DIR + filename);
+      console.log(process.env.IMAGE_UPLOAD_DIR);
 
       var tempFile = fs.readFileSync(file.filepath);
       fs.writeFile(process.env.IMAGE_UPLOAD_DIR + filename, tempFile, (err) => {
