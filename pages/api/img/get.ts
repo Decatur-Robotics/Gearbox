@@ -6,7 +6,6 @@ export const config = {
     bodyParser: false,
   },
 };
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
