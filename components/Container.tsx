@@ -121,8 +121,7 @@ export default function Container(props: ContainerProps) {
         <MdWarning className="max-sm:hidden" size={32} />
 
         <span className="max-sm:text-sm">
-          Alert: We are experiencing delays with TBA data. Some data may be
-          outdated.
+          Alert: We are switching infastructure
         </span>
       </div>
 
@@ -183,8 +182,16 @@ export default function Container(props: ContainerProps) {
             <div>
               {authenticated ? (
                 <Link href={"/profile"} tabIndex={0} className="mr-3 sm:mr-5">
-                  <Avatar user={user!} className="translate-y-1" scale="w-11" imgHeightOverride="h-11" showLevel={false} borderThickness={2} />
+                  <Avatar
+                    user={user!}
+                    className="translate-y-1"
+                    scale="w-11"
+                    imgHeightOverride="h-11"
+                    showLevel={false}
+                    borderThickness={2}
+                  />
                 </Link>
+              ) : (
                 // <Link
                 //   href={"/profile"}
                 //   tabIndex={0}
@@ -194,7 +201,6 @@ export default function Container(props: ContainerProps) {
                 //     <img src={user?.image} />
                 //   </div>
                 // </Link>
-              ) : (
                 <a
                   href={"/api/auth/signin"}
                   rel="noopener noreferrer"
