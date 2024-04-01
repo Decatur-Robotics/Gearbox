@@ -121,7 +121,7 @@ export default function Container(props: ContainerProps) {
         <MdWarning className="max-sm:hidden" size={32} />
 
         <span className="max-sm:text-sm">
-          Alert: We are switching infastructure
+          Alert: We have recently switched to new server infrastructure. We appreciate your patience as we work out any bugs.
         </span>
       </div>
 
