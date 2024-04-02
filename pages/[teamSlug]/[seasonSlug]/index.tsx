@@ -48,7 +48,12 @@ export default function Home(props: SeasonPageProps) {
             <></>
           )}
           {comp.map((comp) => (
-            <CompetitionCard comp={comp} key={comp._id}></CompetitionCard>
+            <Link
+              key={comp._id}
+              href={`/${team.slug}/${season.slug}/${comp.slug}`}
+            >
+              <CompetitionCard comp={comp}></CompetitionCard>
+            </Link>
           ))}
           {owner ? (
             <Flex center={true} className="mt-4">

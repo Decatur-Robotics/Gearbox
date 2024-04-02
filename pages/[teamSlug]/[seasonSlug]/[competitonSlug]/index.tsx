@@ -744,22 +744,28 @@ export default function Home(props: ResolvedUrlData) {
                                       data-tip={user?.name}
                                       key={reportId}
                                     >
-                                      <Avatar user={user} scale="w-12" imgHeightOverride="h-12" showLevel={false} borderThickness={2} onClick={() => {
-                                        if (
-                                          user.slackId &&
-                                          session &&
-                                          team?.owners?.includes(
-                                            session.user?._id ?? ""
-                                          ) &&
-                                          confirm(
-                                            "Remind scouter on Slack?"
-                                          )
-                                        ) {
-                                          api.remindSlack(
-                                            user.slackId,
-                                            session.user?.slackId
-                                          );
-                                        }}} />
+                                      <Avatar
+                                        user={user}
+                                        scale="w-12"
+                                        imgHeightOverride="h-12"
+                                        showLevel={false}
+                                        borderThickness={2}
+                                        onClick={() => {
+                                          if (
+                                            user.slackId &&
+                                            session &&
+                                            team?.owners?.includes(
+                                              session.user?._id ?? ""
+                                            ) &&
+                                            confirm("Remind scouter on Slack?")
+                                          ) {
+                                            api.remindSlack(
+                                              user.slackId,
+                                              session.user?.slackId
+                                            );
+                                          }
+                                        }}
+                                      />
                                     </div>
                                   );
                                 })}
@@ -811,16 +817,9 @@ export default function Home(props: ResolvedUrlData) {
                           <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
                             {report.teamNumber}
                           </div>
-                          <div className="absolute rounded z-10 translate-y-4 items-center">
-                            {/* {report.image !== "/robot.jpg" ? (
-                            <img src={report.image}></img>
-                          ) : (
-                            <div className="w-full h-full skeleton flex items-center justify-center font-mono text-sm">
-                              No Image
-                            </div>
-                          )} */}
+                          <div className="absolute rounded z-10 translate-y-4 flex justify-center items-center">
                             {report.submitted ? (
-                              <FaCheck size={64} />
+                              <img src={report.image} className="w-full"></img>
                             ) : (
                               <FaRobot size={64} />
                             )}

@@ -15,6 +15,7 @@ export default function Footer() {
   return (
     <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
       <aside className="max-sm:pl-8 flex flex-col -space-x-4">
+        <img src="/art/4026Bench.svg" className="w-32"></img>
         <p className="text-lg">
           Made with <span className="">❤️</span> by{" "}
           <a
@@ -23,7 +24,7 @@ export default function Footer() {
           >
             Team 4026
           </a>
-          <TbUfo size={30} className="animate-bounce inline ml-2"></TbUfo>
+          <TbUfo size={30} className="inline ml-2"></TbUfo>
         </p>
         <div className="divider divider-vertical"> </div>
         <div className="flex flex-row space-x-2">

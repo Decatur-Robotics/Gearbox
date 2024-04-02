@@ -252,30 +252,36 @@ export default function Homepage() {
         }`}
       >
         <div className="hero-content w-full max-sm:pb-14">
-          <div className="w-full space-y-2 grid grid-cols-1 sm:grid-cols-3 grid-rows-2 sm:space-x-10 z-20">
-            <div className="relative w-full flex items-center justify-center">
-              <div className="max-sm:hidden w-96 h-96 right-36 top-2 absolute bg-slate-600 opacity-20 rounded-xl animate-spin-slow -z-50"></div>
-            </div>
-
-            <div className=" w-full flex flex-col items-center text-center bg-base-300 sm:p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+          <div className="w-full md:space-x-4 max-sm:space-y-4 flex flex-row max-sm:flex-col">
+            <div className=" w-full flex flex-col items-center text-center bg-base-300 sm:p-4 rounded-xl ">
+              <img
+                src="/art/ShootingRobot.svg"
+                className="grayscale opacity-20 w-1/2"
+              ></img>
               <p className="text-2xl font-bold">Insightful Visualizations</p>
               <div className="divider"></div>
               <p className="font-mono opacity-50">
                 Graphs, heatmaps and textual insights are generated in real-time
               </p>
             </div>
-            <div className="w-full flex items-center justify-center">
-              <div className="max-sm:hidden w-80 h-80 absolute mask mask-hexagon bottom-40 bg-slate-600 opacity-50 rounded-full animate-spin-slow -z-50"></div>
-            </div>
-            <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+
+            <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl  ">
+              <img
+                src="/art/BrokenRobot.svg"
+                className="grayscale opacity-20 w-1/2"
+              ></img>
               <p className="text-2xl font-bold">Minimal UI/UX</p>
               <div className="divider"></div>
               <p className="font-mono opacity-50">
                 Designed from the ground-up to be intuitive to use
               </p>
             </div>
-            <div className="w-full flex items-center justify-center"></div>
-            <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl border-2 border-base-300 hover:border-accent ">
+
+            <div className="w-full flex flex-col items-center text-center bg-base-300 p-4 rounded-xl">
+              <img
+                src="/art/4026.svg"
+                className="grayscale opacity-20 w-1/2"
+              ></img>
               <p className="text-2xl font-bold">Integrated Team Management</p>
               <div className="divider"></div>
               <p className="font-mono opacity-50">

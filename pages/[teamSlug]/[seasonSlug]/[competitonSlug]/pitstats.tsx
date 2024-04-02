@@ -60,10 +60,15 @@ function TeamSlide(props: {
     >
       <div className="w-1/2">
         <h1 className="font-bold text-5xl text-accent">
-          Team {props.teamNumber} (#{props.ranking?.rank ?? "?"}/{props.maxRanking})
+          Team {props.teamNumber} (#{props.ranking?.rank ?? "?"}/
+          {props.maxRanking})
         </h1>
-        <h2 className="font-mono">Scouting + Pit-scouting data<br/>
-          Record: {props.ranking?.record.wins}-{props.ranking?.record.losses}-{props.ranking?.record.ties}</h2>
+        <h2 className="font-mono">
+          Scouting + Pit-scouting data
+          <br />
+          Record: {props.ranking?.record.wins}-{props.ranking?.record.losses}-
+          {props.ranking?.record.ties}
+        </h2>
         <div className="flex flex-row space-x-2">
           {pit?.canClimb ? (
             <div className="badge badge-primary">Can Climb</div>
@@ -125,13 +130,19 @@ function TeamSlide(props: {
           </div>
         </div>
       </div>
-      <div className="w-1/2 flex flex-col">
-        {/* {pit.image !== "/robot.jpg" ? (
-          <img src={pit.image} className="rounded-xl w-[300px] h-64"></img>
+      <div className="w-1/2 flex flex-col items-center">
+        {pit.submitted ? (
+          <img src={pit.image} className="rounded-xl w-1/2 h-auto"></img>
         ) : (
-          <div className="skeleton bg-base-300 w-[300px] h-64 rounded-xl"></div>
-        )} */}
-        <BarGraph label="Notes Scored in Both Amp & Speaker" data={props.matchReports.map((rep)=>rep.data.TeleopScoredSpeaker+rep.data.TeleopScoredAmp)} xlabels={props.matchReports.map((r, i)=>String(i+1))} />
+          <></>
+        )}
+        <BarGraph
+          label="Notes Scored in Both Amp & Speaker"
+          data={props.matchReports.map(
+            (rep) => rep.data.TeleopScoredSpeaker + rep.data.TeleopScoredAmp
+          )}
+          xlabels={props.matchReports.map((r, i) => String(i + 1))}
+        />
       </div>
     </div>
   );
@@ -157,7 +168,7 @@ export default function Pitstats(props: { competition: Competition }) {
       comp._id,
       true
     )) as Report[];
-    
+
     const rankings = await api.compRankings(comp.tbaId);
 
     var newPairs: TeamReportPair = {};
@@ -267,7 +278,7 @@ export default function Pitstats(props: { competition: Competition }) {
           avgSpeaker={avgSpeaker}
           pitReport={newPits[Number(key)]}
           matchReports={newReports.filter((r) => r.robotNumber === Number(key))}
-          ranking={rankings.find((r)=>r.team_key === `frc${key}`)}
+          ranking={rankings.find((r) => r.team_key === `frc${key}`)}
           maxRanking={rankings.length}
         ></TeamSlide>
       );
