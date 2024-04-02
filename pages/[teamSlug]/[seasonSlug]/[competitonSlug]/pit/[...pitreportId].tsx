@@ -39,14 +39,11 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
   );
 
   async function submit() {
+    // Remove _id from object
+    const { _id, ...report } = pitreport;
+
     await api.updatePitreport(props.pitreport?._id, {
-      image: pitreport.image,
-      intakeType: pitreport.intakeType,
-      canClimb: pitreport.canClimb,
-      drivetrain: pitreport.drivetrain,
-      canScoreAmp: pitreport.canScoreAmp,
-      canScoreSpeaker: pitreport.canScoreSpeaker,
-      comments: pitreport.comments,
+      ...report,
       submitted: true,
     });
     location.href = location.href.substring(
@@ -138,7 +135,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
             ></Checkbox>
             <Checkbox
               label="Can Score From Distance"
-              dataKey="fixedShooter"
+              dataKey="canScoreFromDistance"
               data={pitreport}
               callback={setCallback}
             ></Checkbox>

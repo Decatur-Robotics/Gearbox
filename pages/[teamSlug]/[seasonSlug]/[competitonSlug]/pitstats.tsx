@@ -1,6 +1,6 @@
 import Container from "@/components/Container";
 import BarGraph from "@/components/stats/Graph";
-import { Competition, Pitreport, Report } from "@/lib/Types";
+import { Competition, IntakeTypes, Pitreport, Report, SwerveLevel } from "@/lib/Types";
 import { ResolvedUrlData, SerializeDatabaseObject } from "@/lib/UrlResolver";
 import UrlResolver from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
@@ -9,10 +9,11 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
 import { Collections, GetDatabase } from "@/lib/MongoDB";
-import { NumericalAverage, NumericalTotal } from "@/lib/client/StatsMath";
+import { NumericalAverage, NumericalTotal, StandardDeviation } from "@/lib/client/StatsMath";
 import useIsVisible from "@/lib/client/useIsVisible";
 import Heatmap from "@/components/stats/Heatmap";
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
+import { IntakeType } from "@/components/forms/Checkboxes";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -27,6 +28,13 @@ type TeamStatPair = {
 };
 type PitReportPair = { [team: number]: Pitreport };
 
+type DataGroup = {
+  teleop: number,
+  auto: number,
+  amp: number,
+  speaker: number,
+}
+
 function TeamSlide(props: {
   teamNumber: number;
   teamStatPairs: TeamStatPair;
@@ -38,11 +46,17 @@ function TeamSlide(props: {
   matchReports: Report[];
   ranking: TheBlueAlliance.SimpleRank | undefined;
   maxRanking: number;
+  compAverages: DataGroup,
+  compStDevs: DataGroup,
 }) {
   const [visible, setVisible] = useState(false);
   const stats = props.teamStatPairs[props.teamNumber];
   const length = props.avgTeleop.length;
   const pit = props.pitReport;
+  const compStats = {
+    avgs: props.compAverages,
+    stDevs: props.compStDevs,
+  }
 
   useEffect(() => {
     setVisible(true);
@@ -51,10 +65,36 @@ function TeamSlide(props: {
     };
   }, []);
 
+  const diffFromAvg: DataGroup = {
+    teleop: stats.avgTeleop - compStats.avgs.teleop,
+    auto: stats.avgAuto - compStats.avgs.auto,
+    amp: stats.avgAmp - compStats.avgs.amp,
+    speaker: stats.avgSpeaker - compStats.avgs.speaker,
+  }
+  const diffFromAvgStDev: DataGroup = {
+    teleop: diffFromAvg.teleop / compStats.stDevs.teleop,
+    auto: diffFromAvg.auto / compStats.stDevs.auto,
+    amp: diffFromAvg.amp / compStats.stDevs.amp,
+    speaker: diffFromAvg.speaker / compStats.stDevs.speaker,
+  }
+
+  function statsList(selector: (d: DataGroup) => number) {
+    return (
+      <ul className="ml-4">
+        <li>
+          {Math.abs(selector(diffFromAvg)).toFixed(2)} {selector(diffFromAvg) >= 0 ? "above" : "below"} comp average of {selector(compStats.avgs).toFixed(2)}
+        </li>
+        <li>
+          {Math.abs(selector(diffFromAvgStDev)).toFixed(2)} standard deviations {selector(diffFromAvgStDev) >= 0 ? "above" : "below"} average (StDev = {selector(compStats.stDevs).toFixed(2)})
+        </li>
+      </ul>
+    );
+  }
+
   return (
     <div
       key={props.teamNumber}
-      className={`w-full h-full bg-base-200 rounded-xl flex flex-row p-8 transition ease-in ${
+      className={`w-full h-[85%] bg-base-200 rounded-xl flex flex-row p-8 transition ease-in ${
         visible ? "translate-x-0" : "translate-x-96"
       }`}
     >
@@ -98,6 +138,7 @@ function TeamSlide(props: {
               {length})
             </span>
           </p>
+          {statsList((d) => d.teleop)}
           <p>
             Average Auto Points: {stats.avgAuto}{" "}
             <span className="text-primary text-lg">
@@ -105,6 +146,7 @@ function TeamSlide(props: {
               {length})
             </span>
           </p>
+          {statsList((d) => d.auto)}
           <p>
             Average Speaker Points: {stats.avgSpeaker}{" "}
             <span className="text-primary text-lg">
@@ -112,6 +154,7 @@ function TeamSlide(props: {
               {length})
             </span>
           </p>
+          {statsList((d) => d.speaker)}
           <p>
             Average Amp Points: {stats.avgAmp}{" "}
             <span className="text-primary text-lg">
@@ -119,13 +162,14 @@ function TeamSlide(props: {
               {length})
             </span>
           </p>
+          {statsList((d) => d.amp)}
           <div>
             <h1 className="mt-4 text-lg font-semibold">Robot Capabilities:</h1>
             <p className="text-lg">
-              Intake Type: <span className="text-accent">{pit.intakeType}</span>
+              Intake Type: <span className="text-accent">{pit.intakeType} {pit.intakeType !== IntakeTypes.None && (`(${pit.underBumperIntake ? "Under" : "Over"} Bumper)`)}</span>
             </p>
             <p className="text-lg">
-              Drivetrain: <span className="text-accent">{pit.drivetrain}</span>
+              Drivetrain: <span className="text-accent">{pit.drivetrain} ({pit.swerveLevel !== SwerveLevel.None && `${pit.swerveLevel} `}{pit.motorType})</span>
             </p>
           </div>
         </div>
@@ -153,7 +197,7 @@ export default function Pitstats(props: { competition: Competition }) {
   const [reports, setReports] = useState<Report[]>([]);
   const [pitReports, setPitReports] = useState<PitReportPair>({});
   const [teamReportPairs, setTeamReportPairs] = useState<TeamReportPair>({});
-  const [teamStatPairs, setTeamStatPairs] = useState<TeamStatPair>({});
+  const [teamStatPairs, setTeamStatPairs] = useState<TeamStatPair | undefined>();
 
   const [avgTeleop, setAvgTeleop] = useState<string[]>([]);
   const [avgAuto, setAvgAuto] = useState<string[]>([]);
@@ -266,6 +310,34 @@ export default function Pitstats(props: { competition: Competition }) {
       newPits[c.teamNumber] = c;
     }
 
+    const compAverages: DataGroup = {
+      teleop:
+        NumericalAverage("TeleopScoredSpeaker", newReports) +
+        NumericalAverage("TeleopScoredAmp", newReports),
+      auto:
+        NumericalAverage("AutoScoredSpeaker", newReports) +
+        NumericalAverage("AutoScoredAmp", newReports),
+      amp:
+        NumericalAverage("TeleopScoredAmp", newReports) +
+        NumericalAverage("AutoScoredAmp", newReports),
+      speaker:
+        NumericalAverage("TeleopScoredSpeaker", newReports) +
+        NumericalAverage("AutoScoredSpeaker", newReports),
+    }
+
+    const teleopPoints = newReports.map((r) => r.data.TeleopScoredSpeaker + r.data.TeleopScoredAmp);
+    const autoPoints = newReports.map((r) => r.data.AutoScoredSpeaker + r.data.AutoScoredAmp);
+    const ampPoints = newReports.map((r) => r.data.TeleopScoredAmp + r.data.AutoScoredAmp);
+    const speakerPoints = newReports.map((r) => r.data.TeleopScoredSpeaker + r.data.AutoScoredSpeaker);
+
+    const compStDevs: DataGroup = {
+      teleop: StandardDeviation(teleopPoints),
+      auto: StandardDeviation(autoPoints),
+      amp: StandardDeviation(ampPoints),
+      speaker: StandardDeviation(speakerPoints),
+    }
+
+
     var newSlides = Object.keys(newStatPairs).map((key) => {
       return (
         <TeamSlide
@@ -280,6 +352,8 @@ export default function Pitstats(props: { competition: Competition }) {
           matchReports={newReports.filter((r) => r.robotNumber === Number(key))}
           ranking={rankings.find((r) => r.team_key === `frc${key}`)}
           maxRanking={rankings.length}
+          compAverages={compAverages}
+          compStDevs={compStDevs}
         ></TeamSlide>
       );
     });
@@ -333,8 +407,9 @@ export default function Pitstats(props: { competition: Competition }) {
           max="100"
         ></progress>
 
-        {Object.keys(teamStatPairs).length === 0 ? (
-          <h1>Loading...</h1>
+        {!teamStatPairs ? <h1>Loading...</h1>
+         : Object.keys(teamStatPairs).length === 0 ? (
+          <h1>No data.</h1>
         ) : (
           <div className="w-3/4 h-2/3 flex flex-row p-2">
             {currentSlide === -1 ? (
