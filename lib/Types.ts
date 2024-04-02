@@ -213,7 +213,7 @@ export class Pitreport {
   canScoreAmp: boolean = false;
   canScoreSpeaker: boolean = false;
   canScoreFromDistance: boolean = false;
-  submitted: boolean = true;
+  submitted: boolean = false;
   underBumperIntake: boolean = false;
   autoNotes: number = 0;
   comments: string = "";
