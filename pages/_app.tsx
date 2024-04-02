@@ -3,12 +3,14 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import type { Session } from "next-auth";
 import { DndProvider } from "react-dnd";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import { NextSeo } from "next-seo";
-import { ChangesModal } from "@/components/Modal";
+
+import ReactGA from "react-ga4";
+// convert to .env
+ReactGA.initialize("G-1BFJYBDC76");
 
 export default function App({
   Component,
@@ -40,8 +42,6 @@ export default function App({
 
         <Component {...pageProps} />
       </DndProvider>
-      <Analytics />
-      <SpeedInsights />
     </SessionProvider>
   );
 }
