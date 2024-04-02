@@ -22,12 +22,12 @@ export function TotalPoints(reports: Report[]) {
 
   const trap = NumericalTotal("TeleopScoredTrap", reports) * TrapPoints;
 
-  return Round(speakerAuto + speakerTeleop + ampAuto + ampTeleop + trap);
+  return Math.round(speakerAuto + speakerTeleop + ampAuto + ampTeleop + trap);
 }
 
 export function AveragePoints(reports: Report[]) {
   const totalPoints = reports.map((report) => TotalPoints([report]));
-  return Round(totalPoints.reduce((a, b) => a + b, 0) / reports.length);
+  return Math.round(totalPoints.reduce((a, b) => a + b, 0) / reports.length);
 }
 
 export function StandardDeviation(numbers: number[]) {
@@ -39,7 +39,7 @@ export function StandardDeviation(numbers: number[]) {
 export function NumericalTotal(field: string, reports: Report[]) {
   let sum = 0;
   reports?.forEach((report) => (sum += report.data[field]));
-  return Round(sum);
+  return Math.round(sum);
 }
 
 export function MostCommonValue(field: string, reports: Report[]) {
@@ -80,5 +80,5 @@ export function ComparativePercent(
     return "0%";
   }
 
-  return Round(a / (b + a) * 100) + "%";
+  return Math.round(a / (b + a) * 100) + "%";
 }

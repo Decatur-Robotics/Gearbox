@@ -8,6 +8,7 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { IoPhonePortrait, IoPhonePortraitOutline } from "react-icons/io5";
 import useIsVisible from "@/lib/client/useIsVisible";
+import { team } from "slack";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -31,6 +32,7 @@ export default function Homepage() {
     api.getMainPageCounterData().then((data) => {
       setCounterData(data);
     });
+
   });
 
   function formatDataPoint(num: number | null): string {
@@ -46,6 +48,28 @@ export default function Homepage() {
 
   const thirdSection = useRef<HTMLDivElement>(null);
   const thirdVisible = useIsVisible(thirdSection);
+
+  const opinions = [{team:4026, review:"Gearbox has allowed us to make strategic insights into the performance of other teams"},{team:5900, review:"Gearbox finally made stand scouting bearable for rookies"}]
+  const [teamChosen, setTeamChosen] = useState(0)
+
+  function incrementQuoteUp(){
+    if (teamChosen == opinions.length-1){
+      setTeamChosen(0)
+    }
+    else{
+      setTeamChosen(teamChosen + 1)
+    }
+  }
+
+  function incrementQuoteDown(){
+    if (teamChosen == 0){
+      setTeamChosen(opinions.length-1)
+    }
+    else{
+      setTeamChosen(teamChosen - 1)
+    }
+  }
+
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
@@ -85,6 +109,12 @@ export default function Homepage() {
             <div className="w-full flex flex-col items-center sm:bg-base-200">
               <div className=" max-sm:hidden sm:w-2/3 h-full mockup-browser border-2 border-slate-800">
                 <div className="mockup-browser-toolbar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6" onClick={incrementQuoteDown}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6" onClick={incrementQuoteUp}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
                   <div className="input border border-base-300">
                     https://4026.org
                   </div>
@@ -102,9 +132,9 @@ export default function Homepage() {
                   </h1>
                   <div className="z-20 relative">
                     <h1 className="text-4xl font-bold italic">
-                      {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
+                      {opinions[teamChosen].review}
                     </h1>
-                    <h1 className="text-lg font-light mt-2">- Team 4026</h1>
+                    <h1 className="text-lg font-light mt-2">- Team {opinions[teamChosen].team}</h1>
                   </div>
                 </div>
               </div>
