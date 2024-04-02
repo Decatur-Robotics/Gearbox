@@ -27,7 +27,7 @@ export default function App({
             description: "The best FIRST Scouting App",
             images: [
               {
-                url: "https://4026.org/robot.jpg.png",
+                url: "https://4026.org/art/4026Bench.svg",
                 width: 800,
                 height: 600,
                 alt: "Og Image Alt",
