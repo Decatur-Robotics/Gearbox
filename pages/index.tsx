@@ -131,7 +131,7 @@ export default function Homepage() {
                     ></BsGearFill>
                   </h1>
                   <div className="z-20 relative">
-                    <h1 className="text-4xl font-bold italic">
+                    <h1 className="text-4xl font-bold italic" onClick={incrementQuoteUp}>
                       {opinions[teamChosen].review}
                     </h1>
                     <h1 className="text-lg font-light mt-2">- Team {opinions[teamChosen].team}</h1>
@@ -155,11 +155,11 @@ export default function Homepage() {
                           ></BsGearFill>
                         </h1>
                         <div className="z-20 relative">
-                          <h1 className="text-4xl font-bold italic">
-                            {`"Gearbox has allowed us to make strategic insights into the performance of other teams"`}
+                          <h1 className="text-4xl font-bold italic" onClick={incrementQuoteUp}>
+                            {opinions[teamChosen].review}
                           </h1>
                           <h1 className="text-lg font-light mt-2">
-                            - Team 4026
+                            - Team {opinions[teamChosen].team}
                           </h1>
                         </div>
                       </div>
