@@ -9,7 +9,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
-import { MdWarning } from "react-icons/md";
+import { MdInfo, MdWarning } from "react-icons/md";
 import Avatar from "./Avatar";
 
 const api = new ClientAPI("gearboxiscool");
@@ -116,13 +116,11 @@ export default function Container(props: ContainerProps) {
     >
       <div
         role="alert"
-        className="alert rounded-none py-1 sm:py-2 font-semibold alert-warning"
+        className="alert rounded-none py-1 sm:py-2 font-semibold alert-info"
       >
-        <MdWarning className="max-sm:hidden" size={32} />
+        <MdInfo className="max-sm:hidden" size={32} />
 
-        <span className="max-sm:text-sm">
-          Alert: We have recently switched to new server infrastructure. We appreciate your patience as we work out any bugs.
-        </span>
+        <span className="max-sm:text-sm">Welcome to the new Gearbox!</span>
       </div>
 
       <div className="drawer">
