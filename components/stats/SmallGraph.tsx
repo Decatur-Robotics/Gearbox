@@ -78,7 +78,7 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
           return 1;
       }
     }
-    return data[key];
+    return data;
   }
   
   const data = {
@@ -110,6 +110,8 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
   if (!props.selectedReports) {
     return <></>;
   }
+
+  console.log(datapoints);
 
   return (
     <div className="w-full h-2/5 bg-base-300 rounded-lg p-4">
