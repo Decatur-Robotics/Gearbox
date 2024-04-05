@@ -4,7 +4,7 @@ import {
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Defense, Drivetrain, IntakeTypes, Pitreport, Report } from "@/lib/Types";
+import { Defense, Drivetrain, IntakeTypes, Pitreport, Report, SwerveLevel } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
@@ -93,12 +93,13 @@ export default function TeamStats(props: {
         Team #{props.selectedTeam}
       </h1>
 
-      <div className="flex flex-row w-full space-x-2 mt-2 flex-wrap">
+      <div className="flex flex-row w-full space-x-2 space-y-1 mt-2 flex-wrap">
         <div className={`badge badge-${defenseBadgeColor}`}>
           {defense} Defense
         </div>
         <div className={`badge badge-${intakeBadgeColor}`}>
           {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
+          { pitReport?.underBumperIntake && " (Under Bumper)" }
         </div>
         { cooperates && 
           <div className="badge badge-primary">Cooperates</div>
@@ -115,7 +116,24 @@ export default function TeamStats(props: {
           </div>}
         <div className={`badge badge-${drivetrainColor}`}>
           {pitReport ? (pitReport.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
+          {" "}{ pitReport && <>({pitReport.swerveLevel !== SwerveLevel.None && pitReport.swerveLevel + " "}{pitReport.motorType})</> }
         </div>
+        { (!pitReport || pitReport.fixedShooter) && 
+          <div className={`badge badge-${pitReport?.fixedShooter ? "error" : "neutral"}`}>
+            {pitReport ? (pitReport?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
+          </div>}
+        { (!pitReport || pitReport.canScoreSpeaker) && 
+          <div className={`badge badge-${pitReport?.canScoreSpeaker ? "secondary" : "neutral"}`}>
+            {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
+          </div>}
+        { (!pitReport || pitReport.canScoreAmp) && 
+          <div className={`badge badge-${pitReport?.canScoreAmp ? "accent" : "neutral"}`}>
+            {pitReport ? (pitReport?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
+          </div>}
+          { (!pitReport || pitReport.autoNotes > 0) && 
+            <div className={`badge badge-${(pitReport?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
+              {pitReport ? <>Ideal Auto: {pitReport.autoNotes} notes</> : <Loading size={12} />}
+            </div>}
       </div>
 
       <div className="w-1/3 divider"></div>

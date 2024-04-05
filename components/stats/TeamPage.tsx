@@ -1,4 +1,4 @@
-import { Competition, Defense, Drivetrain, IntakeTypes, Pitreport, Report } from "@/lib/Types";
+import { Competition, Defense, Drivetrain, IntakeTypes, Pitreport, Report, SwerveLevel } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import {
@@ -116,6 +116,7 @@ function TeamCard(props: {
           </div>
           <div className={`badge badge-sm badge-${intakeBadgeColor}`}>
             {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
+            { pitReport?.underBumperIntake && " (Under Bumper)" }
           </div>
           { cooperates &&
             <div className="badge badge-sm badge-primary">Cooperates</div>}
@@ -132,7 +133,29 @@ function TeamCard(props: {
           { drivetrain && 
               <div className={`badge badge-sm badge-${drivetrainColor}`}>
                 {pitReport ? (pitReport?.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
+                {" "}{ pitReport && <>({pitReport.swerveLevel !== SwerveLevel.None && pitReport.swerveLevel + " "}{pitReport.motorType})</> }
               </div>}
+          { (!pitReport || pitReport.fixedShooter) && 
+            <div className={`badge badge-sm badge-${pitReport?.fixedShooter ? "error" : "neutral"}`}>
+              {pitReport ? (pitReport?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
+            </div>}
+          { (!pitReport || pitReport.canScoreSpeaker) && 
+            <div className={`badge badge-sm badge-${pitReport?.canScoreSpeaker ? "secondary" : "neutral"}`}>
+              {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
+            </div>}
+          { (!pitReport || pitReport.canScoreAmp) && 
+            <div className={`badge badge-sm badge-${pitReport?.canScoreAmp ? "accent" : "neutral"}`}>
+              {pitReport ? (pitReport?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
+            </div>}
+            
+          { (!pitReport || pitReport.canScoreSpeaker) && 
+            <div className={`badge badge-sm badge-${pitReport?.canScoreSpeaker ? "primary" : "neutral"}`}>
+              {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
+            </div>}
+          { (!pitReport || pitReport.autoNotes > 0) && 
+            <div className={`badge badge-sm badge-${(pitReport?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
+              {pitReport ? <>Ideal Auto: {pitReport.autoNotes} notes</> : <Loading size={12} />}
+            </div>}
         </div>
       </div>
     </div>
