@@ -12,11 +12,14 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     const filename = req.query.filename;
-    console.log(filename);
 
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
 
-    var s = fs.createReadStream(process.env.IMAGE_UPLOAD_DIR + `/${filename}`);
+    res.writeHead(200, { "content-type": "image/*" });
+    var s = fs.createReadStream(process.env.IMAGE_UPLOAD_DIR + `/${filename}`, {
+      highWaterMark: 256 * 1024,
+    });
+
     s.on("open", function () {
       s.pipe(res);
     });

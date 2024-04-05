@@ -1,19 +1,23 @@
 import Container from "@/components/Container";
 import BarGraph from "@/components/stats/Graph";
-import { Competition, IntakeTypes, Pitreport, Report, SwerveLevel } from "@/lib/Types";
-import { ResolvedUrlData, SerializeDatabaseObject } from "@/lib/UrlResolver";
-import UrlResolver from "@/lib/UrlResolver";
+import {
+  Competition,
+  IntakeTypes,
+  Pitreport,
+  Report,
+  SwerveLevel,
+} from "@/lib/Types";
+import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+
 import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
 import { Collections, GetDatabase } from "@/lib/MongoDB";
-import { NumericalAverage, NumericalTotal, StandardDeviation } from "@/lib/client/StatsMath";
-import useIsVisible from "@/lib/client/useIsVisible";
-import Heatmap from "@/components/stats/Heatmap";
+import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
+
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
-import { IntakeType } from "@/components/forms/Checkboxes";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -29,11 +33,11 @@ type TeamStatPair = {
 type PitReportPair = { [team: number]: Pitreport };
 
 type DataGroup = {
-  teleop: number,
-  auto: number,
-  amp: number,
-  speaker: number,
-}
+  teleop: number;
+  auto: number;
+  amp: number;
+  speaker: number;
+};
 
 function TeamSlide(props: {
   teamNumber: number;
@@ -46,8 +50,8 @@ function TeamSlide(props: {
   matchReports: Report[];
   ranking: TheBlueAlliance.SimpleRank | undefined;
   maxRanking: number;
-  compAverages: DataGroup,
-  compStDevs: DataGroup,
+  compAverages: DataGroup;
+  compStDevs: DataGroup;
 }) {
   const [visible, setVisible] = useState(false);
   const stats = props.teamStatPairs[props.teamNumber];
@@ -56,7 +60,7 @@ function TeamSlide(props: {
   const compStats = {
     avgs: props.compAverages,
     stDevs: props.compStDevs,
-  }
+  };
 
   useEffect(() => {
     setVisible(true);
@@ -70,22 +74,26 @@ function TeamSlide(props: {
     auto: stats.avgAuto - compStats.avgs.auto,
     amp: stats.avgAmp - compStats.avgs.amp,
     speaker: stats.avgSpeaker - compStats.avgs.speaker,
-  }
+  };
   const diffFromAvgStDev: DataGroup = {
     teleop: diffFromAvg.teleop / compStats.stDevs.teleop,
     auto: diffFromAvg.auto / compStats.stDevs.auto,
     amp: diffFromAvg.amp / compStats.stDevs.amp,
     speaker: diffFromAvg.speaker / compStats.stDevs.speaker,
-  }
+  };
 
   function statsList(selector: (d: DataGroup) => number) {
     return (
-      <ul className="ml-4">
+      <ul className="ml-4 text-sm">
         <li>
-          {Math.abs(selector(diffFromAvg)).toFixed(2)} {selector(diffFromAvg) >= 0 ? "above" : "below"} comp average of {selector(compStats.avgs).toFixed(2)}
+          {Math.abs(selector(diffFromAvg)).toFixed(2)}{" "}
+          {selector(diffFromAvg) >= 0 ? "above" : "below"} comp average of{" "}
+          {selector(compStats.avgs).toFixed(2)}
         </li>
         <li>
-          {Math.abs(selector(diffFromAvgStDev)).toFixed(2)} standard deviations {selector(diffFromAvgStDev) >= 0 ? "above" : "below"} average (StDev = {selector(compStats.stDevs).toFixed(2)})
+          {Math.abs(selector(diffFromAvgStDev)).toFixed(2)} standard deviations{" "}
+          {selector(diffFromAvgStDev) >= 0 ? "above" : "below"} average (StDev ={" "}
+          {selector(compStats.stDevs).toFixed(2)})
         </li>
       </ul>
     );
@@ -128,8 +136,6 @@ function TeamSlide(props: {
         </div>
 
         <div className="divider w-1/2"></div>
-        <h1 className="text-xl font-semibold">Quick-view Stats:</h1>
-        <p className="ml-4 text-lg font-mono ">Basic insights into teams</p>
         <div className="mt-4 text-lg">
           <p>
             Average Teleop Points: {stats.avgTeleop}{" "}
@@ -166,17 +172,27 @@ function TeamSlide(props: {
           <div>
             <h1 className="mt-4 text-lg font-semibold">Robot Capabilities:</h1>
             <p className="text-lg">
-              Intake Type: <span className="text-accent">{pit.intakeType} {pit.intakeType !== IntakeTypes.None && (`(${pit.underBumperIntake ? "Under" : "Over"} Bumper)`)}</span>
+              Intake Type:{" "}
+              <span className="text-accent">
+                {pit.intakeType}{" "}
+                {pit.intakeType !== IntakeTypes.None &&
+                  `(${pit.underBumperIntake ? "Under" : "Over"} Bumper)`}
+              </span>
             </p>
             <p className="text-lg">
-              Drivetrain: <span className="text-accent">{pit.drivetrain} ({pit.swerveLevel !== SwerveLevel.None && `${pit.swerveLevel} `}{pit.motorType})</span>
+              Drivetrain:{" "}
+              <span className="text-accent">
+                {pit.drivetrain} (
+                {pit.swerveLevel !== SwerveLevel.None && `${pit.swerveLevel} `}
+                {pit.motorType})
+              </span>
             </p>
           </div>
         </div>
       </div>
       <div className="w-1/2 flex flex-col items-center">
         {pit.submitted ? (
-          <img src={pit.image} className="rounded-xl w-1/2 h-auto"></img>
+          <img src={pit.image} className="rounded-xl w-1/3 h-auto"></img>
         ) : (
           <></>
         )}
@@ -197,7 +213,9 @@ export default function Pitstats(props: { competition: Competition }) {
   const [reports, setReports] = useState<Report[]>([]);
   const [pitReports, setPitReports] = useState<PitReportPair>({});
   const [teamReportPairs, setTeamReportPairs] = useState<TeamReportPair>({});
-  const [teamStatPairs, setTeamStatPairs] = useState<TeamStatPair | undefined>();
+  const [teamStatPairs, setTeamStatPairs] = useState<
+    TeamStatPair | undefined
+  >();
 
   const [avgTeleop, setAvgTeleop] = useState<string[]>([]);
   const [avgAuto, setAvgAuto] = useState<string[]>([]);
@@ -323,20 +341,27 @@ export default function Pitstats(props: { competition: Competition }) {
       speaker:
         NumericalAverage("TeleopScoredSpeaker", newReports) +
         NumericalAverage("AutoScoredSpeaker", newReports),
-    }
+    };
 
-    const teleopPoints = newReports.map((r) => r.data.TeleopScoredSpeaker + r.data.TeleopScoredAmp);
-    const autoPoints = newReports.map((r) => r.data.AutoScoredSpeaker + r.data.AutoScoredAmp);
-    const ampPoints = newReports.map((r) => r.data.TeleopScoredAmp + r.data.AutoScoredAmp);
-    const speakerPoints = newReports.map((r) => r.data.TeleopScoredSpeaker + r.data.AutoScoredSpeaker);
+    const teleopPoints = newReports.map(
+      (r) => r.data.TeleopScoredSpeaker + r.data.TeleopScoredAmp
+    );
+    const autoPoints = newReports.map(
+      (r) => r.data.AutoScoredSpeaker + r.data.AutoScoredAmp
+    );
+    const ampPoints = newReports.map(
+      (r) => r.data.TeleopScoredAmp + r.data.AutoScoredAmp
+    );
+    const speakerPoints = newReports.map(
+      (r) => r.data.TeleopScoredSpeaker + r.data.AutoScoredSpeaker
+    );
 
     const compStDevs: DataGroup = {
       teleop: StandardDeviation(teleopPoints),
       auto: StandardDeviation(autoPoints),
       amp: StandardDeviation(ampPoints),
       speaker: StandardDeviation(speakerPoints),
-    }
-
+    };
 
     var newSlides = Object.keys(newStatPairs).map((key) => {
       return (
@@ -394,12 +419,8 @@ export default function Pitstats(props: { competition: Competition }) {
         <p className="font-mono font-semibold">
           Showing <span className="text-accent">live data</span>
           <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse inline-block mx-2 translate-y-1"></div>
-          from our <span className="text-accent">22 active scouters</span>
+          from our <span className="text-accent">26 active scouters</span>
         </p>
-
-        <div className="btn btn-primary font-bold mt-2 ">
-          Learn more: https://4026.org
-        </div>
 
         <progress
           className="progress progress-primary h-4 w-2/3 mt-2"
@@ -407,8 +428,9 @@ export default function Pitstats(props: { competition: Competition }) {
           max="100"
         ></progress>
 
-        {!teamStatPairs ? <h1>Loading...</h1>
-         : Object.keys(teamStatPairs).length === 0 ? (
+        {!teamStatPairs ? (
+          <h1>Loading...</h1>
+        ) : Object.keys(teamStatPairs).length === 0 ? (
           <h1>No data.</h1>
         ) : (
           <div className="w-3/4 h-2/3 flex flex-row p-2">

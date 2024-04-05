@@ -1,6 +1,8 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { useEffect, useState } from "react";
 
+import Image from "next/image";
+
 import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
 import {
@@ -817,7 +819,13 @@ export default function Home(props: ResolvedUrlData) {
                           </div>
                           <div className="absolute rounded z-10 translate-y-4 flex justify-center items-center">
                             {report.submitted ? (
-                              <img src={report.image} className="w-full"></img>
+                              <img
+                                alt="img"
+                                src={report.image}
+                                loading="lazy"
+                                style={{ imageResolution: "72dpi" }}
+                                className="w-2/3 h-auto rounded-lg"
+                              ></img>
                             ) : (
                               <FaRobot size={64} />
                             )}
