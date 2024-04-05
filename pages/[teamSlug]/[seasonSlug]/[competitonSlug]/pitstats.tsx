@@ -154,7 +154,7 @@ function TeamSlide(props: {
           </p>
           {statsList((d) => d.auto)}
           <p>
-            {"Debug: "}
+            {"Debugg: "}
             {props.avgSpeaker.join(" ")}
             Average Speaker Points: {stats.avgSpeaker}{" "}
             <span className="text-primary text-lg">
