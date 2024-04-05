@@ -262,7 +262,7 @@ export default function Pitstats(props: { competition: Competition }) {
       };
     });
 
-    setAvgTeleop(
+    const avgTeleop =
       Object.keys(newStatPairs).sort((a, b) => {
         const as = newStatPairs[Number(a)];
         const bs = newStatPairs[Number(b)];
@@ -274,53 +274,51 @@ export default function Pitstats(props: { competition: Competition }) {
         }
 
         return 0;
-      })
-    );
+      });
+    setAvgTeleop(avgTeleop);
 
-    setAvgAuto(
-      Object.keys(newStatPairs).sort((a, b) => {
-        const as = newStatPairs[Number(a)];
-        const bs = newStatPairs[Number(b)];
+    const avgAuto = 
+    Object.keys(newStatPairs).sort((a, b) => {
+      const as = newStatPairs[Number(a)];
+      const bs = newStatPairs[Number(b)];
 
-        if (as?.avgAuto < bs?.avgAuto) {
-          return 1;
-        } else if (as?.avgAuto > bs?.avgAuto) {
-          return -1;
-        }
+      if (as?.avgAuto < bs?.avgAuto) {
+        return 1;
+      } else if (as?.avgAuto > bs?.avgAuto) {
+        return -1;
+      }
 
-        return 0;
-      })
-    );
+      return 0;
+    });
+    setAvgAuto(avgAuto);
 
-    setAvgSpeaker(
-      Object.keys(newStatPairs).sort((a, b) => {
-        const as = newStatPairs[Number(a)];
-        const bs = newStatPairs[Number(b)];
+    const avgSpeaker = Object.keys(newStatPairs).sort((a, b) => {
+      const as = newStatPairs[Number(a)];
+      const bs = newStatPairs[Number(b)];
 
-        if (as?.avgSpeaker < bs?.avgSpeaker) {
-          return 1;
-        } else if (as?.avgSpeaker > bs?.avgSpeaker) {
-          return -1;
-        }
+      if (as?.avgSpeaker < bs?.avgSpeaker) {
+        return 1;
+      } else if (as?.avgSpeaker > bs?.avgSpeaker) {
+        return -1;
+      }
 
-        return 0;
-      })
-    );
+      return 0;
+    });
+    setAvgSpeaker(avgSpeaker);
 
-    setAvgAmp(
-      Object.keys(newStatPairs).sort((a, b) => {
-        const as = newStatPairs[Number(a)];
-        const bs = newStatPairs[Number(b)];
+    const avgAmp = Object.keys(newStatPairs).sort((a, b) => {
+      const as = newStatPairs[Number(a)];
+      const bs = newStatPairs[Number(b)];
 
-        if (as?.avgAmp < bs?.avgAmp) {
-          return 1;
-        } else if (as?.avgAmp > bs?.avgAmp) {
-          return -1;
-        }
+      if (as?.avgAmp < bs?.avgAmp) {
+        return 1;
+      } else if (as?.avgAmp > bs?.avgAmp) {
+        return -1;
+      }
 
-        return 0;
-      })
-    );
+      return 0;
+    });
+    setAvgAmp(avgAmp);
 
     var newPits: PitReportPair = {};
     for (var rid of comp?.pitReports) {
