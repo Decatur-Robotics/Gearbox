@@ -822,7 +822,8 @@ export default function Home(props: ResolvedUrlData) {
                               <img
                                 alt="img"
                                 src={report.image}
-                                className="w-full"
+                                loading="lazy"
+                                className="w-2/3 h-auto rounded-lg"
                               ></img>
                             ) : (
                               <FaRobot size={64} />
