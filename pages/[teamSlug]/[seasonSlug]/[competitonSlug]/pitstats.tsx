@@ -7,23 +7,17 @@ import {
   Report,
   SwerveLevel,
 } from "@/lib/Types";
-import { ResolvedUrlData, SerializeDatabaseObject } from "@/lib/UrlResolver";
-import UrlResolver from "@/lib/UrlResolver";
+import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+
 import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
 import { Collections, GetDatabase } from "@/lib/MongoDB";
-import {
-  NumericalAverage,
-  NumericalTotal,
-  StandardDeviation,
-} from "@/lib/client/StatsMath";
-import useIsVisible from "@/lib/client/useIsVisible";
-import Heatmap from "@/components/stats/Heatmap";
+import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
+
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
-import { IntakeType } from "@/components/forms/Checkboxes";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -160,6 +154,7 @@ function TeamSlide(props: {
           </p>
           {statsList((d) => d.auto)}
           <p>
+            {props.avgSpeaker.join(" ")}
             Average Speaker Points: {stats.avgSpeaker}{" "}
             <span className="text-primary text-lg">
               (Ranked #{props.avgSpeaker.indexOf(String(props.teamNumber)) + 1}/
