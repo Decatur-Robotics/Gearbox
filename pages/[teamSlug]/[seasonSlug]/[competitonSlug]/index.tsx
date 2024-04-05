@@ -819,11 +819,11 @@ export default function Home(props: ResolvedUrlData) {
                           </div>
                           <div className="absolute rounded z-10 translate-y-4 flex justify-center items-center">
                             {report.submitted ? (
-                              <Image
+                              <img
                                 alt="img"
                                 src={report.image}
                                 className="w-full"
-                              ></Image>
+                              ></img>
                             ) : (
                               <FaRobot size={64} />
                             )}
