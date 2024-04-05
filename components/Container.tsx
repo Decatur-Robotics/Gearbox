@@ -118,9 +118,15 @@ export default function Container(props: ContainerProps) {
         role="alert"
         className="alert rounded-none py-1 sm:py-2 font-semibold alert-info"
       >
-        <MdInfo className="max-sm:hidden" size={32} />
+        <FaDiscord className="max-sm:hidden" size={32} />
 
-        <span className="max-sm:text-sm">Welcome to the new Gearbox!</span>
+        <span className="max-sm:text-sm">Join our Discord for realtime support!</span>
+        <a
+          href="https://discord.gg/ha7AnqxFDD"
+          className="btn btn-primary"
+        >
+          <FaDiscord size={35} /> Join today
+        </a>
       </div>
 
       <div className="drawer">
