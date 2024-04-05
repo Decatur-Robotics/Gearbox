@@ -51,7 +51,8 @@ export default function Home(props: ResolvedUrlData) {
 
   const [matches, setMatches] = useState<Match[]>([]);
   const [qualificationMatches, setQualificationMatches] = useState<Match[]>([]);
-  6;
+  const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
+
   const [reports, setReports] = useState<Report[]>([]);
   const [matchesAssigned, setMatchesAssigned] = useState(false);
   const [assigningMatches, setAssigningMatches] = useState(false);
@@ -109,6 +110,34 @@ export default function Home(props: ResolvedUrlData) {
       });
   };
 
+  const loadMatches = async () => {
+    setLoadingMatches(true);
+    window.location.hash = "";
+    const matches: Match[] = await api.allCompetitionMatches(comp?._id);
+    matches.sort((a, b) => {
+      if (a.number < b.number) {
+        return -1;
+      }
+      if (a.number > b.number) {
+        return 1;
+      }
+      return 0;
+    });
+
+    if (matches.length > 0) {
+      setMatchesAssigned(matches[0].reports.length > 0 ? true : false);
+    } else {
+      setNoMatches(true);
+    }
+
+    setQualificationMatches(
+      matches.filter((match) => match.type === MatchType.Qualifying)
+    );
+
+    setMatches(matches);
+    setLoadingMatches(false);
+  };
+
   useEffect(() => {
     const scoutingStats = (reps: Report[]) => {
       setLoadingScoutStats(true);
@@ -136,34 +165,6 @@ export default function Home(props: ResolvedUrlData) {
 
       setUsersById(newUsersById);
       setLoadingUsers(false);
-    };
-
-    const loadMatches = async () => {
-      setLoadingMatches(true);
-      window.location.hash = "";
-      const matches: Match[] = await api.allCompetitionMatches(comp?._id);
-      matches.sort((a, b) => {
-        if (a.number < b.number) {
-          return -1;
-        }
-        if (a.number > b.number) {
-          return 1;
-        }
-        return 0;
-      });
-
-      if (matches.length > 0) {
-        setMatchesAssigned(matches[0].reports.length > 0 ? true : false);
-      } else {
-        setNoMatches(true);
-      }
-
-      setQualificationMatches(
-        matches.filter((match) => match.type === MatchType.Qualifying)
-      );
-
-      setMatches(matches);
-      setLoadingMatches(false);
     };
 
     const loadReports = async () => {
@@ -252,7 +253,8 @@ export default function Home(props: ResolvedUrlData) {
   useEffect(() => {
     if (
       qualificationMatches.length > 0 &&
-      Object.keys(reportsById).length > 0
+      Object.keys(reportsById).length > 0 &&
+      !showSubmittedMatches
     ) {
       const b = qualificationMatches.filter((match) => {
         let s = true;
@@ -271,7 +273,13 @@ export default function Home(props: ResolvedUrlData) {
         setQualificationMatches(b);
       }
     }
-  }, [reportsById, matches]);
+  }, [reportsById, matches, showSubmittedMatches]);
+
+  function toggleShowSubmittedMatches() {
+    setShowSubmittedMatches(!showSubmittedMatches);
+
+    loadMatches();
+  }
 
   const [exportPending, setExportPending] = useState(false);
 
@@ -421,6 +429,10 @@ export default function Home(props: ResolvedUrlData) {
                         "Export Scouting Data as CSV"
                       )}
                     </button>
+                    <div className="flex flex-row items-center justify-between w-full">
+                      <label className="label ml-4">Show Submitted Matches</label>
+                      <input type="checkbox" className="checkbox checkbox-lg checkbox-primary mr-4" checked={showSubmittedMatches} onChange={toggleShowSubmittedMatches} />
+                    </div>
                   </div>
 
                   {/* <button
@@ -713,7 +725,7 @@ export default function Home(props: ResolvedUrlData) {
                                       ? "bg-red-500"
                                       : "bg-blue-500"
                                     : "bg-slate-500";
-                                  color = ours ? "bg-purple-500" : color;
+                                  color = ours ? !report.submitted ? "bg-purple-500" : "bg-purple-300" : color;
 
                                   if (!report) return <></>;
                                   return (
