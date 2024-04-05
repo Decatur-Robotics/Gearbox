@@ -1,4 +1,4 @@
-import { Report, FormData } from "@/lib/Types";
+import { Report, FormData, Defense } from "@/lib/Types";
 import ClientAPI from "@/lib/client/ClientAPI";
 
 import {
@@ -65,20 +65,35 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
 
   const [datapoints, setDataPoints] = useState<Datapoint[] | null>(null);
   const [currentTeam, setCurrentTeam] = useState<number>(0);
+
+  function dataToNumber(key: string, data: any): number {
+    if (key === "Defense") {
+      let n = 0;
+      switch (data) {
+        case Defense.None:
+          return 0;
+        case Defense.Partial:
+          return 0.5;
+        case Defense.Full:
+          return 1;
+      }
+    }
+    return data;
+  }
   
   const data = {
     labels: datapoints?.map((point) => point.x) ?? [],
     datasets: [
       {
         label: key,
-        data: props.selectedReports?.map((report) => report.data[key]),
+        data: props.selectedReports?.map((report) => dataToNumber(key, report.data[key])),
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
     ],
   };
 
   useEffect(() => {
-    if (!props.selectedReports || (datapoints && currentTeam === props.team)) return;
+    if (!props.selectedReports || (datapoints && currentTeam === props.team && false)) return;
 
     setDataPoints([]);
     setCurrentTeam(props.team);
@@ -86,15 +101,17 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
       api.findMatchById(report.match).then((match) => {
         setDataPoints((prev) => [...prev ?? [], {
           x: match.number,
-          y: report.data[key],
+          y: dataToNumber(key, report.data[key]),
         }].sort((a, b) => a.x - b.x));
       });
     }
-  });
+  }, [key]);
 
   if (!props.selectedReports) {
     return <></>;
   }
+
+  console.log(datapoints);
 
   return (
     <div className="w-full h-2/5 bg-base-300 rounded-lg p-4">
@@ -102,6 +119,7 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
       <select
         className="select select-sm select-bordered w-1/2 max-w-xs inline-block"
         onChange={(e) => {
+          console.log(e.target.value);
           setKey(e.target.value);
         }}
       >
