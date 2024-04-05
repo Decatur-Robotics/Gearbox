@@ -425,12 +425,8 @@ export default function Pitstats(props: { competition: Competition }) {
         <p className="font-mono font-semibold">
           Showing <span className="text-accent">live data</span>
           <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse inline-block mx-2 translate-y-1"></div>
-          from our <span className="text-accent">22 active scouters</span>
+          from our <span className="text-accent">26 active scouters</span>
         </p>
-
-        <div className="btn btn-primary font-bold mt-2 ">
-          Learn more: https://4026.org
-        </div>
 
         <progress
           className="progress progress-primary h-4 w-2/3 mt-2"
