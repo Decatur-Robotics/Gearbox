@@ -823,6 +823,7 @@ export default function Home(props: ResolvedUrlData) {
                                 alt="img"
                                 src={report.image}
                                 loading="lazy"
+                                style={{ imageResolution: "72dpi" }}
                                 className="w-2/3 h-auto rounded-lg"
                               ></img>
                             ) : (

@@ -19,6 +19,7 @@ export default async function handler(
     var s = fs.createReadStream(process.env.IMAGE_UPLOAD_DIR + `/${filename}`, {
       highWaterMark: 256 * 1024,
     });
+
     s.on("open", function () {
       s.pipe(res);
     });
