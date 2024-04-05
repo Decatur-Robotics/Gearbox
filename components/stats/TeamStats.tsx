@@ -109,6 +109,10 @@ export default function TeamStats(props: {
           <div className="badge badge-accent">Parks</div>}
         { understage &&
           <div className="badge badge-neutral">Small Profile</div>}
+        { (!pitReport || pitReport.canScoreFromDistance) && 
+          <div className={`badge badge-${pitReport?.canScoreFromDistance ? "primary" : "neutral"}`}>
+            {pitReport ? (pitReport?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
+          </div>}
         <div className={`badge badge-${drivetrainColor}`}>
           {pitReport ? (pitReport.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
         </div>

@@ -20,7 +20,7 @@ function TeamCard(props: {
   number: number;
   rank: number;
   reports: Report[];
-  pitReport: Pitreport;
+  pitReport: Pitreport | undefined;
   onClick: () => void;
   selected: boolean;
   compAvgPoints: number;
@@ -125,6 +125,10 @@ function TeamCard(props: {
             <div className="badge badge-sm badge-accent">Parks</div>}
           { understage &&
             <div className="badge badge-sm badge-neutral">Small Profile</div>}
+          { (!pitReport || pitReport.canScoreFromDistance) && 
+            <div className={`badge badge-sm badge-${pitReport?.canScoreFromDistance ? "primary" : "neutral"}`}>
+              {pitReport ? (pitReport?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
+            </div>}
           { drivetrain && 
               <div className={`badge badge-sm badge-${drivetrainColor}`}>
                 {pitReport ? (pitReport?.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
