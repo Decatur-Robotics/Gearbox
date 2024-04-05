@@ -16,7 +16,9 @@ export default async function handler(
     if (!filename) return res.send({ status: 400, message: "Invalid Request" });
 
     res.writeHead(200, { "content-type": "image/*" });
-    var s = fs.createReadStream(process.env.IMAGE_UPLOAD_DIR + `/${filename}`);
+    var s = fs.createReadStream(process.env.IMAGE_UPLOAD_DIR + `/${filename}`, {
+      highWaterMark: 256 * 1024,
+    });
     s.on("open", function () {
       s.pipe(res);
     });
