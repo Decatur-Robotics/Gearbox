@@ -27,7 +27,7 @@ import {
   MdQueryStats,
 } from "react-icons/md";
 import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
-import { FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
+import { FaBinoculars, FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
@@ -553,6 +553,13 @@ export default function Home(props: ResolvedUrlData) {
                   >
                     Create
                   </button>
+
+                  <div className="divider"></div>
+                  <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/scouters`}>
+                    <button className="btn btn-lg btn-primary w-full">
+                      <FaBinoculars /> Manage Scouters
+                    </button>
+                  </Link>
                 </div>
               ) : (
                 <div>
