@@ -198,7 +198,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
               </div>
             </div>
             <div className="card w-1/3 max-sm:w-3/4 bg-base-200 m-12">
-              <div className="card-body h-screen overflow-y-scroll">
+              <div className="card-body h-screen overflow-y-scroll overflow-x-hidden">
                 <h1 className="card-title">Comments</h1>
                 <ul>
                   {
