@@ -91,14 +91,14 @@ export default function Scouters(props: { team: Team | null, competition: Compet
   return (<Container requireAuthentication={true} hideMenu={false}>
     {
       !isManager ? 
-        <div className="card w-1/3 bg-base-200 m-12">
+        <div className="card w-1/3 max-sm:w-2/3 bg-base-200 m-12">
           <div className="card-body">
             <h1 className="card-title">Not Authorized</h1>
             <p>Only managers are allowed to access this page.</p>
           </div>
         </div>
          : <div className="flex flex-row max-sm:flex-col">
-            <div className="card w-1/3 bg-base-200 m-12">
+            <div className="card w-1/3 max-sm:w-2/3 bg-base-200 m-12">
               <div className="card-body">
                 <h1 className="card-title">Scouters</h1>
                 <p>
