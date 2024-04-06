@@ -151,7 +151,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         </div>
          : <div className="flex flex-row max-sm:flex-col justify-center">
             <div className="card w-1/3 max-sm:w-3/4 bg-base-200 m-12">
-              <div className="card-body">
+              <div className="card-body h-screen overflow-y-scroll">
                 <h1 className="card-title">Scouters</h1>
                 <p>
                   Scouters: {scouters && Object.keys(scouters)?.length}<br />
@@ -196,19 +196,19 @@ export default function Scouters(props: { team: Team | null, competition: Compet
               </div>
             </div>
             <div className="card w-1/3 max-sm:w-3/4 bg-base-200 m-12">
-              <div className="card-body">
+              <div className="card-body h-screen overflow-y-scroll">
                 <h1 className="card-title">Comments</h1>
                 <ul>
                   {
                     scouters && matches && comments && comments.sort((a, b) => matches[a.match].number - matches[b.match].number)
-                      .map((comment) => <li className="mb-2" key={comment.report}>
-                        <div className="flex flex-row space-x-2 align-middle items-center mb-1">
+                      .map((comment) => <li className="mb-1" key={comment.report}>
+                        <div className="flex flex-row space-x-2 align-middle items-center text-sm">
                           <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
                             {comment.text !== "" ? comment.text : "[Empty Comment]"}
                           </span>
                           <button className="btn btn-warning btn-sm" onClick={() => removeComment(comment)}>Remove</button>
                         </div>
-                        <ul className="text-sm ml-2">
+                        <ul className="text-xs ml-2">
                           <li>Match: {matches[comment.match].number}</li>
                           <li>Robot: {comment.robot}</li>
                           <li>Scouter: {comment.user ? scouters[comment.user].name : "Unknown"}</li>
