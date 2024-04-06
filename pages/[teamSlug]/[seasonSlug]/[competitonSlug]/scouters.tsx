@@ -73,6 +73,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
               let flag: "None" | "Minor" | "Major" = "None";
               if (text.length === 0) flag = "Minor";
 
+              // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
               // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
               // if ("aこんにちは".match(regex) === null) flag = "Minor";
 
@@ -124,6 +125,20 @@ export default function Scouters(props: { team: Team | null, competition: Compet
       setShouldRegenerateScouterData(false);
     }
   }, [shouldRegenerateScouterData, lastCountedMatch]);
+
+  function removeComment(comment: Comment) {
+    if (!confirm(`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters && scouters[comment.user ?? ""].name}`)) 
+      return;
+
+    if (!reports) return;
+
+    console.log("Removing comment...", comment);
+    const { _id, ...updated } = reports[comment.report];
+    updated.data.comments = "";
+    api.updateReport(updated, comment.report).then(() => {
+      setComments((prev) => [...(prev || []).filter((c) => c !== comment), { ...comment, text: "" }]);
+    });
+  }
     
   return (<Container requireAuthentication={true} hideMenu={false}>
     {
@@ -134,7 +149,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
             <p>Only managers are allowed to access this page.</p>
           </div>
         </div>
-         : <div className="flex flex-row max-sm:flex-col">
+         : <div className="flex flex-row max-sm:flex-col justify-center">
             <div className="card w-1/3 max-sm:w-3/4 bg-base-200 m-12">
               <div className="card-body">
                 <h1 className="card-title">Scouters</h1>
@@ -186,16 +201,19 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 <ul>
                   {
                     scouters && matches && comments && comments.sort((a, b) => matches[a.match].number - matches[b.match].number)
-                      .map((comment) => <li className="mb-1" key={comment.report}>
-                      <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
-                        {comment.text !== "" ? comment.text : "[Empty Comment]"}
-                      </span>
-                      <ul className="text-sm ml-2">
-                        <li>Match: {matches[comment.match].number}</li>
-                        <li>Robot: {comment.robot}</li>
-                        <li>Scouter: {comment.user ? scouters[comment.user].name : "Unknown"}</li>
-                      </ul>
-                    </li>)
+                      .map((comment) => <li className="mb-2" key={comment.report}>
+                        <div className="flex flex-row space-x-2 align-middle items-center mb-1">
+                          <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
+                            {comment.text !== "" ? comment.text : "[Empty Comment]"}
+                          </span>
+                          <button className="btn btn-warning btn-sm" onClick={() => removeComment(comment)}>Remove</button>
+                        </div>
+                        <ul className="text-sm ml-2">
+                          <li>Match: {matches[comment.match].number}</li>
+                          <li>Robot: {comment.robot}</li>
+                          <li>Scouter: {comment.user ? scouters[comment.user].name : "Unknown"}</li>
+                        </ul>
+                      </li>)
                   }
                 </ul>
               </div>
