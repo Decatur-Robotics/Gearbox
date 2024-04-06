@@ -230,6 +230,14 @@ export default function Home(props: ResolvedUrlData) {
   };
 
   const reloadCompetition = async () => {
+    const num = Math.floor(Math.random() * 1000000);
+    if(prompt(`Are you sure you want to reload the competition? This will overwrite ALL your data. We CANNOT recover your data. If you are sure, type '${num}'`) !== String(num)) {
+      alert("Cancelled");
+      return;
+    }
+
+    alert("Reloading competition...");
+
     setUpdatingComp("Checking for Updates...");
     const res = await api.updateCompetition(comp?._id, comp?.tbaId);
     if (res.result === "success") {
@@ -392,9 +400,9 @@ export default function Home(props: ResolvedUrlData) {
                   <div className="flex flex-col space-y-2 mt-1">
                     <button
                       onClick={reloadCompetition}
-                      className="btn btn-md btn-primary w-full"
+                      className="btn btn-md btn-warning w-full"
                     >
-                      <FaSync></FaSync> Refresh
+                      <FaSync></FaSync> Reload Comp from TBA
                     </button>
                     <button
                       className={

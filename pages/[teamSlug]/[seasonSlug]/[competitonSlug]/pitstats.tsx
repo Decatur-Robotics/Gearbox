@@ -9,7 +9,7 @@ import {
 } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
-import { GetServerSideProps } from "next";
+import next, { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
@@ -223,7 +223,12 @@ export default function Pitstats(props: { competition: Competition }) {
   const [avgSpeaker, setAvgSpeaker] = useState<string[]>([]);
 
   const [slides, setSlides] = useState<React.JSX.Element[]>([]);
+  const slidesRef = useRef<React.JSX.Element[]>(slides);
+  slidesRef.current = slides;
+
   const [currentSlide, setCurrentSlide] = useState(-1);
+  const [addedKeyListeners, setAddedKeyListeners] = useState(false);
+  const [cycleSlidesAutomatically, setCycleSlidesAutomatically] = useState(true);
 
   const loadReports = async () => {
     const newReports = (await api.competitionReports(
@@ -398,14 +403,43 @@ export default function Pitstats(props: { competition: Competition }) {
     return () => clearInterval(i);
   }, []);
 
+  function changeSlide(nextSlide: (prev: number) => number, automatic: boolean = false) {
+    if(!automatic)
+      setCycleSlidesAutomatically(false);
+
+    setCurrentSlide((n) => {
+      const slides = slidesRef.current;
+      return nextSlide(n);
+    });
+  }
+
+  function nextSlide(automatic: boolean = false) {
+    changeSlide((n) => n < slidesRef.current.length - 1 ? n + 1 : -1, automatic);
+  }
+
+  function prevSlide(automatic: boolean = false) {
+    changeSlide((n) => n >= 0 ? n - 1 : slidesRef.current.length - 1, automatic);
+  }
+
   useEffect(() => {
-    if (slides.length > 0) {
-      const timer = setInterval(() => {
-        setCurrentSlide((n) => (n < slides.length - 1 ? n + 1 : -1));
-      }, 5000);
+    if (slides.length > 0 && cycleSlidesAutomatically) {
+      const timer = setInterval(() => nextSlide(false), 5000);
       return () => clearInterval(timer);
     }
-  }, [slides]);
+  }, [slides, cycleSlidesAutomatically]);
+
+  useEffect(() => {
+    if (!addedKeyListeners) {
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") {
+          nextSlide();
+        } else if (e.key === "ArrowLeft") {
+          prevSlide();
+        }
+      });
+      setAddedKeyListeners(true);
+    }
+  });
 
   return (
     <Container hideMenu={true} requireAuthentication={true} notForMobile={true}>
