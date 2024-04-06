@@ -172,25 +172,27 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 </p>
                 <ul>
                 {
-                  scouters && Object.values(scouters)?.filter((scouter) => scouter.reports.length > 0).map((scouter) => <li key={scouter._id}>
-                    <span className={scouter.missedReports.length > 0 ? "text-warning" : ""}>{scouter.name}</span>
-                    <ul className="text-sm ml-2 mb-1">
-                      <li>Missed Reports: {scouter.missedReports.length}
-                        {
-                          matches && reports && scouter.missedReports.length > 0 && 
-                            <ul className="ml-2">
-                              {scouter.missedReports.map((report) => reports[report]).map((report) => ({
-                                report: report,
-                                match: matches[report.match]
-                              })).sort((a, b) => a.match.number - b.match.number).map((entry) => {
-                                return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber}</li>
-                              })}
-                            </ul>
-                        }
-                      </li>
-                      <li>Submitted Reports: {scouter.reports.length - scouter.missedReports.length}/{scouter.reports.length}</li>
-                    </ul>
-                  </li>)
+                  scouters && Object.values(scouters)?.filter((scouter) => scouter.reports.length > 0)
+                    .sort((a, b) => b.missedReports.length - a.missedReports.length)
+                    .map((scouter) => <li key={scouter._id}>
+                      <span className={scouter.missedReports.length > 0 ? "text-warning" : ""}>{scouter.name}</span>
+                      <ul className="text-sm ml-2 mb-1">
+                        <li>Missed Reports: {scouter.missedReports.length}
+                          {
+                            matches && reports && scouter.missedReports.length > 0 && 
+                              <ul className="ml-2">
+                                {scouter.missedReports.map((report) => reports[report]).map((report) => ({
+                                  report: report,
+                                  match: matches[report.match]
+                                })).sort((a, b) => a.match.number - b.match.number).map((entry) => {
+                                  return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber}</li>
+                                })}
+                              </ul>
+                          }
+                        </li>
+                        <li>Submitted Reports: {scouter.reports.length - scouter.missedReports.length}/{scouter.reports.length}</li>
+                      </ul>
+                    </li>)
                 }
                 </ul>
               </div>
