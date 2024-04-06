@@ -204,7 +204,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                   {
                     scouters && matches && comments && comments.sort((a, b) => matches[a.match].number - matches[b.match].number)
                       .map((comment) => <li className="mb-1" key={comment.report}>
-                        <div className="flex flex-row space-x-2 align-middle items-center text-sm w-full justify-between">
+                        <div className="flex flex-row space-x-2 items-center text-sm w-full justify-between">
                           <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
                             {comment.text !== "" ? comment.text : "[Empty Comment]"}
                           </span>
