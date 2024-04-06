@@ -408,7 +408,6 @@ export default function Pitstats(props: { competition: Competition }) {
       setCycleSlidesAutomatically(false);
 
     setCurrentSlide((n) => {
-      const slides = slidesRef.current;
       return nextSlide(n);
     });
   }
