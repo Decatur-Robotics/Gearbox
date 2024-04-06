@@ -423,7 +423,7 @@ export default function Pitstats(props: { competition: Competition }) {
 
   useEffect(() => {
     if (slides.length > 0 && cycleSlidesAutomatically) {
-      const timer = setInterval(() => nextSlide(false), 5000);
+      const timer = setInterval(() => nextSlide(true), 5000);
       return () => clearInterval(timer);
     }
   }, [slides, cycleSlidesAutomatically]);
