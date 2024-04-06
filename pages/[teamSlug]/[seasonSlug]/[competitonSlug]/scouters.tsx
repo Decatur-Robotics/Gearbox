@@ -126,11 +126,11 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                       <li>Missed Reports: {scouter.missedReports.length}
                         {
                           matches && reports && scouter.missedReports.length > 0 && 
-                            <ul>
+                            <ul className="ml-2">
                               {scouter.missedReports.map((report) => reports[report]).map((report) => ({
                                 report: report,
                                 match: matches[report.match]
-                              })).map((entry) => {
+                              })).sort((a, b) => a.match.number - b.match.number).map((entry) => {
                                 return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber}</li>
                               })}
                             </ul>
