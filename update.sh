@@ -2,7 +2,9 @@ git stash
 git pull
 git stash apply
 NODE=/home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm
-echo "Version details:\n\tNode: $(node -v)\n\tNPM: $(npm -v)"
+echo "Version details:"
+echo "\tDefault Node: $(node -v)"
+echo "\tFull NPM Version: $($NODE version)"
 #
 $NODE ci
 $NODE run build
