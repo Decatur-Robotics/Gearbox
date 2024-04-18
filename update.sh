@@ -5,7 +5,6 @@ NODE=/home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm
 echo "Version details:"
 echo "  Default Node: $(node -v)"
 echo "  Full NPM Version: $($NODE version)"
-
 $NODE ci
 $NODE run build
 pid=$(sudo lsof -t -i:443)
