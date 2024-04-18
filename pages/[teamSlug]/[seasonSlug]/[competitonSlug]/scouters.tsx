@@ -213,7 +213,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                         <ul className="text-xs ml-2">
                           <li>Match: {matches[comment.match].number}</li>
                           <li>Robot: {comment.robot}</li>
-                          <li>Scouter: {comment.user ? scouters[comment.user].name : "Unknown"}</li>
+                          <li>Scouter: {comment.user ? scouters[comment.user]?.name ?? "Unknown" : "Unknown"}</li>
                         </ul>
                       </li>)
                   }
