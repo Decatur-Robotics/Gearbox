@@ -2,7 +2,7 @@ git stash
 git pull
 git stash apply
 NODE=/home/ubuntu/.nvm/versions/node/v20.12.0/bin/npm
-echo "Running on Node $($NODE --version)"
+echo "Running on NPM $($NODE --version)"
 $NODE ci
 $NODE run build
 pid=$(sudo lsof -t -i:443)
