@@ -308,7 +308,8 @@ export class Report {
   _id: string | undefined;
 
   timestamp: number | undefined; // time it was initially submitted
-  user: string | undefined; // id of user who submitted
+  user: string | undefined; // id of user assigned to report
+  submitter: string | undefined; // id of user who submitted the report
 
   color: AllianceColor;
   robotNumber: number; // number of robot to be reported

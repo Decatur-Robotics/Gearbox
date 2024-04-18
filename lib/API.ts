@@ -538,9 +538,12 @@ export namespace API {
         Collections.Reports,
         new ObjectId(data.reportId)
       );
+      
       form.data = data.formData;
       form.submitted = true;
       form.checkedIn = false;
+      form.submitter = data.userId;
+
       await db.updateObjectById(
         Collections.Reports,
         new ObjectId(data.reportId),
