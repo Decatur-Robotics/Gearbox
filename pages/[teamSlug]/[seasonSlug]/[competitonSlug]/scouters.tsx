@@ -18,7 +18,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
     ? team?.owners.includes(session.user?._id)
     : false;
 
-  type Scouter = User & { missedReports: string[], reports: string[] };
+  type Scouter = User & { missedReports: string[], reports: string[], coveredReports: string[] };
   type Comment = {
     text: string,
     user: string | undefined,
@@ -44,7 +44,8 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         setScouters((prev) => ({...(prev || {}), [scouter]: {
           ...user,
           missedReports: [],
-          reports: []
+          reports: [],
+          coveredReports: []
         }}));
       });
       setScouters({});
@@ -79,7 +80,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
 
               const comment: Comment = {
                 text: text,
-                user: r.user,
+                user: r.submitter ?? r.user,
                 robot: r.robotNumber,
                 match: r.match,
                 report: report,
@@ -106,13 +107,19 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         });
 
         const missedReports = scouterReports.filter((report) => {
-          return !report.submitted;
+          return !report.submitted || (report.submitter && report.submitter !== scouter._id);
         });
+
+        const coveredReports = Object.values(reports).filter((report) => {
+          return report.submitted && report.submitter && report.user !== scouter._id && report.submitter === scouter._id;
+        });
+        console.log(scouter.name, coveredReports.length);
 
         return {
           ...scouter,
           missedReports: missedReports.map((report) => report._id ?? ""),
-          reports: scouterReports.map((report) => report._id ?? "")
+          reports: scouterReports.map((report) => report._id ?? ""),
+          coveredReports: coveredReports.map((report) => report._id ?? "")
         };
       });
 
@@ -177,7 +184,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                     .map((scouter) => <li key={scouter._id}>
                       <span className={scouter.missedReports.length > 0 ? "text-warning" : ""}>{scouter.name}</span>
                       <ul className="text-sm ml-2 mb-1">
-                        <li>Missed Reports: {scouter.missedReports.length}
+                        <li>Missed Reports: {scouter.missedReports.length} ({reports && scouter.missedReports.map((report) => reports[report]).filter((report) => !report.submitter).length} not covered)
                           {
                             matches && reports && scouter.missedReports.length > 0 && 
                               <ul className="ml-2">
@@ -185,11 +192,16 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                                   report: report,
                                   match: matches[report.match]
                                 })).sort((a, b) => a.match.number - b.match.number).map((entry) => {
-                                  return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber}</li>
+                                  return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter && <>(Covered by {scouters[entry.report.submitter]?.name ?? "Unknown"})</>}</li>
                                 })}
                               </ul>
                           }
                         </li>
+                        {
+                          scouter.coveredReports.length > 0 && <li>
+                            Covered Reports: {scouter.coveredReports.length}
+                          </li>
+                        }
                         <li>Submitted Reports: {scouter.reports.length - scouter.missedReports.length}/{scouter.reports.length}</li>
                       </ul>
                     </li>)
@@ -213,7 +225,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                         <ul className="text-xs ml-2">
                           <li>Match: {matches[comment.match].number}</li>
                           <li>Robot: {comment.robot}</li>
-                          <li>Scouter: {comment.user ? scouters[comment.user]?.name ?? "Unknown" : "Unknown"}</li>
+                          <li>Submitter: {comment.user ? scouters[comment.user]?.name ?? "Unknown" : "Unknown"}</li>
                         </ul>
                       </li>)
                   }
