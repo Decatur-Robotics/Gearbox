@@ -18,7 +18,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
     ? team?.owners.includes(session.user?._id)
     : false;
 
-  type Scouter = User & { missedReports: string[], reports: string[] };
+  type Scouter = User & { missedReports: string[], reports: string[], coveredReports: string[] };
   type Comment = {
     text: string,
     user: string | undefined,
@@ -44,7 +44,8 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         setScouters((prev) => ({...(prev || {}), [scouter]: {
           ...user,
           missedReports: [],
-          reports: []
+          reports: [],
+          coveredReports: []
         }}));
       });
       setScouters({});
@@ -109,10 +110,16 @@ export default function Scouters(props: { team: Team | null, competition: Compet
           return !report.submitted || (report.submitter && report.submitter !== scouter._id);
         });
 
+        const coveredReports = Object.values(reports).filter((report) => {
+          return report.submitted && report.submitter && report.user !== scouter._id && report.submitter === scouter._id;
+        });
+        console.log(scouter.name, coveredReports.length);
+
         return {
           ...scouter,
           missedReports: missedReports.map((report) => report._id ?? ""),
-          reports: scouterReports.map((report) => report._id ?? "")
+          reports: scouterReports.map((report) => report._id ?? ""),
+          coveredReports: coveredReports.map((report) => report._id ?? "")
         };
       });
 
@@ -190,6 +197,11 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                               </ul>
                           }
                         </li>
+                        {
+                          scouter.coveredReports.length > 0 && <li>
+                            Covered Reports: {scouter.coveredReports.length}
+                          </li>
+                        }
                         <li>Submitted Reports: {scouter.reports.length - scouter.missedReports.length}/{scouter.reports.length}</li>
                       </ul>
                     </li>)
