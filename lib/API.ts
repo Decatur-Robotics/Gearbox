@@ -778,6 +778,19 @@ export namespace API {
       });
 
       return res.status(200).send(pitReports);
+    },
+
+    getCompReports: async (req, res, { db, data }) => {
+      const comp = await db.findObjectById<Competition>(
+        Collections.Competitions,
+        new ObjectId(data.compId)
+      );
+
+      const reports = await db.findObjects<Report>(Collections.Reports, {
+        match: { $in: comp.matches },
+      });
+
+      return res.status(200).send(reports);
     }
   };
 }

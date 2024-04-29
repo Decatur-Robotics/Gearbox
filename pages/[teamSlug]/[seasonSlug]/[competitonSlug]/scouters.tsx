@@ -32,6 +32,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
   const [shouldRegenerateScouterData, setShouldRegenerateScouterData] = useState<boolean>(false);
 
   const [matches, setMatches] = useState<{ [id: string]: Match } | undefined>();
+  const [loadingReports, setLoadingReports] = useState<boolean>(false);
   const [reports, setReports] = useState<{ [id: string]: Report } | undefined>();
   const [lastCountedMatch, setLastCountedMatch] = useState<number>(comp?.matches.length || 0);
 
@@ -59,41 +60,41 @@ export default function Scouters(props: { team: Team | null, competition: Compet
 
       setMatches({});
     }
-    else if (Object.values(matches).length === comp?.matches.length && reports === undefined) {
-      const values = Object.values(matches);
-      values.forEach((match) => {
-        match.reports.map(async (report) => {
-          const r = await api.findReportById(report);
-          setReports((prev) => {
-            if (Object.keys(prev || {}).length + 6 >= lastCountedMatch * 6)
-              setShouldRegenerateScouterData(true);
+    
+    if (!loadingReports && reports === undefined) {
+      console.log("Loading reports...");
+      setLoadingReports(true);
+      api.getCompReports(comp?._id ?? "").then((reports) => {
+        console.log("Loaded reports");
+        const reportDict: { [id: string]: Report } = {};
+        for (const r of reports) {
+          if (r.submitted) {
+            const text = r.data.comments;
 
-            if (r.submitted) {
-              const text = r.data.comments;
+            let flag: "None" | "Minor" | "Major" = "None";
+            if (text.length === 0) flag = "Minor";
 
-              let flag: "None" | "Minor" | "Major" = "None";
-              if (text.length === 0) flag = "Minor";
+            // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
+            // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
+            // if ("aこんにちは".match(regex) === null) flag = "Minor";
 
-              // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
-              // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
-              // if ("aこんにちは".match(regex) === null) flag = "Minor";
-
-              const comment: Comment = {
-                text: text,
-                user: r.submitter ?? r.user,
-                robot: r.robotNumber,
-                match: r.match,
-                report: report,
-                flag: flag
-              }
-              setComments((prev) => [...(prev || []), comment]);
+            const comment: Comment = {
+              text: text,
+              user: r.submitter ?? r.user,
+              robot: r.robotNumber,
+              match: r.match,
+              report: r._id ?? "",
+              flag: flag
             }
+            setComments((prev) => [...(prev || []), comment]);
+          }
 
-            return { ...(prev || {}), [report]: r }
-          });
-        });
-      });
-      setReports({});
+          reportDict[r._id ?? ""] = r;
+        }
+        setReports(reportDict);
+        setShouldRegenerateScouterData(true);
+        setLoadingReports(false);
+      })
     }
   });
 
@@ -113,7 +114,6 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         const coveredReports = Object.values(reports).filter((report) => {
           return report.submitted && report.submitter && report.user !== scouter._id && report.submitter === scouter._id;
         });
-        console.log(scouter.name, coveredReports.length);
 
         return {
           ...scouter,
@@ -181,7 +181,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 {
                   scouters && Object.values(scouters)?.filter((scouter) => scouter.reports.length > 0)
                     .sort((a, b) => b.missedReports.length - a.missedReports.length)
-                    .map((scouter) => <li key={scouter._id}>
+                    .map((scouter, index) => <li key={index}>
                       <span className={scouter.missedReports.length > 0 ? "text-warning" : ""}>{scouter.name}</span>
                       <ul className="text-sm ml-2 mb-1">
                         <li>Missed Reports: {scouter.missedReports.length} ({reports && scouter.missedReports.map((report) => reports[report]).filter((report) => !report.submitter).length} not covered)
@@ -191,8 +191,8 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                                 {scouter.missedReports.map((report) => reports[report]).map((report) => ({
                                   report: report,
                                   match: matches[report.match]
-                                })).sort((a, b) => a.match.number - b.match.number).map((entry) => {
-                                  return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter && <>(Covered by {scouters[entry.report.submitter]?.name ?? "Unknown"})</>}</li>
+                                })).sort((a, b) => a.match.number - b.match.number).map((entry, index) => {
+                                  return <li key={index}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter && <>(Covered by {scouters[entry.report.submitter]?.name ?? "Unknown"})</>}</li>
                                 })}
                               </ul>
                           }
@@ -215,7 +215,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 <ul>
                   {
                     scouters && matches && comments && comments.sort((a, b) => matches[a.match].number - matches[b.match].number)
-                      .map((comment) => <li className="mb-1" key={comment.report}>
+                      .map((comment, index) => <li className="mb-1" key={index}>
                         <div className="flex flex-row space-x-2 items-center text-sm w-full justify-between">
                           <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
                             {comment.text !== "" ? comment.text : "[Empty Comment]"}

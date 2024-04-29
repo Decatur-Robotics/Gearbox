@@ -376,4 +376,8 @@ export default class ClientAPI {
     return await this.request("/getPitReports", { reportIds });
   }
 
+  async getCompReports(compId: string): Promise<Report[]> {
+    return await this.request("/getCompReports", { compId });
+  }
+
 }
