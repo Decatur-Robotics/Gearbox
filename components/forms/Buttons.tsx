@@ -8,7 +8,7 @@ export type ButtonProps = {
 function IncrementButton(
   props: { dataKey: string, data: FormData, 
     callback: (key: string, value: string | number | boolean) => void, text: string, rounded?: string }) {
-  
+
   const roundTop = props.rounded?.includes("t");
   const roundBottom = props.rounded?.includes("b");
 
@@ -36,7 +36,7 @@ function IncrementButton(
 export function AutoButtons(props: ButtonProps) {
   return (
     <div className="w-full h-full flex flex-col items-center">
-      <div className="w-full h-2/3 grid grid-cols-2 grid-rows-2">
+      <div className="w-full h-2/3 grid grid-cols-2 grid-rows-2 rounded-xl overflow-hidden pb-1">
         <IncrementButton dataKey="AutoScoredAmp" data={props.data} callback={props.callback} text="Scored Amp" rounded="tl" />
         <IncrementButton dataKey="AutoScoredSpeaker" data={props.data} callback={props.callback} text="Scored Speaker" rounded="tr" />
         <IncrementButton dataKey="AutoMissedAmp" data={props.data} callback={props.callback} text="Missed Amp" rounded="bl" />
