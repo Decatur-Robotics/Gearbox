@@ -12,20 +12,21 @@ function IncrementButton(
   const roundTop = props.rounded?.includes("t");
   const roundBottom = props.rounded?.includes("b");
 
+  console.log(props.rounded, roundTop, roundBottom);
   return (
     <div className="flex flex-col h-full pb-6">
       <button
         onClick={() => {
           props.callback(props.dataKey, props.data[props.dataKey] + 1);
         }}
-        className={`btn btn-outline active:bg-blue-300 rounded-none w-full h-[80%] text-lg ${roundTop && props.rounded && `rounded-${props.rounded}-xl`}`}
+        className={`btn btn-outline active:bg-blue-300 rounded-none w-full h-[80%] text-lg ${roundTop && ` rounded-${props.rounded}-xl`}`}
       >
         {props.text}: {props.data[props.dataKey]}
       </button>
       <button onClick={() => {
           props.callback(props.dataKey, Math.max(props.data[props.dataKey] - 1, 0));
         }}
-        className={`btn btn-outline active:bg-red-300 rounded-none h-[20%] ${roundBottom && props.rounded && `rounded-${props.rounded}-xl`}`}>
+        className={`btn btn-outline active:bg-red-300 rounded-none w-full h-[20%] ${roundBottom && ` rounded-${props.rounded}-xl`}`}>
         Undo
       </button>
     </div>
