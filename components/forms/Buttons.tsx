@@ -4,7 +4,6 @@ export type ButtonProps = {
   callback: (key: string, value: string | number | boolean) => void;
 };
 
-// Can't use key as a prop
 function IncrementButton(
   props: { dataKey: string, data: FormData, 
     callback: (key: string, value: string | number | boolean) => void, text: string, rounded?: string }) {
