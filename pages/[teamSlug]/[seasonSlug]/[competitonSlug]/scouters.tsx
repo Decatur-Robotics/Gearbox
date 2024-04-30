@@ -32,42 +32,45 @@ export default function Scouters(props: { team: Team | null, competition: Compet
   const [shouldRegenerateScouterData, setShouldRegenerateScouterData] = useState<boolean>(false);
 
   const [matches, setMatches] = useState<{ [id: string]: Match } | undefined>();
-  const [loadingReports, setLoadingReports] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [reports, setReports] = useState<{ [id: string]: Report } | undefined>();
   const [lastCountedMatch, setLastCountedMatch] = useState<number>(comp?.matches.length || 0);
 
   const [comments, setComments] = useState<Comment[] | undefined>();
 
   useEffect(() => {
-    if (!scouters) {
-      team?.scouters.forEach(async (scouter) => {
-        const user = await api.findUserById(scouter);
-        setScouters((prev) => ({...(prev || {}), [scouter]: {
-          ...user,
-          missedReports: [],
-          reports: [],
-          coveredReports: []
-        }}));
-      });
-      setScouters({});
-    }
+    if (scouters && matches && reports || loading) return;
 
-    if (!matches) {
-      comp?.matches.forEach(async (match) => {
-        const m = await api.findMatchById(match);
-        setMatches((prev) => ({...(prev || {}), [match]: m}));
-      });
+      setLoading(true);
 
-      setMatches({});
-    }
-    
-    if (!loadingReports && reports === undefined) {
-      console.log("Loading reports...");
-      setLoadingReports(true);
-      api.getCompReports(comp?._id ?? "").then((reports) => {
-        console.log("Loaded reports");
+      console.log("Loading scouter data...");
+      api.findScouterManagementData(comp?._id ?? "", team?.scouters ?? []).then((data) => {
+        console.log("Loaded scouter data");
+
+        // Load scouters
+        const scouterDict: { [id: string]: Scouter } = {};
+        for (const s of data.scouters) {
+          scouterDict[s._id ?? ""] = {
+            ...s,
+            missedReports: [],
+            reports: [],
+            coveredReports: []
+          };
+        }
+
+        setScouters(scouterDict);
+
+        // Load matches
+        const matchDict: { [id: string]: Match } = {};
+        for (const m of data.matches) {
+          matchDict[m._id ?? ""] = m;
+        }
+        setMatches(matchDict);
+
+        // Load reports and comments
         const reportDict: { [id: string]: Report } = {};
-        for (const r of reports) {
+        const comments: Comment[] = [];
+        for (const r of data.reports) {
           if (r.submitted) {
             const text = r.data.comments;
 
@@ -86,16 +89,17 @@ export default function Scouters(props: { team: Team | null, competition: Compet
               report: r._id ?? "",
               flag: flag
             }
-            setComments((prev) => [...(prev || []), comment]);
+            comments.push(comment);
           }
 
           reportDict[r._id ?? ""] = r;
         }
         setReports(reportDict);
+        setComments(comments);
+
         setShouldRegenerateScouterData(true);
-        setLoadingReports(false);
-      })
-    }
+        setLoading(false);
+    });
   });
 
   useEffect(() => {
@@ -162,12 +166,13 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 <h1 className="card-title">Scouters</h1>
                 <p>
                   Scouters: {scouters && Object.keys(scouters)?.length}<br />
-                  Matches: {matches && Object.keys(matches)?.length}/{comp && comp?.matches.length} (loaded/total)<br />
+                  Matches: {comp && comp?.matches.length}<br />
                   Reports:{" "}
-                    {reports && Object.values(reports).filter(r => r.submitted).length}
-                    /{reports && Object.keys(reports).length}
+                    {reports 
+                      ? Object.values(reports).filter(r => r.submitted).length 
+                      : <div className="loading loading-spinner loading-xs"></div>}
                     /{comp && comp?.matches.length * 6}
-                    {" "}(submitted/loaded/total) <br />
+                    {" "}(submitted/total) <br />
                   <span className="tooltip" data-tip="Reports for this match and any before it that are not submitted will be considered missing.">
                     Last Counted Match:
                   </span>
