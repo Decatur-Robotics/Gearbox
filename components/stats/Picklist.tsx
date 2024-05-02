@@ -1,11 +1,21 @@
 import { Report } from "@/lib/Types";
 
 import { useDrag, useDrop } from "react-dnd";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
-import useLocalStorage from "@/lib/client/useLocalStorage";
 
-type CardType = { number: number; id: number };
+type CardType = { 
+  number: number;
+  id: number;
+  picklist?: Picklist;
+};
+
+type Picklist = {
+  index: number;
+  name: string;
+  teams: CardType[];
+  update: (picklist: Picklist) => void;
+}
 
 const Includes = (bucket: any[], item: CardType) => {
   let result = false;
@@ -18,7 +28,7 @@ const Includes = (bucket: any[], item: CardType) => {
   return result;
 };
 
-function TeamCard(props: { number: number; id: number; draggable: boolean }) {
+function TeamCard(props: { number: number; id: number; draggable: boolean, picklist?: Picklist }) {
   const [{ isDragging }, dragRef] = useDrag({
     type: "team",
     item: { id: props.id, number: props.number },
@@ -39,33 +49,41 @@ function TeamCard(props: { number: number; id: number; draggable: boolean }) {
   );
 }
 
-function Picklist(props: { index: number }) {
+function PicklistCard(props: { picklist: Picklist }) {
+  const picklist = props.picklist;
+
   const [basket, setBasket] = useState<CardType[]>([]);
 
   // build fix
   const [{ isOver }, dropRef] = useDrop({
     accept: "team",
-    drop: (item: any) =>
+    drop: (item: CardType) => 
       setBasket((basket: any) =>
-        !Includes(basket, item) ? [...basket, item] : basket,
+        !Includes(basket, item) ? [...basket, {...item, picklist: props.picklist}] : basket,
       ),
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
   });
 
+  function changeName(e: ChangeEvent<HTMLInputElement>) {
+    picklist.name = e.target.value;
+    picklist.update(picklist);
+  }
+
   return (
     <div
       className="bg-base-200 max-h-[30rem] rounded-lg w-1/6 min-h-32 flex flex-col items-center space-y-2 p-4"
       ref={dropRef}
     >
-      <h1 className="font-semibold">Picklist #{props.index}</h1>
+      <input defaultValue={picklist.name} className="w-[95%] input input-sm" onChange={changeName}></input>
       {basket.map((team) => (
         <TeamCard
           id={team.id}
           number={team.number}
           draggable={false}
           key={team.id}
+          picklist={picklist}
         />
       ))}
       {isOver && <h1 className="font-semibold text-accent">Drop Here!</h1>}
@@ -73,10 +91,39 @@ function Picklist(props: { index: number }) {
   );
 }
 
+export function TeamList(props: { teams: CardType[] }) {
+  const [{ isOver}, dropRef] = useDrop({
+    accept: "team",
+    drop: (item: CardType) => {
+      console.log(item);
+
+      const picklist = item.picklist;
+      if (!picklist) return;
+      
+      picklist.teams = picklist.teams.filter((team) => team.id !== item.id);
+      picklist.update(picklist);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  });
+  
+  return (
+    <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2">
+      {props.teams.map((team) => (
+        <TeamCard
+          draggable={true}
+          id={team.id}
+          number={team.number}
+          key={team.id}
+        ></TeamCard>
+      ))}
+    </div>);
+}
+
 export default function PicklistScreen(props: { reports: Report[] }) {
-  const [teamNumbers, setTeamNumbers] = useState<CardType[]>([]);
-  //const[localSaves, setLocalSaves] = useLocalStorage<number[]>("picklists");
-  const [picklists, setPicklists] = useState<number[]>([]);
+  const [teams, setTeams] = useState<CardType[]>([]);
+  const [picklists, setPicklists] = useState<Picklist[]>([]);
 
   useEffect(() => {
     var newTeamNumbers: number[] = [];
@@ -86,7 +133,7 @@ export default function PicklistScreen(props: { reports: Report[] }) {
       }
     });
 
-    setTeamNumbers(
+    setTeams(
       newTeamNumbers.map((num, index) => {
         return { id: index, number: num };
       }),
@@ -94,21 +141,31 @@ export default function PicklistScreen(props: { reports: Report[] }) {
   }, [props.reports]);
 
   const addPicklist = () => {
-    setPicklists([...picklists, picklists.length + 1]);
+    const newPicklist: Picklist = {
+      index: picklists.length,
+      name: `Picklist ${picklists.length + 1}`,
+      teams: [],
+      update: (picklist: Picklist) => {
+        setPicklists((old) => {
+          const newPicklists = old.map((p) => {
+            if (p.index === picklist.index) {
+              return picklist;
+            } else {
+              return p;
+            }
+          });
+
+          return newPicklists;
+        });
+      },
+    };
+
+    setPicklists([...picklists, newPicklist]);
   };
 
   return (
     <div className="w-full h-fit flex flex-col space-y-2">
-      <div className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2">
-        {teamNumbers.map((team) => (
-          <TeamCard
-            draggable={true}
-            id={team.id}
-            number={team.number}
-            key={team.id}
-          ></TeamCard>
-        ))}
-      </div>
+      <TeamList teams={teams}></TeamList>
 
       <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">
         {picklists.length === 0 ? (
@@ -121,13 +178,13 @@ export default function PicklistScreen(props: { reports: Report[] }) {
           <></>
         )}
 
-        {picklists.map((num, index) => (
-          <Picklist key={num} index={index}></Picklist>
+        {picklists.map((picklist) => (
+          <PicklistCard key={picklist.index} picklist={picklist}></PicklistCard>
         ))}
       </div>
 
       <button
-        className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-60 animate-pulse font-bold "
+        className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
         onClick={addPicklist}
       >
         <FaPlus></FaPlus>
