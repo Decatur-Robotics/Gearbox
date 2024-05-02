@@ -19,14 +19,20 @@ function IncrementButton(
         onClick={() => {
           props.callback(props.dataKey, props.data[props.dataKey] + 1);
         }}
-        className={`btn btn-outline active:bg-blue-300 rounded-none w-full h-[80%] text-lg ${roundTop && ` rounded-${props.rounded}-xl`}`}
+        className={`btn btn-outline active:bg-blue-300 
+          ${roundBottom && "rounded-none"} ${roundTop && " rounded-br-none rounded-bl-none"} 
+          ${roundTop && (props.rounded === "tl" ? " rounded-tr-none" : "rounded-tl-none")} w-full h-[80%] text-lg 
+          ${roundTop && ` rounded-${props.rounded}-xl`}`}
       >
         {props.text}: {props.data[props.dataKey]}
       </button>
       <button onClick={() => {
           props.callback(props.dataKey, Math.max(props.data[props.dataKey] - 1, 0));
         }}
-        className={`btn btn-outline active:bg-red-300 rounded-none w-full h-[20%] ${roundBottom && ` rounded-${props.rounded}-xl`}`}>
+        className={`btn btn-outline active:bg-red-300 
+          ${roundTop && "rounded-none"} ${roundBottom && " rounded-tr-none rounded-tl-none"} 
+          ${roundBottom && (props.rounded === "bl" ? " rounded-br-none" : "rounded-bl-none")} w-full h-[20%] 
+          ${roundBottom && ` rounded-${props.rounded}-xl`}`}>
         Undo
       </button>
     </div>
@@ -36,7 +42,7 @@ function IncrementButton(
 export function AutoButtons(props: ButtonProps) {
   return (
     <div className="w-full h-full flex flex-col items-center">
-      <div className="w-full h-2/3 grid grid-cols-2 grid-rows-2 rounded-xl overflow-hidden pb-1">
+      <div className="w-full h-2/3 grid grid-cols-2 grid-rows-2 rounded-xl pb-1">
         <IncrementButton dataKey="AutoScoredAmp" data={props.data} callback={props.callback} text="Scored Amp" rounded="tl" />
         <IncrementButton dataKey="AutoScoredSpeaker" data={props.data} callback={props.callback} text="Scored Speaker" rounded="tr" />
         <IncrementButton dataKey="AutoMissedAmp" data={props.data} callback={props.callback} text="Missed Amp" rounded="bl" />
