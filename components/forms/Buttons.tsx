@@ -20,7 +20,7 @@ function IncrementButton(
           props.callback(props.dataKey, props.data[props.dataKey] + 1);
         }}
         className={`btn btn-outline active:bg-blue-300 
-          ${roundBottom && "rounded-none"} ${roundTop && " rounded-br-none rounded-bl-none"} 
+          ${(roundBottom || !props.rounded) && "rounded-none"} ${roundTop && " rounded-br-none rounded-bl-none"} 
           ${roundTop && (props.rounded === "tl" ? " rounded-tr-none" : "rounded-tl-none")} w-full h-[80%] text-lg 
           ${roundTop && ` rounded-${props.rounded}-xl`}`}
       >
@@ -30,7 +30,7 @@ function IncrementButton(
           props.callback(props.dataKey, Math.max(props.data[props.dataKey] - 1, 0));
         }}
         className={`btn btn-outline active:bg-red-300 
-          ${roundTop && "rounded-none"} ${roundBottom && " rounded-tr-none rounded-tl-none"} 
+          ${(roundTop || !props.rounded) && "rounded-none"} ${roundBottom && " rounded-tr-none rounded-tl-none"} 
           ${roundBottom && (props.rounded === "bl" ? " rounded-br-none" : "rounded-bl-none")} w-full h-[20%] 
           ${roundBottom && ` rounded-${props.rounded}-xl`}`}>
         Undo
