@@ -7,7 +7,7 @@ import { FaPlus } from "react-icons/fa";
 type CardType = { 
   number: number;
   id: number;
-  picklist?: Picklist;
+  picklist?: number;
 };
 
 type Picklist = {
@@ -28,10 +28,22 @@ const Includes = (bucket: any[], item: CardType) => {
   return result;
 };
 
-function TeamCard(props: { number: number; id: number; draggable: boolean, picklist?: Picklist }) {
+function removeTeamFromPicklist(team: CardType, picklists: Picklist[]) {
+  if (team.picklist === undefined) return;
+
+  const picklist = picklists[team.picklist];
+  if (!picklist) return;
+  
+  picklist.teams = picklist.teams.filter((team) => team.id !== team.id);
+  picklist.update(picklist);
+}
+
+function TeamCard(props: { cardData: CardType, draggable: boolean, picklist?: Picklist, width?: string, height?: string}) {
+  const { number: teamNumber, id, picklist } = props.cardData;
+
   const [{ isDragging }, dragRef] = useDrag({
     type: "team",
-    item: { id: props.id, number: props.number },
+    item: props.cardData,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -39,28 +51,34 @@ function TeamCard(props: { number: number; id: number; draggable: boolean, pickl
 
   return (
     <div
-      className="w-[150px] h-[100px] bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary"
+      className={`w-${props.width ?? "[150px]"} h-${props.height ?? "[100px]"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary`}
       ref={dragRef}
     >
       <h1>
-        Team <span className="text-accent">#{props.number}</span>
+        Team <span className="text-accent">#{teamNumber}</span>
       </h1>
     </div>
   );
 }
 
-function PicklistCard(props: { picklist: Picklist }) {
+function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
   const picklist = props.picklist;
 
-  const [basket, setBasket] = useState<CardType[]>([]);
+  // const [basket, setBasket] = useState<CardType[]>(picklist.teams);
 
   // build fix
   const [{ isOver }, dropRef] = useDrop({
     accept: "team",
-    drop: (item: CardType) => 
-      setBasket((basket: any) =>
-        !Includes(basket, item) ? [...basket, {...item, picklist: props.picklist}] : basket,
-      ),
+    drop: (item: CardType) => {
+      removeTeamFromPicklist(item, props.picklists);
+      // setBasket((basket: any) => !Includes(basket, item) ? [...basket, { ...item, picklist: picklist.index }] : basket);
+
+      if (!Includes(picklist.teams, item)) {
+        item.picklist = picklist.index;
+        picklist.teams.push(item);
+        picklist.update(picklist);
+      }
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
@@ -77,13 +95,14 @@ function PicklistCard(props: { picklist: Picklist }) {
       ref={dropRef}
     >
       <input defaultValue={picklist.name} className="w-[95%] input input-sm" onChange={changeName}></input>
-      {basket.map((team) => (
+      {picklist.teams.map((team) => (
         <TeamCard
-          id={team.id}
-          number={team.number}
+          cardData={team}
           draggable={false}
           key={team.id}
           picklist={picklist}
+          width="full"
+          height="[50px]"
         />
       ))}
       {isOver && <h1 className="font-semibold text-accent">Drop Here!</h1>}
@@ -91,17 +110,11 @@ function PicklistCard(props: { picklist: Picklist }) {
   );
 }
 
-export function TeamList(props: { teams: CardType[] }) {
+export function TeamList(props: { teams: CardType[], picklists: Picklist[] }) {
   const [{ isOver}, dropRef] = useDrop({
     accept: "team",
     drop: (item: CardType) => {
-      console.log(item);
-
-      const picklist = item.picklist;
-      if (!picklist) return;
-      
-      picklist.teams = picklist.teams.filter((team) => team.id !== item.id);
-      picklist.update(picklist);
+      removeTeamFromPicklist(item, props.picklists);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -109,36 +122,22 @@ export function TeamList(props: { teams: CardType[] }) {
   });
   
   return (
-    <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2">
-      {props.teams.map((team) => (
+    <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
+      {props.teams.length > 0 ? props.teams.map((team) => (
         <TeamCard
           draggable={true}
-          id={team.id}
-          number={team.number}
+          cardData={team}
           key={team.id}
         ></TeamCard>
-      ))}
+      )) : 
+      <progress className="progress w-full"></progress>}
     </div>);
 }
 
-export default function PicklistScreen(props: { reports: Report[] }) {
-  const [teams, setTeams] = useState<CardType[]>([]);
+export default function PicklistScreen(props: { teams: number[], reports: Report[] }) {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
 
-  useEffect(() => {
-    var newTeamNumbers: number[] = [];
-    props.reports.forEach((report) => {
-      if (!newTeamNumbers.includes(report.robotNumber)) {
-        newTeamNumbers.push(report.robotNumber);
-      }
-    });
-
-    setTeams(
-      newTeamNumbers.map((num, index) => {
-        return { id: index, number: num };
-      }),
-    );
-  }, [props.reports]);
+  const teams = props.teams.map((team) => ({ number: team, id: team }));
 
   const addPicklist = () => {
     const newPicklist: Picklist = {
@@ -163,24 +162,25 @@ export default function PicklistScreen(props: { reports: Report[] }) {
     setPicklists([...picklists, newPicklist]);
   };
 
+  console.log(teams);
+
   return (
     <div className="w-full h-fit flex flex-col space-y-2">
-      <TeamList teams={teams}></TeamList>
+      <TeamList teams={teams} picklists={picklists}></TeamList>
 
       <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">
-        {picklists.length === 0 ? (
+        {picklists.length === 0 
+          ? (
           <div className="w-full h-full flex items-center justify-center">
             <h1 className="text-3xl text-accent animate-bounce font-semibold">
               Create A Picklist
             </h1>
           </div>
-        ) : (
-          <></>
+          )
+          : picklists.map((picklist) => (
+            <PicklistCard key={picklist.index} picklist={picklist} picklists={picklists}></PicklistCard>
+          )
         )}
-
-        {picklists.map((picklist) => (
-          <PicklistCard key={picklist.index} picklist={picklist}></PicklistCard>
-        ))}
       </div>
 
       <button
