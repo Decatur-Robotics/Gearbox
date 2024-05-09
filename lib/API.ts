@@ -778,6 +778,16 @@ export namespace API {
       });
 
       return res.status(200).send(pitReports);
+    },
+
+    changeScouterForReport: async (req, res, { db, data }) => {
+      await db.updateObjectById<Report>(
+        Collections.Reports,
+        new ObjectId(data.reportId),
+        { scouter: data.scouterId }
+      );
+
+      return res.status(200).send({ result: "success" });
     }
   };
 }

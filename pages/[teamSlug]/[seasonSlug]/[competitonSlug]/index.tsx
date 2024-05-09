@@ -1,5 +1,5 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 import Image from "next/image";
 
@@ -328,13 +328,26 @@ export default function Home(props: ResolvedUrlData) {
   });
 
   function openEditMatchModal(match: Match) {
-    (document.getElementById("edit-match-modal") as HTMLDialogElement).showModal();
+    (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
     
     setMatchBeingEdited(match);
   }
 
-  function EditMatchModal(props: { match: Match }) {
+  function EditMatchModal(props: { match?: Match }) {
+    if (props.match === undefined) return (<></>);
+
     const teams = props.match.blueAlliance.concat(props.match.redAlliance);
+
+    const reports = props.match.reports.map(reportId => reportsById[reportId]);
+
+    function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
+      if (!e.target.value || !report._id) return;
+
+      const userId = e.target.value;
+      api.changeScouterForReport(report._id, userId).then(() => {
+        api.get
+      });
+    }
 
     return (
       <dialog id="edit-match-modal" className="modal">
@@ -354,8 +367,18 @@ export default function Home(props: ResolvedUrlData) {
             {
               teams.map((team, index) => 
                 <tr key={index}>
-                  <td className={`text-${index < 3 ? "blue" : "red"}-600`}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
+                  <td className={index < 3 ? "text-blue-500" : "text-red-500"}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
                   <td>{team}</td>
+                  <td>
+                    <select onChange={(e) => changeScouter(e, reports[index])}>
+                      <option value={reports[index].user}>{usersById[reports[index].user ?? ""].name}</option>
+                      {
+                        Object.keys(usersById).filter(id => id !== reports[index].user).map(userId => 
+                          <option value={userId}>{usersById[userId].name}</option>
+                        )
+                      }
+                    </select>
+                  </td>
                 </tr>
               )
             }
