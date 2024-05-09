@@ -31,6 +31,7 @@ import { FaBinoculars, FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-ico
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
+import { match } from "assert";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -89,7 +90,7 @@ export default function Home(props: ResolvedUrlData) {
     max: number;
   } | null>(null);
 
-  const [matchBeingEdited, setMatchBeingEdited] = useState<Match | undefined>();
+  const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
@@ -140,7 +141,7 @@ export default function Home(props: ResolvedUrlData) {
     setLoadingMatches(false);
   };
 
-  useEffect(() => {
+  const loadReports = async () => {
     const scoutingStats = (reps: Report[]) => {
       setLoadingScoutStats(true);
       let submittedCount = 0;
@@ -154,6 +155,25 @@ export default function Home(props: ResolvedUrlData) {
       setLoadingScoutStats(false);
     };
 
+    setLoadingReports(true);
+    const newReports: Report[] = await api.competitionReports(
+      comp?._id,
+      false
+    );
+    setReports(newReports);
+    var newReportId: { [key: string]: Report } = {};
+    newReports.forEach((report) => {
+      if (!report._id) {
+        return;
+      }
+      newReportId[report._id] = report;
+    });
+    setReportsById(newReportId);
+    setLoadingReports(false);
+    scoutingStats(newReports);
+  };
+
+  useEffect(() => {
     const loadUsers = async () => {
       setLoadingUsers(true);
 
@@ -167,25 +187,6 @@ export default function Home(props: ResolvedUrlData) {
 
       setUsersById(newUsersById);
       setLoadingUsers(false);
-    };
-
-    const loadReports = async () => {
-      setLoadingReports(true);
-      const newReports: Report[] = await api.competitionReports(
-        comp?._id,
-        false
-      );
-      setReports(newReports);
-      var newReportId: { [key: string]: Report } = {};
-      newReports.forEach((report) => {
-        if (!report._id) {
-          return;
-        }
-        newReportId[report._id] = report;
-      });
-      setReportsById(newReportId);
-      setLoadingReports(false);
-      scoutingStats(newReports);
     };
 
     const loadPitreports = async () => {
@@ -330,7 +331,7 @@ export default function Home(props: ResolvedUrlData) {
   function openEditMatchModal(match: Match) {
     (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
     
-    setMatchBeingEdited(match);
+    setMatchBeingEdited(match._id);
   }
 
   function EditMatchModal(props: { match?: Match }) {
@@ -341,12 +342,13 @@ export default function Home(props: ResolvedUrlData) {
     const reports = props.match.reports.map(reportId => reportsById[reportId]);
 
     function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
-      if (!e.target.value || !report._id) return;
+      e.preventDefault();
 
       const userId = e.target.value;
-      api.changeScouterForReport(report._id, userId).then(() => {
-        api.get
-      });
+      if (!userId || !report._id) return;
+
+      console.log(`Changing scouter for report ${report._id} to ${userId}`);
+      api.changeScouterForReport(report._id, userId).then(loadReports);
     }
 
     return (
@@ -355,8 +357,8 @@ export default function Home(props: ResolvedUrlData) {
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
           </form>
-          <h3 className="text-xl">Editing Match {matchBeingEdited?.number}</h3>
-          <table>
+          <h3 className="text-xl">Editing Match {props.match?.number}</h3>
+          <table className="space-x-2">
             <thead>
               <tr>
                 <th>Position</th>
@@ -933,7 +935,7 @@ export default function Home(props: ResolvedUrlData) {
         </div>
       </div>
       {
-        isManager && <EditMatchModal match={matchBeingEdited!} />
+        isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} />
       }
     </Container>
   );

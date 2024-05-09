@@ -784,7 +784,7 @@ export namespace API {
       await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId),
-        { scouter: data.scouterId }
+        { user: data.scouterId }
       );
 
       return res.status(200).send({ result: "success" });
