@@ -89,6 +89,8 @@ export default function Home(props: ResolvedUrlData) {
     max: number;
   } | null>(null);
 
+  const [matchBeingEdited, setMatchBeingEdited] = useState<Match | undefined>();
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -324,6 +326,44 @@ export default function Home(props: ResolvedUrlData) {
       setRanking(res);
     });
   });
+
+  function openEditMatchModal(match: Match) {
+    (document.getElementById("edit-match-modal") as HTMLDialogElement).showModal();
+    
+    setMatchBeingEdited(match);
+  }
+
+  function EditMatchModal(props: { match: Match }) {
+    const teams = props.match.blueAlliance.concat(props.match.redAlliance);
+
+    return (
+      <dialog id="edit-match-modal" className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+          </form>
+          <h3 className="text-xl">Editing Match {matchBeingEdited?.number}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Position</th>
+                <th>Team</th>
+                <th>Scouter</th>
+              </tr>
+            </thead>
+            {
+              teams.map((team, index) => 
+                <tr key={index}>
+                  <td className={`text-${index < 3 ? "blue" : "red"}-600`}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
+                  <td>{team}</td>
+                </tr>
+              )
+            }
+          </table>
+        </div>
+      </dialog>
+    );
+  }
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
@@ -699,9 +739,12 @@ export default function Home(props: ResolvedUrlData) {
                               id={`//match${index}`}
                               className="md:relative md:-translate-y-80"
                             ></div>
-                            <h1 className="text-2xl font-bold mb-4">
-                              Match {match.number}
-                            </h1>
+                            <div className="mb-4 items-middle flex flex-row items-center">
+                              <h1 className="text-2xl font-bold">
+                                Match {match.number}
+                              </h1>
+                              { isManager && <button className="btn btn-link" onClick={() => openEditMatchModal(match)}>Edit</button>}
+                            </div>
                             <div className="flex flex-col items-center space-y-4">
                               <div className="w-full flex flex-row items-center space-x-2">
                                 {!matchesAssigned ? (
@@ -866,6 +909,9 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
       </div>
+      {
+        isManager && <EditMatchModal match={matchBeingEdited!} />
+      }
     </Container>
   );
 }
