@@ -21,6 +21,7 @@ export default function CreateComp(props: ResolvedUrlData) {
   >([]);
   const [selection, setSelection] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
+  const [creatingComp, setCreatingComp] = useState(false);
 
   const searchComp = async () => {
     if (!name) {
@@ -39,6 +40,8 @@ export default function CreateComp(props: ResolvedUrlData) {
   };
 
   const createComp = async () => {
+    setCreatingComp(true);
+
     if (selection === undefined) {
       return;
     }
@@ -65,43 +68,52 @@ export default function CreateComp(props: ResolvedUrlData) {
     <Container requireAuthentication={true} hideMenu={false}>
       <Flex center={true} mode="col" className="w-full h-92 my-10">
         <Card title={"Create Competition"} className="w-1/3">
-          <h1>Search for a competition</h1>
-          <div className="divider"></div>
-          <input
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-            }}
-            className="input input-bordered"
-            placeholder={"Competition Name"}
-          ></input>
-          <div className="w-full h-64 space-y-2 ">
-            {loading || name.length < 3 ? (
-              <Loading></Loading>
-            ) : (
-              results.map((e, i) => (
-                <h1
-                  key={e.pair.name}
-                  className={
-                    "bg-base-300 text-sm p-2 rounded-lg border-4 border-base-300 " +
-                    (selection === i
-                      ? "border-primary"
-                      : "hover:border-primary")
-                  }
-                  onClick={() => {
-                    setSelection(i);
-                  }}
-                >
-                  {e.pair.name}
-                </h1>
-              ))
-            )}
+          <div>
+            <h1>Search for a competition</h1>
+            <div className="divider"></div>
+            <input
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
+              className="input input-bordered w-full mb-4"
+              placeholder={"Competition Name"}
+            ></input>
+            <div className="w-full h-64 space-y-2 ">
+              {loading || name.length < 3 ? (
+                // <Loading></Loading>
+                <></>
+              ) : (
+                results.map((e, i) => (!creatingComp || i === selection) ? (
+                  <h1
+                    key={e.pair.name}
+                    className={
+                      "bg-base-300 text-sm p-2 rounded-lg border-4 border-base-300 " +
+                      (selection === i
+                        ? "border-primary"
+                        : "hover:border-primary")
+                    }
+                    onClick={() => {
+                      setSelection(i);
+                    }}
+                  >
+                    {e.pair.name}
+                  </h1>
+                ) : <></>)
+              )}
+            </div>
           </div>
-          {selection !== undefined && selection >= 0 ? (
-            <button className="btn btn-primary w-full" onClick={createComp}>
-              Create Competition
-            </button>
-          ) : (
+          {selection !== undefined && selection >= 0 ? 
+              (creatingComp 
+                ? (
+                  <progress className="progress w-full" />
+                ) 
+                : (
+                  <button className="btn btn-primary w-full" onClick={createComp}>
+                    Create Competition
+                  </button>
+                ))
+           : (
             <></>
           )}
         </Card>

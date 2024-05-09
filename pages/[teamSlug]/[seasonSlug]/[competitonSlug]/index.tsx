@@ -32,6 +32,7 @@ import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
 import { match } from "assert";
+import { report } from "process";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -55,7 +56,7 @@ export default function Home(props: ResolvedUrlData) {
   const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
 
   const [reports, setReports] = useState<Report[]>([]);
-  const [matchesAssigned, setMatchesAssigned] = useState(false);
+  const [matchesAssigned, setMatchesAssigned] = useState<boolean | undefined>(undefined);
   const [assigningMatches, setAssigningMatches] = useState(false);
   const [noMatches, setNoMatches] = useState(false);
 
@@ -113,6 +114,16 @@ export default function Home(props: ResolvedUrlData) {
       });
   };
 
+  const updateMatchesAssigned = () => {
+    let matchesAssigned = true;
+    for (const report of reports) {
+      if (!report.user)
+        matchesAssigned = false;
+    }
+
+    setMatchesAssigned(matchesAssigned);
+  }
+
   const loadMatches = async () => {
     setLoadingMatches(true);
     window.location.hash = "";
@@ -128,7 +139,7 @@ export default function Home(props: ResolvedUrlData) {
     });
 
     if (matches.length > 0) {
-      setMatchesAssigned(matches[0].reports.length > 0 ? true : false);
+      updateMatchesAssigned();
     } else {
       setNoMatches(true);
     }
@@ -171,6 +182,8 @@ export default function Home(props: ResolvedUrlData) {
     setReportsById(newReportId);
     setLoadingReports(false);
     scoutingStats(newReports);
+
+    updateMatchesAssigned();
   };
 
   useEffect(() => {
@@ -340,12 +353,13 @@ export default function Home(props: ResolvedUrlData) {
     const teams = props.match.blueAlliance.concat(props.match.redAlliance);
 
     const reports = props.match.reports.map(reportId => reportsById[reportId]);
+    if (!reports) return (<></>);
 
     function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
       e.preventDefault();
 
       const userId = e.target.value;
-      if (!userId || !report._id) return;
+      if (!userId || !report || !report._id) return;
 
       console.log(`Changing scouter for report ${report._id} to ${userId}`);
       api.changeScouterForReport(report._id, userId).then(loadReports);
@@ -373,10 +387,10 @@ export default function Home(props: ResolvedUrlData) {
                   <td>{team}</td>
                   <td>
                     <select onChange={(e) => changeScouter(e, reports[index])}>
-                      <option value={reports[index].user}>{usersById[reports[index].user ?? ""].name}</option>
+                      <option value={reports[index]?.user ?? undefined}>{usersById[reports[index]?.user ?? ""]?.name ?? "None"}</option>
                       {
-                        Object.keys(usersById).filter(id => id !== reports[index].user).map(userId => 
-                          <option value={userId}>{usersById[userId].name}</option>
+                        Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
+                          <option value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
                         )
                       }
                     </select>
@@ -725,6 +739,30 @@ export default function Home(props: ResolvedUrlData) {
                   </span>
                 )}
               </h1>
+              {isManager && matchesAssigned !== false && Object.keys(usersById).length >= 6 ? (
+                matchesAssigned !== undefined
+                  ? (
+                    <div className="opacity-100 font-bold text-warning flex flex-row items-center justify-start space-x-3">
+                      <div>Matches are not assigned</div>
+                      <button
+                        className={
+                          "btn btn-primary btn-sm " +
+                          (assigningMatches ? "disabled" : "")
+                        }
+                        onClick={assignScouters}
+                      >
+                        {!assigningMatches ? (
+                          "Assign Matches"
+                        ) : (
+                          <BsGearFill
+                            className="animate-spin-slow"
+                            size={30}
+                          ></BsGearFill>
+                        )}
+                      </button>
+                    </div>)
+                  : (<progress className="progress w-full" />)
+              ) : <></>}
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
                 <div className="w-full flex items-center justify-center">
@@ -755,16 +793,14 @@ export default function Home(props: ResolvedUrlData) {
                       >
                         {qualificationMatches.map((match, index) => (
                           <div
-                            className={
-                              "carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center "
-                            }
+                            className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center"
                             key={match._id}
                           >
                             <div
                               id={`//match${index}`}
                               className="md:relative md:-translate-y-80"
                             ></div>
-                            <div className="mb-4 items-middle flex flex-row items-center">
+                            <div className="items-middle flex flex-row items-center">
                               <h1 className="text-2xl font-bold">
                                 Match {match.number}
                               </h1>
@@ -772,30 +808,7 @@ export default function Home(props: ResolvedUrlData) {
                             </div>
                             <div className="flex flex-col items-center space-y-4">
                               <div className="w-full flex flex-row items-center space-x-2">
-                                {!matchesAssigned ? (
-                                  <div className="opacity-100 font-bold text-warning flex flex-col items-center space-y-2">
-                                    Matches are not assigned
-                                    <div className="divider "></div>
-                                    <button
-                                      className={
-                                        "btn btn-primary " +
-                                        (assigningMatches ? "disabled" : "")
-                                      }
-                                      onClick={assignScouters}
-                                    >
-                                      {!assigningMatches ? (
-                                        "Assign Matches"
-                                      ) : (
-                                        <BsGearFill
-                                          className="animate-spin-slow"
-                                          size={30}
-                                        ></BsGearFill>
-                                      )}
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <></>
-                                )}
+                                
                                 {match.reports.map((reportId) => {
                                   const report = reportsById[reportId];
                                   const submitted = report.submitted;
@@ -839,28 +852,31 @@ export default function Home(props: ResolvedUrlData) {
                                       data-tip={user?.name}
                                       key={reportId}
                                     >
-                                      <Avatar
-                                        user={user}
-                                        scale="w-12"
-                                        imgHeightOverride="h-12"
-                                        showLevel={false}
-                                        borderThickness={2}
-                                        onClick={() => {
-                                          if (
-                                            user.slackId &&
-                                            session &&
-                                            team?.owners?.includes(
-                                              session.user?._id ?? ""
-                                            ) &&
-                                            confirm("Remind scouter on Slack?")
-                                          ) {
-                                            api.remindSlack(
-                                              user.slackId,
-                                              session.user?.slackId
-                                            );
-                                          }
-                                        }}
-                                      />
+                                      { user ?
+                                        <Avatar
+                                          user={user}
+                                          scale="w-12"
+                                          imgHeightOverride="h-12"
+                                          showLevel={false}
+                                          borderThickness={2}
+                                          onClick={() => {
+                                            if (
+                                              user.slackId &&
+                                              session &&
+                                              team?.owners?.includes(
+                                                session.user?._id ?? ""
+                                              ) &&
+                                              confirm("Remind scouter on Slack?")
+                                            ) {
+                                              api.remindSlack(
+                                                user.slackId,
+                                                session.user?.slackId
+                                              );
+                                            }
+                                          }}
+                                        />
+                                        : <div className="w-12 h-12"></div>
+                                      }
                                     </div>
                                   );
                                 })}

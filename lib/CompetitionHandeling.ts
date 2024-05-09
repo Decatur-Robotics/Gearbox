@@ -43,28 +43,24 @@ export async function AssignScoutersToCompetitionMatches(
   return "Success";
 }
 
-export async function AssignScoutersToMatch(
-  matchId: string,
-  scouterArray: string[],
-  shuffleScouters: boolean = false,
-): Promise<void> {
+export async function generateReportsForMatch(match: string | Match, scouters?: string[]) {
   const db = await GetDatabase();
-  const scouters = shuffleScouters ? ShuffleArray(scouterArray) : scouterArray;
-  let match = await db.findObjectById<Match>(
-    Collections.Matches,
-    new ObjectId(matchId),
-  );
+  if (typeof match === "string") {
+    match = await db.findObjectById<Match>(
+      Collections.Matches,
+      new ObjectId(match),
+    );
+  }
 
   const existingReportPromises = match.reports.map((r) =>
     db.findObjectById<Report>(Collections.Reports, new ObjectId(r)));
   const existingReports = await Promise.all(existingReportPromises);
     
   const bots = match.blueAlliance.concat(match.redAlliance);
-
   const reports = [];
   for (let i = 0; i < 6; i++) {
     const teamNumber = bots[i];
-    const scouter = scouters[i];
+    const scouter = scouters?.[i];
     const color = match.blueAlliance.includes(teamNumber)
       ? AllianceColor.Blue
       : AllianceColor.Red;
@@ -92,7 +88,7 @@ export async function AssignScoutersToMatch(
       // Update existing report
       oldReport.user = scouter;
 
-      const updated = await db.updateObjectById<Report>(
+      await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(oldReport._id),
         oldReport,
@@ -104,7 +100,17 @@ export async function AssignScoutersToMatch(
   match.reports = reports.filter((r) => r !== undefined) as string[];
   await db.updateObjectById<Match>(
     Collections.Matches,
-    new ObjectId(matchId),
+    new ObjectId(match._id),
     match,
   );
+}
+
+export async function AssignScoutersToMatch(
+  matchId: string,
+  scouterArray: string[],
+  shuffleScouters: boolean = false,
+): Promise<void> {
+  const scouters = shuffleScouters ? ShuffleArray(scouterArray) : scouterArray;
+
+  return generateReportsForMatch(matchId, scouters);
 }
