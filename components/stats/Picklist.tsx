@@ -4,7 +4,7 @@ import { useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 
-type CardType = { 
+type CardData = { 
   number: number;
   id: number;
   picklist?: number;
@@ -13,11 +13,11 @@ type CardType = {
 type Picklist = {
   index: number;
   name: string;
-  teams: CardType[];
+  teams: CardData[];
   update: (picklist: Picklist) => void;
 }
 
-const Includes = (bucket: any[], item: CardType) => {
+const Includes = (bucket: any[], item: CardData) => {
   let result = false;
   bucket.forEach((i: { id: number }) => {
     if (i.id === item.id) {
@@ -28,7 +28,7 @@ const Includes = (bucket: any[], item: CardType) => {
   return result;
 };
 
-function removeTeamFromPicklist(team: CardType, picklists: Picklist[]) {
+function removeTeamFromPicklist(team: CardData, picklists: Picklist[]) {
   if (team.picklist === undefined) return;
 
   const picklist = picklists[team.picklist];
@@ -38,7 +38,7 @@ function removeTeamFromPicklist(team: CardType, picklists: Picklist[]) {
   picklist.update(picklist);
 }
 
-function TeamCard(props: { cardData: CardType, draggable: boolean, picklist?: Picklist, width?: string, height?: string}) {
+function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, width?: string, height?: string}) {
   const { number: teamNumber, id, picklist } = props.cardData;
 
   const [{ isDragging }, dragRef] = useDrag({
@@ -55,7 +55,7 @@ function TeamCard(props: { cardData: CardType, draggable: boolean, picklist?: Pi
       ref={dragRef}
     >
       <h1>
-        Team <span className="text-accent">#{teamNumber}</span>
+        {props.rank !== undefined ? `${props.rank + 1}. ` : ""}Team <span className="text-accent">#{teamNumber}</span>
       </h1>
     </div>
   );
@@ -64,14 +64,12 @@ function TeamCard(props: { cardData: CardType, draggable: boolean, picklist?: Pi
 function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
   const picklist = props.picklist;
 
-  // const [basket, setBasket] = useState<CardType[]>(picklist.teams);
-
-  // build fix
   const [{ isOver }, dropRef] = useDrop({
     accept: "team",
-    drop: (item: CardType) => {
+    drop: (item: CardData) => {
+      if (item.picklist === picklist.index) return;
+
       removeTeamFromPicklist(item, props.picklists);
-      // setBasket((basket: any) => !Includes(basket, item) ? [...basket, { ...item, picklist: picklist.index }] : basket);
 
       if (!Includes(picklist.teams, item)) {
         item.picklist = picklist.index;
@@ -95,12 +93,13 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
       ref={dropRef}
     >
       <input defaultValue={picklist.name} className="w-[95%] input input-sm" onChange={changeName}></input>
-      {picklist.teams.map((team) => (
+      {picklist.teams.map((team, index) => (
         <TeamCard
           cardData={team}
           draggable={false}
           key={team.id}
           picklist={picklist}
+          rank={index}
           width="full"
           height="[50px]"
         />
@@ -110,10 +109,10 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
   );
 }
 
-export function TeamList(props: { teams: CardType[], picklists: Picklist[] }) {
+export function TeamList(props: { teams: CardData[], picklists: Picklist[] }) {
   const [{ isOver}, dropRef] = useDrop({
     accept: "team",
-    drop: (item: CardType) => {
+    drop: (item: CardData) => {
       removeTeamFromPicklist(item, props.picklists);
     },
     collect: (monitor) => ({
@@ -161,8 +160,6 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
 
     setPicklists([...picklists, newPicklist]);
   };
-
-  console.log(teams);
 
   return (
     <div className="w-full h-fit flex flex-col space-y-2">
