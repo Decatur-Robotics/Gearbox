@@ -2,7 +2,7 @@ import { Report } from "@/lib/Types";
 
 import { useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 
 type CardData = { 
   number: number;
@@ -38,7 +38,7 @@ function removeTeamFromPicklist(team: CardData, picklists: Picklist[]) {
   picklist.update(picklist);
 }
 
-function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, width?: string, height?: string}) {
+function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, lastRank?: number, width?: string, height?: string}) {
   const { number: teamNumber, id, picklist } = props.cardData;
 
   const [{ isDragging }, dragRef] = useDrag({
@@ -49,6 +49,20 @@ function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Pi
     }),
   });
 
+  function changeTeamRank(change: number) {
+    const picklist = props.picklist;
+    if (picklist === undefined || props.rank === undefined || props.lastRank === undefined) return;
+
+    const newRank = props.rank + change;
+    if (newRank < 0 || newRank > props.lastRank) return;
+
+    const otherTeam = picklist.teams[newRank];
+    picklist.teams[newRank] = picklist.teams[props.rank];
+    picklist.teams[props.rank] = otherTeam;
+
+    picklist.update(picklist);
+  }
+
   return (
     <div
       className={`w-${props.width ?? "[150px]"} h-${props.height ?? "[100px]"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary`}
@@ -57,6 +71,14 @@ function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Pi
       <h1>
         {props.rank !== undefined ? `${props.rank + 1}. ` : ""}Team <span className="text-accent">#{teamNumber}</span>
       </h1>
+      {
+        props.rank !== undefined && props.lastRank && props.picklist ? (
+          <div className="ml-2 space-x-1">
+            { props.rank > 0 && <button className="btn btn-primary btn-sm" onClick={() => changeTeamRank(-1)}><FaArrowUp /></button> }
+            { props.rank < props.lastRank && <button className="btn btn-primary btn-sm" onClick={() => changeTeamRank(1)}><FaArrowDown /></button> }
+          </div>)
+          : ""
+      }
     </div>
   );
 }
@@ -100,6 +122,7 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
           key={team.id}
           picklist={picklist}
           rank={index}
+          lastRank={picklist.teams.length - 1}
           width="full"
           height="[50px]"
         />
