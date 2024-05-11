@@ -11,12 +11,13 @@ import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
 import ClientAPI from "@/lib/client/ClientAPI";
+import { team } from "slack";
 
 const api = new ClientAPI("gearboxiscool");
 
 type StatsPageProps = {
   reports: Report[];
-  pitreports: Pitreport[];
+  // pitreports: Pitreport[];
   competition: Competition;
   time: number;
 };
@@ -25,7 +26,7 @@ export default function Stats(props: StatsPageProps) {
   const [update, setUpdate] = useState(props.time);
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
-  const [pitReports, setPitReports] = useState(props.pitreports);
+  const [pitReports, setPitReports] = useState<Pitreport[]>([]);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
@@ -45,11 +46,9 @@ export default function Stats(props: StatsPageProps) {
         .competitionReports(props.competition._id, true)
         .then((data) => setReports(data)),
       pitReports.length === 0 &&
-        props.competition.pitReports.map((id) =>
-          api
-            .findPitreportById(id)
-            .then((data) => setPitReports((prev) => [...prev, data]))
-        ),
+        api.getPitReports(props.competition.pitReports).then((data) => {
+          setPitReports(data);
+          }),
     ].flat();
 
     await Promise.all(promises);
@@ -57,6 +56,10 @@ export default function Stats(props: StatsPageProps) {
     setUpdate(Date.now());
     setUpdating(false);
   };
+
+  const teams: Set<number> = new Set();
+  reports.forEach((r) => teams.add(r.robotNumber));
+  pitReports.forEach((r) => teams.add(r.teamNumber));
 
   return (
     <Container
@@ -110,7 +113,7 @@ export default function Stats(props: StatsPageProps) {
       ) : (
         <></>
       )}
-      {page === 1 ? <PicklistScreen reports={reports}></PicklistScreen> : <></>}
+      {page === 1 ? <PicklistScreen teams={Array.from(teams)} reports={reports}></PicklistScreen> : <></>}
     </Container>
   );
 }
@@ -130,7 +133,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       reports: SerializeDatabaseObjects(reports),
       competition: url.competition,
       time: Date.now(),
-      pitreports: [],
+      // pitreports: [],
     },
   };
 };
