@@ -14,7 +14,7 @@ import {
 import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
-import { AssignScoutersToCompetitionMatches } from "./CompetitionHandeling";
+import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth, { AuthenticationOptions } from "./Auth";
@@ -454,6 +454,12 @@ export namespace API {
         season
       );
 
+      // Create reports
+      const reportCreationPromises = matches.map((match) =>
+        generateReportsForMatch(match)
+      );
+      await Promise.all(reportCreationPromises);
+
       return res.status(200).send(comp);
     },
 
@@ -780,6 +786,16 @@ export namespace API {
       return res.status(200).send(pitReports);
     },
 
+    changeScouterForReport: async (req, res, { db, data }) => {
+      await db.updateObjectById<Report>(
+        Collections.Reports,
+        new ObjectId(data.reportId),
+        { user: data.scouterId }
+      );
+
+      return res.status(200).send({ result: "success" });
+    },
+  
     getCompReports: async (req, res, { db, data }) => {
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,

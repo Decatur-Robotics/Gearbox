@@ -1,5 +1,5 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 import Image from "next/image";
 
@@ -31,6 +31,8 @@ import { FaBinoculars, FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-ico
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
+import { match } from "assert";
+import { report } from "process";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -54,7 +56,7 @@ export default function Home(props: ResolvedUrlData) {
   const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
 
   const [reports, setReports] = useState<Report[]>([]);
-  const [matchesAssigned, setMatchesAssigned] = useState(false);
+  const [matchesAssigned, setMatchesAssigned] = useState<boolean | undefined>(undefined);
   const [assigningMatches, setAssigningMatches] = useState(false);
   const [noMatches, setNoMatches] = useState(false);
 
@@ -89,6 +91,8 @@ export default function Home(props: ResolvedUrlData) {
     max: number;
   } | null>(null);
 
+  const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -110,6 +114,16 @@ export default function Home(props: ResolvedUrlData) {
       });
   };
 
+  const updateMatchesAssigned = () => {
+    let matchesAssigned = true;
+    for (const report of reports) {
+      if (!report.user)
+        matchesAssigned = false;
+    }
+
+    setMatchesAssigned(matchesAssigned);
+  }
+
   const loadMatches = async () => {
     setLoadingMatches(true);
     window.location.hash = "";
@@ -125,7 +139,7 @@ export default function Home(props: ResolvedUrlData) {
     });
 
     if (matches.length > 0) {
-      setMatchesAssigned(matches[0].reports.length > 0 ? true : false);
+      updateMatchesAssigned();
     } else {
       setNoMatches(true);
     }
@@ -138,7 +152,7 @@ export default function Home(props: ResolvedUrlData) {
     setLoadingMatches(false);
   };
 
-  useEffect(() => {
+  const loadReports = async () => {
     const scoutingStats = (reps: Report[]) => {
       setLoadingScoutStats(true);
       let submittedCount = 0;
@@ -152,6 +166,27 @@ export default function Home(props: ResolvedUrlData) {
       setLoadingScoutStats(false);
     };
 
+    setLoadingReports(true);
+    const newReports: Report[] = await api.competitionReports(
+      comp?._id,
+      false
+    );
+    setReports(newReports);
+    var newReportId: { [key: string]: Report } = {};
+    newReports.forEach((report) => {
+      if (!report._id) {
+        return;
+      }
+      newReportId[report._id] = report;
+    });
+    setReportsById(newReportId);
+    setLoadingReports(false);
+    scoutingStats(newReports);
+
+    updateMatchesAssigned();
+  };
+
+  useEffect(() => {
     const loadUsers = async () => {
       setLoadingUsers(true);
 
@@ -165,25 +200,6 @@ export default function Home(props: ResolvedUrlData) {
 
       setUsersById(newUsersById);
       setLoadingUsers(false);
-    };
-
-    const loadReports = async () => {
-      setLoadingReports(true);
-      const newReports: Report[] = await api.competitionReports(
-        comp?._id,
-        false
-      );
-      setReports(newReports);
-      var newReportId: { [key: string]: Report } = {};
-      newReports.forEach((report) => {
-        if (!report._id) {
-          return;
-        }
-        newReportId[report._id] = report;
-      });
-      setReportsById(newReportId);
-      setLoadingReports(false);
-      scoutingStats(newReports);
     };
 
     const loadPitreports = async () => {
@@ -324,6 +340,69 @@ export default function Home(props: ResolvedUrlData) {
       setRanking(res);
     });
   });
+
+  function openEditMatchModal(match: Match) {
+    (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
+    
+    setMatchBeingEdited(match._id);
+  }
+
+  function EditMatchModal(props: { match?: Match }) {
+    if (props.match === undefined) return (<></>);
+
+    const teams = props.match.blueAlliance.concat(props.match.redAlliance);
+
+    const reports = props.match.reports.map(reportId => reportsById[reportId]);
+    if (!reports) return (<></>);
+
+    function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
+      e.preventDefault();
+
+      const userId = e.target.value;
+      if (!userId || !report || !report._id) return;
+
+      console.log(`Changing scouter for report ${report._id} to ${userId}`);
+      api.changeScouterForReport(report._id, userId).then(loadReports);
+    }
+
+    return (
+      <dialog id="edit-match-modal" className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+          </form>
+          <h3 className="text-xl">Editing Match {props.match?.number}</h3>
+          <table className="space-x-2">
+            <thead>
+              <tr>
+                <th>Position</th>
+                <th>Team</th>
+                <th>Scouter</th>
+              </tr>
+            </thead>
+            {
+              teams.map((team, index) => 
+                <tr key={index}>
+                  <td className={index < 3 ? "text-blue-500" : "text-red-500"}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
+                  <td>{team}</td>
+                  <td>
+                    <select onChange={(e) => changeScouter(e, reports[index])}>
+                      <option value={reports[index]?.user ?? undefined}>{usersById[reports[index]?.user ?? ""]?.name ?? "None"}</option>
+                      {
+                        Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
+                          <option value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
+                        )
+                      }
+                    </select>
+                  </td>
+                </tr>
+              )
+            }
+          </table>
+        </div>
+      </dialog>
+    );
+  }
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
@@ -660,6 +739,30 @@ export default function Home(props: ResolvedUrlData) {
                   </span>
                 )}
               </h1>
+              {isManager && matchesAssigned !== false && Object.keys(usersById).length >= 6 ? (
+                matchesAssigned !== undefined
+                  ? (
+                    <div className="opacity-100 font-bold text-warning flex flex-row items-center justify-start space-x-3">
+                      <div>Matches are not assigned</div>
+                      <button
+                        className={
+                          "btn btn-primary btn-sm " +
+                          (assigningMatches ? "disabled" : "")
+                        }
+                        onClick={assignScouters}
+                      >
+                        {!assigningMatches ? (
+                          "Assign Matches"
+                        ) : (
+                          <BsGearFill
+                            className="animate-spin-slow"
+                            size={30}
+                          ></BsGearFill>
+                        )}
+                      </button>
+                    </div>)
+                  : (<progress className="progress w-full" />)
+              ) : <></>}
               <div className="divider"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
                 <div className="w-full flex items-center justify-center">
@@ -690,44 +793,22 @@ export default function Home(props: ResolvedUrlData) {
                       >
                         {qualificationMatches.map((match, index) => (
                           <div
-                            className={
-                              "carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center "
-                            }
+                            className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center"
                             key={match._id}
                           >
                             <div
                               id={`//match${index}`}
                               className="md:relative md:-translate-y-80"
                             ></div>
-                            <h1 className="text-2xl font-bold mb-4">
-                              Match {match.number}
-                            </h1>
+                            <div className="items-middle flex flex-row items-center">
+                              <h1 className="text-2xl font-bold">
+                                Match {match.number}
+                              </h1>
+                              { isManager && <button className="btn btn-link" onClick={() => openEditMatchModal(match)}>Edit</button>}
+                            </div>
                             <div className="flex flex-col items-center space-y-4">
                               <div className="w-full flex flex-row items-center space-x-2">
-                                {!matchesAssigned ? (
-                                  <div className="opacity-100 font-bold text-warning flex flex-col items-center space-y-2">
-                                    Matches are not assigned
-                                    <div className="divider "></div>
-                                    <button
-                                      className={
-                                        "btn btn-primary " +
-                                        (assigningMatches ? "disabled" : "")
-                                      }
-                                      onClick={assignScouters}
-                                    >
-                                      {!assigningMatches ? (
-                                        "Assign Matches"
-                                      ) : (
-                                        <BsGearFill
-                                          className="animate-spin-slow"
-                                          size={30}
-                                        ></BsGearFill>
-                                      )}
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <></>
-                                )}
+                                
                                 {match.reports.map((reportId) => {
                                   const report = reportsById[reportId];
                                   const submitted = report.submitted;
@@ -771,28 +852,31 @@ export default function Home(props: ResolvedUrlData) {
                                       data-tip={user?.name}
                                       key={reportId}
                                     >
-                                      <Avatar
-                                        user={user}
-                                        scale="w-12"
-                                        imgHeightOverride="h-12"
-                                        showLevel={false}
-                                        borderThickness={2}
-                                        onClick={() => {
-                                          if (
-                                            user.slackId &&
-                                            session &&
-                                            team?.owners?.includes(
-                                              session.user?._id ?? ""
-                                            ) &&
-                                            confirm("Remind scouter on Slack?")
-                                          ) {
-                                            api.remindSlack(
-                                              user.slackId,
-                                              session.user?.slackId
-                                            );
-                                          }
-                                        }}
-                                      />
+                                      { user ?
+                                        <Avatar
+                                          user={user}
+                                          scale="w-12"
+                                          imgHeightOverride="h-12"
+                                          showLevel={false}
+                                          borderThickness={2}
+                                          onClick={() => {
+                                            if (
+                                              user.slackId &&
+                                              session &&
+                                              team?.owners?.includes(
+                                                session.user?._id ?? ""
+                                              ) &&
+                                              confirm("Remind scouter on Slack?")
+                                            ) {
+                                              api.remindSlack(
+                                                user.slackId,
+                                                session.user?.slackId
+                                              );
+                                            }
+                                          }}
+                                        />
+                                        : <div className="w-12 h-12"></div>
+                                      }
                                     </div>
                                   );
                                 })}
@@ -866,6 +950,9 @@ export default function Home(props: ResolvedUrlData) {
           </div>
         </div>
       </div>
+      {
+        isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} />
+      }
     </Container>
   );
 }
