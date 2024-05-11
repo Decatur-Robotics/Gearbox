@@ -380,4 +380,16 @@ export default class ClientAPI {
     return await this.request("/changeScouterForReport", { reportId, scouterId });
   }
 
+  async getCompReports(compId: string): Promise<Report[]> {
+    return await this.request("/getCompReports", { compId });
+  }
+
+  async findScouterManagementData(compId: string, scouterIds: string[]): Promise<{
+    scouters: User[],
+    matches: Match[],
+    reports: Report[],
+  }> {
+    return await this.request("/findScouterManagementData", { compId, scouterIds });
+  }
+
 }

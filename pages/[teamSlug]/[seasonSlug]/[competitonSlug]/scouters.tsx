@@ -32,69 +32,74 @@ export default function Scouters(props: { team: Team | null, competition: Compet
   const [shouldRegenerateScouterData, setShouldRegenerateScouterData] = useState<boolean>(false);
 
   const [matches, setMatches] = useState<{ [id: string]: Match } | undefined>();
+  const [loading, setLoading] = useState<boolean>(false);
   const [reports, setReports] = useState<{ [id: string]: Report } | undefined>();
   const [lastCountedMatch, setLastCountedMatch] = useState<number>(comp?.matches.length || 0);
 
   const [comments, setComments] = useState<Comment[] | undefined>();
 
   useEffect(() => {
-    if (!scouters) {
-      team?.scouters.forEach(async (scouter) => {
-        const user = await api.findUserById(scouter);
-        setScouters((prev) => ({...(prev || {}), [scouter]: {
-          ...user,
-          missedReports: [],
-          reports: [],
-          coveredReports: []
-        }}));
-      });
-      setScouters({});
-    }
+    if (scouters && matches && reports || loading) return;
 
-    if (!matches) {
-      comp?.matches.forEach(async (match) => {
-        const m = await api.findMatchById(match);
-        setMatches((prev) => ({...(prev || {}), [match]: m}));
-      });
+      setLoading(true);
 
-      setMatches({});
-    }
-    else if (Object.values(matches).length === comp?.matches.length && reports === undefined) {
-      const values = Object.values(matches);
-      values.forEach((match) => {
-        match.reports.map(async (report) => {
-          const r = await api.findReportById(report);
-          setReports((prev) => {
-            if (Object.keys(prev || {}).length + 6 >= lastCountedMatch * 6)
-              setShouldRegenerateScouterData(true);
+      console.log("Loading scouter data...");
+      api.findScouterManagementData(comp?._id ?? "", team?.scouters ?? []).then((data) => {
+        console.log("Loaded scouter data");
 
-            if (r.submitted) {
-              const text = r.data.comments;
+        // Load scouters
+        const scouterDict: { [id: string]: Scouter } = {};
+        for (const s of data.scouters) {
+          scouterDict[s._id ?? ""] = {
+            ...s,
+            missedReports: [],
+            reports: [],
+            coveredReports: []
+          };
+        }
 
-              let flag: "None" | "Minor" | "Major" = "None";
-              if (text.length === 0) flag = "Minor";
+        setScouters(scouterDict);
 
-              // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
-              // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
-              // if ("aこんにちは".match(regex) === null) flag = "Minor";
+        // Load matches
+        const matchDict: { [id: string]: Match } = {};
+        for (const m of data.matches) {
+          matchDict[m._id ?? ""] = m;
+        }
+        setMatches(matchDict);
 
-              const comment: Comment = {
-                text: text,
-                user: r.submitter ?? r.user,
-                robot: r.robotNumber,
-                match: r.match,
-                report: report,
-                flag: flag
-              }
-              setComments((prev) => [...(prev || []), comment]);
+        // Load reports and comments
+        const reportDict: { [id: string]: Report } = {};
+        const comments: Comment[] = [];
+        for (const r of data.reports) {
+          if (r.submitted) {
+            const text = r.data.comments;
+
+            let flag: "None" | "Minor" | "Major" = "None";
+            if (text.length === 0) flag = "Minor";
+
+            // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
+            // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
+            // if ("aこんにちは".match(regex) === null) flag = "Minor";
+
+            const comment: Comment = {
+              text: text,
+              user: r.submitter ?? r.user,
+              robot: r.robotNumber,
+              match: r.match,
+              report: r._id ?? "",
+              flag: flag
             }
+            comments.push(comment);
+          }
 
-            return { ...(prev || {}), [report]: r }
-          });
-        });
-      });
-      setReports({});
-    }
+          reportDict[r._id ?? ""] = r;
+        }
+        setReports(reportDict);
+        setComments(comments);
+
+        setShouldRegenerateScouterData(true);
+        setLoading(false);
+    });
   });
 
   useEffect(() => {
@@ -113,7 +118,6 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         const coveredReports = Object.values(reports).filter((report) => {
           return report.submitted && report.submitter && report.user !== scouter._id && report.submitter === scouter._id;
         });
-        console.log(scouter.name, coveredReports.length);
 
         return {
           ...scouter,
@@ -162,12 +166,13 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 <h1 className="card-title">Scouters</h1>
                 <p>
                   Scouters: {scouters && Object.keys(scouters)?.length}<br />
-                  Matches: {matches && Object.keys(matches)?.length}/{comp && comp?.matches.length} (loaded/total)<br />
+                  Matches: {comp && comp?.matches.length}<br />
                   Reports:{" "}
-                    {reports && Object.values(reports).filter(r => r.submitted).length}
-                    /{reports && Object.keys(reports).length}
+                    {reports 
+                      ? Object.values(reports).filter(r => r.submitted).length 
+                      : <div className="loading loading-spinner loading-xs"></div>}
                     /{comp && comp?.matches.length * 6}
-                    {" "}(submitted/loaded/total) <br />
+                    {" "}(submitted/total) <br />
                   <span className="tooltip" data-tip="Reports for this match and any before it that are not submitted will be considered missing.">
                     Last Counted Match:
                   </span>
@@ -181,7 +186,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 {
                   scouters && Object.values(scouters)?.filter((scouter) => scouter.reports.length > 0)
                     .sort((a, b) => b.missedReports.length - a.missedReports.length)
-                    .map((scouter) => <li key={scouter._id}>
+                    .map((scouter, index) => <li key={index}>
                       <span className={scouter.missedReports.length > 0 ? "text-warning" : ""}>{scouter.name}</span>
                       <ul className="text-sm ml-2 mb-1">
                         <li>Missed Reports: {scouter.missedReports.length} ({reports && scouter.missedReports.map((report) => reports[report]).filter((report) => !report.submitter).length} not covered)
@@ -191,8 +196,8 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                                 {scouter.missedReports.map((report) => reports[report]).map((report) => ({
                                   report: report,
                                   match: matches[report.match]
-                                })).sort((a, b) => a.match.number - b.match.number).map((entry) => {
-                                  return <li key={entry.match._id}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter && <>(Covered by {scouters[entry.report.submitter]?.name ?? "Unknown"})</>}</li>
+                                })).sort((a, b) => a.match.number - b.match.number).map((entry, index) => {
+                                  return <li key={index}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter && <>(Covered by {scouters[entry.report.submitter]?.name ?? "Unknown"})</>}</li>
                                 })}
                               </ul>
                           }
@@ -215,7 +220,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 <ul>
                   {
                     scouters && matches && comments && comments.sort((a, b) => matches[a.match].number - matches[b.match].number)
-                      .map((comment) => <li className="mb-1" key={comment.report}>
+                      .map((comment, index) => <li className="mb-1" key={index}>
                         <div className="flex flex-row space-x-2 items-center text-sm w-full justify-between">
                           <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
                             {comment.text !== "" ? comment.text : "[Empty Comment]"}

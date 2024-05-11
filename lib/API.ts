@@ -794,6 +794,49 @@ export namespace API {
       );
 
       return res.status(200).send({ result: "success" });
+    },
+  
+    getCompReports: async (req, res, { db, data }) => {
+      const comp = await db.findObjectById<Competition>(
+        Collections.Competitions,
+        new ObjectId(data.compId)
+      );
+
+      const reports = await db.findObjects<Report>(Collections.Reports, {
+        match: { $in: comp.matches },
+      });
+
+      return res.status(200).send(reports);
+    },
+
+    findScouterManagementData: async (req, res, { db, data }) => {
+      const typedData = data as {
+        compId: string,
+        scouterIds: string[]
+      };
+
+      const promises: Promise<any>[] = [];
+
+      const scouters: User[] = [];
+      const matches: Match[] = [];
+      const reports: Report[] = [];
+
+      for (const scouterId of typedData.scouterIds) {
+        promises.push(db.findObjectById<User>(Collections.Users, new ObjectId(scouterId)).then((scouter) => scouters.push(scouter)));
+      }
+
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(typedData.compId));
+      for (const matchId of comp.matches) {
+        promises.push(db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId)).then((match) => matches.push(match)));
+      }
+
+      promises.push(db.findObjects<Report>(Collections.Reports, {
+        match: { $in: comp.matches },
+      }).then((r) => reports.push(...r)));
+
+      await Promise.all(promises);
+
+      return res.status(200).send({ scouters, matches, reports });
     }
   };
 }
