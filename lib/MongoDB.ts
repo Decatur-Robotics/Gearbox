@@ -10,7 +10,7 @@ if (!process.env.MONGODB_URI) {
   console.error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-const uri = process.env.MONGODB_URI ?? "";
+const uri = process.env.MONGODB_URI ?? "mongodb://";
 const options: MongoClientOptions = { maxPoolSize: 3 };
 
 let client;
