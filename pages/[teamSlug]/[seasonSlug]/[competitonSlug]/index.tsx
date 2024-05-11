@@ -390,7 +390,7 @@ export default function Home(props: ResolvedUrlData) {
                       <option value={reports[index]?.user ?? undefined}>{usersById[reports[index]?.user ?? ""]?.name ?? "None"}</option>
                       {
                         Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
-                          <option value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
+                          <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
                         )
                       }
                     </select>
