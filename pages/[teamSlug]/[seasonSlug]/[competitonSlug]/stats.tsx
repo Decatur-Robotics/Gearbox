@@ -113,7 +113,8 @@ export default function Stats(props: StatsPageProps) {
       ) : (
         <></>
       )}
-      {page === 1 ? <PicklistScreen teams={Array.from(teams)} reports={reports}></PicklistScreen> : <></>}
+      {page === 1 ? <PicklistScreen 
+        teams={Array.from(teams)} reports={reports} expectedTeamCount={props.competition.pitReports.length} picklistId={props.competition.picklist}></PicklistScreen> : <></>}
     </Container>
   );
 }

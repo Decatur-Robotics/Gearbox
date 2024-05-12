@@ -10,6 +10,7 @@ import {
   User,
   Report,
   Pitreport,
+  DbPicklist,
 } from "./Types";
 import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
@@ -429,6 +430,11 @@ export namespace API {
       
       const pitReports = await generatePitReports(tba, db, data.tbaId);
 
+      const picklist = await db.addObject<DbPicklist>(Collections.Picklists, {
+        _id: new ObjectId(),
+        picklists: {},
+      });
+
       var comp = await db.addObject<Competition>(
         Collections.Competitions,
         new Competition(
@@ -439,6 +445,7 @@ export namespace API {
           data.end,
           pitReports,
           matches.map((match) => String(match._id)),
+          picklist._id.toString()
         )
       );
 
@@ -837,6 +844,17 @@ export namespace API {
       await Promise.all(promises);
 
       return res.status(200).send({ scouters, matches, reports });
+    },
+
+    getPicklist: async (req, res, { db, data }) => {
+      const picklist = await db.findObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.id));
+      return res.status(200).send(picklist);
+    },
+
+    updatePicklist: async (req, res, { db, data }) => {
+      const { _id, ...picklist } = data.picklist;
+      await db.updateObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id), picklist);
+      return res.status(200).send({ result: "success" });
     }
   };
 }

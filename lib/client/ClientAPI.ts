@@ -13,6 +13,7 @@ import {
   FormData,
   EventData,
   Pitreport,
+  DbPicklist,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -390,6 +391,14 @@ export default class ClientAPI {
     reports: Report[],
   }> {
     return await this.request("/findScouterManagementData", { compId, scouterIds });
+  }
+
+  async getPicklist(id: string): Promise<DbPicklist> {
+    return await this.request("/getPicklist", { id });
+  }
+
+  async updatePicklist(picklist: DbPicklist) {
+    return await this.request("/updatePicklist", { picklist });
   }
 
 }

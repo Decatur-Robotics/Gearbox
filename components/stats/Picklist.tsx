@@ -1,13 +1,14 @@
-import { Report } from "@/lib/Types";
+import { DbPicklist, Report } from "@/lib/Types";
 
 import { useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
+import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
+import ClientAPI from "@/lib/client/ClientAPI";
 
 type CardData = { 
   number: number;
-  id: number;
-  picklist?: number;
+  picklistIndex?: number;
 };
 
 type Picklist = {
@@ -19,8 +20,8 @@ type Picklist = {
 
 const Includes = (bucket: any[], item: CardData) => {
   let result = false;
-  bucket.forEach((i: { id: number }) => {
-    if (i.id === item.id) {
+  bucket.forEach((i: { number: number }) => {
+    if (i.number === item.number) {
       result = true;
     }
   });
@@ -29,17 +30,17 @@ const Includes = (bucket: any[], item: CardData) => {
 };
 
 function removeTeamFromPicklist(team: CardData, picklists: Picklist[]) {
-  if (team.picklist === undefined) return;
+  if (team.picklistIndex === undefined) return;
 
-  const picklist = picklists[team.picklist];
+  const picklist = picklists[team.picklistIndex];
   if (!picklist) return;
   
-  picklist.teams = picklist.teams.filter((team) => team.id !== team.id);
+  picklist.teams = picklist.teams.filter((t) => t.number !== team.number);
   picklist.update(picklist);
 }
 
 function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, lastRank?: number, width?: string, height?: string}) {
-  const { number: teamNumber, id, picklist } = props.cardData;
+  const { number: teamNumber, picklistIndex: picklist } = props.cardData;
 
   const [{ isDragging }, dragRef] = useDrag({
     type: "team",
@@ -89,12 +90,12 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
   const [{ isOver }, dropRef] = useDrop({
     accept: "team",
     drop: (item: CardData) => {
-      if (item.picklist === picklist.index) return;
+      if (item.picklistIndex === picklist.index) return;
 
       removeTeamFromPicklist(item, props.picklists);
 
       if (!Includes(picklist.teams, item)) {
-        item.picklist = picklist.index;
+        item.picklistIndex = picklist.index;
         picklist.teams.push(item);
         picklist.update(picklist);
       }
@@ -119,7 +120,7 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
         <TeamCard
           cardData={team}
           draggable={false}
-          key={team.id}
+          key={team.number}
           picklist={picklist}
           rank={index}
           lastRank={picklist.teams.length - 1}
@@ -132,7 +133,7 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
   );
 }
 
-export function TeamList(props: { teams: CardData[], picklists: Picklist[] }) {
+export function TeamList(props: { teams: CardData[], picklists: Picklist[], expectedTeamCount: number }) {
   const [{ isOver}, dropRef] = useDrop({
     accept: "team",
     drop: (item: CardData) => {
@@ -145,70 +146,126 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[] }) {
   
   return (
     <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
-      {props.teams.length > 0 ? props.teams.map((team) => (
-        <TeamCard
-          draggable={true}
-          cardData={team}
-          key={team.id}
-        ></TeamCard>
-      )) : 
-      <progress className="progress w-full"></progress>}
+      {
+        props.teams.map((team) => (
+          <TeamCard
+            draggable={true}
+            cardData={team}
+            key={team.number}
+          ></TeamCard>
+        ))
+      }
+      { props.teams.length !== props.expectedTeamCount &&
+        <div className="loading loading-spinner" />
+      }
     </div>);
 }
 
-export default function PicklistScreen(props: { teams: number[], reports: Report[] }) {
-  const [picklists, setPicklists] = useState<Picklist[]>([]);
+const api = new ClientAPI("gearboxiscool");
 
-  const teams = props.teams.map((team) => ({ number: team, id: team }));
+export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklistId: string }) {
+  const [picklists, setPicklists] = useState<Picklist[]>([]);
+  const [loadingPicklists, setLoadingPicklists] = useState(false);
+
+  const teams = props.teams.map((team) => ({ number: team }));
+
+  function savePicklists(picklists: Picklist[]) {
+    const picklistDict = picklists.reduce<DbPicklist>((acc, picklist) => {
+      acc.picklists[picklist.name] = picklist.teams.map((team) => team.number);
+      return acc;
+    }, {
+      _id: props.picklistId,
+      picklists: {}
+    });
+
+    api.updatePicklist(picklistDict);
+  }
+
+  function updatePicklist(picklist: Picklist) {
+    setPicklists((old) => {
+      const newPicklists = old.map((p) => {
+        if (p.index === picklist.index) {
+          return picklist;
+        } else {
+          return p;
+        }
+      });
+
+      savePicklists(newPicklists);
+      return newPicklists;
+    });
+  }
+
+  useEffect(() => {
+    if (picklists.length > 0 || loadingPicklists) return;
+
+    setLoadingPicklists(true);
+    api.getPicklist(props.picklistId).then((picklistDict) => {
+        setPicklists(Object.entries(picklistDict.picklists).map((picklist, index) => {
+          const newPicklist: Picklist = {
+            index,
+            name: picklist[0],
+            teams: picklist[1].map((team: number) => ({ number: team })),
+            update: updatePicklist
+          };
+
+          for (const team of newPicklist.teams) {
+            team.picklistIndex = newPicklist.index;
+          }
+
+          return newPicklist;
+        }));
+
+        setLoadingPicklists(false);
+    });
+  });
 
   const addPicklist = () => {
     const newPicklist: Picklist = {
       index: picklists.length,
       name: `Picklist ${picklists.length + 1}`,
       teams: [],
-      update: (picklist: Picklist) => {
-        setPicklists((old) => {
-          const newPicklists = old.map((p) => {
-            if (p.index === picklist.index) {
-              return picklist;
-            } else {
-              return p;
-            }
-          });
-
-          return newPicklists;
-        });
-      },
+      update: updatePicklist
     };
 
-    setPicklists([...picklists, newPicklist]);
+    const newPicklists = [...picklists, newPicklist];
+    savePicklists(newPicklists);
+    setPicklists(newPicklists);
   };
 
   return (
     <div className="w-full h-fit flex flex-col space-y-2">
-      <TeamList teams={teams} picklists={picklists}></TeamList>
+      <TeamList teams={teams} picklists={picklists} expectedTeamCount={props.expectedTeamCount}></TeamList>
 
       <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">
-        {picklists.length === 0 
-          ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <h1 className="text-3xl text-accent animate-bounce font-semibold">
-              Create A Picklist
-            </h1>
-          </div>
+        {
+          loadingPicklists 
+          ?  <div className="w-full h-full flex items-center justify-center">
+              <div className="loading loading-spinner" />
+            </div>
+          : picklists.length === 0 
+            ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <h1 className="text-3xl text-accent animate-bounce font-semibold">
+                Create A Picklist
+              </h1>
+            </div>
+            )
+            : picklists.map((picklist) => (
+              <PicklistCard key={picklist.index} picklist={picklist} picklists={picklists}></PicklistCard>
+            )
           )
-          : picklists.map((picklist) => (
-            <PicklistCard key={picklist.index} picklist={picklist} picklists={picklists}></PicklistCard>
-          )
-        )}
+        }
       </div>
 
-      <button
-        className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
-        onClick={addPicklist}
-      >
-        <FaPlus></FaPlus>
-      </button>
+      { !loadingPicklists &&
+        <button
+          className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
+          onClick={addPicklist}
+        >
+          <FaPlus></FaPlus>
+        </button>
+      }
     </div>
   );
 }
