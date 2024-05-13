@@ -235,6 +235,8 @@ export class Competition {
   pitReports: string[];
   matches: string[];
 
+  picklist: string;
+
   constructor(
     name: string,
     slug: string | undefined,
@@ -242,7 +244,8 @@ export class Competition {
     start: number,
     end: number,
     pitReports: string[] = [],
-    matches: string[] = []
+    matches: string[] = [],
+    picklist: string = ""
   ) {
     this.name = name;
     this.slug = slug;
@@ -251,6 +254,7 @@ export class Competition {
     this.end = end;
     this.pitReports = pitReports;
     this.matches = matches;
+    this.picklist = picklist;
   }
 }
 
@@ -348,4 +352,11 @@ export interface EventData {
   comp: Competition;
   firstRanking: TheBlueAlliance.SimpleRank[];
   oprRanking: TheBlueAlliance.OprRanking;
+}
+
+export type DbPicklist = {
+  _id: string;
+  picklists: {
+    [name: string]: number[];
+  };
 }
