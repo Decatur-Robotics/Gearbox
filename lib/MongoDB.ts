@@ -94,8 +94,10 @@ export class MongoDBInterface {
     id: ObjectId,
     newValues: object
   ): Promise<Type> {
+    console.log("Updating:", id, newValues);
     var query = { _id: id };
     var updated = { $set: newValues };
+    console.log("Updating:", query, updated);
     return (await this?.db
       ?.collection(collection)
       .updateOne(query, updated)) as Type;
