@@ -882,6 +882,13 @@ export default function Home(props: ResolvedUrlData) {
                                 })}
                               </div>
                             </div>
+                            <div>
+                              {
+                                match.subjectiveScouter 
+                                  ? <div>Subjective Scouter: {usersById[match.subjectiveScouter]?.name}</div> 
+                                  : <div>No subjective scouter assigned</div>
+                              }
+                            </div>
                           </div>
                         ))}
                       </div>

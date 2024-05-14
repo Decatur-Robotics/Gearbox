@@ -71,6 +71,7 @@ export class Team {
   owners: string[];
   users: string[];
   scouters: string[];
+  subjectiveScouters: string[];
   requests: string[];
 
   seasons: string[];
@@ -83,6 +84,7 @@ export class Team {
     owners: string[] = [],
     users: string[] = [],
     scouters: string[] = [],
+    subjectiveScouters: string[] = [],
     requests: string[] = [],
     seasons: string[] = []
   ) {
@@ -93,6 +95,7 @@ export class Team {
     this.owners = owners;
     this.users = users;
     this.scouters = scouters;
+    this.subjectiveScouters = subjectiveScouters;
     this.seasons = seasons;
     this.requests = requests;
   }
@@ -286,6 +289,8 @@ export class Match {
   time: number; // time the match begins
   reports: string[];
 
+  subjectiveScouter: string | undefined;
+
   constructor(
     number: number,
     slug: string | undefined,
@@ -340,6 +345,20 @@ export class Report {
     this.match = match;
     this.color = color;
     this.checkedIn = checkedIn;
+  }
+}
+
+export class SubjectiveReport {
+  _id: string | undefined;
+  submitter: string | undefined;
+
+  match: string; // id of match
+
+  wholeMatchComment: string = "";
+  robotComments: { [key: number]: string } = {};
+
+  constructor(match: string) {
+    this.match = match;
   }
 }
 

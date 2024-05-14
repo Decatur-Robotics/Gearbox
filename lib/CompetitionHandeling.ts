@@ -28,19 +28,46 @@ export async function AssignScoutersToCompetitionMatches(
   );
   const matchIds = comp.matches;
   let scouters = team.scouters;
+  let subjectiveScouters = team.subjectiveScouters;
 
   if (scouters.length < MinimumNumberOfScouters) {
     return "Cannot assign scouters: not enough scouters. You must have at least 6 scouters to assign to a competition.";
   }
 
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
+  subjectiveScouters = shuffle ? ShuffleArray(subjectiveScouters) : subjectiveScouters;
 
   for (const matchId of matchIds) {
-    await AssignScoutersToMatch(matchId, scouters);
+    // Filter out the subjective scouter that will be assigned to this match
+    console.log("Assigning scouters to match:", matchId);
+    await AssignScoutersToMatch(
+      matchId, subjectiveScouters.length > 0 ? scouters.filter((s) => subjectiveScouters[0] !== s) : scouters, subjectiveScouters);
     RotateArray(scouters);
+    RotateArray(subjectiveScouters);
+    const assignedScouter = (await db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId))).subjectiveScouter;
+    console.log("Scouter Assigned:", assignedScouter);
   }
 
   return "Success";
+}
+
+export async function AssignScoutersToMatch(
+  matchId: string,
+  scouterArray: string[],
+  subjectiveScouterArray: string[]
+): Promise<[void, Match]> {
+  const generateReportsPromise = generateReportsForMatch(matchId, scouterArray);
+  const db = await GetDatabase();
+  const s = subjectiveScouterArray.length > 0 ? subjectiveScouterArray[0] : undefined;
+  console.log(s);
+  const assignSubjectiveScouterPromise = await
+    db.updateObjectById<Match>(
+      Collections.Matches,
+      new ObjectId(matchId),
+      { subjectiveScouter: s, s }
+    );
+
+  return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
 }
 
 export async function generateReportsForMatch(match: string | Match, scouters?: string[]) {
@@ -103,14 +130,4 @@ export async function generateReportsForMatch(match: string | Match, scouters?: 
     new ObjectId(match._id),
     match,
   );
-}
-
-export async function AssignScoutersToMatch(
-  matchId: string,
-  scouterArray: string[],
-  shuffleScouters: boolean = false,
-): Promise<void> {
-  const scouters = shuffleScouters ? ShuffleArray(scouterArray) : scouterArray;
-
-  return generateReportsForMatch(matchId, scouters);
 }
