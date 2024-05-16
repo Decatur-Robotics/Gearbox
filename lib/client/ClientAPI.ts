@@ -14,6 +14,7 @@ import {
   EventData,
   Pitreport,
   DbPicklist,
+  SubjectiveReport,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -399,6 +400,10 @@ export default class ClientAPI {
 
   async updatePicklist(picklist: DbPicklist) {
     return await this.request("/updatePicklist", { picklist });
+  }
+
+  async submitSubjectiveReport(report: SubjectiveReport) {
+    return await this.request("/submitSubjectiveReport", { report });
   }
 
 }

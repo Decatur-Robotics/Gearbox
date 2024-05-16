@@ -855,6 +855,10 @@ export namespace API {
       const { _id, ...picklist } = data.picklist;
       await db.updateObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id), picklist);
       return res.status(200).send({ result: "success" });
+    },
+
+    submitSubjectiveReport: async (req, res, { db, data }) => {
+      const report = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
     }
   };
 }

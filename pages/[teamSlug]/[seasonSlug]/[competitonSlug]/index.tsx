@@ -33,6 +33,7 @@ import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
 import { match } from "assert";
 import { report } from "process";
+import { useRouter } from "next/router";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -764,7 +765,7 @@ export default function Home(props: ResolvedUrlData) {
                     </div>)
                   : (<progress className="progress w-full" />)
               ) : <></>}
-              <div className="divider"></div>
+              <div className="divider my-0"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
                 <div className="w-full flex items-center justify-center">
                   <BsGearFill
@@ -794,7 +795,7 @@ export default function Home(props: ResolvedUrlData) {
                       >
                         {qualificationMatches.map((match, index) => (
                           <div
-                            className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center"
+                            className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-4"
                             key={match._id}
                           >
                             <div
@@ -890,6 +891,9 @@ export default function Home(props: ResolvedUrlData) {
                                   : <div>No subjective scouter assigned</div>
                               }
                             </div>
+                            <Link className="btn btn-primary btn-sm" href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
+                              Add Subjective Report
+                            </Link>
                           </div>
                         ))}
                       </div>
