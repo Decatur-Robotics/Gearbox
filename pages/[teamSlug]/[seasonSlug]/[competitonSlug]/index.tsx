@@ -190,11 +190,12 @@ export default function Home(props: ResolvedUrlData) {
     const loadUsers = async () => {
       setLoadingUsers(true);
 
-      if (!team?.scouters) {
+      if (!team?.scouters || !team.subjectiveScouters) {
         return;
       }
+
       const newUsersById: { [key: string]: User } = {};
-      for (const userId of team.scouters) {
+      for (const userId of [...new Set(team.scouters.concat(team.subjectiveScouters))]) {
         newUsersById[userId] = await api.findUserById(userId);
       }
 
@@ -885,7 +886,7 @@ export default function Home(props: ResolvedUrlData) {
                             <div>
                               {
                                 match.subjectiveScouter 
-                                  ? <div>Subjective Scouter: {usersById[match.subjectiveScouter]?.name}</div> 
+                                  ? <div>Subjective Scouter: {usersById[match.subjectiveScouter]?.name ?? "Unknown"}</div> 
                                   : <div>No subjective scouter assigned</div>
                               }
                             </div>

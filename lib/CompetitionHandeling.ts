@@ -35,19 +35,14 @@ export async function AssignScoutersToCompetitionMatches(
   }
 
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
-  subjectiveScouters = shuffle || true ? ShuffleArray(subjectiveScouters) : subjectiveScouters;
+  subjectiveScouters = shuffle ? ShuffleArray(subjectiveScouters) : subjectiveScouters;
 
   for (const matchId of matchIds) {
     // Filter out the subjective scouter that will be assigned to this match
-    // console.log("Assigning scouters to match:", matchId, subjectiveScouters);
-    let assignedScouter = (await db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId))).subjectiveScouter;
-    console.log("Reading B:", assignedScouter);
     await AssignScoutersToMatch(
       matchId, subjectiveScouters.length > 0 ? scouters.filter((s) => subjectiveScouters[0] !== s) : scouters, subjectiveScouters);
     RotateArray(scouters);
     RotateArray(subjectiveScouters);
-    assignedScouter = (await db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId))).subjectiveScouter;
-    console.log("Reading A:", assignedScouter, "\n-------------------");
   }
 
   return "Success";
@@ -63,28 +58,14 @@ export async function AssignScoutersToMatch(
   const db = await GetDatabase();
   const subjectiveScouter = subjectiveScouterArray.length > 0 ? subjectiveScouterArray[0] : undefined;
 
-  try {
-    console.log("Setting:", subjectiveScouter, { subjectiveScouter }, new ObjectId(matchId));
+  const assignSubjectiveScouterPromise = 
+    db.updateObjectById<Match>(
+      Collections.Matches,
+      new ObjectId(matchId),
+      { subjectiveScouter }
+    );
 
-    const assignSubjectiveScouterPromise = 
-      db.updateObjectById<Match>(
-        Collections.Matches,
-        new ObjectId(matchId),
-        { subjectiveScouter }
-      ).then((match) => {
-        console.log("Done updating");
-        return match;
-      }).catch((e) => {
-        throw e;
-      });
-
-    return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
-  }
-  catch (e) {
-    console.error("Error assigning subjective scouter:", e);
-  }
-
-  return Promise.all([generateReportsPromise, Promise.resolve(null) as unknown as Promise<Match>]);
+  return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
 }
 
 export async function generateReportsForMatch(match: string | Match, scouters?: string[]) {
