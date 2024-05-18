@@ -363,12 +363,14 @@ export class SubjectiveReport {
   submitted: SubjectiveReportSubmissionType = SubjectiveReportSubmissionType.NotSubmitted;
 
   match: string; // id of match
+  matchNumber: number;
 
   wholeMatchComment: string = "";
   robotComments: { [key: number]: string } = {};
 
-  constructor(match: string) {
+  constructor(match: string, matchNumber: number) {
     this.match = match;
+    this.matchNumber = matchNumber;
   }
 }
 

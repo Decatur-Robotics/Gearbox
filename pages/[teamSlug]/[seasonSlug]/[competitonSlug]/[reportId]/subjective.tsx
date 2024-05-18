@@ -48,9 +48,11 @@ export default function Subjective() {
     api.submitSubjectiveReport({
       _id: undefined,
       match: matchId as string,
+      matchNumber: match?.number ?? 0,
       wholeMatchComment: (e.target as any)[0].value,
       robotComments: Object.fromEntries(
-        [...(e.target as any)].slice(1).map((element: any, index: number) => [index, element.value])
+        [...(e.target as any)].slice(1).map((element: any, index: number) => 
+          [match?.blueAlliance.concat(match.redAlliance)[index], element.value])
       ),
       submitter: undefined,
       submitted: SubjectiveReportSubmissionType.NotSubmitted

@@ -116,7 +116,7 @@ export default function Stats(props: StatsPageProps) {
       </div>
 
       {page === 0 ? (
-        <TeamPage reports={reports} pitReports={pitReports}></TeamPage>
+        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports}></TeamPage>
       ) : (
         <></>
       )}
