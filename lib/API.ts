@@ -11,6 +11,8 @@ import {
   Report,
   Pitreport,
   DbPicklist,
+  SubjectiveReport,
+  SubjectiveReportSubmissionType,
 } from "./Types";
 import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
@@ -858,7 +860,36 @@ export namespace API {
     },
 
     submitSubjectiveReport: async (req, res, { db, data }) => {
-      const report = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
+      const rawReport = data.report as SubjectiveReport;
+
+      console.log(data);
+
+      const matchPromise = db.findObjectById<Match>(Collections.Matches, new ObjectId(rawReport.match));
+      const teamPromise = db.findObject<Team>(Collections.Teams, {
+        slug: data.teamId
+      });
+
+      const [match, team] = await Promise.all([matchPromise, teamPromise]);
+
+      const report: SubjectiveReport = {
+        ...data.report,
+        _id: new ObjectId(),
+        submitter: data.userId,
+        submitted: match.subjectiveScouter === data.userId 
+          ? SubjectiveReportSubmissionType.ByAssignedScouter
+          : team.subjectiveScouters.includes(data.userId)
+            ? SubjectiveReportSubmissionType.BySubjectiveScouter
+            : SubjectiveReportSubmissionType.ByNonSubjectiveScouter,
+      };
+
+      const insertReportPromise = db.addObject<SubjectiveReport>(Collections.SubjectiveReports, report);
+      const updateMatchPromise = db.updateObjectById<Match>(Collections.Matches, new ObjectId(match._id), {
+        subjectiveReports: [...match.subjectiveReports ?? [], report._id!.toString()],
+      });
+
+      await Promise.all([insertReportPromise, updateMatchPromise]);
+
+      return res.status(200).send({ result: "success" });
     }
   };
 }

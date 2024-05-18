@@ -892,7 +892,7 @@ export default function Home(props: ResolvedUrlData) {
                               }
                             </div>
                             <Link className="btn btn-primary btn-sm" href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
-                              Add Subjective Report
+                              Add Subjective Report {match.subjectiveReports && `(${match.subjectiveReports.length} already submitted)`}
                             </Link>
                           </div>
                         ))}

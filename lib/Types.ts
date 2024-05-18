@@ -6,6 +6,7 @@ import {
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { Statbotics } from "./Statbotics";
+import Subjective from '../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/[reportId]/subjective';
 
 /**
  * Standard Account Type
@@ -290,6 +291,7 @@ export class Match {
   reports: string[];
 
   subjectiveScouter: string | undefined;
+  subjectiveReports: string[] = [];
 
   constructor(
     number: number,
@@ -300,7 +302,7 @@ export class Match {
     blueAlliance: Alliance,
     redAlliance: Alliance,
     reports: string[] = [],
-    scouters: string[] = []
+    scouters: string[] = [],
   ) {
     this.number = number;
     this.tbaId = tbaId;
@@ -348,9 +350,17 @@ export class Report {
   }
 }
 
+export enum SubjectiveReportSubmissionType {
+  ByAssignedScouter = "ByAssignedScouter",
+  BySubjectiveScouter = "BySubjectiveScouter",
+  ByNonSubjectiveScouter = "ByNonSubjectiveScouter",
+  NotSubmitted = "NotSubmitted",
+}
+
 export class SubjectiveReport {
   _id: string | undefined;
   submitter: string | undefined;
+  submitted: SubjectiveReportSubmissionType = SubjectiveReportSubmissionType.NotSubmitted;
 
   match: string; // id of match
 

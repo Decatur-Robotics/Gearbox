@@ -1,5 +1,5 @@
 import Container from "@/components/Container";
-import { Match } from "@/lib/Types";
+import { Match, SubjectiveReportSubmissionType } from "@/lib/Types";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -11,7 +11,8 @@ const api = new ClientAPI("gearboxiscool");
 
 export default function Subjective() {
   const router = useRouter();
-  const { reportId: matchId } = router.query;
+  const { teamSlug, seasonSlug, competitonSlug, reportId: matchId } = router.query;
+  const session = useCurrentSession();
 
   const [match, setMatch] = useState<Match | undefined>();
 
@@ -30,10 +31,13 @@ export default function Subjective() {
       match: matchId as string,
       wholeMatchComment: (e.target as any)[0].value,
       robotComments: Object.fromEntries(
-        [...(e.target as any)].map((element: any, index: number) => [index, element.value])
+        [...(e.target as any)].slice(1).map((element: any, index: number) => [index, element.value])
       ),
-      submitter: undefined
-    })
+      submitter: undefined,
+      submitted: SubjectiveReportSubmissionType.NotSubmitted
+    }, session.session.user?._id!, teamSlug as string).then((res) => {
+      window.location.href = `/${teamSlug}/${seasonSlug}/${competitonSlug}`;
+    });
   }
 
   return (

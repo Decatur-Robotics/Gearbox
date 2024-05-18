@@ -402,8 +402,8 @@ export default class ClientAPI {
     return await this.request("/updatePicklist", { picklist });
   }
 
-  async submitSubjectiveReport(report: SubjectiveReport) {
-    return await this.request("/submitSubjectiveReport", { report });
+  async submitSubjectiveReport(report: SubjectiveReport, userId: string, teamId: string) {
+    return await this.request("/submitSubjectiveReport", { report, userId, teamId });
   }
 
 }
