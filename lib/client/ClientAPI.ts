@@ -406,4 +406,8 @@ export default class ClientAPI {
     return await this.request("/submitSubjectiveReport", { report, userId, teamId });
   }
 
+  async getSubjectiveReportsForComp(compId: string): Promise<SubjectiveReport[]> {
+    return await this.request("/getSubjectiveReportsForComp", { compId });
+  }
+
 }

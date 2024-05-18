@@ -3,7 +3,7 @@ import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
 import { GetDatabase, Collections } from "@/lib/MongoDB";
-import { Competition, Pitreport, Report } from "@/lib/Types";
+import { Competition, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import { useEffect, useState } from "react";
 import TeamPage from "@/components/stats/TeamPage";
 import PicklistScreen from "@/components/stats/Picklist";
@@ -27,6 +27,7 @@ export default function Stats(props: StatsPageProps) {
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
   const [pitReports, setPitReports] = useState<Pitreport[]>([]);
+  const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
@@ -49,6 +50,11 @@ export default function Stats(props: StatsPageProps) {
         api.getPitReports(props.competition.pitReports).then((data) => {
           setPitReports(data);
           }),
+
+      subjectiveReports.length === 0 &&
+        api.getSubjectiveReportsForComp(props.competition._id!).then((data) => {
+          setSubjectiveReports(data);
+        }),
     ].flat();
 
     await Promise.all(promises);
@@ -60,6 +66,7 @@ export default function Stats(props: StatsPageProps) {
   const teams: Set<number> = new Set();
   reports.forEach((r) => teams.add(r.robotNumber));
   pitReports.forEach((r) => teams.add(r.teamNumber));
+  subjectiveReports.forEach((r) => Object.keys(r.robotComments).forEach((c) => teams.add(+c))); //+str converts to number
 
   return (
     <Container

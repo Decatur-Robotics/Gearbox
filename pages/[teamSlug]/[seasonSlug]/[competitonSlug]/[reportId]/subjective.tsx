@@ -5,6 +5,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+import React from "react";
 import { useEffect, useState } from "react";
 
 const api = new ClientAPI("gearboxiscool");
@@ -16,6 +17,8 @@ export default function Subjective() {
 
   const [match, setMatch] = useState<Match | undefined>();
 
+  const submitButtonRef = React.createRef<HTMLButtonElement>();
+
   useEffect(() => {
     if (match)
       return;
@@ -25,6 +28,22 @@ export default function Subjective() {
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    let valid = [...(e.target as any)].filter((element: any) => element.value).length > 0;
+    if (!valid) {
+      if (submitButtonRef.current) {
+        const btn = submitButtonRef.current;
+
+        btn.classList.add("btn-error");
+        btn.innerText = "Please fill out at least one field";
+        setTimeout(() => {
+          btn.classList.remove("btn-error");
+          btn.innerText = "Submit";
+        }, 1500);
+      }
+
+      return;
+    }
 
     api.submitSubjectiveReport({
       _id: undefined,
@@ -66,7 +85,7 @@ export default function Subjective() {
                         </div>
                       ))
                     }
-                    <button className="btn btn-primary mt-6">Submit</button>
+                    <button ref={submitButtonRef} className="btn btn-primary mt-6">Submit</button>
                   </form>
                 </div>
               </div>

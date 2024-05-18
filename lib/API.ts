@@ -862,8 +862,6 @@ export namespace API {
     submitSubjectiveReport: async (req, res, { db, data }) => {
       const rawReport = data.report as SubjectiveReport;
 
-      console.log(data);
-
       const matchPromise = db.findObjectById<Match>(Collections.Matches, new ObjectId(rawReport.match));
       const teamPromise = db.findObject<Team>(Collections.Teams, {
         slug: data.teamId
@@ -890,6 +888,22 @@ export namespace API {
       await Promise.all([insertReportPromise, updateMatchPromise]);
 
       return res.status(200).send({ result: "success" });
+    },
+
+    getSubjectiveReportsForComp: async (req, res, { db, data }) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+
+      const matchIds = comp.matches.map((matchId) => new ObjectId(matchId));
+      const matches = await db.findObjects<Match>(Collections.Matches, {
+        _id: { $in: matchIds },
+      });
+
+      const reportIds = matches.flatMap((match) => match.subjectiveReports ?? []);
+      const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
+        _id: { $in: reportIds.map((id) => new ObjectId(id)) },
+      });
+
+      return res.status(200).send(reports);
     }
   };
 }
