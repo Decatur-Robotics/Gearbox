@@ -206,7 +206,12 @@ export enum SwerveLevel {
 
 export class Pitreport {
   _id: string | undefined;
+
   teamNumber: number;
+
+  submitted: boolean = false;
+  submitter: string | undefined;
+
   image: string = "/robot.jpg";
   intakeType: IntakeTypes = IntakeTypes.None;
   canClimb: boolean = false;
@@ -217,7 +222,6 @@ export class Pitreport {
   canScoreAmp: boolean = false;
   canScoreSpeaker: boolean = false;
   canScoreFromDistance: boolean = false;
-  submitted: boolean = false;
   underBumperIntake: boolean = false;
   autoNotes: number = 0;
   comments: string = "";

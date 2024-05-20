@@ -248,7 +248,7 @@ export default class ClientAPI {
     });
   }
 
-  async updateReport(newValues: object, reportId: string | undefined) {
+  async updateReport(newValues: Partial<Report>, reportId: string | undefined) {
     return await this.request("/update", {
       collection: "Reports",
       newValues: newValues,
@@ -389,7 +389,9 @@ export default class ClientAPI {
   async findScouterManagementData(compId: string, scouterIds: string[]): Promise<{
     scouters: User[],
     matches: Match[],
-    reports: Report[],
+    quantitativeReports: Report[],
+    pitReports: Pitreport[],
+    subjectiveReports: SubjectiveReport[],
   }> {
     return await this.request("/findScouterManagementData", { compId, scouterIds });
   }
@@ -408,6 +410,10 @@ export default class ClientAPI {
 
   async getSubjectiveReportsForComp(compId: string): Promise<SubjectiveReport[]> {
     return await this.request("/getSubjectiveReportsForComp", { compId });
+  }
+
+  async updateSubjectiveReport(reportId: string, report: Partial<SubjectiveReport>) {
+    return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 
 }

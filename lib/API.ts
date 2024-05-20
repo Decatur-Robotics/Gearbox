@@ -828,7 +828,9 @@ export namespace API {
 
       const scouters: User[] = [];
       const matches: Match[] = [];
-      const reports: Report[] = [];
+      const quantitativeReports: Report[] = [];
+      const pitReports: Pitreport[] = [];
+      const subjectiveReports: SubjectiveReport[] = [];
 
       for (const scouterId of typedData.scouterIds) {
         promises.push(db.findObjectById<User>(Collections.Users, new ObjectId(scouterId)).then((scouter) => scouters.push(scouter)));
@@ -841,11 +843,20 @@ export namespace API {
 
       promises.push(db.findObjects<Report>(Collections.Reports, {
         match: { $in: comp.matches },
-      }).then((r) => reports.push(...r)));
+      }).then((r) => quantitativeReports.push(...r)));
+
+      promises.push(db.findObjects<Pitreport>(Collections.Pitreports, {
+        _id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+        submitted: true
+      }).then((r) => pitReports.push(...r)));
+
+      promises.push(db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
+        match: { $in: comp.matches }
+      }).then((r) => subjectiveReports.push(...r)));
 
       await Promise.all(promises);
 
-      return res.status(200).send({ scouters, matches, reports });
+      return res.status(200).send({ scouters, matches, quantitativeReports, pitReports, subjectiveReports });
     },
 
     getPicklist: async (req, res, { db, data }) => {
@@ -904,6 +915,13 @@ export namespace API {
       });
 
       return res.status(200).send(reports);
+    },
+
+    updateSubjectiveReport: async (req, res, { db, data }) => {
+      const report = data.report as SubjectiveReport;
+      await db.updateObjectById<SubjectiveReport>(Collections.SubjectiveReports, new ObjectId(report._id), report);
+      return res.status(200).send({ result: "success" });
     }
+
   };
 }

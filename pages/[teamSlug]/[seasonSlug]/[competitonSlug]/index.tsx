@@ -34,6 +34,7 @@ import Avatar from "@/components/Avatar";
 import { match } from "assert";
 import { report } from "process";
 import { useRouter } from "next/router";
+import Loading from "@/components/Loading";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -115,15 +116,20 @@ export default function Home(props: ResolvedUrlData) {
       });
   };
 
-  const updateMatchesAssigned = () => {
+  useEffect(() => {
+    console.log("Checking if matches are assigned");
+
     let matchesAssigned = true;
     for (const report of reports) {
-      if (!report.user)
+      if (!report.user) {
+        console.log("No user assigned to report", report);
         matchesAssigned = false;
+        break;
+      }
     }
 
     setMatchesAssigned(matchesAssigned);
-  }
+  }, [reports]);
 
   const loadMatches = async () => {
     setLoadingMatches(true);
@@ -139,11 +145,8 @@ export default function Home(props: ResolvedUrlData) {
       return 0;
     });
 
-    if (matches.length > 0) {
-      updateMatchesAssigned();
-    } else {
+    if (matches.length === 0)
       setNoMatches(true);
-    }
 
     setQualificationMatches(
       matches.filter((match) => match.type === MatchType.Qualifying)
@@ -183,8 +186,6 @@ export default function Home(props: ResolvedUrlData) {
     setReportsById(newReportId);
     setLoadingReports(false);
     scoutingStats(newReports);
-
-    updateMatchesAssigned();
   };
 
   useEffect(() => {
@@ -289,7 +290,6 @@ export default function Home(props: ResolvedUrlData) {
           const r = reportsById[id];
           if (!r?.submitted) {
             s = false;
-            console.log("broke");
             break;
           }
         }
@@ -741,27 +741,24 @@ export default function Home(props: ResolvedUrlData) {
                   </span>
                 )}
               </h1>
-              {isManager && matchesAssigned !== false && Object.keys(usersById).length >= 6 ? (
+              {isManager && matchesAssigned === false && Object.keys(usersById).length >= 6 ? (
                 matchesAssigned !== undefined
                   ? (
                     <div className="opacity-100 font-bold text-warning flex flex-row items-center justify-start space-x-3">
-                      <div>Matches are not assigned</div>
-                      <button
-                        className={
-                          "btn btn-primary btn-sm " +
-                          (assigningMatches ? "disabled" : "")
-                        }
-                        onClick={assignScouters}
-                      >
+                      <div>{!assigningMatches ? "Matches are not assigned" : "Assigning matches"}</div>
                         {!assigningMatches ? (
-                          "Assign Matches"
+                          <button
+                            className={
+                              "btn btn-primary btn-sm " +
+                              (assigningMatches ? "disabled" : "")
+                            }
+                            onClick={assignScouters}
+                          >
+                            Assign Matches
+                          </button>
                         ) : (
-                          <BsGearFill
-                            className="animate-spin-slow"
-                            size={30}
-                          ></BsGearFill>
+                          <BsGearFill size={30} className="animate-spin-slow text-white" />
                         )}
-                      </button>
                     </div>)
                   : (<progress className="progress w-full" />)
               ) : <></>}

@@ -43,18 +43,9 @@ export default function Stats(props: StatsPageProps) {
     setUpdating(true);
 
     const promises = [
-      api
-        .competitionReports(props.competition._id, true)
-        .then((data) => setReports(data)),
-      pitReports.length === 0 &&
-        api.getPitReports(props.competition.pitReports).then((data) => {
-          setPitReports(data);
-          }),
-
-      subjectiveReports.length === 0 &&
-        api.getSubjectiveReportsForComp(props.competition._id!).then((data) => {
-          setSubjectiveReports(data);
-        }),
+      api.competitionReports(props.competition._id, true).then(setReports),
+      api.getPitReports(props.competition.pitReports).then(setPitReports),
+      api.getSubjectiveReportsForComp(props.competition._id!).then(setSubjectiveReports),
     ].flat();
 
     await Promise.all(promises);

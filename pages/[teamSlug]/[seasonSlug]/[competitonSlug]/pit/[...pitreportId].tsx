@@ -45,6 +45,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
     await api.updatePitreport(props.pitreport?._id, {
       ...report,
       submitted: true,
+      submitter: session.user?._id
     });
     location.href = location.href.substring(
       0,

@@ -23,9 +23,11 @@ export default function Scouters(props: { team: Team | null, competition: Compet
     text: string,
     user: string | undefined,
     robot: number,
-    match: string,
-    report: string,
-    flag: "None" | "Minor" | "Major"
+    formType: string,
+    matchNumber: number,
+    dbId: string,
+    flag: "None" | "Minor" | "Major",
+    remove: () => void
   }
 
   const [scouters, setScouters] = useState<{ [id: string]: Scouter } | undefined>();
@@ -67,34 +69,113 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         }
         setMatches(matchDict);
 
+        function getCommentFlag(text: string, allowZeroLength: boolean = false) {
+          let flag: "None" | "Minor" | "Major" = "None";
+          if (!allowZeroLength && text.length === 0) flag = "Minor";
+
+          // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
+          // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
+          // if ("aこんにちは".match(regex) === null) flag = "Minor";
+
+          return flag;
+        }
+
+        async function removeComment(commentId: string | undefined, func: (c: Comment) => Promise<void>): Promise<void> {
+          // Hacky way of getting the latest state when the function is being called from lambdas
+          setComments((comments) => {
+            const comment = comments?.find((c) => c.dbId === commentId);
+            if (!comment) return;
+      
+            if (!confirm(`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters?.[comment.user ?? ""]?.name ?? "Unknown"}`)) 
+              return comments;
+      
+            func(comment).then(() =>
+              setComments((prev) => [...(prev || []).filter((c) => c !== comment), 
+                { ...comment, text: "", flag: getCommentFlag(comment.text, false) }])
+            );
+      
+            return comments;
+          });
+        }
+      
+        function removeQuantitativeComment(comment: Comment) {
+          let promise: Promise<void> | undefined;
+
+          setReports((reports) => {
+            if (!reports) return reports;
+        
+            const { _id, ...updated } = reports[comment.dbId];
+            promise = api.updateReport({ data: { ...updated.data, comments: "" } }, comment.dbId);
+
+            return reports;
+          });
+
+          return promise ?? Promise.resolve();
+        }
+      
+        function removePitComment(comment: Comment) {
+          return api.updatePitreport(comment.dbId, { comments: "" });
+        }
+
+        function removeSubjectiveComment(comment: Comment) {
+          return api.updateSubjectiveReport(comment.dbId, { wholeMatchComment: "", robotComments: {} });
+        }
+
         // Load reports and comments
-        const reportDict: { [id: string]: Report } = {};
         const comments: Comment[] = [];
-        for (const r of data.reports) {
+
+        const reportDict: { [id: string]: Report } = {};
+        for (const r of data.quantitativeReports) {
           if (r.submitted) {
-            const text = r.data.comments;
-
-            let flag: "None" | "Minor" | "Major" = "None";
-            if (text.length === 0) flag = "Minor";
-
-            // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
-            // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
-            // if ("aこんにちは".match(regex) === null) flag = "Minor";
-
-            const comment: Comment = {
-              text: text,
+            comments.push({
+              text: r.data.comments,
               user: r.submitter ?? r.user,
               robot: r.robotNumber,
-              match: r.match,
-              report: r._id ?? "",
-              flag: flag
-            }
-            comments.push(comment);
+              formType: "Quantitative Report",
+              matchNumber: matchDict[r.match]?.number ?? 0,
+              dbId: r._id ?? "",
+              flag: getCommentFlag(r.data.comments),
+              remove: () => removeComment(r._id, removeQuantitativeComment)
+            });
           }
 
           reportDict[r._id ?? ""] = r;
         }
         setReports(reportDict);
+
+        for (const report of data.pitReports) {
+          comments.push({
+            text: report.comments,
+            user: report.submitter,
+            robot: report.teamNumber,
+            formType: "Pit Report",
+            matchNumber: 0,
+            dbId: report._id ?? "",
+            flag: getCommentFlag(report.comments),
+            remove: () => removeComment(report._id, removePitComment)
+          });
+        }
+
+        for (const report of data.subjectiveReports) {
+          const text = [
+            (report.wholeMatchComment.length > 0 ? `Whole Match: ${report.wholeMatchComment}` : ""),
+            ...Object.entries(report.robotComments)
+              .map(([key, value]) => value.length > 0 && `Robot ${key}: ${value}`)]
+              .filter((c) => c)
+              .join(" \\ ");
+
+          comments.push({
+            text: text,
+            user: report.submitter,
+            robot: 0,
+            formType: "Subjective Report",
+            matchNumber: matchDict[report.match]?.number ?? 0,
+            dbId: report._id ?? "",
+            flag: getCommentFlag(text),
+            remove: () => removeComment(report._id, (c) => removeSubjectiveComment(c))
+          });
+        }
+
         setComments(comments);
 
         setShouldRegenerateScouterData(true);
@@ -136,20 +217,6 @@ export default function Scouters(props: { team: Team | null, competition: Compet
       setShouldRegenerateScouterData(false);
     }
   }, [shouldRegenerateScouterData, lastCountedMatch]);
-
-  function removeComment(comment: Comment) {
-    if (!confirm(`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters && scouters[comment.user ?? ""].name}`)) 
-      return;
-
-    if (!reports) return;
-
-    console.log("Removing comment...", comment);
-    const { _id, ...updated } = reports[comment.report];
-    updated.data.comments = "";
-    api.updateReport(updated, comment.report).then(() => {
-      setComments((prev) => [...(prev || []).filter((c) => c !== comment), { ...comment, text: "" }]);
-    });
-  }
     
   return (<Container requireAuthentication={true} hideMenu={false}>
     {
@@ -219,16 +286,16 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                 <h1 className="card-title">Comments</h1>
                 <ul>
                   {
-                    scouters && matches && comments && comments.sort((a, b) => matches[a.match].number - matches[b.match].number)
+                    scouters && matches && comments && comments.sort((a, b) => a.matchNumber - b.matchNumber)
                       .map((comment, index) => <li className="mb-1" key={index}>
                         <div className="flex flex-row space-x-2 items-center text-sm w-full justify-between">
                           <span className={comment.flag === "Major" ? "text-error" : comment.flag === "Minor" ? "text-warning" : ""}>
                             {comment.text !== "" ? comment.text : "[Empty Comment]"}
                           </span>
-                          <button className="btn btn-warning btn-sm" onClick={() => removeComment(comment)}>Remove</button>
+                          <button className="btn btn-warning btn-sm" onClick={comment.remove}>Remove</button>
                         </div>
                         <ul className="text-xs ml-2">
-                          <li>Match: {matches[comment.match].number}</li>
+                          <li>{comment.formType}</li>
                           <li>Robot: {comment.robot}</li>
                           <li>Submitter: {comment.user ? scouters[comment.user]?.name ?? "Unknown" : "Unknown"}</li>
                         </ul>

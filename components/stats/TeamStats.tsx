@@ -21,7 +21,7 @@ export default function TeamStats(props: {
   pitReport: Pitreport | null;
   subjectiveReports: SubjectiveReport[];
 }) {
-  const [comments, setComments] = useState<{match: number, content: ReactNode}[] | null>(null);
+  const [comments, setComments] = useState<{matchNum: number, content: { order: number, jsx: ReactNode}[] }[] | null>(null);
 
   useEffect(() => {
     if(!props.selectedTeam) return;
@@ -29,17 +29,26 @@ export default function TeamStats(props: {
 
     const newComments: typeof comments = [];
 
-    newComments.push({ 
-      match: 0, 
-      content: pitReport 
+    function addComment(match: number, order: number, jsx: ReactNode) {
+      if (!newComments!.some((comment) => comment.matchNum === match)) newComments!.push({ matchNum: match, content: [{
+          order,
+          jsx
+        }] });
+      else newComments!.find((comment) => comment.matchNum === match)!.content.push({ order, jsx });
+    }
+
+    addComment( 
+      0,
+      0,
+      pitReport 
         ? pitReport.comments.length > 0 
           ? `Pit Report: ${pitReport.comments}` 
           : "No pit report comments."
         : <Loading size={24} />
-    });
+    );
 
-    if (!props.subjectiveReports) newComments.push({ match: 0.1, content: <Loading size={24} /> });
-    else if (props.subjectiveReports.length === 0) newComments.push({ match: 0.1, content: "No subjective reports." });
+    if (!props.subjectiveReports) addComment(0, 0.1, <Loading size={24} />);
+    else if (props.subjectiveReports.length === 0) addComment(0, 0.1, "No subjective reports.");
     else {
       for (const report of props.subjectiveReports) {
         const submissionType = 
@@ -50,19 +59,17 @@ export default function TeamStats(props: {
                               : "non-subjective") + " scouter";
 
         if (report.robotComments[props.selectedTeam ?? 0]) {
-          newComments.push({
-            match: (report.matchNumber ?? 0) + 0.2,
-            content: 
-            `Match ${report.matchNumber ?? "?"} (subjective, specific, by ${submissionType}): ${report.robotComments[props.selectedTeam ?? 0]}`
-          });
+          addComment(
+            report.matchNumber ?? 0, 2,
+            <span className="tooltip" data-tip={"By " + submissionType}>Subjective: {report.robotComments[props.selectedTeam ?? 0]}</span>
+          );
         }
 
         if (report.wholeMatchComment) {
-          newComments.push({
-            match: (report.matchNumber ?? 0) + 0.1,
-            content: 
-            `Match ${report.matchNumber ?? "?"} (subjective, whole match, by ${submissionType}): ${report.wholeMatchComment}`
-          });
+          addComment(
+            report.matchNumber ?? 0, 1,
+            <span className="tooltip" data-tip={"By " + submissionType}>Whole Match: {report.wholeMatchComment}</span>
+          );
         }
       }
     }
@@ -70,10 +77,9 @@ export default function TeamStats(props: {
     const commentList = props.selectedReports.filter((report) => report.data.comments.length > 0);
     if (commentList.length === 0) return setComments([]);
     
-    const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => newComments.push({
-      match: match.number,
-      content: `Match ${match.number}: ${report.data.comments}`
-    })));
+    const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
+      match.number, 0, `Quantitative: ${report.data.comments}`
+    )));
 
     Promise.all(promises).then(() => setComments(newComments));
   }, [props.selectedTeam, props.selectedReports, props.subjectiveReports, props.pitReport]);
@@ -317,14 +323,19 @@ export default function TeamStats(props: {
       <div className="w-full h-fit flex flex-row items-center">
         <ul>
           { comments
-            ? <li className="mt-2">
-                {comments.length === 0 
-                  ? "No comments." 
-                  : comments
-                      .sort((a, b) => a.match - b.match)
-                      .map((report) => <div key={report.match} className="mb-2">{report.content}</div>)
-                }
-              </li>
+            ? comments.map((match) => match.matchNum > 0 
+              ? (<li key={match.matchNum}>
+                  <strong>Match {match.matchNum}</strong>
+                  <ul className="pl-2">
+                    {match.content.sort((a, b) => a.order - b.order).map((content, index) => (
+                      <li key={index}>{content.jsx}</li>
+                    ))}
+                  </ul>
+                </li>)
+              : match.content.sort((a, b) => a.order - b.order).map((content, index) => (
+                    <li key={index}>{content.jsx}</li>
+                  ))
+            )
             : <Loading size={24} />
           }
         </ul>
