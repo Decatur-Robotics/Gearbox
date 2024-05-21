@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
+import { Collections, getDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import {
   Competition,
@@ -80,7 +80,7 @@ export namespace API {
 
     constructor(apiRoutes: RouteCollection, base = "/api/") {
       this.routes = apiRoutes;
-      this.db = GetDatabase();
+      this.db = getDatabase();
       this.tba = new TheBlueAlliance.Interface();
       this.basePath = base;
       this.slackClient = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
@@ -123,7 +123,7 @@ export namespace API {
   }
 
   async function addXp(userId: string, xp: number) {
-    const db = await GetDatabase();
+    const db = await getDatabase();
     const user = await db.findObjectById<User>(Collections.Users, new ObjectId(userId));
 
     const newXp = user.xp + xp
@@ -531,8 +531,6 @@ export namespace API {
       //    shuffle
       // }
 
-      console.log(data);
-
       const result = await AssignScoutersToCompetitionMatches(
         data.teamId,
         data.compId,
@@ -920,6 +918,14 @@ export namespace API {
     updateSubjectiveReport: async (req, res, { db, data }) => {
       const report = data.report as SubjectiveReport;
       await db.updateObjectById<SubjectiveReport>(Collections.SubjectiveReports, new ObjectId(report._id), report);
+      return res.status(200).send({ result: "success" });
+    },
+
+    setSubjectiveScouterForMatch: async (req, res, { db, data }) => {
+      const { matchId, userId } = data;
+      await db.updateObjectById<Match>(Collections.Matches, new ObjectId(matchId), {
+        subjectiveScouter: userId,
+      });
       return res.status(200).send({ result: "success" });
     }
 

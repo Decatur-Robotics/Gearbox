@@ -1,5 +1,5 @@
 import stringSimilarity from "string-similarity-js";
-import { GetDatabase, MongoDBInterface } from "./MongoDB";
+import { getDatabase, MongoDBInterface } from "./MongoDB";
 import {
   Competition,
   Match,
@@ -212,7 +212,7 @@ export namespace TheBlueAlliance {
 
     constructor() {
       this.req = new Request();
-      this.db = GetDatabase();
+      this.db = getDatabase();
 
       this.loadCompetitionPairings();
     }

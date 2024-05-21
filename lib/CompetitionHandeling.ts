@@ -1,4 +1,4 @@
-import { GetDatabase, Collections } from "@/lib/MongoDB";
+import { getDatabase, Collections } from "@/lib/MongoDB";
 import {
   Competition,
   Match,
@@ -17,7 +17,7 @@ export async function AssignScoutersToCompetitionMatches(
   competitionId: string,
   shuffle: boolean = false,
 ) {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const comp = await db.findObjectById<Competition>(
     Collections.Competitions,
     new ObjectId(competitionId),
@@ -30,21 +30,19 @@ export async function AssignScoutersToCompetitionMatches(
   let scouters = team.scouters;
   let subjectiveScouters = team.subjectiveScouters;
 
-  if (scouters.length < MinimumNumberOfScouters) {
-    return "Cannot assign scouters: not enough scouters. You must have at least 6 scouters to assign to a competition.";
-  }
-
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
   subjectiveScouters = shuffle ? ShuffleArray(subjectiveScouters) : subjectiveScouters;
 
+  const promises: Promise<any>[] = [];
   for (const matchId of matchIds) {
     // Filter out the subjective scouter that will be assigned to this match
-    await AssignScoutersToMatch(
-      matchId, subjectiveScouters.length > 0 ? scouters.filter((s) => subjectiveScouters[0] !== s) : scouters, subjectiveScouters);
+    promises.push(AssignScoutersToMatch(
+      matchId, scouters, subjectiveScouters));
     RotateArray(scouters);
     RotateArray(subjectiveScouters);
   }
 
+  await Promise.all(promises);
   return "Success";
 }
 
@@ -52,24 +50,23 @@ export async function AssignScoutersToMatch(
   matchId: string,
   scouterArray: string[],
   subjectiveScouterArray: string[]
-): Promise<[void, Match]> {
-  const generateReportsPromise = generateReportsForMatch(matchId, scouterArray);
-
-  const db = await GetDatabase();
+): Promise<any> {
   const subjectiveScouter = subjectiveScouterArray.length > 0 ? subjectiveScouterArray[0] : undefined;
+  const generateReportsPromise = generateReportsForMatch(matchId, 
+    subjectiveScouter ? scouterArray.filter((s) => subjectiveScouter !== s) : scouterArray);
 
-  const assignSubjectiveScouterPromise = 
+  const assignSubjectiveScouterPromise = getDatabase().then((db) =>
     db.updateObjectById<Match>(
       Collections.Matches,
       new ObjectId(matchId),
       { subjectiveScouter }
-    );
+    ));
 
   return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
 }
 
 export async function generateReportsForMatch(match: string | Match, scouters?: string[]) {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   if (typeof match === "string") {
     match = await db.findObjectById<Match>(
       Collections.Matches,
@@ -85,7 +82,7 @@ export async function generateReportsForMatch(match: string | Match, scouters?: 
   const reports = [];
   for (let i = 0; i < 6; i++) {
     const teamNumber = bots[i];
-    const scouter = scouters?.[i];
+    const scouter = i < (scouters?.length ?? 0) ? scouters?.[i] : undefined;
     const color = match.blueAlliance.includes(teamNumber)
       ? AllianceColor.Blue
       : AllianceColor.Red;

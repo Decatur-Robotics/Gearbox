@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
@@ -73,7 +73,7 @@ export default function Home(props: SeasonPageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const resolved = await UrlResolver(context);
   const team = resolved.team;
   const season = resolved.season;

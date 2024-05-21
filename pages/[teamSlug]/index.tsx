@@ -12,7 +12,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { ObjectId } from "mongodb";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
@@ -480,7 +480,7 @@ export default function TeamIndex(props: TeamPageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const resolved = await UrlResolver(context);
 
   const seasonIds = resolved.team?.seasons.map(

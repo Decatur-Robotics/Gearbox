@@ -1,4 +1,4 @@
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { Motors, Pitreport, SwerveLevel } from "@/lib/Types";
 import { ObjectId } from "mongodb";
 import { GetServerSideProps } from "next";
@@ -176,7 +176,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
 }
 
 async function getPitreport(id: string) {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   return await db.findObjectById<Pitreport>(
     Collections.Pitreports,
     new ObjectId(id)

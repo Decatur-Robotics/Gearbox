@@ -39,7 +39,7 @@ export enum Collections {
   SubjectiveReports = "SubjectiveReports",
 }
 
-export async function GetDatabase(): Promise<MongoDBInterface> {
+export async function getDatabase(): Promise<MongoDBInterface> {
   if (!global.interface) {
     await clientPromise;
     const dbInterface = new MongoDBInterface(clientPromise);
@@ -93,7 +93,7 @@ export class MongoDBInterface {
   async updateObjectById<Type>(
     collection: Collections,
     id: ObjectId,
-    newValues: object
+    newValues: Partial<Type>
   ): Promise<Type> {
     var query = { _id: id };
     var updated = { $set: newValues };

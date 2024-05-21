@@ -197,7 +197,7 @@ export default function Home(props: ResolvedUrlData) {
       }
 
       const newUsersById: { [key: string]: User } = {};
-      for (const userId of [...new Set(team.scouters.concat(team.subjectiveScouters))]) {
+      for (const userId of team.users) {
         newUsersById[userId] = await api.findUserById(userId);
       }
 
@@ -367,6 +367,16 @@ export default function Home(props: ResolvedUrlData) {
       api.changeScouterForReport(report._id, userId).then(loadReports);
     }
 
+    function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
+      e.preventDefault();
+
+      const userId = e.target.value;
+      if (!userId || !props.match?._id) return;
+
+      console.log(`Changing subjective scouter for match ${props.match?._id} to ${userId}`);
+      api.setSubjectiveScouterForMatch(props.match?._id, userId).then(loadMatches);
+    }
+
     return (
       <dialog id="edit-match-modal" className="modal">
         <div className="modal-box">
@@ -389,7 +399,13 @@ export default function Home(props: ResolvedUrlData) {
                   <td>{team}</td>
                   <td>
                     <select onChange={(e) => changeScouter(e, reports[index])}>
-                      <option value={reports[index]?.user ?? undefined}>{usersById[reports[index]?.user ?? ""]?.name ?? "None"}</option>
+                      {
+                        reports[index]?.user && usersById[reports[index].user ?? ""]
+                          ? <option value={reports[index].user}>
+                              {usersById[reports[index].user ?? ""]?.name}</option>
+                          : <></>
+                      }
+                      <option value={undefined}>None</option>
                       {
                         Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
                           <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
@@ -401,9 +417,31 @@ export default function Home(props: ResolvedUrlData) {
               )
             }
           </table>
+          <div className="flex flex-row space-x-2">
+            <label>Subjective Scouter:</label>
+            <select onChange={changeSubjectiveScouter}>
+              {
+                props.match?.subjectiveScouter && usersById[props.match.subjectiveScouter]
+                  ? <option value={props.match.subjectiveScouter}>
+                      {usersById[props.match.subjectiveScouter].name}</option>
+                  : <></>
+              }
+              <option value={undefined}>None</option>
+              {
+                Object.keys(usersById).filter(id => id !== props.match?.subjectiveScouter).map(userId => 
+                  <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
+                )
+              }
+            </select>
+          </div>
         </div>
       </dialog>
     );
+  }
+
+  function remindUserOnSlack(slackId: string) {
+    if (slackId && session && isManager && confirm("Remind scouter on Slack?"))
+      api.remindSlack(slackId, session.user?.slackId);
   }
 
   return (
@@ -786,14 +824,12 @@ export default function Home(props: ResolvedUrlData) {
                   ) : (
                     <div>
                       <div
-                        className={
-                          "carousel carousel-center max-w-lg max-sm:max-w-sm h-56 p-4 space-x-4 bg-transparent rounded-box "
-                        }
+                        className=
+                          "carousel carousel-center max-w-lg max-sm:max-w-sm h-56 p-4 space-x-4 bg-transparent rounded-box overflow-y-visible"
                       >
                         {qualificationMatches.map((match, index) => (
                           <div
-                            className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-4"
-                            key={match._id}
+                            className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-[34px]"                            key={match._id}
                           >
                             <div
                               id={`//match${index}`}
@@ -858,21 +894,7 @@ export default function Home(props: ResolvedUrlData) {
                                           imgHeightOverride="h-12"
                                           showLevel={false}
                                           borderThickness={2}
-                                          onClick={() => {
-                                            if (
-                                              user.slackId &&
-                                              session &&
-                                              team?.owners?.includes(
-                                                session.user?._id ?? ""
-                                              ) &&
-                                              confirm("Remind scouter on Slack?")
-                                            ) {
-                                              api.remindSlack(
-                                                user.slackId,
-                                                session.user?.slackId
-                                              );
-                                            }
-                                          }}
+                                          onClick={() => remindUserOnSlack(user._id)}
                                         />
                                         : <div className="w-12 h-12"></div>
                                       }
@@ -883,12 +905,18 @@ export default function Home(props: ResolvedUrlData) {
                             </div>
                             <div>
                               {
-                                match.subjectiveScouter 
-                                  ? <div>Subjective Scouter: {usersById[match.subjectiveScouter]?.name ?? "Unknown"}</div> 
+                                match.subjectiveScouter && usersById[match.subjectiveScouter]
+                                  ? isManager && usersById[match.subjectiveScouter ?? ""]?.slackId
+                                    ? <button className="btn btn-link p-0 m-0" 
+                                        onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
+                                        Subjective Scouter: {usersById[match.subjectiveScouter].name}
+                                      </button>
+                                    : <div>Subjective Scouter: {usersById[match.subjectiveScouter ?? ""].name}</div>
                                   : <div>No subjective scouter assigned</div>
                               }
                             </div>
-                            <Link className="btn btn-primary btn-sm" href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
+                            <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter].slackId && "-translate-y-1"}`} 
+                              href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
                               Add Subjective Report {match.subjectiveReports && `(${match.subjectiveReports.length} already submitted)`}
                             </Link>
                           </div>

@@ -416,4 +416,8 @@ export default class ClientAPI {
     return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 
+  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
+    return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
+  }
+
 }

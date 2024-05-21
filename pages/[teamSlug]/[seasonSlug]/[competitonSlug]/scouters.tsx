@@ -1,5 +1,5 @@
 import Container from "@/components/Container";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { Competition, Match, Team, User, Report } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
@@ -310,7 +310,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
 
   const teamSlug = context.params?.teamSlug as string;
   const team = await db.findObject(Collections.Teams, { slug: teamSlug });

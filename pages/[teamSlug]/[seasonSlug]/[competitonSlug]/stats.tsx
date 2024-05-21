@@ -2,7 +2,7 @@ import Container from "@/components/Container";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
-import { GetDatabase, Collections } from "@/lib/MongoDB";
+import { getDatabase, Collections } from "@/lib/MongoDB";
 import { Competition, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import { useEffect, useState } from "react";
 import TeamPage from "@/components/stats/TeamPage";
@@ -118,7 +118,7 @@ export default function Stats(props: StatsPageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const url = await UrlResolver(context);
   const reports = await db.findObjects<Report>(Collections.Reports, {
     match: { $in: url.competition?.matches },
