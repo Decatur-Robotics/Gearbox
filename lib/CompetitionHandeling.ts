@@ -76,8 +76,7 @@ export async function generateReportsForMatch(match: string | Match, scouters?: 
         teamNumber,
         color,
         String(match._id),
-        0,
-        false,
+        0
       );
 
       reports.push(
