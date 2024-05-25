@@ -124,8 +124,10 @@ export default function Home(props: ResolvedUrlData) {
     setMatchesAssigned(matchesAssigned);
   }
 
-  const loadMatches = async () => {
-    setLoadingMatches(true);
+  const loadMatches = async (silent: boolean = false) => {
+    if (!silent)
+      setLoadingMatches(true);
+
     window.location.hash = "";
     const matches: Match[] = await api.allCompetitionMatches(comp?._id);
     matches.sort((a, b) => {
@@ -149,12 +151,15 @@ export default function Home(props: ResolvedUrlData) {
     );
 
     setMatches(matches);
-    setLoadingMatches(false);
+
+    if (!silent)
+      setLoadingMatches(false);
   };
 
-  const loadReports = async () => {
+  const loadReports = async (silent: boolean = false) => {
     const scoutingStats = (reps: Report[]) => {
-      setLoadingScoutStats(true);
+      if (!silent)
+        setLoadingScoutStats(true);
       let submittedCount = 0;
       reps.forEach((report) => {
         if (report.submitted) {
@@ -163,10 +168,12 @@ export default function Home(props: ResolvedUrlData) {
       });
 
       setSubmittedReports(submittedCount);
-      setLoadingScoutStats(false);
+      if (!silent)
+        setLoadingScoutStats(false);
     };
 
-    setLoadingReports(true);
+    if (!silent)
+      setLoadingReports(true);
     const newReports: Report[] = await api.competitionReports(
       comp?._id,
       false
@@ -180,11 +187,16 @@ export default function Home(props: ResolvedUrlData) {
       newReportId[report._id] = report;
     });
     setReportsById(newReportId);
-    setLoadingReports(false);
+    if (!silent)
+      setLoadingReports(false);
     scoutingStats(newReports);
 
     updateMatchesAssigned();
   };
+
+  useEffect(() => {
+    setInterval(() => loadReports(true), 5000);
+  }, []);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -824,6 +836,9 @@ export default function Home(props: ResolvedUrlData) {
                                   color = ours ? !report.submitted ? "bg-purple-500" : "bg-purple-300" : color;
 
                                   if (!report) return <></>;
+
+                                  const timeSinceCheckIn = report.checkInTimestamp && (new Date().getTime() - new Date(report.checkInTimestamp as any).getTime()) / 1000;
+                                  
                                   return (
                                     <Link
                                       href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`}
@@ -832,7 +847,7 @@ export default function Home(props: ResolvedUrlData) {
                                         mine && !submitted
                                           ? "border-4"
                                           : "border-2"
-                                      }  rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
+                                      } ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
                                     >
                                       <h1>{report.robotNumber}</h1>
                                     </Link>

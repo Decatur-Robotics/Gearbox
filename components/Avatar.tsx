@@ -11,6 +11,7 @@ export default function Avatar(props: {
   borderThickness?: number | undefined;
   onClick?: () => void | undefined;
   className?: string | undefined;
+  online?: boolean;
 }) {
   const { session, status } = useCurrentSession();
   const user = props.user ?? session?.user;
@@ -19,7 +20,7 @@ export default function Avatar(props: {
   const admin = user?.admin;
 
   return (
-    <div className={"avatar " + (props.scale ?? "") + " " + props.className}>
+    <div className={`avatar ${props.online && "online"} ${props.scale} ${props.className}`}>
       { (props.showLevel ?? true) &&
         <div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
           LVL: {user?.level}

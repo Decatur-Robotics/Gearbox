@@ -6,6 +6,7 @@ import {
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { Statbotics } from "./Statbotics";
+import { DatasetJsonLdProps } from "next-seo";
 
 /**
  * Standard Account Type
@@ -322,7 +323,7 @@ export class Report {
   submitted: boolean = false;
   data: FormData;
 
-  checkedIn: boolean = false;
+  checkInTimestamp: string | undefined;
 
   constructor(
     user: string | undefined,
@@ -331,7 +332,7 @@ export class Report {
     color: AllianceColor,
     match: string,
     timestamp: number = 0,
-    checkedIn: boolean
+    checkInTimestamp: string | undefined = undefined
   ) {
     this.timestamp = timestamp;
     this.user = user;
@@ -339,7 +340,7 @@ export class Report {
     this.robotNumber = robotNumber;
     this.match = match;
     this.color = color;
-    this.checkedIn = checkedIn;
+    this.checkInTimestamp = checkInTimestamp;
   }
 }
 

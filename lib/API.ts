@@ -554,7 +554,6 @@ export namespace API {
       
       form.data = data.formData;
       form.submitted = true;
-      form.checkedIn = false;
       form.submitter = data.userId;
 
       await db.updateObjectById(
@@ -632,19 +631,11 @@ export namespace API {
       );
     },
 
-    updateCheckIn: async (req, res, { db, data }) => {
+    checkInForReport: async (req, res, { db, data }) => {
       await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId),
-        { checkedIn: true }
-      );
-    },
-
-    updateCheckOut: async (req, res, { db, data }) => {
-      await db.updateObjectById<Report>(
-        Collections.Reports,
-        new ObjectId(data.reportId),
-        { checkedIn: false }
+        { checkInTimestamp: new Date().toISOString() }
       );
     },
 
