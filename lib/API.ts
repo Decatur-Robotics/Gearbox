@@ -420,6 +420,7 @@ export namespace API {
       //     end
       //     name
       //     seasonId
+      //     publicData
       // }
       
       var matches = await tba.getCompetitionMatches(data.tbaId);
@@ -445,7 +446,8 @@ export namespace API {
           data.end,
           pitReports,
           matches.map((match) => String(match._id)),
-          picklist._id.toString()
+          picklist._id.toString(),
+          data.publicData
         )
       );
 
@@ -581,16 +583,27 @@ export namespace API {
       // {
       // compId
       // submitted
+      // usePubl
       // }
 
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
-      const reports = await db.findObjects<Report[]>(Collections.Reports, {
-        match: { $in: comp.matches },
+
+      const usedComps = data.usePublicData 
+        ? await db.findObjects<Competition>(Collections.Competitions, { publicData: true, tbaId: comp.tbaId })
+        : [comp];
+
+      if (data.usePublicData && !comp.publicData)
+        usedComps.push(comp);
+
+      const reports = (await db.findObjects<Report>(Collections.Reports, {
+        match: { $in: usedComps.flatMap((m) => m.matches) },
         submitted: data.submitted ? true : { $exists: true },
-      });
+      }))
+        // Filter out comments from other competitions
+        .map((report) => comp.matches.includes(report.match) ? report :  { ...report, data: { ...report.data, comments: "" } } );
       return res.status(200).send(reports);
     },
 
@@ -854,6 +867,11 @@ export namespace API {
     updatePicklist: async (req, res, { db, data }) => {
       const { _id, ...picklist } = data.picklist;
       await db.updateObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id), picklist);
+      return res.status(200).send({ result: "success" });
+    },
+
+    setCompPublicData: async (req, res, { db, data }) => {
+      await db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId), { publicData: data.publicData });
       return res.status(200).send({ result: "success" });
     }
   };

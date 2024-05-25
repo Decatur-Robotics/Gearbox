@@ -111,8 +111,6 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
     return <></>;
   }
 
-  console.log(datapoints);
-
   return (
     <div className="w-full h-2/5 bg-base-300 rounded-lg p-4">
       <h1 className="text-2xl font-semibold inline mr-4">Graph</h1>

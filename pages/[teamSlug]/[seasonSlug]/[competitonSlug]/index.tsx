@@ -404,6 +404,11 @@ export default function Home(props: ResolvedUrlData) {
     );
   }
 
+  function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
+    if (!comp?._id) return;
+    api.setCompPublicData(comp?._id, e.target.checked);
+  }
+
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
@@ -632,6 +637,23 @@ export default function Home(props: ResolvedUrlData) {
                   >
                     Create
                   </button>
+                  
+                  <div className="divider"></div>
+                  <div className="flex flex-row justify-between items-center">
+                    <p className="text-2xl">Make data public?</p>
+                    <input
+                      type="checkbox"
+                      className="toggle toggle-primary"
+                      id="toggle-public-data"
+                      defaultChecked={comp?.publicData}
+                      onChange={togglePublicData}
+                    />
+                  </div>
+                      <p className="text-xs">
+                        Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
+                        Don't worry - no identifying information will be shared and comments will be hidden; only quantitative
+                        data will be shared.<br/>This setting can be changed at any time.
+                      </p>
 
                   <div className="divider"></div>
                   <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/scouters`}>
@@ -811,6 +833,8 @@ export default function Home(props: ResolvedUrlData) {
                                 
                                 {match.reports.map((reportId) => {
                                   const report = reportsById[reportId];
+                                  if (!report) return <></>;
+
                                   const submitted = report.submitted;
                                   const mine =
                                     report.user === session.user?._id;
@@ -822,8 +846,6 @@ export default function Home(props: ResolvedUrlData) {
                                       : "bg-blue-500"
                                     : "bg-slate-500";
                                   color = ours ? !report.submitted ? "bg-purple-500" : "bg-purple-300" : color;
-
-                                  if (!report) return <></>;
                                   return (
                                     <Link
                                       href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`}

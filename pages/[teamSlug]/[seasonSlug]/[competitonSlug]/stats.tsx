@@ -4,7 +4,7 @@ import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
 import { GetDatabase, Collections } from "@/lib/MongoDB";
 import { Competition, Pitreport, Report } from "@/lib/Types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TeamPage from "@/components/stats/TeamPage";
 import PicklistScreen from "@/components/stats/Picklist";
 import { FaSync } from "react-icons/fa";
@@ -28,6 +28,7 @@ export default function Stats(props: StatsPageProps) {
   const [reports, setReports] = useState(props.reports);
   const [pitReports, setPitReports] = useState<Pitreport[]>([]);
   const [page, setPage] = useState(0);
+  const [usePublicData, setUsePublicData] = useState(false);
 
   useEffect(() => {
     const i = setInterval(() => {
@@ -39,11 +40,12 @@ export default function Stats(props: StatsPageProps) {
   });
 
   const resync = async () => {
+    console.log("Resyncing...");
     setUpdating(true);
 
     const promises = [
       api
-        .competitionReports(props.competition._id, true)
+        .competitionReports(props.competition._id, true, usePublicData)
         .then((data) => setReports(data)),
       pitReports.length === 0 &&
         api.getPitReports(props.competition.pitReports).then((data) => {
@@ -57,6 +59,10 @@ export default function Stats(props: StatsPageProps) {
     setUpdating(false);
   };
 
+  useEffect(() => {
+    resync();
+  }, [usePublicData]);
+
   const teams: Set<number> = new Set();
   reports.forEach((r) => teams.add(r.robotNumber));
   pitReports.forEach((r) => teams.add(r.teamNumber));
@@ -67,6 +73,12 @@ export default function Stats(props: StatsPageProps) {
       hideMenu={true}
       notForMobile={true}
     >
+      <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">
+        <h1 className="text-xl">
+          Use public data?
+        </h1>
+        <input className="toggle toggle-primary" type="checkbox" defaultChecked={usePublicData} onChange={(e) => setUsePublicData(e.target.checked)} />
+      </div>
       <div role="tablist" className="tabs tabs-boxed">
         <a
           role="tab"
