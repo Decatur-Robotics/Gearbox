@@ -894,6 +894,8 @@ export namespace API {
         subjectiveReports: [...match.subjectiveReports ?? [], report._id!.toString()],
       });
 
+      addXp(data.userId, match.subjectiveScouter === data.userId ? 10 : 5);
+
       await Promise.all([insertReportPromise, updateMatchPromise]);
 
       return res.status(200).send({ result: "success" });
