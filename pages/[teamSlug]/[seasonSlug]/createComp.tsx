@@ -119,7 +119,7 @@ export default function CreateComp(props: ResolvedUrlData) {
                         <p className="text-2xl">Make data publicly available?</p>
                         <p>
                           Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
-                          Don't worry - no identifying information will be shared and comments will be hidden; only quantitative
+                          Don&apos;t worry - no identifying information will be shared and comments will be hidden; only quantitative
                           data will be shared.<br/>This setting can be changed at any time.
                         </p>
                       </div>
