@@ -296,6 +296,7 @@ export class Match {
 
   subjectiveScouter: string | undefined;
   subjectiveReports: string[] = [];
+  subjectiveReportsCheckInTimestamps: { [userId: string]: string } = {};
 
   constructor(
     number: number,
@@ -306,7 +307,6 @@ export class Match {
     blueAlliance: Alliance,
     redAlliance: Alliance,
     reports: string[] = [],
-    scouters: string[] = [],
   ) {
     this.number = number;
     this.tbaId = tbaId;

@@ -35,6 +35,7 @@ import { match } from "assert";
 import { report } from "process";
 import { useRouter } from "next/router";
 import Loading from "@/components/Loading";
+import useInterval from "@/lib/client/useInterval";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -131,8 +132,9 @@ export default function Home(props: ResolvedUrlData) {
     setMatchesAssigned(matchesAssigned);
   }, [reports]);
 
-  const loadMatches = async () => {
-    setLoadingMatches(true);
+  const loadMatches = async (silent: boolean = false) => {
+    if (!silent)
+      setLoadingMatches(true);
     window.location.hash = "";
     const matches: Match[] = await api.allCompetitionMatches(comp?._id);
     matches.sort((a, b) => {
@@ -153,7 +155,8 @@ export default function Home(props: ResolvedUrlData) {
     );
 
     setMatches(matches);
-    setLoadingMatches(false);
+    if (!silent)
+      setLoadingMatches(false);
   };
 
   const loadReports = async () => {
@@ -348,6 +351,8 @@ export default function Home(props: ResolvedUrlData) {
     
     setMatchBeingEdited(match._id);
   }
+
+  useInterval(() => loadMatches(true), 5000);
 
   function EditMatchModal(props: { match?: Match }) {
     if (props.match === undefined) return (<></>);
@@ -917,7 +922,11 @@ export default function Home(props: ResolvedUrlData) {
                             </div>
                             <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter].slackId && "-translate-y-1"}`} 
                               href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
-                              Add Subjective Report {match.subjectiveReports && `(${match.subjectiveReports.length} already submitted)`}
+                              Add Subjective Report ({`${match.subjectiveReports ? match.subjectiveReports.length : 0} submitted, 
+                                ${match.subjectiveReportsCheckInTimestamps 
+                                  ? Object.values(match.subjectiveReportsCheckInTimestamps)
+                                      .filter((t) => (new Date().getTime() - new Date(t).getTime()) / 1000 < 10).length 
+                                  : 0} in progress`})
                             </Link>
                           </div>
                         ))}

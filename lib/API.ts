@@ -648,6 +648,19 @@ export namespace API {
       );
     },
 
+    checkInForSubjectiveReport: async (req, res, { db, data }) => {
+      // {
+      //     matchId
+      // }
+      const user = (await getServerSession(req, res, AuthenticationOptions))?.user as User;
+
+      const update: { [key: string]: any } = {};
+      update[`subjectiveReportsCheckInTimestamps.${user._id?.toString()}`] = new Date().toISOString();
+      await db.updateObjectById<Match>(Collections.Matches, new ObjectId(data.matchId), update);
+
+      return res.status(200).send({ result: "success" });
+    },
+
     remindSlack: async (req, res, { slackClient, data }) => {
       await slackClient.chat.postMessage({
         token: process.env.SLACK_KEY,

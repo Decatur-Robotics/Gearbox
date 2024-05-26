@@ -314,6 +314,10 @@ export default class ClientAPI {
     return await this.request("/updateCheckOut", { reportId });
   }
 
+  async checkInForSubjectiveReport(matchId: string) {
+    return await this.request("/checkInForSubjectiveReport", { matchId });
+  }
+
   async remindSlack(
     slackId: string | undefined,
     senderSlackId: string | undefined

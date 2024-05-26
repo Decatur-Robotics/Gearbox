@@ -3,6 +3,7 @@ import { Match, SubjectiveReportSubmissionType } from "@/lib/Types";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import useInterval from "@/lib/client/useInterval";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import React from "react";
@@ -60,6 +61,12 @@ export default function Subjective() {
       window.location.href = `/${teamSlug}/${seasonSlug}/${competitonSlug}`;
     });
   }
+
+  // useEffect(() => {
+  //   setInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000);
+  // }, []);
+
+  useInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000);
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
