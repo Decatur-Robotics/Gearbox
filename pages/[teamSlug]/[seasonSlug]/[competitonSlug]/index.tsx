@@ -36,6 +36,7 @@ import { report } from "process";
 import { useRouter } from "next/router";
 import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
+import { getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -911,12 +912,21 @@ export default function Home(props: ResolvedUrlData) {
                             <div>
                               {
                                 match.subjectiveScouter && usersById[match.subjectiveScouter]
-                                  ? isManager && usersById[match.subjectiveScouter ?? ""]?.slackId
-                                    ? <button className="btn btn-link p-0 m-0" 
-                                        onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
-                                        Subjective Scouter: {usersById[match.subjectiveScouter].name}
-                                      </button>
-                                    : <div>Subjective Scouter: {usersById[match.subjectiveScouter ?? ""].name}</div>
+                                  ?
+                                    <div className="flex flex-row items-center space-x-1">
+                                      { match.assignedSubjectiveScouterHasSubmitted
+                                        ? <FaCheck className="text-green-500" size={24} />
+                                        : (match.subjectiveReportsCheckInTimestamps && getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps)
+                                          .includes(match.subjectiveScouter)) &&
+                                          <div className="tooltip" data-tip="Scouting in progress"><Loading size={24}/></div>}
+                                      { isManager && usersById[match.subjectiveScouter ?? ""]?.slackId
+                                        ? <button className="btn btn-link p-0 m-0" 
+                                            onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
+                                            Subjective Scouter: {usersById[match.subjectiveScouter].name}
+                                          </button>
+                                        : <div>Subjective Scouter: {usersById[match.subjectiveScouter ?? ""].name}</div>
+                                      }
+                                    </div>
                                   : <div>No subjective scouter assigned</div>
                               }
                             </div>
@@ -924,8 +934,7 @@ export default function Home(props: ResolvedUrlData) {
                               href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
                               Add Subjective Report ({`${match.subjectiveReports ? match.subjectiveReports.length : 0} submitted, 
                                 ${match.subjectiveReportsCheckInTimestamps 
-                                  ? Object.values(match.subjectiveReportsCheckInTimestamps)
-                                      .filter((t) => (new Date().getTime() - new Date(t).getTime()) / 1000 < 10).length 
+                                  ? getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps).length 
                                   : 0} in progress`})
                             </Link>
                           </div>

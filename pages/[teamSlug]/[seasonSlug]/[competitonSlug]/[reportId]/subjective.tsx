@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Subjective() {
+export default function Subjective(props: ResolvedUrlData) {
   const router = useRouter();
   const { teamSlug, seasonSlug, competitonSlug, reportId: matchId } = router.query;
   const session = useCurrentSession();
@@ -62,11 +62,8 @@ export default function Subjective() {
     });
   }
 
-  // useEffect(() => {
-  //   setInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000);
-  // }, []);
-
-  useInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000);
+  // We have to use router as a dependency because it is only populated after the first render (during hydration)
+  useInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000, [router]);
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>

@@ -297,6 +297,7 @@ export class Match {
   subjectiveScouter: string | undefined;
   subjectiveReports: string[] = [];
   subjectiveReportsCheckInTimestamps: { [userId: string]: string } = {};
+  assignedSubjectiveScouterHasSubmitted: boolean = false;
 
   constructor(
     number: number,

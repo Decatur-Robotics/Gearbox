@@ -902,10 +902,15 @@ export namespace API {
             : SubjectiveReportSubmissionType.ByNonSubjectiveScouter,
       };
 
-      const insertReportPromise = db.addObject<SubjectiveReport>(Collections.SubjectiveReports, report);
-      const updateMatchPromise = db.updateObjectById<Match>(Collections.Matches, new ObjectId(match._id), {
+      const update: Partial<Match> = {
         subjectiveReports: [...match.subjectiveReports ?? [], report._id!.toString()],
-      });
+      };
+
+      if (match.subjectiveScouter === data.userId)
+        update.assignedSubjectiveScouterHasSubmitted = true;
+
+      const insertReportPromise = db.addObject<SubjectiveReport>(Collections.SubjectiveReports, report);
+      const updateMatchPromise = db.updateObjectById<Match>(Collections.Matches, new ObjectId(match._id), update);
 
       addXp(data.userId, match.subjectiveScouter === data.userId ? 10 : 5);
 
