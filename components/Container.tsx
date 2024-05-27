@@ -11,6 +11,7 @@ import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
 import { MdInfo, MdWarning } from "react-icons/md";
 import Avatar from "./Avatar";
+import Banner, { DiscordBanner } from "./Banner";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -114,20 +115,7 @@ export default function Container(props: ContainerProps) {
       className="w-full h-screen flex flex-col overflow-x-hidden"
       data-theme={theme}
     >
-      <div
-        role="alert"
-        className="alert rounded-none py-1 sm:py-2 font-semibold alert-info"
-      >
-        <FaDiscord className="max-sm:hidden" size={32} />
-
-        <span className="max-sm:text-sm">Join our Discord for realtime support!</span>
-        <a
-          href="https://discord.gg/ha7AnqxFDD"
-          className="btn btn-primary"
-        >
-          <FaDiscord size={35} /> Join today
-        </a>
-      </div>
+      <DiscordBanner />
 
       <div className="drawer">
         <input id="menu" type="checkbox" className="drawer-toggle" />

@@ -11,6 +11,7 @@ import {
 import { TbUfo } from "react-icons/tb";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
+import { VERSION } from "./UpdateModal";
 export default function Footer() {
   return (
     <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
@@ -69,7 +70,7 @@ export default function Footer() {
         >
           <FaList className="inline mr-1" size={16}></FaList>About Us
         </a>
-        <div>Version 1.6.19</div>
+        <div>Version {VERSION}</div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <a
