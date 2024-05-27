@@ -41,7 +41,7 @@ function News() {
       </Flex>
       <h3 className="font-bold text-lg">Whats New?</h3>
       <p className="py-4">
-        We've added dozens of improvements to Gearbox, focusing on functionality for smaller teams. We also said goodbye to 
+        We&apos;ve added dozens of improvements to Gearbox, focusing on functionality for smaller teams. We also said goodbye to 
         Theo, the original developer of this iteration of Gearbox; he will forever live on in our hearts and his typos. Before
         next season, you can look forward to a several exciting updates with even more features and improvements.
       </p>
@@ -53,7 +53,7 @@ function News() {
       <ul className="list-disc w-full text-sm ml-6 mt-2">
         <li>Subjective scouting</li>
         <li>Public data</li>
-        <li>Check-in - see who's currently scouting</li>
+        <li>Check-in - see who&apos;s currently scouting</li>
         <li>Faster scouter management page</li>
         <li>Scouting without assigning scouters</li>
       </ul>
