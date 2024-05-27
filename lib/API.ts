@@ -710,17 +710,21 @@ export namespace API {
       const usersPromise = db.countObjects(Collections.Users, {});
       const reportsPromise = db.countObjects(Collections.Reports, {});
       const pitReportsPromise = db.countObjects(Collections.Pitreports, {});
+      const subjectiveReportsPromise = db.countObjects(Collections.SubjectiveReports, {});
       const competitionsPromise = db.countObjects(Collections.Competitions, {});
 
       const dataPointsPerReport = Reflect.ownKeys(FormData).length;
-      const dataPointsPerPitReports = Reflect.ownKeys(FormData).length;
+      const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
+      const dataPointsPerSubjectiveReport = Reflect.ownKeys(SubjectiveReport).length + 5;
 
-      await Promise.all([teamsPromise, usersPromise, reportsPromise, pitReportsPromise, competitionsPromise]);
+      await Promise.all([teamsPromise, usersPromise, reportsPromise, pitReportsPromise, subjectiveReportsPromise, competitionsPromise]);
 
       return res.status(200).send({
         teams: await teamsPromise,
         users: await usersPromise,
-        datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport + ((await pitReportsPromise) ?? 0) * dataPointsPerPitReports,
+        datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport 
+                    + ((await pitReportsPromise) ?? 0) * dataPointsPerPitReports
+                    + ((await subjectiveReportsPromise) ?? 0) * dataPointsPerSubjectiveReport,
         competitions: await competitionsPromise,
       });
     },

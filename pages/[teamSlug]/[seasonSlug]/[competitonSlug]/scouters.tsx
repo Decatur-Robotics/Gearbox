@@ -18,7 +18,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
     ? team?.owners.includes(session.user?._id)
     : false;
 
-  type Scouter = User & { missedReports: string[], reports: string[], coveredReports: string[] };
+  type Scouter = User & { missedReports: string[], reports: string[], coveredReports: string[], missedSubjectiveReports: string[] };
   type Comment = {
     text: string,
     user: string | undefined,
@@ -56,7 +56,8 @@ export default function Scouters(props: { team: Team | null, competition: Compet
             ...s,
             missedReports: [],
             reports: [],
-            coveredReports: []
+            coveredReports: [],
+            missedSubjectiveReports: []
           };
         }
 
@@ -204,7 +205,10 @@ export default function Scouters(props: { team: Team | null, competition: Compet
           ...scouter,
           missedReports: missedReports.map((report) => report._id ?? ""),
           reports: scouterReports.map((report) => report._id ?? ""),
-          coveredReports: coveredReports.map((report) => report._id ?? "")
+          coveredReports: coveredReports.map((report) => report._id ?? ""),
+          missedSubjectiveReports: Object.values(matches)
+            .filter((match) => match.number <= lastCountedMatch && match.subjectiveScouter === scouter._id)
+            .map((match) => match._id ?? "")
         };
       });
 
@@ -269,6 +273,12 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                               </ul>
                           }
                         </li>
+                        {
+                          matches && scouter.missedSubjectiveReports.length > 0 &&
+                            <li>Missed Subjective Reports:{" "}
+                              {[...new Set(scouter.missedSubjectiveReports.map((id) => matches[id].number).sort((a, b) => a - b))].join(", ")}
+                            </li>
+                        }
                         {
                           scouter.coveredReports.length > 0 && <li>
                             Covered Reports: {scouter.coveredReports.length}
