@@ -28,15 +28,19 @@ import { xpToLevel } from "./Xp";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
+
+  type RouteContents<TData = any> = {
+    slackClient: WebClient;
+    db: MongoDBInterface;
+    tba: TheBlueAlliance.Interface;
+    data: TData;
+  };
+
+
   type Route = (
     req: NextApiRequest,
     res: NextApiResponse,
-    contents: {
-      slackClient: WebClient;
-      db: MongoDBInterface;
-      tba: TheBlueAlliance.Interface;
-      data: any;
-    }
+    contents: RouteContents
   ) => Promise<void>;
   type RouteCollection = { [routeName: string]: Route };
 
@@ -223,7 +227,7 @@ export namespace API {
 
     // modification
 
-    teamRequest: async (req, res, { db, data }) => {
+    requestToJoinTeam: async (req, res, { db, data }) => {
       // {
       //     teamId
       //     userId
@@ -854,6 +858,11 @@ export namespace API {
     updatePicklist: async (req, res, { db, data }) => {
       const { _id, ...picklist } = data.picklist;
       await db.updateObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id), picklist);
+      return res.status(200).send({ result: "success" });
+    },
+
+    setOnboardingCompleted: async (req, res, { db, data }: RouteContents<{userId: string}>) => {
+      await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), { onboardingComplete: true });
       return res.status(200).send({ result: "success" });
     }
   };

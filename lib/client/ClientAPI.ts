@@ -131,8 +131,8 @@ export default class ClientAPI {
     return await this.request("/matchAutofill", { tbaId: tbaId });
   }
 
-  async teamRequest(userId: string | undefined, teamId: string | undefined) {
-    return await this.request("/teamRequest", {
+  async requestToJoinTeam(userId: string | undefined, teamId: string | undefined) {
+    return await this.request("/requestToJoinTeam", {
       userId: userId,
       teamId: teamId,
     });
@@ -399,6 +399,10 @@ export default class ClientAPI {
 
   async updatePicklist(picklist: DbPicklist) {
     return await this.request("/updatePicklist", { picklist });
+  }
+
+  async setOnboardingCompleted(userId: string) {
+    return await this.request("/setOnboardingCompleted", { userId });
   }
 
 }
