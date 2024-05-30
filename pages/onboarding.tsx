@@ -28,7 +28,8 @@ export default function Onboarding() {
   const [season, setSeason] = useState<Season>(new Date().getMonth() < 6 ? CurrentSeason : OffSeason);
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false);
   
-  if (session?.user?.onboardingComplete ?? false)
+  
+  if ((session?.user?.onboardingComplete || session?.user?.teams.length === 0) ?? false)
     router.push("/profile");
 
   async function completeOnboarding(redirect: string = "/profile") {
