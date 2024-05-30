@@ -151,7 +151,7 @@ export default class ClientAPI {
     number: number,
     creator: string | undefined,
     tbaId: undefined | string
-  ) {
+  ): Promise<Team> {
     return await this.request("/createTeam", {
       name: name,
       number: number,
@@ -160,7 +160,7 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, teamId: string) {
+  async createSeason(name: string, year: number, teamId: string): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
