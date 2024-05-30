@@ -27,7 +27,7 @@ export default function Onboarding() {
   const [joinRequestStatus, setJoinRequestStatus] = useState<JoinRequestStatus>(JoinRequestStatus.NotRequested);
   const [season, setSeason] = useState<Season>(new Date().getMonth() < 6 ? CurrentSeason : OffSeason);
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false);
-  
+1  
   
   if ((session?.user?.onboardingComplete || session?.user?.teams.length === 0) ?? false)
     router.push("/profile");
@@ -109,7 +109,7 @@ export default function Onboarding() {
                 Welcome to<span className="text-accent ml-1">Gearbox</span>, {session?.user?.name?.split(' ')[0]}!
               </div>
               <div className="pb-6">
-                Before you can start on your scouting journey, there's a bit of set up to do. It will only take a minute.
+                Before you can start on your scouting journey, there&apos;s a bit of set up to do. It will only take a minute.
               </div>
               { !teamConfirmed || !team
                   ? <div>
@@ -132,7 +132,7 @@ export default function Onboarding() {
                                     </button>
                                   </div>
                                 : <div className="text-lg mt-2">
-                                    Hmmm. We couldn't find team <span className="text-accent">{team.number}</span>. Are you sure that's 
+                                    Hmmm. We couldn&apos;t find team <span className="text-accent">{team.number}</span>. Are you sure that&apos;s 
                                     the correct number?
                                   </div>
                             }
@@ -146,7 +146,7 @@ export default function Onboarding() {
                                 ? <div>
                                     <div>
                                       Team <span className="text-accent">{team.number}</span> is already registered. 
-                                      You'll need approval to join.
+                                      You&apos;ll need approval to join.
                                     </div> 
                                     <button className="btn btn-primary mt-2" onClick={requestToJoinTeam}>
                                       Request to join team {team.number}, {team.name}
@@ -155,7 +155,7 @@ export default function Onboarding() {
                                 : joinRequestStatus === JoinRequestStatus.Requested
                                 ? <div>
                                     Your request to join team {team.number}, {team.name}, has been sent. 
-                                    You will be redirected when it's approved.
+                                    You will be redirected when it&apos;s approved.
                                   </div>
                                 : joinRequestStatus === JoinRequestStatus.CreatedTeam
                                 ? (
@@ -170,9 +170,9 @@ export default function Onboarding() {
                                         </div>
                                       : <div>
                                           <div>
-                                            Season created! Now, we just need to create a competition, then you're done!.<br/>
+                                            Season created! Now, we just need to create a competition, then you&apos;re done!.<br/>
                                             <br/>
-                                            If you have any further questions, don't hesitate to reach out on 
+                                            If you have any further questions, don&apos;t hesitate to reach out on 
                                               <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">Discord</a>.
                                           </div>
                                           <button className="btn btn-primary mt-2" 
@@ -189,7 +189,7 @@ export default function Onboarding() {
                           </div>
                         : <div>
                             <div>
-                              You're the first one here from team {team.number}, {team.name}.
+                              You&apos;re the first one here from team {team.number}, {team.name}.
                             </div>
                             <button className="btn btn-primary mt-2" onClick={createTeam}>
                               Create team {team.number}, {team.name}
@@ -205,7 +205,7 @@ export default function Onboarding() {
               }
             </div>
             { /* This button is at the bottom*/}
-            <button className="btn btn-ghost mt-10" onClick={() => completeOnboarding()}>I know what I'm doing, let me skip onboarding.</button>
+            <button className="btn btn-ghost mt-10" onClick={() => completeOnboarding()}>I know what I&apos;m doing, let me skip onboarding.</button>
           </div>
         </div>
       </div>
