@@ -74,10 +74,18 @@ export default function Stats(props: StatsPageProps) {
       notForMobile={true}
     >
       <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">
-        <h1 className="text-xl">
+        <button className="btn btn-ghost w-full" onClick={() => setUsePublicData(!usePublicData)}>
+          {
+            usePublicData
+              ? <div className="text-secondary">Using public data</div>
+              : <div>Not using public data</div>
+          }
+          <div className=" animate-pulse">(Click to toggle)</div>
+        </button>
+        {/* <h1 className="text-xl">
           Use public data?
         </h1>
-        <input className="toggle toggle-primary" type="checkbox" defaultChecked={usePublicData} onChange={(e) => setUsePublicData(e.target.checked)} />
+        <input className="toggle toggle-primary" type="checkbox" defaultChecked={usePublicData} onChange={(e) => setUsePublicData(e.target.checked)} /> */}
       </div>
       <div role="tablist" className="tabs tabs-boxed">
         <a
