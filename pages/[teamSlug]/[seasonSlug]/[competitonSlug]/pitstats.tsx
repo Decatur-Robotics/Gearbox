@@ -14,7 +14,7 @@ import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
@@ -505,7 +505,7 @@ export default function Pitstats(props: { competition: Competition }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const compSlug = context.resolvedUrl.split("/")[3];
   const comp = await db.findObject(Collections.Competitions, {
     slug: compSlug,

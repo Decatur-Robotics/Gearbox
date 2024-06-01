@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { Collections, GetDatabase, MongoDBInterface } from "./MongoDB";
+import { Collections, getDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import {
   Competition,
@@ -11,6 +11,8 @@ import {
   Report,
   Pitreport,
   DbPicklist,
+  SubjectiveReport,
+  SubjectiveReportSubmissionType,
 } from "./Types";
 import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
@@ -78,7 +80,7 @@ export namespace API {
 
     constructor(apiRoutes: RouteCollection, base = "/api/") {
       this.routes = apiRoutes;
-      this.db = GetDatabase();
+      this.db = getDatabase();
       this.tba = new TheBlueAlliance.Interface();
       this.basePath = base;
       this.slackClient = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
@@ -121,7 +123,7 @@ export namespace API {
   }
 
   async function addXp(userId: string, xp: number) {
-    const db = await GetDatabase();
+    const db = await getDatabase();
     const user = await db.findObjectById<User>(Collections.Users, new ObjectId(userId));
 
     const newXp = user.xp + xp
@@ -529,8 +531,6 @@ export namespace API {
       //    shuffle
       // }
 
-      console.log(data);
-
       const result = await AssignScoutersToCompetitionMatches(
         data.teamId,
         data.compId,
@@ -648,6 +648,19 @@ export namespace API {
       );
     },
 
+    checkInForSubjectiveReport: async (req, res, { db, data }) => {
+      // {
+      //     matchId
+      // }
+      const user = (await getServerSession(req, res, AuthenticationOptions))?.user as User;
+
+      const update: { [key: string]: any } = {};
+      update[`subjectiveReportsCheckInTimestamps.${user._id?.toString()}`] = new Date().toISOString();
+      await db.updateObjectById<Match>(Collections.Matches, new ObjectId(data.matchId), update);
+
+      return res.status(200).send({ result: "success" });
+    },
+
     remindSlack: async (req, res, { slackClient, data }) => {
       await slackClient.chat.postMessage({
         token: process.env.SLACK_KEY,
@@ -697,17 +710,21 @@ export namespace API {
       const usersPromise = db.countObjects(Collections.Users, {});
       const reportsPromise = db.countObjects(Collections.Reports, {});
       const pitReportsPromise = db.countObjects(Collections.Pitreports, {});
+      const subjectiveReportsPromise = db.countObjects(Collections.SubjectiveReports, {});
       const competitionsPromise = db.countObjects(Collections.Competitions, {});
 
       const dataPointsPerReport = Reflect.ownKeys(FormData).length;
-      const dataPointsPerPitReports = Reflect.ownKeys(FormData).length;
+      const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
+      const dataPointsPerSubjectiveReport = Reflect.ownKeys(SubjectiveReport).length + 5;
 
-      await Promise.all([teamsPromise, usersPromise, reportsPromise, pitReportsPromise, competitionsPromise]);
+      await Promise.all([teamsPromise, usersPromise, reportsPromise, pitReportsPromise, subjectiveReportsPromise, competitionsPromise]);
 
       return res.status(200).send({
         teams: await teamsPromise,
         users: await usersPromise,
-        datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport + ((await pitReportsPromise) ?? 0) * dataPointsPerPitReports,
+        datapoints: ((await reportsPromise) ?? 0) * dataPointsPerReport 
+                    + ((await pitReportsPromise) ?? 0) * dataPointsPerPitReports
+                    + ((await subjectiveReportsPromise) ?? 0) * dataPointsPerSubjectiveReport,
         competitions: await competitionsPromise,
       });
     },
@@ -826,7 +843,9 @@ export namespace API {
 
       const scouters: User[] = [];
       const matches: Match[] = [];
-      const reports: Report[] = [];
+      const quantitativeReports: Report[] = [];
+      const pitReports: Pitreport[] = [];
+      const subjectiveReports: SubjectiveReport[] = [];
 
       for (const scouterId of typedData.scouterIds) {
         promises.push(db.findObjectById<User>(Collections.Users, new ObjectId(scouterId)).then((scouter) => scouters.push(scouter)));
@@ -839,11 +858,20 @@ export namespace API {
 
       promises.push(db.findObjects<Report>(Collections.Reports, {
         match: { $in: comp.matches },
-      }).then((r) => reports.push(...r)));
+      }).then((r) => quantitativeReports.push(...r)));
+
+      promises.push(db.findObjects<Pitreport>(Collections.Pitreports, {
+        _id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+        submitted: true
+      }).then((r) => pitReports.push(...r)));
+
+      promises.push(db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
+        match: { $in: comp.matches }
+      }).then((r) => subjectiveReports.push(...r)));
 
       await Promise.all(promises);
 
-      return res.status(200).send({ scouters, matches, reports });
+      return res.status(200).send({ scouters, matches, quantitativeReports, pitReports, subjectiveReports });
     },
 
     getPicklist: async (req, res, { db, data }) => {
@@ -855,6 +883,75 @@ export namespace API {
       const { _id, ...picklist } = data.picklist;
       await db.updateObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id), picklist);
       return res.status(200).send({ result: "success" });
+    },
+
+    submitSubjectiveReport: async (req, res, { db, data }) => {
+      const rawReport = data.report as SubjectiveReport;
+
+      const matchPromise = db.findObjectById<Match>(Collections.Matches, new ObjectId(rawReport.match));
+      const teamPromise = db.findObject<Team>(Collections.Teams, {
+        slug: data.teamId
+      });
+
+      const [match, team] = await Promise.all([matchPromise, teamPromise]);
+
+      const report: SubjectiveReport = {
+        ...data.report,
+        _id: new ObjectId(),
+        submitter: data.userId,
+        submitted: match.subjectiveScouter === data.userId 
+          ? SubjectiveReportSubmissionType.ByAssignedScouter
+          : team.subjectiveScouters.includes(data.userId)
+            ? SubjectiveReportSubmissionType.BySubjectiveScouter
+            : SubjectiveReportSubmissionType.ByNonSubjectiveScouter,
+      };
+
+      const update: Partial<Match> = {
+        subjectiveReports: [...match.subjectiveReports ?? [], report._id!.toString()],
+      };
+
+      if (match.subjectiveScouter === data.userId)
+        update.assignedSubjectiveScouterHasSubmitted = true;
+
+      const insertReportPromise = db.addObject<SubjectiveReport>(Collections.SubjectiveReports, report);
+      const updateMatchPromise = db.updateObjectById<Match>(Collections.Matches, new ObjectId(match._id), update);
+
+      addXp(data.userId, match.subjectiveScouter === data.userId ? 10 : 5);
+
+      await Promise.all([insertReportPromise, updateMatchPromise]);
+
+      return res.status(200).send({ result: "success" });
+    },
+
+    getSubjectiveReportsForComp: async (req, res, { db, data }) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+
+      const matchIds = comp.matches.map((matchId) => new ObjectId(matchId));
+      const matches = await db.findObjects<Match>(Collections.Matches, {
+        _id: { $in: matchIds },
+      });
+
+      const reportIds = matches.flatMap((match) => match.subjectiveReports ?? []);
+      const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
+        _id: { $in: reportIds.map((id) => new ObjectId(id)) },
+      });
+
+      return res.status(200).send(reports);
+    },
+
+    updateSubjectiveReport: async (req, res, { db, data }) => {
+      const report = data.report as SubjectiveReport;
+      await db.updateObjectById<SubjectiveReport>(Collections.SubjectiveReports, new ObjectId(report._id), report);
+      return res.status(200).send({ result: "success" });
+    },
+
+    setSubjectiveScouterForMatch: async (req, res, { db, data }) => {
+      const { matchId, userId } = data;
+      await db.updateObjectById<Match>(Collections.Matches, new ObjectId(matchId), {
+        subjectiveScouter: userId,
+      });
+      return res.status(200).send({ result: "success" });
     }
+
   };
 }

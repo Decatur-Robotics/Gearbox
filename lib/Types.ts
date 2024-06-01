@@ -6,6 +6,7 @@ import {
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { Statbotics } from "./Statbotics";
+import Subjective from '../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/[reportId]/subjective';
 
 /**
  * Standard Account Type
@@ -71,6 +72,7 @@ export class Team {
   owners: string[];
   users: string[];
   scouters: string[];
+  subjectiveScouters: string[];
   requests: string[];
 
   seasons: string[];
@@ -83,6 +85,7 @@ export class Team {
     owners: string[] = [],
     users: string[] = [],
     scouters: string[] = [],
+    subjectiveScouters: string[] = [],
     requests: string[] = [],
     seasons: string[] = []
   ) {
@@ -93,6 +96,7 @@ export class Team {
     this.owners = owners;
     this.users = users;
     this.scouters = scouters;
+    this.subjectiveScouters = subjectiveScouters;
     this.seasons = seasons;
     this.requests = requests;
   }
@@ -202,7 +206,12 @@ export enum SwerveLevel {
 
 export class Pitreport {
   _id: string | undefined;
+
   teamNumber: number;
+
+  submitted: boolean = false;
+  submitter: string | undefined;
+
   image: string = "/robot.jpg";
   intakeType: IntakeTypes = IntakeTypes.None;
   canClimb: boolean = false;
@@ -213,7 +222,6 @@ export class Pitreport {
   canScoreAmp: boolean = false;
   canScoreSpeaker: boolean = false;
   canScoreFromDistance: boolean = false;
-  submitted: boolean = false;
   underBumperIntake: boolean = false;
   autoNotes: number = 0;
   comments: string = "";
@@ -286,6 +294,11 @@ export class Match {
   time: number; // time the match begins
   reports: string[];
 
+  subjectiveScouter: string | undefined;
+  subjectiveReports: string[] = [];
+  subjectiveReportsCheckInTimestamps: { [userId: string]: string } = {};
+  assignedSubjectiveScouterHasSubmitted: boolean = false;
+
   constructor(
     number: number,
     slug: string | undefined,
@@ -295,7 +308,6 @@ export class Match {
     blueAlliance: Alliance,
     redAlliance: Alliance,
     reports: string[] = [],
-    scouters: string[] = []
   ) {
     this.number = number;
     this.tbaId = tbaId;
@@ -340,6 +352,30 @@ export class Report {
     this.match = match;
     this.color = color;
     this.checkedIn = checkedIn;
+  }
+}
+
+export enum SubjectiveReportSubmissionType {
+  ByAssignedScouter = "ByAssignedScouter",
+  BySubjectiveScouter = "BySubjectiveScouter",
+  ByNonSubjectiveScouter = "ByNonSubjectiveScouter",
+  NotSubmitted = "NotSubmitted",
+}
+
+export class SubjectiveReport {
+  _id: string | undefined;
+  submitter: string | undefined;
+  submitted: SubjectiveReportSubmissionType = SubjectiveReportSubmissionType.NotSubmitted;
+
+  match: string; // id of match
+  matchNumber: number;
+
+  wholeMatchComment: string = "";
+  robotComments: { [key: number]: string } = {};
+
+  constructor(match: string, matchNumber: number) {
+    this.match = match;
+    this.matchNumber = matchNumber;
   }
 }
 

@@ -3,12 +3,12 @@ import Google from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import { Collections, GetDatabase, clientPromise } from "./MongoDB";
+import { Collections, getDatabase, clientPromise } from "./MongoDB";
 import { Admin, ObjectId } from "mongodb";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 
-var db = GetDatabase();
+var db = getDatabase();
 
 export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,

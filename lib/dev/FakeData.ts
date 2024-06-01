@@ -1,5 +1,5 @@
 import { Team, User } from "../Types";
-import { GetDatabase, Collections } from "../MongoDB";
+import { getDatabase, Collections } from "../MongoDB";
 import { GenerateSlug, RandomArrayValue } from "../Utils";
 import { ObjectId } from "mongodb";
 
@@ -34,7 +34,7 @@ async function randomName(): Promise<string> {
 }
 
 export async function fakeUser(teamId: string | undefined): Promise<User> {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const name = await randomName();
   const user = new User(
     name,
@@ -55,7 +55,7 @@ export async function fillTeamWithFakeUsers(
   teamId: string | undefined,
 ): Promise<Team> {
   console.log("Filling with fake users...");
-  const db = await GetDatabase();
+  const db = await getDatabase();
   var users: any[] = [];
   for (let i = 0; i < n; i++) {
     users.push((await fakeUser(teamId))._id?.toString());

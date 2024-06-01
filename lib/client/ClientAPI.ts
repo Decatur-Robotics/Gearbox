@@ -14,6 +14,7 @@ import {
   EventData,
   Pitreport,
   DbPicklist,
+  SubjectiveReport,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -247,7 +248,7 @@ export default class ClientAPI {
     });
   }
 
-  async updateReport(newValues: object, reportId: string | undefined) {
+  async updateReport(newValues: Partial<Report>, reportId: string | undefined) {
     return await this.request("/update", {
       collection: "Reports",
       newValues: newValues,
@@ -311,6 +312,10 @@ export default class ClientAPI {
 
   async updateCheckOut(reportId: string | undefined) {
     return await this.request("/updateCheckOut", { reportId });
+  }
+
+  async checkInForSubjectiveReport(matchId: string) {
+    return await this.request("/checkInForSubjectiveReport", { matchId });
   }
 
   async remindSlack(
@@ -388,7 +393,9 @@ export default class ClientAPI {
   async findScouterManagementData(compId: string, scouterIds: string[]): Promise<{
     scouters: User[],
     matches: Match[],
-    reports: Report[],
+    quantitativeReports: Report[],
+    pitReports: Pitreport[],
+    subjectiveReports: SubjectiveReport[],
   }> {
     return await this.request("/findScouterManagementData", { compId, scouterIds });
   }
@@ -399,6 +406,22 @@ export default class ClientAPI {
 
   async updatePicklist(picklist: DbPicklist) {
     return await this.request("/updatePicklist", { picklist });
+  }
+
+  async submitSubjectiveReport(report: SubjectiveReport, userId: string, teamId: string) {
+    return await this.request("/submitSubjectiveReport", { report, userId, teamId });
+  }
+
+  async getSubjectiveReportsForComp(compId: string): Promise<SubjectiveReport[]> {
+    return await this.request("/getSubjectiveReportsForComp", { compId });
+  }
+
+  async updateSubjectiveReport(reportId: string, report: Partial<SubjectiveReport>) {
+    return await this.request("/updateSubjectiveReport", { reportId, report });
+  }
+
+  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
+    return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
 }

@@ -7,7 +7,7 @@ import UrlResolver, {
 } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import Image from "next/image";
@@ -84,7 +84,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const resolved = await UrlResolver(context);
   const existingSeasons = await db.findObjects(Collections.Seasons, {
     _id: { $in: resolved.team?.seasons },
