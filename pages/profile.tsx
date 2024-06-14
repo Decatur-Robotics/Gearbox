@@ -52,7 +52,7 @@ export default function Profile(props: { teamList: Team[] }) {
 
   const requestTeam = async (teamId: string) => {
     setLoadingRequest(true);
-    await api.teamRequest(user?._id, teamId);
+    await api.requestToJoinTeam(user?._id, teamId);
     setLoadingRequest(false);
     setSentRequest(true);
   };

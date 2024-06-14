@@ -7,7 +7,6 @@ import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import Loading from "@/components/Loading";
 
 const api = new ClientAPI("gearboxiscool");
 

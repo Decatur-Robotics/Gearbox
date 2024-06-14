@@ -15,8 +15,8 @@ import { FaPlus } from "react-icons/fa";
 import { create } from "domain";
 
 const api = new ClientAPI("gearboxiscool");
-const CurrentSeason = new Season("Crescendo", undefined, 2024);
-const OffSeason = new Season("Offseason", undefined, 2024);
+export const CurrentSeason = new Season("Crescendo", undefined, 2024);
+export const OffSeason = new Season("Offseason", undefined, 2024);
 
 type CreateSeasonProps = { team: Team; existingSeasons: Season[] };
 

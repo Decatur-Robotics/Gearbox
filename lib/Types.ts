@@ -37,6 +37,7 @@ export class User implements NextAuthUser {
   slackId: string = "";
   xp: number = 10;
   level: number = 1;
+  onboardingComplete: boolean = false;
 
   constructor(
     name: string | undefined,

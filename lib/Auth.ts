@@ -72,8 +72,7 @@ export const AuthenticationOptions: AuthOptions = {
     },
 
     async redirect({ url, baseUrl }) {
-      baseUrl = "https://4026.org/profile";
-      return baseUrl;
+      return baseUrl + "/onboarding";
     },
   },
   debug: false,

@@ -132,8 +132,8 @@ export default class ClientAPI {
     return await this.request("/matchAutofill", { tbaId: tbaId });
   }
 
-  async teamRequest(userId: string | undefined, teamId: string | undefined) {
-    return await this.request("/teamRequest", {
+  async requestToJoinTeam(userId: string | undefined, teamId: string | undefined) {
+    return await this.request("/requestToJoinTeam", {
       userId: userId,
       teamId: teamId,
     });
@@ -152,7 +152,7 @@ export default class ClientAPI {
     number: number,
     creator: string | undefined,
     tbaId: undefined | string
-  ) {
+  ): Promise<Team> {
     return await this.request("/createTeam", {
       name: name,
       number: number,
@@ -161,7 +161,7 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, teamId: string) {
+  async createSeason(name: string, year: number, teamId: string): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
@@ -406,6 +406,10 @@ export default class ClientAPI {
 
   async updatePicklist(picklist: DbPicklist) {
     return await this.request("/updatePicklist", { picklist });
+  }
+
+  async setOnboardingCompleted(userId: string) {
+    return await this.request("/setOnboardingCompleted", { userId });
   }
 
   async submitSubjectiveReport(report: SubjectiveReport, userId: string, teamId: string) {
