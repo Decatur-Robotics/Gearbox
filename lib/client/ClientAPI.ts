@@ -197,14 +197,16 @@ export default class ClientAPI {
     tbaId: string | undefined,
     start: number,
     end: number,
-    seasonId: string | undefined
+    seasonId: string | undefined,
+    publicData: boolean
   ) {
     return await this.request("/createCompetiton", {
-      name: name,
-      tbaId: tbaId,
-      start: start,
-      end: end,
-      seasonId: seasonId,
+      name,
+      tbaId,
+      start,
+      end,
+      seasonId,
+      publicData
     });
   }
 
@@ -291,10 +293,11 @@ export default class ClientAPI {
     });
   }
 
-  async competitionReports(compId: string | undefined, submitted: boolean) {
+  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false) {
     return await this.request("/competitionReports", {
-      compId: compId,
-      submitted: submitted,
+      compId,
+      submitted,
+      usePublicData
     });
   }
 
@@ -406,6 +409,10 @@ export default class ClientAPI {
 
   async updatePicklist(picklist: DbPicklist) {
     return await this.request("/updatePicklist", { picklist });
+  }
+
+  async setCompPublicData(compId: string, publicData: boolean) {
+    return await this.request("/setCompPublicData", { compId, publicData });
   }
 
   async setOnboardingCompleted(userId: string) {

@@ -1,5 +1,5 @@
 import { CompetitonNameIdPair } from "@/lib/Types";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
@@ -7,6 +7,7 @@ import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
+import Loading from "@/components/Loading";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -21,6 +22,7 @@ export default function CreateComp(props: ResolvedUrlData) {
   const [selection, setSelection] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
   const [creatingComp, setCreatingComp] = useState(false);
+  const [usePublicData, setUsePublicData] = useState(true);
 
   const searchComp = async () => {
     if (!name) {
@@ -53,7 +55,8 @@ export default function CreateComp(props: ResolvedUrlData) {
       autofill.tbaId,
       autofill.start,
       autofill.end,
-      season?._id
+      season?._id,
+      usePublicData
     );
     var win: Window = window;
     win.location = `/${team?.slug}/${season?.slug}/${comp.slug}`;
@@ -77,7 +80,8 @@ export default function CreateComp(props: ResolvedUrlData) {
               }}
               className="input input-bordered w-full mb-4"
               placeholder={"Competition Name"}
-            ></input>
+              disabled={creatingComp}
+            />
             <div className="w-full h-64 space-y-2 ">
               {loading || name.length < 3 ? (
                 // <Loading></Loading>
@@ -108,12 +112,31 @@ export default function CreateComp(props: ResolvedUrlData) {
                   <progress className="progress w-full" />
                 ) 
                 : (
-                  <button className="btn btn-primary w-full" onClick={createComp}>
-                    Create Competition
-                  </button>
+                  <div className="pt-4">
+                    <div className="flex flex-row justify-between pb-4">
+                      <div>
+                        <p className="text-2xl">Make data publicly available?</p>
+                        <p>
+                          Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
+                          Don&apos;t worry - no identifying information will be shared and comments will be hidden; only quantitative
+                          data will be shared.<br/>This setting can be changed at any time.
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        id="toggle-public-data"
+                        defaultChecked={usePublicData}
+                        onChange={(e) => setUsePublicData(e.target.checked)}
+                      />
+                    </div>
+                    <button className="btn btn-primary w-full" onClick={createComp}>
+                      Create Competition
+                    </button>
+                  </div>
                 ))
            : (
-            <></>
+              <></>
           )}
         </Card>
       </Flex>

@@ -238,6 +238,8 @@ export class Competition {
   slug: string | undefined;
   tbaId: string | undefined;
 
+  publicData: boolean;
+
   start: number;
   end: number;
 
@@ -254,7 +256,8 @@ export class Competition {
     end: number,
     pitReports: string[] = [],
     matches: string[] = [],
-    picklist: string = ""
+    picklist: string = "",
+    publicData = false,
   ) {
     this.name = name;
     this.slug = slug;
@@ -264,6 +267,7 @@ export class Competition {
     this.pitReports = pitReports;
     this.matches = matches;
     this.picklist = picklist;
+    this.publicData = publicData;
   }
 }
 
