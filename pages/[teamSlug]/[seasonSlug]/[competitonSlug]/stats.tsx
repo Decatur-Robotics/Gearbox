@@ -2,10 +2,8 @@ import Container from "@/components/Container";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
-import { GetDatabase, Collections } from "@/lib/MongoDB";
-import { Competition, Pitreport, Report } from "@/lib/Types";
-import { useEffect, useRef, useState } from "react";
 import { getDatabase, Collections } from "@/lib/MongoDB";
+import { useEffect, useRef, useState } from "react";
 import { Competition, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import TeamPage from "@/components/stats/TeamPage";
 import PicklistScreen from "@/components/stats/Picklist";
