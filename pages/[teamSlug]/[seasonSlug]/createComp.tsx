@@ -1,5 +1,5 @@
 import { CompetitonNameIdPair } from "@/lib/Types";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
@@ -8,7 +8,6 @@ import Container from "@/components/Container";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import Loading from "@/components/Loading";
-import React from "react";
 
 const api = new ClientAPI("gearboxiscool");
 

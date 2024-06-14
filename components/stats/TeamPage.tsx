@@ -1,4 +1,4 @@
-import { Competition, Defense, Drivetrain, IntakeTypes, Pitreport, Report, SwerveLevel } from "@/lib/Types";
+import { Competition, Defense, Drivetrain, IntakeTypes, Pitreport, Report, SubjectiveReport, SwerveLevel } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import {
@@ -164,12 +164,13 @@ function TeamCard(props: {
   );
 }
 
-export default function TeamPage(props: { reports: Report[], pitReports: Pitreport[]}) {
+export default function TeamPage(props: { reports: Report[], pitReports: Pitreport[], subjectiveReports: SubjectiveReport[] }) {
   const reports = props.reports;
   const pitReports: { [key: number]: Pitreport } = {};
   const [teamReports, setTeamReports] = useState<{ [key: number]: Report[] }>(
     {}
   );
+  const [teamSubjectiveReports, setTeamSubjectiveReports] = useState<{ [key: number]: SubjectiveReport[] }>({});
 
   const teamNumbers = Object.keys(teamReports);
 
@@ -187,6 +188,20 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
     });
     setTeamReports(newTeamReports);
   };
+
+  useEffect(() => {
+    const subjectiveReports: typeof teamSubjectiveReports = {};
+    props.subjectiveReports.forEach((subjectiveReport) => {
+      for (const teamNumber of Object.keys(subjectiveReport.robotComments)) {
+        if (!Object.keys(subjectiveReports).includes(teamNumber)) {
+          subjectiveReports[Number(teamNumber)] = [subjectiveReport];
+        } else {
+          subjectiveReports[Number(teamNumber)].push(subjectiveReport);
+        }
+      }
+    });
+    setTeamSubjectiveReports(subjectiveReports);
+  }, [props.subjectiveReports]);
 
   const pointTotals = reports.map((report) => TotalPoints([report]));
   const avgPoints = AveragePoints(reports);
@@ -234,6 +249,7 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
         selectedReports={selectedReports}
         selectedTeam={selectedTeam}
         pitReport={pitReports[selectedTeam ?? 0]}
+        subjectiveReports={teamSubjectiveReports[selectedTeam ?? 0]}
       ></TeamStats>
 
       <div className="w-5/12 h-full flex flex-col space-y-4">

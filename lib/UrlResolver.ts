@@ -1,10 +1,10 @@
 import { GetServerSidePropsContext } from "next";
-import { Collections, GetDatabase } from "./MongoDB";
+import { Collections, getDatabase } from "./MongoDB";
 import { Competition, Match, Season, Team, Report } from "./Types";
 import { ObjectId } from "mongodb";
 
 // fetches the database
-const gdb = GetDatabase();
+const gdb = getDatabase();
 
 /**
  * Structure to hold the final, resolved URL Data

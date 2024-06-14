@@ -4,12 +4,12 @@ import {
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Defense, Drivetrain, IntakeTypes, Pitreport, Report, SwerveLevel } from "@/lib/Types";
+import { Defense, Drivetrain, IntakeTypes, Pitreport, Report, SubjectiveReport, SubjectiveReportSubmissionType, SwerveLevel } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
 import { Round } from '../../lib/client/StatsMath';
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Loading from "../Loading";
 
@@ -19,30 +19,70 @@ export default function TeamStats(props: {
   selectedTeam: number | undefined;
   selectedReports: Report[];
   pitReport: Pitreport | null;
+  subjectiveReports: SubjectiveReport[];
 }) {
-  const [comments, setComments] = useState<{match: number, comment: string}[] | null>(null);
-  const [teamWeHaveCommentsFor, setTeamWeHaveCommentsFor] = useState<number>(0);
+  const [comments, setComments] = useState<{matchNum: number, content: { order: number, jsx: ReactNode}[] }[] | null>(null);
 
   useEffect(() => {
-    if(!props.selectedTeam || teamWeHaveCommentsFor === props.selectedTeam) return;
-    setTeamWeHaveCommentsFor(props.selectedTeam ?? 0);
+    if(!props.selectedTeam) return;
     setComments(null);
+
+    const newComments: typeof comments = [];
+
+    function addComment(match: number, order: number, jsx: ReactNode) {
+      if (!newComments!.some((comment) => comment.matchNum === match)) newComments!.push({ matchNum: match, content: [{
+          order,
+          jsx
+        }] });
+      else newComments!.find((comment) => comment.matchNum === match)!.content.push({ order, jsx });
+    }
+
+    addComment( 
+      0,
+      0,
+      pitReport 
+        ? pitReport.comments.length > 0 
+          ? `Pit Report: ${pitReport.comments}` 
+          : "No pit report comments."
+        : <Loading size={24} />
+    );
+
+    if (!props.subjectiveReports) addComment(0, 0.1, <Loading size={24} />);
+    else if (props.subjectiveReports.length === 0) addComment(0, 0.1, "No subjective reports.");
+    else {
+      for (const report of props.subjectiveReports) {
+        const submissionType = 
+                          (report.submitted === SubjectiveReportSubmissionType.ByAssignedScouter 
+                            ? "assigned" 
+                            : report.submitted === SubjectiveReportSubmissionType.BySubjectiveScouter 
+                              ? "subjective"
+                              : "non-subjective") + " scouter";
+
+        if (report.robotComments[props.selectedTeam ?? 0]) {
+          addComment(
+            report.matchNumber ?? 0, 2,
+            <span className="tooltip" data-tip={"By " + submissionType}>Subjective: {report.robotComments[props.selectedTeam ?? 0]}</span>
+          );
+        }
+
+        if (report.wholeMatchComment) {
+          addComment(
+            report.matchNumber ?? 0, 1,
+            <span className="tooltip" data-tip={"By " + submissionType}>Whole Match: {report.wholeMatchComment}</span>
+          );
+        }
+      }
+    }
 
     const commentList = props.selectedReports.filter((report) => report.data.comments.length > 0);
     if (commentList.length === 0) return setComments([]);
+    
+    const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
+      match.number, 0, `Quantitative: ${report.data.comments}`
+    )));
 
-    for (const report of commentList) {
-      api.findMatchById(report.match).then((match) => {
-        setComments((prev) => ([
-          ...prev ?? [],
-          {
-            match: match.number,
-            comment: report.data.comments
-          }
-        ]));
-      });
-    }
-  });
+    Promise.all(promises).then(() => setComments(newComments));
+  }, [props.selectedTeam, props.selectedReports, props.subjectiveReports, props.pitReport]);
 
   if (!props.selectedTeam) {
     return (
@@ -282,25 +322,20 @@ export default function TeamStats(props: {
 
       <div className="w-full h-fit flex flex-row items-center">
         <ul>
-          <li className="mt-2 mb-1">
-            {
-               pitReport
-                ? (pitReport.comments !== ""
-                  ? `Pit Report: ${pitReport.comments}`
-                  : "No pit report comments.")
-                : <Loading size={24} />
-            }
-          </li>
-
           { comments
-            ? <li className="mt-2">
-                {comments.length === 0 
-                  ? "No match comments." 
-                  : comments
-                      .sort((a, b) => a.match - b.match)
-                      .map((report) => <div key={report.match} className="mb-2">Match {report.match}: {report.comment}</div>)
-                }
-              </li>
+            ? comments.map((match) => match.matchNum > 0 
+              ? (<li key={match.matchNum}>
+                  <strong>Match {match.matchNum}</strong>
+                  <ul className="pl-2">
+                    {match.content.sort((a, b) => a.order - b.order).map((content, index) => (
+                      <li key={index}>{content.jsx}</li>
+                    ))}
+                  </ul>
+                </li>)
+              : match.content.sort((a, b) => a.order - b.order).map((content, index) => (
+                    <li key={index}>{content.jsx}</li>
+                  ))
+            )
             : <Loading size={24} />
           }
         </ul>

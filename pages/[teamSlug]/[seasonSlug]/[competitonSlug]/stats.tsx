@@ -5,6 +5,8 @@ import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetDatabase, Collections } from "@/lib/MongoDB";
 import { Competition, Pitreport, Report } from "@/lib/Types";
 import { useEffect, useRef, useState } from "react";
+import { getDatabase, Collections } from "@/lib/MongoDB";
+import { Competition, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import TeamPage from "@/components/stats/TeamPage";
 import PicklistScreen from "@/components/stats/Picklist";
 import { FaSync } from "react-icons/fa";
@@ -27,6 +29,7 @@ export default function Stats(props: StatsPageProps) {
   const [updating, setUpdating] = useState(false);
   const [reports, setReports] = useState(props.reports);
   const [pitReports, setPitReports] = useState<Pitreport[]>([]);
+  const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
   const [page, setPage] = useState(0);
   const [usePublicData, setUsePublicData] = useState(false);
 
@@ -51,6 +54,7 @@ export default function Stats(props: StatsPageProps) {
         api.getPitReports(props.competition.pitReports).then((data) => {
           setPitReports(data);
           }),
+      api.getSubjectiveReportsForComp(props.competition._id!).then(setSubjectiveReports),
     ].flat();
 
     await Promise.all(promises);
@@ -66,6 +70,7 @@ export default function Stats(props: StatsPageProps) {
   const teams: Set<number> = new Set();
   reports.forEach((r) => teams.add(r.robotNumber));
   pitReports.forEach((r) => teams.add(r.teamNumber));
+  subjectiveReports.forEach((r) => Object.keys(r.robotComments).forEach((c) => teams.add(+c))); //+str converts to number
 
   return (
     <Container
@@ -129,7 +134,7 @@ export default function Stats(props: StatsPageProps) {
       </div>
 
       {page === 0 ? (
-        <TeamPage reports={reports} pitReports={pitReports}></TeamPage>
+        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports}></TeamPage>
       ) : (
         <></>
       )}
@@ -140,7 +145,7 @@ export default function Stats(props: StatsPageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const url = await UrlResolver(context);
   const reports = await db.findObjects<Report>(Collections.Reports, {
     match: { $in: url.competition?.matches },
