@@ -8,6 +8,7 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { IoPhonePortrait, IoPhonePortraitOutline } from "react-icons/io5";
 import useIsVisible from "@/lib/client/useIsVisible";
+import SignIn from "./signin";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -214,6 +215,24 @@ export default function Homepage() {
                 <span className="text-accent">pre-generated forms</span> for
                 every aspect of play
               </li>
+              <li>
+                Get a headstart over the competition with <span className="text-accent">pit scouting</span>
+              </li>
+              <li>
+                Analyze your data and <span className="text-accent">build your picklist</span> with our <span className="text-accent">stats page</span>
+              </li>
+              <li>
+                Ensure your scouters are doing their job with <span className="text-accent">scouter management</span>
+              </li>
+              <li>
+                See who's ready to scout with <span className="text-accent">automatic check-in</span>
+              </li>
+              <li>
+                Harness the power of extra scouters with <span className="text-accent">subjective scouting</span>
+              </li>
+              <li>
+                Own your data with <span className="text-accent">CSV export</span>
+              </li>
             </ul>
             <div className="divider translate-y-6"></div>
           </div>
@@ -244,7 +263,48 @@ export default function Homepage() {
           </div>
         </div>
       </div>
+      
+      <div className="hero w-full py-12 bg-base-100">
+        <div className="hero-content flex-col">
+            <h1 className="text-4xl max-sm:text-3xl font-bold leading-relaxed text-center">
+              No Scouters? <span className="text-secondary">No worries.</span>
+            </h1>
+            <div className="text-xl w-2/3 text-center">
+              With Gearbox, you can access a trove of <span className="text-accent">publicly available data</span> found nowhere else.
+              Gearbox enables you to utilize shared data, so every team - no matter the size - can develop a 
+              {" "}<span className="text-accent">data-backed picklist</span>.
+            </div>
+        </div>
+      </div>
 
+      <div className="hero w-full py-12 bg-base-300 mt-12">
+        <div className="hero-content flex-col sm:flex-row-reverse">
+          <iframe
+            className="max-sm:hidden rounded-md"
+            src="https://discord.com/widget?id=1219401473042157718&theme=dark"
+            width="350"
+            height="500"
+            allowTransparency={true}
+            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+          ></iframe>
+          <div className="w-2/3 flex flex-row">
+            <div>
+              <h1 className="text-5xl font-bold">Realtime Support</h1>
+              <p className="mt-2">
+                Join our Discord server for live support with our support staff.
+              </p>
+              <a
+                href="https://discord.gg/ha7AnqxFDD"
+                className="btn btn-primary mt-4"
+              >
+                <FaDiscord size={35} /> Join today
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
       <div
         ref={thirdSection}
         className={`hero py-6 sm:py-8 bg-base-100 w-full transition-transform ease-in duration-300 ${
@@ -291,31 +351,23 @@ export default function Homepage() {
           </div>
         </div>
       </div>
-
-      <div className="hero w-full py-12 bg-base-300 mt-12">
-        <div className="hero-content flex-col sm:flex-row-reverse">
-          <iframe
-            className="max-sm:hidden rounded-md"
-            src="https://discord.com/widget?id=1219401473042157718&theme=dark"
-            width="350"
-            height="500"
-            allowTransparency={true}
-            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-          ></iframe>
-          <div className="w-2/3 flex flex-row">
-            <div>
-              <h1 className="text-5xl font-bold">Realtime Support</h1>
-              <p className="mt-2">
-                Join our Discord server for live support with our support staff.
-              </p>
-              <a
-                href="https://discord.gg/ha7AnqxFDD"
-                className="btn btn-primary mt-4"
-              >
-                <FaDiscord size={35} /> Join today
-              </a>
+      
+      <div className="hero w-full py-12 bg-base-300">
+        <div className="hero-content flex-col">
+            <h1 className="text-4xl max-sm:text-3xl font-bold leading-relaxed text-center">
+              Get started today in <span className="text-secondary">under 5 minutes</span>.
+            </h1>
+            <div className="text-lg w-2/3 text-center">
+              The future of scouting is waiting - all you need is to sign in. Our interactive 
+              onboarding will get your team ready to scout in less than five minutes.
             </div>
-          </div>
+            <a
+              href={"/api/auth/signin"}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <button className="btn btn-primary text-2xl">Sign In</button>
+            </a>
         </div>
       </div>
     </Container>
