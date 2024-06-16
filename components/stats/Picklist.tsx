@@ -39,7 +39,8 @@ function removeTeamFromPicklist(team: CardData, picklists: Picklist[]) {
   picklist.update(picklist);
 }
 
-function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, lastRank?: number, width?: string, height?: string}) {
+function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, lastRank?: number, 
+    width?: string, height?: string}) {
   const { number: teamNumber, picklistIndex: picklist } = props.cardData;
 
   const [{ isDragging }, dragRef] = useDrag({
@@ -165,7 +166,14 @@ const api = new ClientAPI("gearboxiscool");
 
 export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklistId: string }) {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
-  const [loadingPicklists, setLoadingPicklists] = useState(false);
+
+  enum LoadState {
+    NotLoaded,
+    Loading,
+    Loaded
+  }
+
+  const [loadingPicklists, setLoadingPicklists] = useState(LoadState.NotLoaded);
 
   const teams = props.teams.map((team) => ({ number: team }));
 
@@ -197,26 +205,26 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
   }
 
   useEffect(() => {
-    if (picklists.length > 0 || loadingPicklists) return;
+    if (loadingPicklists !== LoadState.NotLoaded) return;
 
-    setLoadingPicklists(true);
+    setLoadingPicklists(LoadState.Loading);
     api.getPicklist(props.picklistId).then((picklistDict) => {
-        setPicklists(Object.entries(picklistDict.picklists).map((picklist, index) => {
-          const newPicklist: Picklist = {
-            index,
-            name: picklist[0],
-            teams: picklist[1].map((team: number) => ({ number: team })),
-            update: updatePicklist
-          };
+      setPicklists(Object.entries(picklistDict.picklists).map((picklist, index) => {
+        const newPicklist: Picklist = {
+          index,
+          name: picklist[0],
+          teams: picklist[1].map((team: number) => ({ number: team })),
+          update: updatePicklist
+        };
 
-          for (const team of newPicklist.teams) {
-            team.picklistIndex = newPicklist.index;
-          }
+        for (const team of newPicklist.teams) {
+          team.picklistIndex = newPicklist.index;
+        }
 
-          return newPicklist;
-        }));
+        return newPicklist;
+      }));
 
-        setLoadingPicklists(false);
+      setLoadingPicklists(LoadState.Loaded);
     });
   });
 
@@ -239,7 +247,7 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
 
       <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">
         {
-          loadingPicklists 
+          loadingPicklists === LoadState.Loading
           ?  <div className="w-full h-full flex items-center justify-center">
               <div className="loading loading-spinner" />
             </div>
@@ -258,7 +266,7 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
         }
       </div>
 
-      { !loadingPicklists &&
+      { loadingPicklists !== LoadState.Loading &&
         <button
           className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
           onClick={addPicklist}
