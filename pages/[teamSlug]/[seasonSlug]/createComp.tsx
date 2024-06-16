@@ -1,4 +1,4 @@
-import { CompetitonNameIdPair } from "@/lib/Types";
+import { CompetitonNameIdPair as CompetitionNameIdPair } from "@/lib/Types";
 import React, { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
@@ -7,7 +7,7 @@ import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import Loading from "@/components/Loading";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -17,7 +17,7 @@ export default function CreateComp(props: ResolvedUrlData) {
 
   const [name, setName] = useState<string>("");
   const [results, setResults] = useState<
-    { value: number; pair: CompetitonNameIdPair }[]
+    { value: number; pair: CompetitionNameIdPair }[]
   >([]);
   const [selection, setSelection] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
@@ -43,18 +43,15 @@ export default function CreateComp(props: ResolvedUrlData) {
   const createComp = async () => {
     setCreatingComp(true);
 
-    if (selection === undefined) {
-      return;
-    }
-    const autofill = await api.getCompetitionAutofillData(
+    const autofill = selection ? await api.getCompetitionAutofillData(
       results[selection].pair.tbaId
-    );
+    ) : undefined;
 
     const comp = await api.createCompetition(
-      autofill.name,
-      autofill.tbaId,
-      autofill.start,
-      autofill.end,
+      autofill?.name ?? name,
+      autofill?.tbaId ?? NotLinkedToTba,
+      autofill?.start ?? 0,
+      autofill?.end ?? 0,
       season?._id,
       usePublicData
     );
@@ -71,7 +68,7 @@ export default function CreateComp(props: ResolvedUrlData) {
       <Flex center={true} mode="col" className="w-full h-92 my-10">
         <Card title={"Create Competition"} className="w-1/3">
           <div>
-            <h1>Search for a competition</h1>
+            <h1>Search for a competition or enter details</h1>
             <div className="divider"></div>
             <input
               value={name}
@@ -106,13 +103,12 @@ export default function CreateComp(props: ResolvedUrlData) {
               )}
             </div>
           </div>
-          {selection !== undefined && selection >= 0 ? 
-              (creatingComp 
-                ? (
-                  <progress className="progress w-full" />
-                ) 
-                : (
-                  <div className="pt-4">
+            {creatingComp 
+              ? (
+                <progress className="progress w-full" />
+              ) 
+              : <div className="pt-4">
+                  {(selection !== undefined && selection >= 0) && (
                     <div className="flex flex-row justify-between pb-4">
                       <div>
                         <p className="text-2xl">Make data publicly available?</p>
@@ -130,14 +126,12 @@ export default function CreateComp(props: ResolvedUrlData) {
                         onChange={(e) => setUsePublicData(e.target.checked)}
                       />
                     </div>
-                    <button className="btn btn-primary w-full" onClick={createComp}>
-                      Create Competition
-                    </button>
-                  </div>
-                ))
-           : (
-              <></>
-          )}
+                )}
+                <button className={`btn btn-${selection !== undefined && selection >= 0 ? "primary" : "warning"} w-full`} onClick={createComp}>
+                  Create Competition{(selection === undefined || selection < 0) && " (WARNING: TBA competition not linked. Some features will be unavailable)"}
+                </button>
+              </div>
+            }
         </Card>
       </Flex>
     </Container>

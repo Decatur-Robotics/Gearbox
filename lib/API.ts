@@ -800,7 +800,12 @@ export namespace API {
     },
 
     teamCompRanking: async (req, res, { tba, data }) => {
-      const { rankings } = await tba.req.getCompetitonRanking(data.tbaId);
+      const tbaResult = await tba.req.getCompetitonRanking(data.tbaId);
+      if (!tbaResult || !tbaResult.rankings) {
+        return res.status(200).send({ place: "?", max: "?" });
+      }
+
+      const { rankings } = tbaResult;
 
       const rank = rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank;
 

@@ -5,3 +5,5 @@ export function getIdsInProgressFromTimestamps(timestamps: { [id: string]: strin
     return ((now - new Date(timestamp).getTime()) / 1000) < 10;
   });
 }
+
+export const NotLinkedToTba = "not-linked";
