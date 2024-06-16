@@ -225,7 +225,7 @@ export default function Homepage() {
                 Ensure your scouters are doing their job with <span className="text-accent">scouter management</span>
               </li>
               <li>
-                See who's ready to scout with <span className="text-accent">automatic check-in</span>
+                See who&apos;s ready to scout with <span className="text-accent">automatic check-in</span>
               </li>
               <li>
                 Harness the power of extra scouters with <span className="text-accent">subjective scouting</span>
