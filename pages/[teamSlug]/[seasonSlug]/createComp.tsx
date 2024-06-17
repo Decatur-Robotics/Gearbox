@@ -47,11 +47,15 @@ export default function CreateComp(props: ResolvedUrlData) {
       results[selection].pair.tbaId
     ) : undefined;
 
+    const now = new Date().getTime();
+
+    console.log(autofill);
+
     const comp = await api.createCompetition(
       autofill?.name ?? name,
       autofill?.tbaId ?? NotLinkedToTba,
-      autofill?.start ?? 0,
-      autofill?.end ?? 0,
+      autofill?.start ?? now,
+      autofill?.end ?? now,
       season?._id,
       usePublicData
     );

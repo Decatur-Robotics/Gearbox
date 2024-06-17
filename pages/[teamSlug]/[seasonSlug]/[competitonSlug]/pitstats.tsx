@@ -18,6 +18,7 @@ import { Collections, getDatabase } from "@/lib/MongoDB";
 import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -210,9 +211,6 @@ function TeamSlide(props: {
 
 export default function Pitstats(props: { competition: Competition }) {
   const comp = props.competition;
-  const [reports, setReports] = useState<Report[]>([]);
-  const [pitReports, setPitReports] = useState<PitReportPair>({});
-  const [teamReportPairs, setTeamReportPairs] = useState<TeamReportPair>({});
   const [teamStatPairs, setTeamStatPairs] = useState<
     TeamStatPair | undefined
   >();
@@ -389,10 +387,7 @@ export default function Pitstats(props: { competition: Competition }) {
       );
     });
     setSlides(newSlides);
-    setReports(newReports);
-    setTeamReportPairs(newPairs);
     setTeamStatPairs(newStatPairs);
-    setPitReports(newPits);
   };
 
   useEffect(() => {
@@ -445,7 +440,7 @@ export default function Pitstats(props: { competition: Competition }) {
 
   useEffect(() => {
     const msg = "Would you like to include public data? (Ok = Yes, Cancel = No)";
-    setUsePublicData(confirm(msg));
+    setUsePublicData(comp.tbaId !== NotLinkedToTba && confirm(msg));
   }, []);
 
   return (

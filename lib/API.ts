@@ -497,7 +497,7 @@ export namespace API {
       //     time
       //     type
       // }
-      var match = await db.addObject<Match>(
+      const match = await db.addObject<Match>(
         Collections.Matches,
         new Match(
           data.number,
@@ -509,16 +509,20 @@ export namespace API {
           data.blueAlliance
         )
       );
-      var comp = await db.findObjectById<Competition>(
+
+      const reportPromise = generateReportsForMatch(match);
+
+      const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
       comp.matches.push(match._id ? String(match._id) : "");
-      await db.updateObjectById(
+
+      await Promise.all([db.updateObjectById(
         Collections.Competitions,
         new ObjectId(comp._id),
         comp
-      );
+      ), reportPromise]);
 
       return res.status(200).send(match);
     },
@@ -983,7 +987,26 @@ export namespace API {
         subjectiveScouter: userId,
       });
       return res.status(200).send({ result: "success" });
-    }
+    },
 
+    createPitReportForTeam: async (req, res, { db, data }) => {
+      const { teamNumber, compId } = data;
+
+      const compPromise = db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
+
+      const pitReport = new Pitreport(teamNumber);
+      const pitReportId = (await db.addObject<Pitreport>(Collections.Pitreports, pitReport))._id?.toString();
+
+      if (!pitReportId)
+        return res.status(500).send({ error: "Failed to create pit report" });
+
+      (await compPromise).pitReports.push(pitReportId);
+
+      await db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(compId), {
+        pitReports: (await compPromise).pitReports,
+      });
+
+      return res.status(200).send({ result: "success" });
+    }
   };
 }

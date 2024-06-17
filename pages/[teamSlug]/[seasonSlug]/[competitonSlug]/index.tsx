@@ -1,13 +1,10 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { ChangeEvent, useEffect, useState } from "react";
 
-import Image from "next/image";
-
 import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
 import {
   AllianceColor,
-  Form,
   Match,
   MatchType,
   Pitreport,
@@ -22,21 +19,16 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import {
   MdAutoGraph,
   MdCoPresent,
-  MdDriveEta,
-  MdInsertPhoto,
   MdQueryStats,
 } from "react-icons/md";
-import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
-import { FaBinoculars, FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
+import { BsClipboard2Check, BsGearFill } from "react-icons/bs";
+import { FaBinoculars, FaDatabase, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
-import { match } from "assert";
-import { report } from "process";
-import { useRouter } from "next/router";
 import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
-import { getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
+import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -97,6 +89,8 @@ export default function Home(props: ResolvedUrlData) {
 
   const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
 
+  const [teamToAdd, setTeamToAdd] = useState<number | undefined>();
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -107,7 +101,7 @@ export default function Home(props: ResolvedUrlData) {
 
         // Fetch pit reports
         const pitReportPromises = pitReports.map(
-          async (id: string) => await api.findPitreportById(id)
+          api.findPitreportById
         );
 
         Promise.all(pitReportPromises).then((reports) => {
@@ -119,12 +113,10 @@ export default function Home(props: ResolvedUrlData) {
   };
 
   useEffect(() => {
-    console.log("Checking if matches are assigned");
-
     let matchesAssigned = true;
+
     for (const report of reports) {
       if (!report.user) {
-        console.log("No user assigned to report", report);
         matchesAssigned = false;
         break;
       }
@@ -455,6 +447,14 @@ export default function Home(props: ResolvedUrlData) {
       api.remindSlack(slackId, session.user?.slackId);
   }
 
+  function addTeam() {
+    if (!teamToAdd || !comp?._id) return;
+
+    api.createPitReportForTeam(teamToAdd, comp?._id).then(() => {
+      location.reload();
+    });
+  }
+
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
@@ -472,18 +472,14 @@ export default function Home(props: ResolvedUrlData) {
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`max-sm:w-full btn btn-secondary ${
-                    noMatches || !matchesAssigned ? "btn-disabled" : ""
-                  }`}
+                  className="max-sm:w-full btn btn-secondary"
                   href={`${comp?.slug}/stats`}
                 >
                   Stats <MdQueryStats size={30} />
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`max-sm:w-full btn btn-accent ${
-                    noMatches || !matchesAssigned ? "btn-disabled" : ""
-                  }`}
+                  className="max-sm:w-full btn btn-accent"
                   href={`${comp?.slug}/pitstats`}
                 >
                   Pit Stats <MdCoPresent size={30} />
@@ -526,14 +522,25 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               {showSettings ? (
                 <div className="w-full">
+                  {
+                    comp?.tbaId === NotLinkedToTba && <>
+                      <div className="w-full flex flex-col items-center justify-center">
+                        <h1 className="text-red-500">This competition is not linked to TBA</h1>
+                        <p>Some features will be unavailable.</p>
+                      </div>
+                      <div className="divider"></div>
+                    </>
+                  }
                   <h1 className="font-semibold text-xl">Settings</h1>
                   <div className="flex flex-col space-y-2 mt-1">
-                    <button
-                      onClick={reloadCompetition}
-                      className="btn btn-md btn-warning w-full"
-                    >
-                      <FaSync></FaSync> Reload Comp from TBA
-                    </button>
+                    { comp?.tbaId !== NotLinkedToTba &&
+                      <button
+                        onClick={reloadCompetition}
+                        className="btn btn-md btn-warning w-full"
+                      >
+                        <FaSync></FaSync> Reload Comp from TBA
+                      </button>
+                    }
                     <button
                       className={
                         "btn btn-primary w-full " +
@@ -666,7 +673,7 @@ export default function Home(props: ResolvedUrlData) {
                   </div>
                   <div className="flex items-center justify-center">
                     <input
-                      type="text"
+                      type="number"
                       placeholder="Match #"
                       className="input input-md input-bordered w-1/3 mt-2"
                       value={matchNumber}
@@ -685,21 +692,42 @@ export default function Home(props: ResolvedUrlData) {
                   </button>
                   
                   <div className="divider"></div>
-                  <div className="flex flex-row justify-between items-center">
-                    <p className="text-2xl">Make data public?</p>
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-primary"
-                      id="toggle-public-data"
-                      defaultChecked={comp?.publicData}
-                      onChange={togglePublicData}
-                    />
-                  </div>
-                      <p className="text-xs">
-                        Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
-                        Don&apos;t worry - no identifying information will be shared and comments will be hidden; only quantitative
-                        data will be shared.<br/>This setting can be changed at any time.
-                      </p>
+                  <h1 className="font-semibold">Manually add pit reports</h1>
+
+                  <input
+                    type="number"
+                    placeholder="Team #"
+                    className="input input-md input-bordered w-full mt-2"
+                    value={teamToAdd}
+                    onChange={(e) => {setTeamToAdd(Number(e.target.value));}}
+                  />
+
+                  <button
+                    className="btn btn-accent w-full mt-2"
+                    disabled={!teamToAdd}
+                    onClick={addTeam}
+                  >
+                    Add
+                  </button>
+                  
+                  { comp?.tbaId !== NotLinkedToTba && <>
+                    <div className="divider"></div>
+                    <div className="flex flex-row justify-between items-center">
+                      <p className="text-2xl">Make data public?</p>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        id="toggle-public-data"
+                        defaultChecked={comp?.publicData}
+                        onChange={togglePublicData}
+                      />
+                    </div>
+                    <p className="text-xs">
+                      Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
+                      Don&apos;t worry - no identifying information will be shared and comments will be hidden; only quantitative
+                      data will be shared.<br/>This setting can be changed at any time.
+                    </p>
+                  </>}
 
                   <div className="divider"></div>
                   <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/scouters`}>
@@ -978,7 +1006,9 @@ export default function Home(props: ResolvedUrlData) {
                 <h1 className="text-2xl sm:text-3xl font-bold">
                   Pitscouting not available
                 </h1>
-                <div>Could not fetch team list from TBA</div>
+                <div>
+                  {comp?.tbaId !== NotLinkedToTba ? "Could not fetch team list from TBA" : "You'll need to manually add teams from Settings" }
+                </div>
               </div>
             ) : (
               <div className="sm:card-body grow-0">

@@ -53,6 +53,7 @@ export default class ClientAPI {
       },
       body: JSON.stringify(body),
     });
+    
     return await rawResponse.json();
   }
 
@@ -433,6 +434,10 @@ export default class ClientAPI {
 
   async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
+  }
+
+  async createPitReportForTeam(teamNumber: number, compId: string) {
+    return await this.request("/createPitReportForTeam", { teamNumber, compId });
   }
 
 }

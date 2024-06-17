@@ -166,13 +166,13 @@ function TeamCard(props: {
 
 export default function TeamPage(props: { reports: Report[], pitReports: Pitreport[], subjectiveReports: SubjectiveReport[] }) {
   const reports = props.reports;
-  const pitReports: { [key: number]: Pitreport } = {};
+  const [pitReports, setPitReports] = useState<{ [key: number]: Pitreport }>({});
   const [teamReports, setTeamReports] = useState<{ [key: number]: Report[] }>(
     {}
   );
   const [teamSubjectiveReports, setTeamSubjectiveReports] = useState<{ [key: number]: SubjectiveReport[] }>({});
 
-  const teamNumbers = Object.keys(teamReports);
+  const teamNumbers = Array.from(new Set([...Object.keys(teamReports), ...Object.keys(pitReports), ...Object.keys(teamSubjectiveReports)]));
 
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const selectedReports = teamReports[selectedTeam ? selectedTeam : 0];
@@ -187,6 +187,24 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
       }
     });
     setTeamReports(newTeamReports);
+
+    const newPitReports: typeof pitReports = {};
+    props.pitReports.forEach((pitReport) => {
+      newPitReports[pitReport.teamNumber] = pitReport;
+    });
+    setPitReports(newPitReports);
+
+    const subjectiveReports: typeof teamSubjectiveReports = {};
+    props.subjectiveReports.forEach((subjectiveReport) => {
+      for (const teamNumber of Object.keys(subjectiveReport.robotComments)) {
+        if (!Object.keys(subjectiveReports).includes(teamNumber)) {
+          subjectiveReports[Number(teamNumber)] = [subjectiveReport];
+        } else {
+          subjectiveReports[Number(teamNumber)].push(subjectiveReport);
+        }
+      }
+    });
+    setTeamSubjectiveReports(subjectiveReports);
   };
 
   useEffect(() => {
@@ -208,8 +226,9 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
   const stDev = StandardDeviation(pointTotals);
 
   useEffect(() => {
-      associateTeams();
-  }, [reports]);
+    console.log("Associating teams...");
+    associateTeams();
+  }, [reports, props.pitReports, props.subjectiveReports]);
 
   // Associate pit reports
   props.pitReports.forEach((pitReport) => {
@@ -219,24 +238,22 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
   const teamRanking = Object.keys(teamReports).sort((a, b) => {
     const a1 = AveragePoints(teamReports[Number(a)]);
     const b1 = AveragePoints(teamReports[Number(b)]);
-    if (a1 < b1) {
-      return 1;
-    } else if (a1 > b1) {
-      return -1;
-    }
-    return 0;
+    return b1 - a1;
   });
+
+  // Find teams not in team ranking
+  const missingTeams = teamNumbers.filter((team) => !teamRanking.includes(team));
 
   return (
     <div className="w-full h-min flex flex-row space-x-4">
       <div className="w-1/5 h-[50rem] flex flex-col space-y-4 overflow-y-scroll">
-        {teamRanking.map((number, index) => (
+        {teamRanking.concat(missingTeams).map((number, index) => (
           <TeamCard
             key={number}
             number={Number(number)}
             selected={selectedTeam === Number(number)}
-            reports={teamReports[Number(number)]}
-            pitReport={pitReports[Number(number)]}
+            reports={teamReports[Number(number)] ?? []}
+            pitReport={pitReports[Number(number)] ?? []}
             rank={index + 1}
             onClick={() => setSelectedTeam(Number(number))}
             compAvgPoints={avgPoints}
