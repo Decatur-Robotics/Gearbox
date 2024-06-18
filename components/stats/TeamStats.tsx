@@ -12,7 +12,7 @@ import { Round } from '../../lib/client/StatsMath';
 import { ReactNode, useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Loading from "../Loading";
-import { CrescendoPitReportData } from "@/lib/games";
+import { Crescendo } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -96,7 +96,7 @@ export default function TeamStats(props: {
   }
 
   const pitReport = props.pitReport;
-  const data = pitReport?.data as CrescendoPitReportData;
+  const data = pitReport?.data as Crescendo.PitData;
 
   const defense = MostCommonValue("Defense", props.selectedReports);
   const intake = data?.intakeType //MostCommonValue("IntakeType", props.selectedReports);

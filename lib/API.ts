@@ -26,6 +26,8 @@ import { SerializeDatabaseObject } from "./UrlResolver";
 
 import { QuantitativeFormData } from "./Types";
 import { xpToLevel } from "./Xp";
+import { games } from "./games";
+import { GameId } from "./client/GameId";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -139,8 +141,8 @@ export namespace API {
     );
   }
 
-  async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string): Promise<string[]> {
-    var pitreports = await tba.getCompetitionPitreports(tbaId);
+  async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string, gameId: GameId): Promise<string[]> {
+    var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
     pitreports.map(async (report) => (await db.addObject<Pitreport>(Collections.Pitreports, report))._id)
 
     return pitreports.map((pit) => String(pit._id));
@@ -392,8 +394,11 @@ export namespace API {
       return res.status(200).send(season);
     },
 
-    updateCompetition: async (req, res, { db, data, tba }) => {
+    reloadCompetition: async (req, res, { db, data, tba }) => {
       // {comp id, tbaId}
+
+      const comp = db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+
       var matches = await tba.getCompetitionMatches(data.tbaId);
       if (!matches || matches.length <= 0) {
         res.status(200).send({ result: "none" });
@@ -405,7 +410,7 @@ export namespace API {
           (await db.addObject<Match>(Collections.Matches, match))._id
       );
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId);
 
       await db.updateObjectById(
         Collections.Competitions,
@@ -428,13 +433,16 @@ export namespace API {
       //     publicData
       // }
       
+      const seasonPromise = db.findObjectById<Season>(Collections.Seasons, new ObjectId(data.seasonId));
+
       var matches = await tba.getCompetitionMatches(data.tbaId);
       matches.map(
         async (match) =>
           (await db.addObject<Match>(Collections.Matches, match))._id,
       );
       
-      const pitReports = await generatePitReports(tba, db, data.tbaId);
+      const season = await seasonPromise;
+      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId);
 
       const picklist = await db.addObject<DbPicklist>(Collections.Picklists, {
         _id: new ObjectId(),
@@ -456,10 +464,6 @@ export namespace API {
         )
       );
 
-      var season = await db.findObjectById<Season>(
-        Collections.Seasons,
-        new ObjectId(data.seasonId)
-      );
       season.competitions = [...season.competitions, String(comp._id)];
 
       await db.updateObjectById(
@@ -478,7 +482,9 @@ export namespace API {
     },
 
     regeneratePitReports: async (req, res, { db, data, tba }) => {
-      const pitReports = await generatePitReports(tba, db, data.tbaId);
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+
+      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId);
 
       await db.updateObjectById(
         Collections.Competitions,
@@ -991,18 +997,29 @@ export namespace API {
     createPitReportForTeam: async (req, res, { db, data }) => {
       const { teamNumber, compId } = data;
 
-      const compPromise = db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
 
-      const pitReport = new Pitreport(teamNumber);
+      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
       const pitReportId = (await db.addObject<Pitreport>(Collections.Pitreports, pitReport))._id?.toString();
 
       if (!pitReportId)
         return res.status(500).send({ error: "Failed to create pit report" });
 
-      (await compPromise).pitReports.push(pitReportId);
+      comp.pitReports.push(pitReportId);
 
       await db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(compId), {
-        pitReports: (await compPromise).pitReports,
+        pitReports: comp.pitReports,
+      });
+
+      return res.status(200).send({ result: "success" });
+    },
+
+    updateCompNameAndTbaId: async (req, res, { db, data }) => {
+      const { compId, name, tbaId } = data;
+
+      await db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(compId), {
+        name,
+        tbaId,
       });
 
       return res.status(200).send({ result: "success" });

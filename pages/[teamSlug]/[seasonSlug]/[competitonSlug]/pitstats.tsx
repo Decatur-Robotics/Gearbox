@@ -19,7 +19,7 @@ import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
-import { CrescendoPitReportData } from "@/lib/games";
+import { Crescendo } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -101,7 +101,7 @@ function TeamSlide(props: {
     );
   }
 
-  const data = pit.data as CrescendoPitReportData;
+  const data = pit.data as Crescendo.PitData;
 
   return (
     <div

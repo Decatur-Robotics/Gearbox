@@ -10,6 +10,8 @@ import {
   Pitreport,
 } from "./Types";
 import { NotLinkedToTba } from "./client/ClientUtils";
+import { GameId } from "./client/GameId";
+import { games, latestGameId } from "./games";
 
 export namespace TheBlueAlliance {
   export interface SimpleTeam {
@@ -274,13 +276,13 @@ export namespace TheBlueAlliance {
       return matches;
     }
 
-    async getCompetitionPitreports(tbaId: string): Promise<Pitreport[]> {
+    async getCompetitionPitreports(tbaId: string, gameId: GameId): Promise<Pitreport[]> {
       if (tbaId === NotLinkedToTba)
         return [];
 
       const competitionTeams = await this.req.getCompetitionTeams(tbaId);
       return competitionTeams.map(
-        ({ team_number }) => new Pitreport(team_number)
+        ({ team_number }) => new Pitreport(team_number, games[gameId ?? latestGameId].createPitReportData())
       );
     }
 

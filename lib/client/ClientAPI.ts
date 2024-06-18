@@ -210,7 +210,7 @@ export default class ClientAPI {
     });
   }
 
-  async updateCompetition(
+  async reloadCompetition(
     compId: string | undefined,
     tbaId: string | undefined
   ) {
@@ -437,6 +437,10 @@ export default class ClientAPI {
 
   async createPitReportForTeam(teamNumber: number, compId: string) {
     return await this.request("/createPitReportForTeam", { teamNumber, compId });
+  }
+
+  async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
+    return await this.request("/updateCompNameAndTbaId", { compId, name, tbaId });
   }
 
 }

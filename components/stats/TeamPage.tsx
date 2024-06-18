@@ -15,7 +15,7 @@ import TeamStats from "@/components/stats/TeamStats";
 import Summary from "@/components/stats/Summary";
 import SmallGraph from "@/components/stats/SmallGraph";
 import Loading from "../Loading";
-import { CrescendoPitReportData } from "@/lib/games";
+import { Crescendo } from "@/lib/games";
 
 function TeamCard(props: {
   number: number;
@@ -28,7 +28,7 @@ function TeamCard(props: {
   compPointsStDev: number;
 }) {
   const pitReport = props.pitReport;
-  const data = pitReport?.data as CrescendoPitReportData;
+  const data = pitReport?.data as Crescendo.PitData;
 
   const avgPoints = AveragePoints(props.reports);
   const defense = MostCommonValue("Defense", props.reports);

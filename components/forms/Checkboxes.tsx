@@ -1,10 +1,11 @@
 import { Drivetrain, QuantitativeFormData, IntakeTypes, Pitreport } from "@/lib/Types";
-import { CrescendoPitReportData, CrescendoQuantitativeFormData } from "@/lib/games";
+import { Crescendo } from "@/lib/games";
 export type CheckboxProps = {
   label: string;
   dataKey: string;
   data: QuantitativeFormData | Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
+  divider?: boolean;
 };
 export type RadioProps = {
   data: QuantitativeFormData | Pitreport;
@@ -12,11 +13,10 @@ export type RadioProps = {
 };
 
 export default function Checkbox(props: CheckboxProps) {
-  //@ts-expect-error
-  const checked = props.data[props.dataKey];
+  const checked = props.data.data[props.dataKey];
 
   return (
-    <label className="w-5/6 label cursor-pointer flex flex-row space-x-8  border-b-2 border-slate-600">
+    <label className={`w-5/6 label cursor-pointer flex flex-row space-x-8 ${props.divider && "border-b-2 border-slate-600"}`}>
       <span className="w-2/3 label-text text-lg font-semibold ">
         {props.label}
       </span>
@@ -35,8 +35,8 @@ export default function Checkbox(props: CheckboxProps) {
 
 export function IntakeType(props: RadioProps) {
   const data = props.data instanceof QuantitativeFormData 
-    ? props.data as CrescendoQuantitativeFormData 
-    : props.data?.data as CrescendoPitReportData;
+    ? props.data as Crescendo.QuantitativeData 
+    : props.data?.data as Crescendo.PitData;
 
   if (!data)
     return <></>
@@ -84,7 +84,7 @@ export function IntakeType(props: RadioProps) {
 }
 
 export function DrivetrainType(props: RadioProps) {
-  const data = props.data as CrescendoPitReportData | CrescendoQuantitativeFormData | null;
+  const data = props.data as Crescendo.PitData | Crescendo.QuantitativeData | null;
 
   return (
     <div className="font-mono w-full grid grid-cols-2 grid-rows-3 max-sm:gap-1 text-md md:text-xl">

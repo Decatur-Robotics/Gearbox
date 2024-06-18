@@ -91,6 +91,9 @@ export default function Home(props: ResolvedUrlData) {
 
   const [teamToAdd, setTeamToAdd] = useState<number | undefined>();
 
+  const [newCompName, setNewCompName] = useState(comp?.name);
+  const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -254,7 +257,7 @@ export default function Home(props: ResolvedUrlData) {
     alert("Reloading competition...");
 
     setUpdatingComp("Checking for Updates...");
-    const res = await api.updateCompetition(comp?._id, comp?.tbaId);
+    const res = await api.reloadCompetition(comp?._id, comp?.tbaId);
     if (res.result === "success") {
       window.location.reload();
     } else {
@@ -455,6 +458,22 @@ export default function Home(props: ResolvedUrlData) {
     });
   }
 
+  async function saveCompChanges() {
+    // Check if tbaId is valid
+    if (!comp?.tbaId || !comp?.name || !comp?._id) return;
+
+    let tbaId = newCompTbaId;
+    const autoFillData = await api.getCompetitionAutofillData(tbaId ?? "");
+    if (!autoFillData.name) {
+      if(!confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
+        return;
+      tbaId = NotLinkedToTba;
+    }
+
+    await api.updateCompNameAndTbaId(comp?._id, newCompName ?? "Unnamed", tbaId ?? NotLinkedToTba);
+    location.reload();
+  }
+
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
@@ -589,6 +608,32 @@ export default function Home(props: ResolvedUrlData) {
                     >
                       Regenerate Pit Reports
                   </button> */}
+
+                  <div className="divider"></div>
+                  <h1 className="font-semibold">Edit comp information</h1>
+                  <div className="flex flex-row items-center justify-between">
+                    <label className="label">Competition Name</label>
+                    <input
+                      type="text"
+                      className="input input-bordered w-2/3"
+                      value={newCompName}
+                      onChange={(e) => {
+                        setNewCompName(e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-row items-center justify-between mb-2"> 
+                    <label className="label">TBA ID</label>
+                      <input
+                        type="text"
+                        className="input input-bordered w-2/3"
+                        value={newCompTbaId}
+                        onChange={(e) => {
+                          setNewCompTbaId(e.target.value);
+                        }}
+                      />
+                  </div>
+                  <button className="btn btn-primary w-full" onClick={saveCompChanges}>Save</button>
 
                   <div className="divider"></div>
                   <h1 className="font-semibold">Manually add matches</h1>

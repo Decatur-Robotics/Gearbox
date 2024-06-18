@@ -146,8 +146,19 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
   quantitativeFormDataType: new() => TQuantitativeFormData;
   pitReportDataType: new() => TPitReportData;
 
+  pitReportLayout: PitReportLayout<TPitReportData>;
+
+  /**
+   * @param name 
+   * @param year 
+   * @param league 
+   * @param quantitativeFormDataType 
+   * @param pitReportDataType 
+   * @param pitReportLayout will auto-populate fields from PitReportData (everything not unique to the game)
+   */
   constructor(name: string, year: number, league: League, 
-      quantitativeFormDataType: new() => TQuantitativeFormData, pitReportDataType: new() => TPitReportData) {
+      quantitativeFormDataType: new() => TQuantitativeFormData, pitReportDataType: new() => TPitReportData, 
+      pitReportLayout: PitReportLayout<TPitReportData>) {
     this.name = name;
     this.year = year;
     this.league = league;
@@ -155,6 +166,23 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
 
     this.quantitativeFormDataType = quantitativeFormDataType;
     this.pitReportDataType = pitReportDataType;
+
+    this.pitReportLayout = Game.mergeWithBaseLayout(pitReportLayout);
+  }
+
+  private static mergeWithBaseLayout<TData extends PitReportData>(layout: PitReportLayout<TData>) {
+    const finalLayout: typeof layout = {
+      "Image": [{ key: "image", type: "image" }],
+      "Drivetrain": ["drivetrain", "motorType", "swerveLevel"]
+    }
+
+    for (const [header, keys] of Object.entries(layout)) {
+      finalLayout[header] = keys;
+    }
+
+    finalLayout["Comments"] = ["comments"];
+
+    return finalLayout;
   }
 
   public createQuantitativeFormData(): TQuantitativeFormData {
@@ -171,7 +199,7 @@ export class Season {
   name: string;
   slug: string | undefined;
 
-  game: GameId;
+  gameId: GameId;
 
   year: number;
 
@@ -182,13 +210,13 @@ export class Season {
     slug: string | undefined,
     year: number,
     competitions: string[] = [],
-    game: GameId = GameId.Crescendo
+    gameId: GameId = GameId.Crescendo
   ) {
     this.name = name;
     this.slug = slug;
     this.year = year;
     this.competitions = competitions;
-    this.game = game;
+    this.gameId = gameId;
   }
 }
 
@@ -214,11 +242,25 @@ export enum SwerveLevel {
 }
 
 export abstract class PitReportData {
+  [key: string]: any;
+
   image: string = "/robot.jpg";
   drivetrain: Drivetrain = Drivetrain.Tank;
   motorType: Motors = Motors.Talons;
   swerveLevel: SwerveLevel = SwerveLevel.None;
   comments: string = "";
+}
+
+export type PitReportLayoutElement<TPitData> = {
+  [key: string]: any;
+
+  key: keyof TPitData;
+  label?: string;
+  type?: "string" | "number" | "boolean" | "image" | Object | undefined;
+}
+
+export type PitReportLayout<TPitData> = {
+  [header: string]: Array<keyof TPitData | PitReportLayoutElement<TPitData>>;
 }
 
 export class Pitreport<TFormData extends PitReportData = PitReportData> {
@@ -231,8 +273,9 @@ export class Pitreport<TFormData extends PitReportData = PitReportData> {
 
   data: TFormData | undefined;
 
-  constructor(teamNumber: number) {
+  constructor(teamNumber: number, data: TFormData) {
     this.teamNumber = teamNumber;
+    this.data = data;
   }
 }
 
