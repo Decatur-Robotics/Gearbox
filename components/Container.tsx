@@ -18,7 +18,10 @@ const api = new ClientAPI("gearboxiscool");
 type ContainerProps = {
   children: ReactNode;
   requireAuthentication: boolean;
-  hideMenu: boolean;
+  /**
+   * Hides the button to open the sidebar.
+   */
+  hideMenu?: boolean;
   notForMobile?: boolean | undefined;
 };
 
@@ -122,7 +125,7 @@ export default function Container(props: ContainerProps) {
         <div className="drawer-content">
           <div className=" sm:w-full h-16 bg-base-200 flex flex-row items-center justify-between sticky top-0 z-10">
             <div className="flex flex-row items-center sm:justify-center">
-              {authenticated && !props.hideMenu ? (
+              {authenticated && !(props.hideMenu ?? false) ? (
                 <label htmlFor="menu" className="btn btn-ghost drawer-button">
                   <BiMenu className="text-3xl" />
                 </label>

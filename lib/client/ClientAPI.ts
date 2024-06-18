@@ -14,6 +14,7 @@ import {
   EventData,
   Pitreport,
   DbPicklist,
+  SubjectiveReport,
 } from "../Types";
 
 export enum ClientRequestMethod {
@@ -131,8 +132,8 @@ export default class ClientAPI {
     return await this.request("/matchAutofill", { tbaId: tbaId });
   }
 
-  async teamRequest(userId: string | undefined, teamId: string | undefined) {
-    return await this.request("/teamRequest", {
+  async requestToJoinTeam(userId: string | undefined, teamId: string | undefined) {
+    return await this.request("/requestToJoinTeam", {
       userId: userId,
       teamId: teamId,
     });
@@ -151,7 +152,7 @@ export default class ClientAPI {
     number: number,
     creator: string | undefined,
     tbaId: undefined | string
-  ) {
+  ): Promise<Team> {
     return await this.request("/createTeam", {
       name: name,
       number: number,
@@ -160,7 +161,7 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, teamId: string) {
+  async createSeason(name: string, year: number, teamId: string): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
@@ -196,14 +197,16 @@ export default class ClientAPI {
     tbaId: string | undefined,
     start: number,
     end: number,
-    seasonId: string | undefined
+    seasonId: string | undefined,
+    publicData: boolean
   ) {
     return await this.request("/createCompetiton", {
-      name: name,
-      tbaId: tbaId,
-      start: start,
-      end: end,
-      seasonId: seasonId,
+      name,
+      tbaId,
+      start,
+      end,
+      seasonId,
+      publicData
     });
   }
 
@@ -247,7 +250,7 @@ export default class ClientAPI {
     });
   }
 
-  async updateReport(newValues: object, reportId: string | undefined) {
+  async updateReport(newValues: Partial<Report>, reportId: string | undefined) {
     return await this.request("/update", {
       collection: "Reports",
       newValues: newValues,
@@ -290,10 +293,11 @@ export default class ClientAPI {
     });
   }
 
-  async competitionReports(compId: string | undefined, submitted: boolean) {
+  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false) {
     return await this.request("/competitionReports", {
-      compId: compId,
-      submitted: submitted,
+      compId,
+      submitted,
+      usePublicData
     });
   }
 
@@ -311,6 +315,10 @@ export default class ClientAPI {
 
   async updateCheckOut(reportId: string | undefined) {
     return await this.request("/updateCheckOut", { reportId });
+  }
+
+  async checkInForSubjectiveReport(matchId: string) {
+    return await this.request("/checkInForSubjectiveReport", { matchId });
   }
 
   async remindSlack(
@@ -388,7 +396,9 @@ export default class ClientAPI {
   async findScouterManagementData(compId: string, scouterIds: string[]): Promise<{
     scouters: User[],
     matches: Match[],
-    reports: Report[],
+    quantitativeReports: Report[],
+    pitReports: Pitreport[],
+    subjectiveReports: SubjectiveReport[],
   }> {
     return await this.request("/findScouterManagementData", { compId, scouterIds });
   }
@@ -399,6 +409,30 @@ export default class ClientAPI {
 
   async updatePicklist(picklist: DbPicklist) {
     return await this.request("/updatePicklist", { picklist });
+  }
+
+  async setCompPublicData(compId: string, publicData: boolean) {
+    return await this.request("/setCompPublicData", { compId, publicData });
+  }
+
+  async setOnboardingCompleted(userId: string) {
+    return await this.request("/setOnboardingCompleted", { userId });
+  }
+
+  async submitSubjectiveReport(report: SubjectiveReport, userId: string, teamId: string) {
+    return await this.request("/submitSubjectiveReport", { report, userId, teamId });
+  }
+
+  async getSubjectiveReportsForComp(compId: string): Promise<SubjectiveReport[]> {
+    return await this.request("/getSubjectiveReportsForComp", { compId });
+  }
+
+  async updateSubjectiveReport(reportId: string, report: Partial<SubjectiveReport>) {
+    return await this.request("/updateSubjectiveReport", { reportId, report });
+  }
+
+  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
+    return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
 }

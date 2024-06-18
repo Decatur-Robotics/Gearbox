@@ -57,7 +57,7 @@ export default function Footer() {
           ></MdAlternateEmail>
           Contact
         </a>
-        <a className="link link-hover" href={"https://discord.gg/ha7AnqxFDD"}>
+        <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">
           <FaBug className="inline mr-1" size={16}></FaBug>
           Bug Report/Feature Request
         </a>

@@ -12,7 +12,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { ObjectId } from "mongodb";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
@@ -138,7 +138,23 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ scouters: scouters }, team?._id);
+    await api.updateTeam({ scouters }, team?._id);
+    setTeam(teamClone);
+  };
+
+  const updateSubjectiveScouter = async (userId: string) => {
+    var teamClone = structuredClone(team);
+    if (!teamClone) return;
+
+    teamClone.subjectiveScouters ??= [];
+    var scouters = teamClone?.subjectiveScouters;
+    if (scouters?.includes(userId)) {
+      scouters.splice(scouters.indexOf(userId), 1);
+    } else {
+      scouters?.push(userId);
+    }
+
+    await api.updateTeam({ subjectiveScouters: scouters }, team?._id);
     setTeam(teamClone);
   };
 
@@ -151,7 +167,7 @@ function Roster(props: TeamPageProps) {
       owners?.push(userId);
     }
 
-    await api.updateTeam({ owners: owners }, team?._id);
+    await api.updateTeam({ owners }, team?._id);
     setTeam(teamClone);
   };
 
@@ -170,6 +186,10 @@ function Roster(props: TeamPageProps) {
     if (team?.scouters.includes(userId)) {
       await updateScouter(userId);
     }
+    if (team?.subjectiveScouters?.includes(userId)) {
+      await updateScouter(userId);
+    }
+
     var teamClone = structuredClone(team);
     var newUsers = teamClone?.users;
     newUsers?.splice(newUsers.indexOf(userId), 1);
@@ -252,12 +272,13 @@ function Roster(props: TeamPageProps) {
         <table className="table">
           <thead>
             <tr>
-              <th className="">Index</th>
-              <th className="">Profile</th>
-              <th className="">Name</th>
-              <th className="">Scouter</th>
-              <th className="">Manager</th>
-              <th className="">Kick</th>
+              <th>Index</th>
+              <th>Profile</th>
+              <th>Name</th>
+              <th>Scouter</th>
+              <th>Subjective Scouter</th>
+              <th>Manager</th>
+              <th>Kick</th>
             </tr>
           </thead>
           <tbody className="">
@@ -279,6 +300,16 @@ function Roster(props: TeamPageProps) {
                     disabled={!owner}
                     onChange={() => {
                       updateScouter(user._id as string);
+                    }}
+                  />
+                </td><td>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-accent"
+                    checked={team?.subjectiveScouters?.includes(user._id as string)}
+                    disabled={!owner}
+                    onChange={() => {
+                      updateSubjectiveScouter(user._id as string);
                     }}
                   />
                 </td>
@@ -449,7 +480,7 @@ export default function TeamIndex(props: TeamPageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const resolved = await UrlResolver(context);
 
   const seasonIds = resolved.team?.seasons.map(

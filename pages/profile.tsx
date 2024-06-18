@@ -11,7 +11,7 @@ import Avatar from "@/components/Avatar";
 import { IoCheckmarkCircle, IoMail } from "react-icons/io5";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
@@ -52,7 +52,7 @@ export default function Profile(props: { teamList: Team[] }) {
 
   const requestTeam = async (teamId: string) => {
     setLoadingRequest(true);
-    await api.teamRequest(user?._id, teamId);
+    await api.requestToJoinTeam(user?._id, teamId);
     setLoadingRequest(false);
     setSentRequest(true);
   };
@@ -183,7 +183,7 @@ export default function Profile(props: { teamList: Team[] }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const teams = await db.findObjects(Collections.Teams, {});
   const serializedTeams = teams.map((team) => SerializeDatabaseObject(team));
 

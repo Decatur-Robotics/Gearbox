@@ -14,7 +14,7 @@ import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
-import { Collections, GetDatabase } from "@/lib/MongoDB";
+import { Collections, getDatabase } from "@/lib/MongoDB";
 import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
@@ -230,10 +230,13 @@ export default function Pitstats(props: { competition: Competition }) {
   const [addedKeyListeners, setAddedKeyListeners] = useState(false);
   const [cycleSlidesAutomatically, setCycleSlidesAutomatically] = useState(true);
 
+  const [usePublicData, setUsePublicData] = useState(true);
+
   const loadReports = async () => {
     const newReports = (await api.competitionReports(
       comp._id,
-      true
+      true,
+      usePublicData
     )) as Report[];
 
     const rankings = await api.compRankings(comp.tbaId);
@@ -394,14 +397,14 @@ export default function Pitstats(props: { competition: Competition }) {
 
   useEffect(() => {
     loadReports();
-  }, []);
+  }, [usePublicData]);
 
   useEffect(() => {
     const i = setInterval(() => {
       loadReports();
     }, 60 * 1000);
     return () => clearInterval(i);
-  }, []);
+  }, [usePublicData]);
 
   function changeSlide(nextSlide: (prev: number) => number, automatic: boolean = false) {
     if(!automatic)
@@ -440,6 +443,11 @@ export default function Pitstats(props: { competition: Competition }) {
     }
   });
 
+  useEffect(() => {
+    const msg = "Would you like to include public data? (Ok = Yes, Cancel = No)";
+    setUsePublicData(confirm(msg));
+  }, []);
+
   return (
     <Container hideMenu={true} requireAuthentication={true} notForMobile={true}>
       <div className="w-full h-full flex flex-col items-center bg-base-300">
@@ -448,7 +456,7 @@ export default function Pitstats(props: { competition: Competition }) {
           Pit-Stats
         </h1>
         <p className="font-mono font-semibold">
-          Showing <span className="text-accent">live data</span>
+          Showing <span className="text-accent">live</span>{ usePublicData && <>, <span className="text-secondary">publicly-available</span></> } data
           <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse inline-block mx-2 translate-y-1"></div>
           from our <span className="text-accent">26 active scouters</span>
         </p>
@@ -505,7 +513,7 @@ export default function Pitstats(props: { competition: Competition }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await GetDatabase();
+  const db = await getDatabase();
   const compSlug = context.resolvedUrl.split("/")[3];
   const comp = await db.findObject(Collections.Competitions, {
     slug: compSlug,
