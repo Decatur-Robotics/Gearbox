@@ -39,6 +39,7 @@ type TeamPageProps = {
   currentCompetition: Competition | undefined;
   pastSeasons: Season[] | undefined;
   users: User[] | undefined;
+  isManager: boolean;
 };
 
 function Overview(props: TeamPageProps) {
@@ -80,6 +81,14 @@ function Overview(props: TeamPageProps) {
                       </Link>
                     </li>
                   ))}
+                  {
+                    props.isManager && 
+                    <li>
+                      <Link href={`/${props.team?.slug}/createSeason`} className="link link-secondary">
+                        Create a season
+                      </Link>
+                    </li>
+                  }
                 </ul>
               </div>
             </Flex>
@@ -364,7 +373,7 @@ function Settings(props: TeamPageProps) {
       <h1 className="font-semibold text-lg">Edit your teams configuration</h1>
       <h1 className="text-md text-error">{error}</h1>
       <div className="divider"></div>
-      <p>Set your Teams Name:</p>
+      <p>Set your Team&apos;s Name:</p>
       <input
         value={teamName}
         maxLength={100}
@@ -390,6 +399,8 @@ export default function TeamIndex(props: TeamPageProps) {
   const isFrc = team?.tbaId?.startsWith("frc");
 
   const [page, setPage] = useState(0);
+
+  const isManager = team?.owners.includes(session?.user?._id as string);
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
@@ -464,14 +475,14 @@ export default function TeamIndex(props: TeamPageProps) {
               onClick={() => {
                 setPage(2);
               }}
-              disabled={!team?.owners.includes(session?.user?._id as string)}
+              disabled={!isManager}
             >
               Settings
             </button>
           </div>
         </div>
 
-        {page === 0 ? <Overview {...props}></Overview> : <></>}
+        {page === 0 ? <Overview {...props} isManager={isManager ?? false}></Overview> : <></>}
         {page === 1 ? <Roster {...props}></Roster> : <></>}
         {page === 2 ? <Settings {...props}></Settings> : <></>}
       </Flex>

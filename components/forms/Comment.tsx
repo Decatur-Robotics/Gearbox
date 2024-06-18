@@ -5,7 +5,7 @@ export type CommentProps = {
 };
 
 export function CommentBox(props: CommentProps) {
-  const data = props.data instanceof QuantitativeFormData ? props.data : props.data.data;
+  const data = "comments" in props.data ? props.data : props.data.data;
 
   return (
     <div className="flex flex-col w-full h-1/2 items-center justify-center ">

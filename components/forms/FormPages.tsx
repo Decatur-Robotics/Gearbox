@@ -10,6 +10,7 @@ export type PageProps = {
   alliance: AllianceColor;
   data: QuantitativeFormData;
   callback: (key: string, value: string | number | boolean) => void;
+  fieldImagePrefix?: string;
 };
 export type EndPageProps = {
   alliance: AllianceColor;
@@ -21,7 +22,6 @@ export type EndPageProps = {
 export default function FormPage(props: {
   children: ReactNode;
   title: string;
-  height?: string;
 }) {
   return (
     <main className="w-full h-full flex-1">
@@ -86,7 +86,7 @@ export function TeleopPage(props: PageProps) {
 
 export function EndPage(props: EndPageProps) {
   return (
-    <FormPage title="Summary" height="full">
+    <FormPage title="Summary">
       <Checkbox
         label="Coopertition Activated"
         dataKey="Coopertition"

@@ -4,6 +4,7 @@ import Form from "@/components/forms/Form";
 import { GetServerSideProps } from "next";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { useEffect } from "react";
+import { games, latestGameId } from "@/lib/games";
 
 export default function Homepage(props: ResolvedUrlData) {
   const team = props?.team;
@@ -14,10 +15,12 @@ export default function Homepage(props: ResolvedUrlData) {
   const { session, status } = useCurrentSession();
   const hide = status === "authenticated";
 
+  const layout = games[season?.gameId ?? latestGameId].quantitativeReportLayout;
+
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>
       {report ? (
-        <Form report={report}></Form>
+        <Form report={report} layout={layout} fieldImagePrefix={games[season?.gameId ?? latestGameId].fieldImagePrefix} />
       ) : (
         <p className="text-error">Welp.</p>
       )}

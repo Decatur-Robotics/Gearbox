@@ -376,7 +376,8 @@ export namespace API {
         new Season(
           data.name,
           await GenerateSlug(Collections.Seasons, data.name),
-          data.year
+          data.year,
+          data.gameId
         )
       );
       var team = await db.findObjectById<Team>(

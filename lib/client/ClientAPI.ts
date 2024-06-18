@@ -15,6 +15,7 @@ import {
   DbPicklist,
   SubjectiveReport,
 } from "../Types";
+import { GameId } from "./GameId";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -161,10 +162,11 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, teamId: string): Promise<Season> {
+  async createSeason(name: string, year: number, gameId: GameId, teamId: string): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
+      gameId: gameId,
       teamId: teamId,
     });
   }

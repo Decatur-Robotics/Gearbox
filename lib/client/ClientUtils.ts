@@ -7,3 +7,11 @@ export function getIdsInProgressFromTimestamps(timestamps: { [id: string]: strin
 }
 
 export const NotLinkedToTba = "not-linked";
+
+export function camelCaseToTitleCase(str: string) {
+  if (typeof str !== "string") return "";
+
+  return str
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase());
+}

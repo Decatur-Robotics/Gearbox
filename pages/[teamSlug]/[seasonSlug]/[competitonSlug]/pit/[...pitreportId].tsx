@@ -19,6 +19,7 @@ import { FaRobot } from "react-icons/fa";
 import ImageUpload from "@/components/forms/ImageUpload";
 import { Crescendo, games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -104,7 +105,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: Pit
             onChange={() =>
               setCallback(key, entry[1])
             }
-            checked={pitreport.data?.[key] === entry[1]}
+            checked={pitreport.data?.[element.key as string] === entry[1]}
           />
         </>
       );
@@ -114,12 +115,6 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: Pit
       <h1 className="font-semibold text-lg">{element.label}</h1>
       <div className="grid grid-cols-2 translate-x-6 space-y-1">{entries}</div>
     </>);
-  }
-
-  function camelCaseToTitleCase(str: string) {
-    return str
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
   }
 
   function getLayoutElement(key: string | PitReportLayoutElement<any>) {

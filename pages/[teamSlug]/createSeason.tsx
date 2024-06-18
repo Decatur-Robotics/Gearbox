@@ -13,10 +13,11 @@ import Card from "@/components/Card";
 import Image from "next/image";
 import { FaPlus } from "react-icons/fa";
 import { create } from "domain";
+import { GameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
-export const CurrentSeason = new Season("Crescendo", undefined, 2024);
-export const OffSeason = new Season("Offseason", undefined, 2024);
+export const CurrentSeason = new Season("Crescendo", undefined, 2024, GameId.Crescendo);
+export const OffSeason = new Season("Offseason", undefined, 2024, GameId.TestGame);
 
 type CreateSeasonProps = { team: Team; existingSeasons: Season[] };
 
@@ -26,10 +27,11 @@ export default function CreateSeason(props: CreateSeasonProps) {
     props.existingSeasons.map((season) => season.name)
   );
 
-  const createSeason = async (season: { name: string; year: number }) => {
+  const createSeason = async (season: Season) => {
     const s = await api.createSeason(
       season.name,
       season.year,
+      season.gameId,
       team?._id as string
     );
     const win: Window = window;

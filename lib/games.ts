@@ -1,4 +1,4 @@
-import { Game, IntakeTypes, League, PitReportData, PitReportLayout, QuantitativeFormData } from "./Types";
+import { Game, IntakeTypes, League, PitReportData, PitReportLayout, QuantitativeFormData, QuantitativeReportLayout } from "./Types";
 import { GameId } from "./client/GameId";
 
 export namespace Crescendo {
@@ -42,11 +42,35 @@ export namespace Crescendo {
     "Auto": [{key: "autoNotes", type: "number"}]
   }
 
-  export const game = new Game("Crescendo", 2024, League.FRC, QuantitativeData, PitData, pitReportLayout)
+  const quantitativeReportLayout: QuantitativeReportLayout<QuantitativeData> = {
+    "Auto": ["MovedOut", [["AutoScoredAmp", "AutoMissedAmp"], ["AutoScoredSpeaker", "AutoMissedSpeaker"]]],
+    "Teleop": [
+      [["TeleopScoredAmp", "TeleopMissedAmp"], ["TeleopScoredSpeaker", "TeleopMissedSpeaker"], ["TeleopScoredTrap", "TeleopMissedTrap"]],
+      "Defense"],
+    "Summary": [{ key: "Coopertition", label: "Coopertition Activated" }, "ClimbedStage", "ParkedStage", 
+      { key: "UnderStage", label: "Went Under Stage" }]
+  }
+
+  export const game = new Game("Crescendo", 2024, League.FRC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, 
+    "Crescendo");
+}
+
+export namespace TestGame {
+  const pitReportLayout: PitReportLayout<Crescendo.PitData> = {
+    "Shooter": ["canScoreAmp", "canScoreSpeaker", "fixedShooter", "canScoreFromDistance"],
+    "Climber": ["canClimb"],
+  }
+
+  const quantitativeReportLayout: QuantitativeReportLayout<Crescendo.QuantitativeData> = {
+  }
+
+  export const game = new Game("Test", 2024, League.FRC, Crescendo.QuantitativeData, Crescendo.PitData, 
+    pitReportLayout, quantitativeReportLayout, "Crescendo");
 }
 
 export const latestGameId = GameId.Crescendo;
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
-  [GameId.Crescendo]: Crescendo.game
+  [GameId.Crescendo]: Crescendo.game,
+  [GameId.TestGame]: TestGame.game
 });

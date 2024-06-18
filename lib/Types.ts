@@ -147,6 +147,9 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
   pitReportDataType: new() => TPitReportData;
 
   pitReportLayout: PitReportLayout<TPitReportData>;
+  quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>;
+
+  fieldImagePrefix: string;
 
   /**
    * @param name 
@@ -158,7 +161,8 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
    */
   constructor(name: string, year: number, league: League, 
       quantitativeFormDataType: new() => TQuantitativeFormData, pitReportDataType: new() => TPitReportData, 
-      pitReportLayout: PitReportLayout<TPitReportData>) {
+      pitReportLayout: PitReportLayout<TPitReportData>, quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>,
+      fieldImagePrefix: string) {
     this.name = name;
     this.year = year;
     this.league = league;
@@ -167,10 +171,13 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     this.quantitativeFormDataType = quantitativeFormDataType;
     this.pitReportDataType = pitReportDataType;
 
-    this.pitReportLayout = Game.mergeWithBaseLayout(pitReportLayout);
+    this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout);
+    this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout);
+
+    this.fieldImagePrefix = fieldImagePrefix;
   }
 
-  private static mergeWithBaseLayout<TData extends PitReportData>(layout: PitReportLayout<TData>) {
+  private static mergePitLayoutWithBaseLayout<TData extends PitReportData>(layout: PitReportLayout<TData>) {
     const finalLayout: typeof layout = {
       "Image": [{ key: "image", type: "image" }],
       "Drivetrain": ["drivetrain", "motorType", "swerveLevel"]
@@ -181,6 +188,22 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     }
 
     finalLayout["Comments"] = ["comments"];
+
+    return finalLayout;
+  }
+  
+  private static mergeQuantitativeLayoutWithBaseLayout<TData extends QuantitativeFormData>(layout: QuantitativeReportLayout<TData>) {
+    const finalLayout: typeof layout = {
+      "Pre-Match": [{ key: "Presented", label: "Robot Present" }, { key: "AutoStartX", type: "startingPos" }],
+    };
+
+    // Copy over the rest of the layout
+    for (const [header, keys] of Object.entries(layout)) {
+      finalLayout[header] = keys;
+    }
+
+    const keys = Object.keys(layout);
+    finalLayout[keys[keys.length - 1]]?.push("comments");
 
     return finalLayout;
   }
@@ -209,8 +232,8 @@ export class Season {
     name: string,
     slug: string | undefined,
     year: number,
-    competitions: string[] = [],
-    gameId: GameId = GameId.Crescendo
+    gameId: GameId = GameId.Crescendo,
+    competitions: string[] = []
   ) {
     this.name = name;
     this.slug = slug;
@@ -259,7 +282,7 @@ export type PitReportLayoutElement<TPitData> = {
   type?: "string" | "number" | "boolean" | "image" | Object | undefined;
 }
 
-export type PitReportLayout<TPitData> = {
+export type PitReportLayout<TPitData extends PitReportData> = {
   [header: string]: Array<keyof TPitData | PitReportLayoutElement<TPitData>>;
 }
 
@@ -407,6 +430,24 @@ export class Report<TFormData extends QuantitativeFormData = QuantitativeFormDat
     this.color = color;
     this.checkedIn = checkedIn;
   }
+}
+
+export type QuantitativeReportLayoutElement<TData extends QuantitativeFormData> = {
+  [key: string]: any;
+
+  key: keyof TData;
+  label?: string;
+  type?: "string" | "number" | "boolean" | "startingPos" | Object | undefined;
+}
+
+export type QuantitativeReportLayoutElementHolder<TData extends QuantitativeFormData> 
+  = keyof TData | QuantitativeReportLayoutElement<TData> | (keyof TData | QuantitativeReportLayoutElement<TData>)[][];
+
+export type QuantitativeReportLayout<TData extends QuantitativeFormData> = {
+  /**
+   * Use 2D array to make a block. Each array in the 2D array will be a column.
+   */
+  [page: string]: Array<QuantitativeReportLayoutElementHolder<TData>>;
 }
 
 export enum SubjectiveReportSubmissionType {
