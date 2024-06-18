@@ -3,7 +3,6 @@ import { Collections, getDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import {
   Competition,
-  Form,
   Match,
   Season,
   Team,
@@ -25,7 +24,7 @@ import Auth, { AuthenticationOptions } from "./Auth";
 import { Statbotics } from "./Statbotics";
 import { SerializeDatabaseObject } from "./UrlResolver";
 
-import { FormData } from "./Types";
+import { QuantitativeFormData } from "./Types";
 import { xpToLevel } from "./Xp";
 
 export namespace API {
@@ -471,7 +470,7 @@ export namespace API {
 
       // Create reports
       const reportCreationPromises = matches.map((match) =>
-        generateReportsForMatch(match)
+        generateReportsForMatch(match, comp.gameId)
       );
       await Promise.all(reportCreationPromises);
 
@@ -510,13 +509,13 @@ export namespace API {
         )
       );
 
-      const reportPromise = generateReportsForMatch(match);
-
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
       comp.matches.push(match._id ? String(match._id) : "");
+
+      const reportPromise = generateReportsForMatch(match, comp.gameId);
 
       await Promise.all([db.updateObjectById(
         Collections.Competitions,
@@ -734,7 +733,7 @@ export namespace API {
       const subjectiveReportsPromise = db.countObjects(Collections.SubjectiveReports, {});
       const competitionsPromise = db.countObjects(Collections.Competitions, {});
 
-      const dataPointsPerReport = Reflect.ownKeys(FormData).length;
+      const dataPointsPerReport = Reflect.ownKeys(QuantitativeFormData).length;
       const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
       const dataPointsPerSubjectiveReport = Reflect.ownKeys(SubjectiveReport).length + 5;
 
@@ -771,7 +770,7 @@ export namespace API {
       }
 
       // Convert reports to row data
-      interface Row extends FormData {
+      interface Row extends QuantitativeFormData {
         timestamp: number | undefined;
         team: number;
       }

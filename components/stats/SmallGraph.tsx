@@ -1,4 +1,4 @@
-import { Report, FormData, Defense } from "@/lib/Types";
+import { Report, QuantitativeFormData, Defense } from "@/lib/Types";
 import ClientAPI from "@/lib/client/ClientAPI";
 
 import {
@@ -56,7 +56,7 @@ const api = new ClientAPI("gearboxiscool");
 
 export default function SmallGraph(props: { selectedReports: Report[], team: number }) {
   const [key, setKey] = useState("AutoStartX");
-  const keys = Object.keys(new FormData());
+  const keys = Array.from(new Set(props.selectedReports?.map(r => Object.keys(r.data)).flat() ?? []));
 
   interface Datapoint {
     x: number;

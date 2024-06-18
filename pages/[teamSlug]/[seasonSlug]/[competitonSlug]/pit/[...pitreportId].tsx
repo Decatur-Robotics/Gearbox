@@ -17,6 +17,7 @@ import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { FaRobot } from "react-icons/fa";
 import ImageUpload from "@/components/forms/ImageUpload";
+import { CrescendoPitReportData } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -71,7 +72,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
           <h1 className="text-2xl font-semibold">Physical Attributes:</h1>
           <div className="divider"></div>
 
-          <ImageUpload data={pitreport} callback={setCallback}></ImageUpload>
+          <ImageUpload report={pitreport} callback={setCallback}></ImageUpload>
 
           <h1 className="font-semibold text-lg">Intake: </h1>
           <div className="translate-x-10">
@@ -92,7 +93,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
             <h1 className="font-mono mt-4">Drive Motor Type:</h1>
             <select
               className=" w-1/3 select select-bordered"
-              value={pitreport.motorType}
+              value={pitreport.data?.motorType}
               onChange={(e) => setCallback("motorType", e.target.value)}
             >
               {Object.values(Motors).map((val) => (
@@ -104,7 +105,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
             <h1 className="font-mono mt-4">Swerve Level:</h1>
             <select
               className=" w-1/3 select select-bordered"
-              value={pitreport.swerveLevel}
+              value={pitreport.data?.swerveLevel}
               onChange={(e) => setCallback("swerveLevel", e.target.value)}
             >
               {Object.values(SwerveLevel).map((val) => (
@@ -154,7 +155,7 @@ export default function PitreportForm(props: { pitreport: Pitreport }) {
           <div className="translate-x-10">
             <h1 className="font-mono mt-4">Ideal Auto Notes:</h1>
             <input
-              value={pitreport.autoNotes}
+              value={(pitreport.data as CrescendoPitReportData)?.autoNotes}
               onChange={(e) => {
                 setCallback("autoNotes", e.target.value);
               }}

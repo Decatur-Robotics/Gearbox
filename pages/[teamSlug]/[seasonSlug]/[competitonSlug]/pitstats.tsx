@@ -9,7 +9,7 @@ import {
 } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
-import next, { GetServerSideProps } from "next";
+import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
@@ -19,6 +19,7 @@ import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { CrescendoPitReportData } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -100,6 +101,8 @@ function TeamSlide(props: {
     );
   }
 
+  const data = pit.data as CrescendoPitReportData;
+
   return (
     <div
       key={props.teamNumber}
@@ -119,17 +122,17 @@ function TeamSlide(props: {
           {props.ranking?.record.ties}
         </h2>
         <div className="flex flex-row space-x-2">
-          {pit?.canClimb ? (
+          {data?.canClimb ? (
             <div className="badge badge-primary">Can Climb</div>
           ) : (
             <></>
           )}
-          {pit?.canScoreSpeaker ? (
+          {data?.canScoreSpeaker ? (
             <div className="badge badge-secondary">Can Score Speaker</div>
           ) : (
             <></>
           )}
-          {pit?.canScoreAmp ? (
+          {data?.canScoreAmp ? (
             <div className="badge badge-accent">Can Score Amp</div>
           ) : (
             <></>
@@ -175,17 +178,17 @@ function TeamSlide(props: {
             <p className="text-lg">
               Intake Type:{" "}
               <span className="text-accent">
-                {pit.intakeType}{" "}
-                {pit.intakeType !== IntakeTypes.None &&
-                  `(${pit.underBumperIntake ? "Under" : "Over"} Bumper)`}
+                {data.intakeType}{" "}
+                {data.intakeType !== IntakeTypes.None &&
+                  `(${data.underBumperIntake ? "Under" : "Over"} Bumper)`}
               </span>
             </p>
             <p className="text-lg">
               Drivetrain:{" "}
               <span className="text-accent">
-                {pit.drivetrain} (
-                {pit.swerveLevel !== SwerveLevel.None && `${pit.swerveLevel} `}
-                {pit.motorType})
+                {data.drivetrain} (
+                {data.swerveLevel !== SwerveLevel.None && `${data.swerveLevel} `}
+                {data.motorType})
               </span>
             </p>
           </div>
@@ -193,7 +196,7 @@ function TeamSlide(props: {
       </div>
       <div className="w-1/2 flex flex-col items-center">
         {pit.submitted ? (
-          <img src={pit.image} className="rounded-xl w-1/3 h-auto"></img>
+          <img src={data.image} className="rounded-xl w-1/3 h-auto"></img>
         ) : (
           <></>
         )}

@@ -1,17 +1,20 @@
-import { Drivetrain, FormData, IntakeTypes, Pitreport } from "@/lib/Types";
+import { Drivetrain, QuantitativeFormData, IntakeTypes, Pitreport } from "@/lib/Types";
+import { CrescendoPitReportData, CrescendoQuantitativeFormData } from "@/lib/games";
 export type CheckboxProps = {
   label: string;
   dataKey: string;
-  data: FormData | Pitreport;
+  data: QuantitativeFormData | Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
 };
 export type RadioProps = {
-  data: FormData | Pitreport;
+  data: QuantitativeFormData | Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
 };
+
 export default function Checkbox(props: CheckboxProps) {
   //@ts-expect-error
   const checked = props.data[props.dataKey];
+
   return (
     <label className="w-5/6 label cursor-pointer flex flex-row space-x-8  border-b-2 border-slate-600">
       <span className="w-2/3 label-text text-lg font-semibold ">
@@ -31,6 +34,13 @@ export default function Checkbox(props: CheckboxProps) {
 }
 
 export function IntakeType(props: RadioProps) {
+  const data = props.data instanceof QuantitativeFormData 
+    ? props.data as CrescendoQuantitativeFormData 
+    : props.data?.data as CrescendoPitReportData;
+
+  if (!data)
+    return <></>
+
   return (
     <div className=" font-mono w-full grid grid-cols-2 grid-rows-4 align-left  text-md md:text-xl">
       <span>No Intake: </span>
@@ -40,7 +50,7 @@ export function IntakeType(props: RadioProps) {
         onClick={() => {
           props.callback("intakeType", IntakeTypes.None);
         }}
-        checked={props.data.intakeType === IntakeTypes.None}
+        checked={data?.intakeType === IntakeTypes.None}
       />
       <span>Human: </span>
       <input
@@ -49,7 +59,7 @@ export function IntakeType(props: RadioProps) {
         onClick={() => {
           props.callback("intakeType", IntakeTypes.Human);
         }}
-        checked={props.data.intakeType === IntakeTypes.Human}
+        checked={props.data?.data?.intakeType === IntakeTypes.Human}
       />
       <span>Ground Intake: </span>
       <input
@@ -58,7 +68,7 @@ export function IntakeType(props: RadioProps) {
         onClick={() => {
           props.callback("intakeType", IntakeTypes.Ground);
         }}
-        checked={props.data.intakeType === IntakeTypes.Ground}
+        checked={props.data?.data?.intakeType === IntakeTypes.Ground}
       />
       <span>Both: </span>
       <input
@@ -67,13 +77,15 @@ export function IntakeType(props: RadioProps) {
         onClick={() => {
           props.callback("intakeType", IntakeTypes.Both);
         }}
-        checked={props.data.intakeType === IntakeTypes.Both}
+        checked={props.data?.data?.intakeType === IntakeTypes.Both}
       />
     </div>
   );
 }
 
 export function DrivetrainType(props: RadioProps) {
+  const data = props.data as CrescendoPitReportData | CrescendoQuantitativeFormData | null;
+
   return (
     <div className="font-mono w-full grid grid-cols-2 grid-rows-3 max-sm:gap-1 text-md md:text-xl">
       <span>Tank Drive: </span>
@@ -83,7 +95,7 @@ export function DrivetrainType(props: RadioProps) {
         onClick={() => {
           props.callback("drivetrain", Drivetrain.Tank);
         }}
-        checked={props.data.drivetrain === Drivetrain.Tank}
+        checked={data?.drivetrain === Drivetrain.Tank}
       />
       <span>Mecanum Drive: </span>
       <input
@@ -92,7 +104,7 @@ export function DrivetrainType(props: RadioProps) {
         onClick={() => {
           props.callback("drivetrain", Drivetrain.Mecanum);
         }}
-        checked={props.data.drivetrain === Drivetrain.Mecanum}
+        checked={data?.drivetrain === Drivetrain.Mecanum}
       />
       <span>Swerve Drive: </span>
       <input
@@ -101,7 +113,7 @@ export function DrivetrainType(props: RadioProps) {
         onClick={() => {
           props.callback("drivetrain", Drivetrain.Swerve);
         }}
-        checked={props.data.drivetrain === Drivetrain.Swerve}
+        checked={data?.drivetrain === Drivetrain.Swerve}
       />
     </div>
   );

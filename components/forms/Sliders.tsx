@@ -1,7 +1,7 @@
-import { FormData, Defense } from "@/lib/Types";
+import { QuantitativeFormData, Defense } from "@/lib/Types";
 
 export type SliderProps = {
-  data: FormData;
+  data: QuantitativeFormData;
   callback: (key: string, value: string | number | boolean) => void;
 };
 export default function DefenseSlider(props: SliderProps) {

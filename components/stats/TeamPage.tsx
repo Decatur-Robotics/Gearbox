@@ -15,6 +15,7 @@ import TeamStats from "@/components/stats/TeamStats";
 import Summary from "@/components/stats/Summary";
 import SmallGraph from "@/components/stats/SmallGraph";
 import Loading from "../Loading";
+import { CrescendoPitReportData } from "@/lib/games";
 
 function TeamCard(props: {
   number: number;
@@ -27,15 +28,16 @@ function TeamCard(props: {
   compPointsStDev: number;
 }) {
   const pitReport = props.pitReport;
+  const data = pitReport?.data as CrescendoPitReportData;
 
   const avgPoints = AveragePoints(props.reports);
   const defense = MostCommonValue("Defense", props.reports);
-  const intake = pitReport?.intakeType; //MostCommonValue("IntakeType", props.reports);
+  const intake = data?.intakeType; //MostCommonValue("IntakeType", props.reports);
   const cooperates = BooleanAverage("Coopertition", props.reports);
   const climbs = BooleanAverage("ClimbedStage", props.reports);
   const parks = BooleanAverage("ParkedStage", props.reports);
   const understage = BooleanAverage("UnderStage", props.reports);
-  const drivetrain = pitReport?.drivetrain ?? (
+  const drivetrain = data?.drivetrain ?? (
     <Loading size={12} bg="" fill="text-base-300" className="mr-1" />
   );
 
@@ -94,7 +96,7 @@ function TeamCard(props: {
 
   let drivetrainColor = "outline";
   if (pitReport?.submitted) {
-    drivetrainColor = pitReport?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
+    drivetrainColor = data?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
   }
 
   return (
@@ -118,7 +120,7 @@ function TeamCard(props: {
           </div>
           <div className={`badge badge-sm badge-${intakeBadgeColor}`}>
             {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
-            { pitReport?.underBumperIntake && " (Under Bumper)" }
+            { data?.underBumperIntake && " (Under Bumper)" }
           </div>
           { cooperates &&
             <div className="badge badge-sm badge-primary">Cooperates</div>}
@@ -128,35 +130,35 @@ function TeamCard(props: {
             <div className="badge badge-sm badge-accent">Parks</div>}
           { understage &&
             <div className="badge badge-sm badge-neutral">Small Profile</div>}
-          { (!pitReport || pitReport.canScoreFromDistance) && 
-            <div className={`badge badge-sm badge-${pitReport?.canScoreFromDistance ? "primary" : "neutral"}`}>
-              {pitReport ? (pitReport?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
+          { (!pitReport || data?.canScoreFromDistance) && 
+            <div className={`badge badge-sm badge-${data?.canScoreFromDistance ? "primary" : "neutral"}`}>
+              {pitReport ? (data?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
             </div>}
           { drivetrain && 
               <div className={`badge badge-sm badge-${drivetrainColor}`}>
                 {pitReport ? (pitReport?.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
-                {" "}{ pitReport && <>({pitReport.swerveLevel !== SwerveLevel.None && pitReport.swerveLevel + " "}{pitReport.motorType})</> }
+                {" "}{ pitReport && <>({data?.swerveLevel !== SwerveLevel.None && data?.swerveLevel + " "}{data?.motorType})</> }
               </div>}
-          { (!pitReport || pitReport.fixedShooter) && 
-            <div className={`badge badge-sm badge-${pitReport?.fixedShooter ? "error" : "neutral"}`}>
-              {pitReport ? (pitReport?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
+          { (!pitReport || data?.fixedShooter) && 
+            <div className={`badge badge-sm badge-${data?.fixedShooter ? "error" : "neutral"}`}>
+              {pitReport ? (data?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
             </div>}
-          { (!pitReport || pitReport.canScoreSpeaker) && 
-            <div className={`badge badge-sm badge-${pitReport?.canScoreSpeaker ? "secondary" : "neutral"}`}>
-              {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
+          { (!pitReport || data?.canScoreSpeaker) && 
+            <div className={`badge badge-sm badge-${data?.canScoreSpeaker ? "secondary" : "neutral"}`}>
+              {pitReport ? (data?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
             </div>}
-          { (!pitReport || pitReport.canScoreAmp) && 
-            <div className={`badge badge-sm badge-${pitReport?.canScoreAmp ? "accent" : "neutral"}`}>
-              {pitReport ? (pitReport?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
+          { (!pitReport || data?.canScoreAmp) && 
+            <div className={`badge badge-sm badge-${data?.canScoreAmp ? "accent" : "neutral"}`}>
+              {pitReport ? (data?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
             </div>}
             
-          { (!pitReport || pitReport.canScoreSpeaker) && 
-            <div className={`badge badge-sm badge-${pitReport?.canScoreSpeaker ? "primary" : "neutral"}`}>
-              {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
+          { (!pitReport || data?.canScoreSpeaker) && 
+            <div className={`badge badge-sm badge-${data?.canScoreSpeaker ? "primary" : "neutral"}`}>
+              {pitReport ? (data?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
             </div>}
-          { (!pitReport || pitReport.autoNotes > 0) && 
-            <div className={`badge badge-sm badge-${(pitReport?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
-              {pitReport ? <>Ideal Auto: {pitReport.autoNotes} notes</> : <Loading size={12} />}
+          { (!pitReport || data?.autoNotes > 0) && 
+            <div className={`badge badge-sm badge-${(data?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
+              {pitReport ? <>Ideal Auto: {data?.autoNotes} notes</> : <Loading size={12} />}
             </div>}
         </div>
       </div>

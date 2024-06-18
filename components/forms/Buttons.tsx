@@ -1,11 +1,11 @@
-import { FormData } from "@/lib/Types";
+import { QuantitativeFormData } from "@/lib/Types";
 export type ButtonProps = {
-  data: FormData;
+  data: QuantitativeFormData;
   callback: (key: string, value: string | number | boolean) => void;
 };
 
 function IncrementButton(
-  props: { dataKey: string, data: FormData, 
+  props: { dataKey: string, data: QuantitativeFormData, 
     callback: (key: string, value: string | number | boolean) => void, text: string, rounded?: string }) {
 
   const roundTop = props.rounded?.includes("t");

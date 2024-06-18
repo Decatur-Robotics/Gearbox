@@ -3,17 +3,17 @@ import StartingPosition from "./StartingPosition";
 import { AutoButtons, TeleopButtons } from "./Buttons";
 import DefenseSlider from "./Sliders";
 import Checkbox, { IntakeType } from "./Checkboxes";
-import { AllianceColor, FormData } from "@/lib/Types";
+import { AllianceColor, QuantitativeFormData } from "@/lib/Types";
 import { CommentBox } from "./Comment";
 
 export type PageProps = {
   alliance: AllianceColor;
-  data: FormData;
+  data: QuantitativeFormData;
   callback: (key: string, value: string | number | boolean) => void;
 };
 export type EndPageProps = {
   alliance: AllianceColor;
-  data: FormData;
+  data: QuantitativeFormData;
   submit: () => void;
   callback: (key: string, value: string | number | boolean) => void;
 };

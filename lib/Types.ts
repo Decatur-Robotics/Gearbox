@@ -5,8 +5,7 @@ import {
   User as NextAuthUser,
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Statbotics } from "./Statbotics";
-import Subjective from '../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/[reportId]/subjective';
+import { GameId } from "./client/GameId";
 
 /**
  * Standard Account Type
@@ -116,7 +115,7 @@ export enum IntakeTypes {
   Both = "Both",
 }
 
-export class FormData {
+export abstract class QuantitativeFormData {
   [key: string]: any;
 
   Presented: boolean = true;
@@ -124,41 +123,46 @@ export class FormData {
   AutoStartX: number = 0; // pixel position of robot
   AutoStartY: number = 0;
   AutoStartAngle: number = 0; // stored... but probably wont ever be used
-  AutoScoredAmp: number = 0; // # of times scored in the amp
-  AutoMissedAmp: number = 0;
-  AutoScoredSpeaker: number = 0;
-  AutoMissedSpeaker: number = 0;
-  MovedOut: boolean = false;
-
-  TeleopScoredAmp: number = 0;
-  TeleopMissedAmp: number = 0;
-  TeleopScoredSpeaker: number = 0;
-  TeleopMissedSpeaker: number = 0;
-  TeleopScoredTrap: number = 0;
-  TeleopMissedTrap: number = 0;
 
   Defense: Defense = Defense.None;
 
   drivetrain: Drivetrain = Drivetrain.Tank;
 
-  Coopertition: boolean = false; // true if used any point in match
-  ClimbedStage: boolean = false;
-  ParkedStage: boolean = false;
-  UnderStage: boolean = false;
-
-  intakeType: IntakeTypes = IntakeTypes.Human;
-
   comments: string = "";
 }
 
-export class Form {
-  _id: string | undefined;
-  name: string;
-  data: FormData;
+export enum League {
+  FTC, FRC
+}
 
-  constructor(name: string, data: FormData) {
+export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReportData extends PitReportData> {
+  name: string;
+
+  year: number;
+  league: League;
+
+  allianceSize: number
+
+  quantitativeFormDataType: new() => TQuantitativeFormData;
+  pitReportDataType: new() => TPitReportData;
+
+  constructor(name: string, year: number, league: League, 
+      quantitativeFormDataType: new() => TQuantitativeFormData, pitReportDataType: new() => TPitReportData) {
     this.name = name;
-    this.data = data;
+    this.year = year;
+    this.league = league;
+    this.allianceSize = league === League.FRC ? 3 : 2;
+
+    this.quantitativeFormDataType = quantitativeFormDataType;
+    this.pitReportDataType = pitReportDataType;
+  }
+
+  public createQuantitativeFormData(): TQuantitativeFormData {
+    return new this.quantitativeFormDataType();
+  }
+
+  public createPitReportData(): TPitReportData {
+    return new this.pitReportDataType();
   }
 }
 
@@ -166,6 +170,8 @@ export class Season {
   _id: string | undefined;
   name: string;
   slug: string | undefined;
+
+  game: GameId;
 
   year: number;
 
@@ -175,12 +181,14 @@ export class Season {
     name: string,
     slug: string | undefined,
     year: number,
-    competitions: string[] = []
+    competitions: string[] = [],
+    game: GameId = GameId.Crescendo
   ) {
     this.name = name;
     this.slug = slug;
     this.year = year;
     this.competitions = competitions;
+    this.game = game;
   }
 }
 
@@ -205,7 +213,15 @@ export enum SwerveLevel {
   L3 = "L3",
 }
 
-export class Pitreport {
+export abstract class PitReportData {
+  image: string = "/robot.jpg";
+  drivetrain: Drivetrain = Drivetrain.Tank;
+  motorType: Motors = Motors.Talons;
+  swerveLevel: SwerveLevel = SwerveLevel.None;
+  comments: string = "";
+}
+
+export class Pitreport<TFormData extends PitReportData = PitReportData> {
   _id: string | undefined;
 
   teamNumber: number;
@@ -213,19 +229,7 @@ export class Pitreport {
   submitted: boolean = false;
   submitter: string | undefined;
 
-  image: string = "/robot.jpg";
-  intakeType: IntakeTypes = IntakeTypes.None;
-  canClimb: boolean = false;
-  drivetrain: Drivetrain = Drivetrain.Tank;
-  motorType: Motors = Motors.Talons;
-  swerveLevel: SwerveLevel = SwerveLevel.None;
-  fixedShooter: boolean = false;
-  canScoreAmp: boolean = false;
-  canScoreSpeaker: boolean = false;
-  canScoreFromDistance: boolean = false;
-  underBumperIntake: boolean = false;
-  autoNotes: number = 0;
-  comments: string = "";
+  data: TFormData | undefined;
 
   constructor(teamNumber: number) {
     this.teamNumber = teamNumber;
@@ -237,6 +241,8 @@ export class Competition {
   name: string;
   slug: string | undefined;
   tbaId: string | undefined;
+
+  gameId: GameId = GameId.Crescendo;
 
   publicData: boolean;
 
@@ -325,7 +331,7 @@ export class Match {
   }
 }
 
-export class Report {
+export class Report<TFormData extends QuantitativeFormData = QuantitativeFormData>{
   _id: string | undefined;
 
   timestamp: number | undefined; // time it was initially submitted
@@ -337,13 +343,13 @@ export class Report {
   match: string; // id of match
 
   submitted: boolean = false;
-  data: FormData;
+  data: TFormData;
 
   checkedIn: boolean = false;
 
   constructor(
     user: string | undefined,
-    data: FormData,
+    data: TFormData,
     robotNumber: number,
     color: AllianceColor,
     match: string,

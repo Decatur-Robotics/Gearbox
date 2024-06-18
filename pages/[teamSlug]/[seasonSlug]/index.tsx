@@ -1,7 +1,7 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
-import { Competition, Form, Season, Team } from "@/lib/Types";
+import { Competition, Season, Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";

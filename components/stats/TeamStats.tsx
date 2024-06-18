@@ -12,6 +12,7 @@ import { Round } from '../../lib/client/StatsMath';
 import { ReactNode, useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Loading from "../Loading";
+import { CrescendoPitReportData } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -41,8 +42,8 @@ export default function TeamStats(props: {
       0,
       0,
       pitReport 
-        ? pitReport.comments.length > 0 
-          ? `Pit Report: ${pitReport.comments}` 
+        ? pitReport.data?.comments.length ?? 0 > 0 
+          ? `Pit Report: ${pitReport.data?.comments}` 
           : "No pit report comments."
         : <Loading size={24} />
     );
@@ -74,11 +75,11 @@ export default function TeamStats(props: {
       }
     }
 
-    const commentList = props.selectedReports?.filter((report) => report.data.comments.length > 0) ?? [];
+    const commentList = props.selectedReports?.filter((report) => report.data?.comments.length > 0) ?? [];
     if (commentList.length === 0) return setComments([]);
     
     const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
-      match.number, 0, `Quantitative: ${report.data.comments}`
+      match.number, 0, `Quantitative: ${report.data?.comments}`
     )));
 
     Promise.all(promises).then(() => setComments(newComments));
@@ -95,14 +96,15 @@ export default function TeamStats(props: {
   }
 
   const pitReport = props.pitReport;
+  const data = pitReport?.data as CrescendoPitReportData;
 
   const defense = MostCommonValue("Defense", props.selectedReports);
-  const intake = pitReport?.intakeType //MostCommonValue("IntakeType", props.selectedReports);
+  const intake = data?.intakeType //MostCommonValue("IntakeType", props.selectedReports);
   const cooperates = BooleanAverage("Coopertition", props.selectedReports);
   const climbs = BooleanAverage("ClimbedStage", props.selectedReports);
   const parks = BooleanAverage("ParkedStage", props.selectedReports);
   const understage = BooleanAverage("UnderStage", props.selectedReports);
-  const drivetrain = pitReport?.drivetrain;
+  const drivetrain = data?.drivetrain;
 
   let defenseBadgeColor = "outline";
   if (defense === Defense.Full)
@@ -124,7 +126,7 @@ export default function TeamStats(props: {
 
   let drivetrainColor = "outline";
   if (pitReport?.submitted) {
-    drivetrainColor = pitReport?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
+    drivetrainColor = data?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
   }
 
   return (
@@ -139,7 +141,7 @@ export default function TeamStats(props: {
         </div>
         <div className={`badge badge-${intakeBadgeColor}`}>
           {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
-          { pitReport?.underBumperIntake && " (Under Bumper)" }
+          { data?.underBumperIntake && " (Under Bumper)" }
         </div>
         { cooperates && 
           <div className="badge badge-primary">Cooperates</div>
@@ -150,29 +152,29 @@ export default function TeamStats(props: {
           <div className="badge badge-accent">Parks</div>}
         { understage &&
           <div className="badge badge-neutral">Small Profile</div>}
-        { (!pitReport || pitReport.canScoreFromDistance) && 
-          <div className={`badge badge-${pitReport?.canScoreFromDistance ? "primary" : "neutral"}`}>
-            {pitReport ? (pitReport?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
+        { (!pitReport || data?.canScoreFromDistance) && 
+          <div className={`badge badge-${data?.canScoreFromDistance ? "primary" : "neutral"}`}>
+            {pitReport ? (data?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
           </div>}
         <div className={`badge badge-${drivetrainColor}`}>
           {pitReport ? (pitReport.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
-          {" "}{ pitReport && <>({pitReport.swerveLevel !== SwerveLevel.None && pitReport.swerveLevel + " "}{pitReport.motorType})</> }
+          {" "}{ pitReport && <>({data?.swerveLevel !== SwerveLevel.None && data?.swerveLevel + " "}{data?.motorType})</> }
         </div>
-        { (!pitReport || pitReport.fixedShooter) && 
-          <div className={`badge badge-${pitReport?.fixedShooter ? "error" : "neutral"}`}>
-            {pitReport ? (pitReport?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
+        { (!pitReport || data?.fixedShooter) && 
+          <div className={`badge badge-${data?.fixedShooter ? "error" : "neutral"}`}>
+            {pitReport ? (data?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
           </div>}
-        { (!pitReport || pitReport.canScoreSpeaker) && 
-          <div className={`badge badge-${pitReport?.canScoreSpeaker ? "secondary" : "neutral"}`}>
-            {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
+        { (!pitReport || data?.canScoreSpeaker) && 
+          <div className={`badge badge-${data?.canScoreSpeaker ? "secondary" : "neutral"}`}>
+            {pitReport ? (data?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
           </div>}
-        { (!pitReport || pitReport.canScoreAmp) && 
-          <div className={`badge badge-${pitReport?.canScoreAmp ? "accent" : "neutral"}`}>
-            {pitReport ? (pitReport?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
+        { (!pitReport || data?.canScoreAmp) && 
+          <div className={`badge badge-${data?.canScoreAmp ? "accent" : "neutral"}`}>
+            {pitReport ? (data?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
           </div>}
-          { (!pitReport || pitReport.autoNotes > 0) && 
-            <div className={`badge badge-${(pitReport?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
-              {pitReport ? <>Ideal Auto: {pitReport.autoNotes} notes</> : <Loading size={12} />}
+          { (!pitReport || data?.autoNotes > 0) && 
+            <div className={`badge badge-${(data?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
+              {pitReport ? <>Ideal Auto: {data?.autoNotes} notes</> : <Loading size={12} />}
             </div>}
       </div>
 

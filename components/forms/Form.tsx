@@ -1,4 +1,4 @@
-import { AllianceColor, Report, FormData } from "@/lib/Types";
+import { AllianceColor, Report, QuantitativeFormData } from "@/lib/Types";
 import { useCallback, useState, useEffect } from "react";
 import { AutoPage, EndPage, PrematchPage, TeleopPage } from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -16,7 +16,7 @@ export default function Form(props: { report: Report }) {
   //const router = useRouter();
 
   const [page, setPage] = useState(0);
-  const [formData, setFormData] = useState<FormData>(props.report?.data);
+  const [formData, setFormData] = useState<QuantitativeFormData>(props.report?.data);
   const [syncing, setSyncing] = useState(false);
 
   const alliance = props.report?.color;

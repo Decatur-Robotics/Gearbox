@@ -1039,7 +1039,7 @@ export default function Home(props: ResolvedUrlData) {
                             {report.submitted ? (
                               <img
                                 alt="img"
-                                src={report.image}
+                                src={report.data?.image}
                                 loading="lazy"
                                 style={{ imageResolution: "72dpi" }}
                                 className="w-2/3 h-auto rounded-lg"
