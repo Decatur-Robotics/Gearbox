@@ -319,7 +319,8 @@ export namespace Crescendo {
 
   export const game = new Game("Crescendo", 2024, League.FRC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, 
     statsLayout, pitStatsLayout, 
-    "Crescendo", getBadges, getAvgPoints);
+    "Crescendo", "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png",
+   getBadges, getAvgPoints);
 }
 
 export namespace TestGame {
@@ -347,7 +348,8 @@ export namespace TestGame {
   }
 
   export const game = new Game("Test", 2024, League.FTC, Crescendo.QuantitativeData, Crescendo.PitData, 
-    pitReportLayout, quantitativeReportLayout, statsLayout, pitStatsLayout, "Crescendo", getBaseBadges, () => 0);
+    pitReportLayout, quantitativeReportLayout, statsLayout, pitStatsLayout, "Crescendo", 
+    "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png", getBaseBadges, () => 0);
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({

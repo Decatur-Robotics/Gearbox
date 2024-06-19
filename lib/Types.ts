@@ -132,7 +132,7 @@ export abstract class QuantitativeFormData {
 }
 
 export enum League {
-  FTC, FRC
+  FTC = "FTC", FRC = "FRC"
 }
 
 export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReportData extends PitReportData> {
@@ -152,6 +152,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
   pitStatsLayout: PitStatsLayout<TPitReportData, TQuantitativeFormData>;
 
   fieldImagePrefix: string;
+  coverImage: string
 
   getBadges: (pitData: Pitreport<TPitReportData> | undefined, quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => Badge[];
   getAvgPoints: (quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => number;
@@ -169,6 +170,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
       pitReportLayout: PitReportLayout<TPitReportData>, quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>,
       statsLayout: StatsLayout<TPitReportData, TQuantitativeFormData>,
       pitStatsLayout: PitStatsLayout<TPitReportData, TQuantitativeFormData>, fieldImagePrefix: string, 
+      coverImage: string,
       getBadges: (pitData: Pitreport<TPitReportData> | undefined, quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => Badge[],
       getAvgPoints: (quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => number) {
     this.name = name;
@@ -185,6 +187,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     this.pitStatsLayout = Game.mergePitStatsLayoutWithBaseLayout(pitStatsLayout);
 
     this.fieldImagePrefix = fieldImagePrefix;
+    this.coverImage = coverImage;
 
     this.getBadges = getBadges;
     this.getAvgPoints = getAvgPoints;

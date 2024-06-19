@@ -1,8 +1,6 @@
 import { Season, Team } from "../../lib/Types";
 import ClientAPI from "../../lib/client/ClientAPI";
-import { useEffect, useState } from "react";
 import UrlResolver, {
-  ResolvedUrlData,
   SerializeDatabaseObjects,
 } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
@@ -10,75 +8,57 @@ import Container from "@/components/Container";
 import { Collections, getDatabase } from "@/lib/MongoDB";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import Image from "next/image";
 import { FaPlus } from "react-icons/fa";
-import { create } from "domain";
 import { GameId } from "@/lib/client/GameId";
+import { games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
-export const CurrentSeason = new Season("Crescendo", undefined, 2024, GameId.Crescendo);
-export const OffSeason = new Season("Offseason", undefined, 2024, GameId.TestGame);
 
 type CreateSeasonProps = { team: Team; existingSeasons: Season[] };
 
 export default function CreateSeason(props: CreateSeasonProps) {
   const team = props.team;
-  const [existingSeasons, setExistingSeasons] = useState<string[]>(
-    props.existingSeasons.map((season) => season.name)
-  );
 
-  const createSeason = async (season: Season) => {
+  const createSeason = async (gameId: GameId) => {
+    const game = games[gameId];
+
     const s = await api.createSeason(
-      season.name,
-      season.year,
-      season.gameId,
+      game.name,
+      game.year,
+      gameId,
       team?._id as string
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;
   };
 
+  const gamesWithIds = Object.entries(games).map(([id, game]) => {
+    return { ...game, id: id as GameId };
+  });
+
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <Flex mode="row" center={true} className="h-fit py-12 md:py-24">
         <div className="w-2/3 max-sm:w-11/12 flex flex-row max-sm:flex-col max-sm:space-y-4 md:space-x-4">
-          <Card title={CurrentSeason.name} className="w-1/3 bg-base-300">
-            <h1 className="text-lg font-semibold">
-              Made for the{" "}
-              <span className="text-accent">{CurrentSeason.year}</span> season
-            </h1>
-            <img
-              className="w-fit h-auto"
-              src={
-                "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png"
-              }
-            ></img>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                createSeason(CurrentSeason);
-              }}
-            >
-              <FaPlus></FaPlus>Create
-            </button>
-          </Card>
-          <Card title={OffSeason.name} className="w-1/3 bg-base-300">
-            <h1 className="text-lg font-semibold">
-              Perfect for testing and off-season events
-            </h1>
-            <img
-              className="w-fit h-auto bg-white rounded-lg"
-              src={"/Offseason.png"}
-            ></img>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                createSeason(OffSeason);
-              }}
-            >
-              <FaPlus></FaPlus>Create
-            </button>
-          </Card>
+          {
+            gamesWithIds.map(game => <Card title={game.name} className="w-1/3 bg-base-300">
+              <h1 className="text-lg font-semibold">
+                {game.year} {game.league} season
+              </h1>
+              <img
+                className="w-fit h-auto"
+                src={game.coverImage}
+              ></img>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  createSeason(game.id);
+                }}
+              >
+                <FaPlus></FaPlus>Create
+              </button>
+            </Card>)
+          }
         </div>
       </Flex>
     </Container>

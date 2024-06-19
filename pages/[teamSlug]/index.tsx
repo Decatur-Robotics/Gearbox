@@ -79,7 +79,7 @@ function Overview(props: TeamPageProps) {
                         href={`/${props.team?.slug}/${season.slug}`}
                         className="text-accent"
                       >
-                        {season.name} - {season.year} ({games[season.gameId ?? defaultGameId].name})
+                        {season.name} - {season.year} ({games[season.gameId ?? defaultGameId].name}, {games[season.gameId ?? defaultGameId].league})
                       </Link>
                     </li>
                   ))}
