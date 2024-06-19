@@ -149,6 +149,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
   pitReportLayout: PitReportLayout<TPitReportData>;
   quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>;
   statsLayout: StatsLayout<TPitReportData, TQuantitativeFormData>;
+  pitStatsLayout: PitStatsLayout<TPitReportData, TQuantitativeFormData>;
 
   fieldImagePrefix: string;
 
@@ -166,7 +167,8 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
   constructor(name: string, year: number, league: League, 
       quantitativeFormDataType: new() => TQuantitativeFormData, pitReportDataType: new() => TPitReportData, 
       pitReportLayout: PitReportLayout<TPitReportData>, quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>,
-      statsLayout: StatsLayout<TPitReportData, TQuantitativeFormData>, fieldImagePrefix: string, 
+      statsLayout: StatsLayout<TPitReportData, TQuantitativeFormData>,
+      pitStatsLayout: PitStatsLayout<TPitReportData, TQuantitativeFormData>, fieldImagePrefix: string, 
       getBadges: (pitData: Pitreport<TPitReportData> | undefined, quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => Badge[],
       getAvgPoints: (quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => number) {
     this.name = name;
@@ -180,6 +182,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout);
     this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout);
     this.statsLayout = Game.mergeStatsLayoutWithBaseLayout(statsLayout);
+    this.pitStatsLayout = Game.mergePitStatsLayoutWithBaseLayout(pitStatsLayout);
 
     this.fieldImagePrefix = fieldImagePrefix;
 
@@ -227,6 +230,31 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
 
     for (const [header, stats] of Object.entries(layout)) {
       finalLayout[header] = stats;
+    }
+
+    return finalLayout;
+  }
+
+  private static mergePitStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData>
+      (layout: PitStatsLayout<TPitData, TQuantData>) {
+    const finalLayout: typeof layout = {
+      overallSlideStats: [],
+      individualSlideStats: [],
+      robotCapabilities: [
+        { key: "drivetrain", label: "Drivetrain" }
+      ],
+      graphStat: {
+        key: "AutoStartX",
+        label: "Avg Start X",
+      }
+    };
+
+    for (const [key, value] of Object.entries(layout)) {
+      if (!Array.isArray(value)) {
+        finalLayout[key] = value;
+      } else {
+        (finalLayout[key] as []).push(...value as []);
+      }
     }
 
     return finalLayout;
@@ -523,7 +551,8 @@ export type Badge = {
 
 export type Stat<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
   label: string;
-  key: keyof TPitData | keyof TQuantData;
+  key?: keyof TPitData | keyof TQuantData | undefined;
+  get?: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => number;
 }
 
 export type StatPair<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
@@ -533,4 +562,13 @@ export type StatPair<TPitData extends PitReportData, TQuantData extends Quantita
 
 export type StatsLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
   [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[];
+}
+
+export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
+  [key: string]: Stat<TPitData, TQuantData> | Stat<TPitData, TQuantData>[];
+
+  overallSlideStats: Stat<TPitData, TQuantData>[];
+  individualSlideStats: Stat<TPitData, TQuantData>[];
+  robotCapabilities: Stat<TPitData, TQuantData>[];
+  graphStat: Stat<TPitData, TQuantData>;
 }

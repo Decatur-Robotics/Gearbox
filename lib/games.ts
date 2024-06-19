@@ -1,4 +1,4 @@
-import { Report, Badge, Game, IntakeTypes, League, PitReportData, PitReportLayout, QuantitativeFormData, QuantitativeReportLayout, Defense, Drivetrain, Pitreport, StatsLayout } from "./Types";
+import { Report, Badge, Game, IntakeTypes, League, PitReportData, PitReportLayout, QuantitativeFormData, QuantitativeReportLayout, Defense, Drivetrain, Pitreport, StatsLayout, PitStatsLayout } from "./Types";
 import { GameId } from "./client/GameId";
 import { AmpAutoPoints, AmpTeleopPoints, BooleanAverage, MostCommonValue, NumericalTotal, Round, SpeakerAutoPoints, SpeakerTeleopPoints, TrapPoints } from "./client/StatsMath";
 
@@ -143,6 +143,127 @@ export namespace Crescendo {
     ]
   }
 
+  const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+    overallSlideStats: [{
+      label: "Avg Notes Scored",
+      get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+        if (!quantitativeReports) return 0;
+
+        return quantitativeReports.reduce(
+          (acc, report) => acc 
+            + report.data.AutoScoredSpeaker 
+            + report.data.TeleopMissedSpeaker 
+            + report.data.AutoScoredAmp 
+            + report.data.TeleopScoredAmp
+            + report.data.TeleopScoredTrap, 0)
+          / quantitativeReports.length;
+      }
+    },
+    {
+      label: "Teleop Speaker Accuracy",
+      get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+        if (!quantitativeReports) return 0;
+
+        const scores = quantitativeReports.map(report => report.data.TeleopScoredSpeaker);
+        const misses = quantitativeReports.map(report => report.data.TeleopMissedSpeaker);
+
+        const scoreCount = scores.reduce((acc, score) => acc + score, 0);
+        const missCount = misses.reduce((acc, miss) => acc + miss, 0);
+
+        return scoreCount / (scoreCount + missCount);
+      }
+    },
+    {
+      label: "Teleop Amp Accuracy",
+      get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+        if (!quantitativeReports) return 0;
+
+        const scores = quantitativeReports.map(report => report.data.TeleopScoredAmp);
+        const misses = quantitativeReports.map(report => report.data.TeleopMissedAmp);
+
+        const scoreCount = scores.reduce((acc, score) => acc + score, 0);
+        const missCount = misses.reduce((acc, miss) => acc + miss, 0);
+
+        return scoreCount / (scoreCount + missCount);
+      }
+    },
+    {
+      label: "Avg Notes in Trap",
+      key: "TeleopScoredTrap"
+    }
+  ],
+    individualSlideStats: [
+      {
+        label: "Avg Teleop Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const speakerAuto = NumericalTotal("AutoScoredSpeaker", quantitativeReports) * SpeakerAutoPoints;
+          const speakerTeleop = NumericalTotal("TeleopScoredAmp", quantitativeReports) * SpeakerTeleopPoints;
+          const ampAuto = NumericalTotal("AutoScoredAmp", quantitativeReports) * AmpAutoPoints;
+          const ampTeleop = NumericalTotal("TeleopScoredAmp", quantitativeReports) * AmpTeleopPoints;
+          const trap = NumericalTotal("TeleopScoredTrap", quantitativeReports) * TrapPoints;
+
+          return Round(speakerAuto + speakerTeleop + ampAuto + ampTeleop + trap) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Auto Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const speakerAuto = NumericalTotal("AutoScoredSpeaker", quantitativeReports) * SpeakerAutoPoints;
+          const ampAuto = NumericalTotal("AutoScoredAmp", quantitativeReports) * AmpAutoPoints;
+
+          return Round(speakerAuto + ampAuto) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Speaker Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const speakerAuto = NumericalTotal("AutoScoredSpeaker", quantitativeReports) * SpeakerAutoPoints;
+          const speakerTeleop = NumericalTotal("TeleopScoredAmp", quantitativeReports) * SpeakerTeleopPoints;
+
+          return Round(speakerAuto + speakerTeleop) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Amp Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const ampAuto = NumericalTotal("AutoScoredAmp", quantitativeReports) * AmpAutoPoints;
+          const ampTeleop = NumericalTotal("TeleopScoredAmp", quantitativeReports) * AmpTeleopPoints;
+
+          return Round(ampAuto + ampTeleop) / quantitativeReports.length;
+        }
+      }
+    ],
+    robotCapabilities: [
+      {
+        label: "Intake Type",
+        key: "intakeType"
+      }
+    ],
+    graphStat: {
+      label: "Avg Notes Scored",
+      get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+        if (!quantitativeReports) return 0;
+
+        return quantitativeReports.reduce(
+          (acc, report) => acc 
+            + report.data.AutoScoredSpeaker 
+            + report.data.TeleopMissedSpeaker 
+            + report.data.AutoScoredAmp 
+            + report.data.TeleopScoredAmp
+            + report.data.TeleopScoredTrap, 0)
+          / quantitativeReports.length;
+      }
+    }
+  }
+
   function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
     if (!reports) return 0;
 
@@ -196,7 +317,8 @@ export namespace Crescendo {
     return badges;
   }
 
-  export const game = new Game("Crescendo", 2024, League.FRC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout, 
+  export const game = new Game("Crescendo", 2024, League.FRC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, 
+    statsLayout, pitStatsLayout, 
     "Crescendo", getBadges, getAvgPoints);
 }
 
@@ -212,8 +334,20 @@ export namespace TestGame {
   const statsLayout: StatsLayout<Crescendo.PitData, Crescendo.QuantitativeData> = {
   }
 
+  const pitStatsLayout: PitStatsLayout<Crescendo.PitData, Crescendo.QuantitativeData> = {
+    overallSlideStats: [{ key: "autoNotes", label: "Auto Notes Scored" }],
+    individualSlideStats: [],
+    robotCapabilities: [],
+    graphStat: {
+      label: "Avg Notes Scored",
+      get: (pitReport: Pitreport<Crescendo.PitData> | undefined, quantitativeReports: Report<Crescendo.QuantitativeData>[] | undefined) => {
+        return 0;
+      }
+    }
+  }
+
   export const game = new Game("Test", 2024, League.FRC, Crescendo.QuantitativeData, Crescendo.PitData, 
-    pitReportLayout, quantitativeReportLayout, statsLayout, "Crescendo", getBaseBadges, () => 0);
+    pitReportLayout, quantitativeReportLayout, statsLayout, pitStatsLayout, "Crescendo", getBaseBadges, () => 0);
 }
 
 export const latestGameId = GameId.Crescendo;

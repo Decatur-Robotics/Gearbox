@@ -1,10 +1,15 @@
 import Container from "@/components/Container";
 import BarGraph from "@/components/stats/Graph";
 import {
+  Badge,
   Competition,
   IntakeTypes,
+  PitReportData,
+  PitStatsLayout,
   Pitreport,
+  QuantitativeFormData,
   Report,
+  Stat,
   SwerveLevel,
 } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
@@ -15,11 +20,11 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
 import { Collections, getDatabase } from "@/lib/MongoDB";
-import { NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
+import { MostCommonValue, NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
-import { Crescendo } from "@/lib/games";
+import { Crescendo, games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -43,26 +48,16 @@ type DataGroup = {
 
 function TeamSlide(props: {
   teamNumber: number;
-  teamStatPairs: TeamStatPair;
-  avgTeleop: string[];
-  avgAuto: string[];
-  avgSpeaker: string[];
-  avgAmp: string[];
   pitReport: Pitreport;
   matchReports: Report[];
   ranking: TheBlueAlliance.SimpleRank | undefined;
   maxRanking: number;
-  compAverages: DataGroup;
-  compStDevs: DataGroup;
+  layout: PitStatsLayout<PitReportData, QuantitativeFormData>;
+  getBadges: (pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantitativeFormData>[] | undefined) => Badge[];
+  stats: { label: string, value: number, mean: number, stDev: number, rank: number, maxRanking: number }[];
 }) {
   const [visible, setVisible] = useState(false);
-  const stats = props.teamStatPairs[props.teamNumber];
-  const length = props.avgTeleop.length;
   const pit = props.pitReport;
-  const compStats = {
-    avgs: props.compAverages,
-    stDevs: props.compStDevs,
-  };
 
   useEffect(() => {
     setVisible(true);
@@ -71,37 +66,86 @@ function TeamSlide(props: {
     };
   }, []);
 
-  const diffFromAvg: DataGroup = {
-    teleop: stats.avgTeleop - compStats.avgs.teleop,
-    auto: stats.avgAuto - compStats.avgs.auto,
-    amp: stats.avgAmp - compStats.avgs.amp,
-    speaker: stats.avgSpeaker - compStats.avgs.speaker,
-  };
-  const diffFromAvgStDev: DataGroup = {
-    teleop: diffFromAvg.teleop / compStats.stDevs.teleop,
-    auto: diffFromAvg.auto / compStats.stDevs.auto,
-    amp: diffFromAvg.amp / compStats.stDevs.amp,
-    speaker: diffFromAvg.speaker / compStats.stDevs.speaker,
-  };
+  function Graph() {
+    const stat = props.layout.graphStat;
 
-  function statsList(selector: (d: DataGroup) => number) {
-    return (
-      <ul className="ml-4 text-sm">
-        <li>
-          {Math.abs(selector(diffFromAvg)).toFixed(2)}{" "}
-          {selector(diffFromAvg) >= 0 ? "above" : "below"} comp average of{" "}
-          {selector(compStats.avgs).toFixed(2)}
-        </li>
-        <li>
-          {Math.abs(selector(diffFromAvgStDev)).toFixed(2)} standard deviations{" "}
-          {selector(diffFromAvgStDev) >= 0 ? "above" : "below"} average (StDev ={" "}
-          {selector(compStats.stDevs).toFixed(2)})
-        </li>
-      </ul>
-    );
+    if (!stat)
+      return <></>;
+
+    const data = [];
+    if (stat.get) {
+      for (const report of props.matchReports) {
+        data.push(stat.get(props.pitReport, [report]));
+      }
+    }
+    else {
+      for (const report of props.matchReports) {
+        data.push(report.data[stat.key as string]);
+      }
+    }
+
+    return <BarGraph label={stat.label} xlabels={props.matchReports.map((r, i) => String(i + 1))} data={data} />;
   }
 
-  const data = pit.data as Crescendo.PitData;
+  function RobotCapabilities() {
+    const robotCapabilities = props.layout.robotCapabilities;
+
+    if (!robotCapabilities)
+      return <></>;
+
+    const elements = robotCapabilities.map((cap) => {
+      let value: any = cap.get?.call(cap, pit, props.matchReports);
+
+      if (!value && cap.key) {
+        if (props.matchReports.length > 0 && cap.key in props.matchReports[0]) {
+          value = MostCommonValue(cap.key as string, props.matchReports);
+        }
+        else if (pit.data && cap.key in pit.data) {
+          value = pit.data[cap.key as string];
+        }
+      }
+
+      return (
+        <p className="text-lg">
+          {cap.label}: <span className="text-accent">{value}</span>
+        </p>
+      );
+    });
+
+    return <div>
+      <h1 className="mt-4 text-lg font-semibold">Robot Capabilities:</h1>
+      {elements}
+    </div>
+  }
+
+  function IndividualStats() {
+    const elements = props.stats.map(stat => {
+      const diff = stat.value - stat.mean;
+
+      return (
+        <div>
+          <p className="text-lg">
+            {stat.label}: <span className="text-accent">{stat.value}</span>{" "}
+            <span className="text-primary">(Ranked #{stat.rank}/{stat.maxRanking})</span>
+          </p>
+          <p className="text-sm ml-4">
+            {Math.abs(diff).toFixed(2)}{" "}
+            {stat.value - stat.mean >= 0 ? "above" : "below"} comp average of{" "}
+            {stat.mean.toFixed(2)}<br />
+            {Math.abs(diff / stat.stDev).toFixed(2)} standard deviations{" "}
+            {diff / stat.stDev >= 0 ? "above" : "below"} average (StDev ={" "}
+            {stat.stDev.toFixed(2)})
+          </p>
+        </div>
+      );
+    });
+
+    return (
+      <div className="mt-4 text-lg">
+        {elements}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -121,92 +165,24 @@ function TeamSlide(props: {
           Record: {props.ranking?.record.wins}-{props.ranking?.record.losses}-
           {props.ranking?.record.ties}
         </h2>
-        <div className="flex flex-row space-x-2">
-          {data?.canClimb ? (
-            <div className="badge badge-primary">Can Climb</div>
-          ) : (
-            <></>
-          )}
-          {data?.canScoreSpeaker ? (
-            <div className="badge badge-secondary">Can Score Speaker</div>
-          ) : (
-            <></>
-          )}
-          {data?.canScoreAmp ? (
-            <div className="badge badge-accent">Can Score Amp</div>
-          ) : (
-            <></>
-          )}
-        </div>
 
-        <div className="divider w-1/2"></div>
+        {props.getBadges(props.pitReport, props.matchReports).map((badge) => (
+          <div className={`badge badge-${badge.color} mt-2`}>{badge.text}</div>
+        ))}
+
+        <div className="divider w-1/2" />
         <div className="mt-4 text-lg">
-          <p>
-            Average Teleop Points: {stats.avgTeleop}{" "}
-            <span className="text-primary text-lg">
-              (Ranked #{props.avgTeleop.indexOf(String(props.teamNumber)) + 1}/
-              {length})
-            </span>
-          </p>
-          {statsList((d) => d.teleop)}
-          <p>
-            Average Auto Points: {stats.avgAuto}{" "}
-            <span className="text-primary text-lg">
-              (Ranked #{props.avgAuto.indexOf(String(props.teamNumber)) + 1}/
-              {length})
-            </span>
-          </p>
-          {statsList((d) => d.auto)}
-          <p>
-            Average Speaker Points: {stats.avgSpeaker}{" "}
-            <span className="text-primary text-lg">
-              (Ranked #{props.avgSpeaker.indexOf(String(props.teamNumber)) + 1}/
-              {length})
-            </span>
-          </p>
-          {statsList((d) => d.speaker)}
-          <p>
-            Average Amp Points: {stats.avgAmp}{" "}
-            <span className="text-primary text-lg">
-              (Ranked #{props.avgAmp.indexOf(String(props.teamNumber)) + 1}/
-              {length})
-            </span>
-          </p>
-          {statsList((d) => d.amp)}
-          <div>
-            <h1 className="mt-4 text-lg font-semibold">Robot Capabilities:</h1>
-            <p className="text-lg">
-              Intake Type:{" "}
-              <span className="text-accent">
-                {data.intakeType}{" "}
-                {data.intakeType !== IntakeTypes.None &&
-                  `(${data.underBumperIntake ? "Under" : "Over"} Bumper)`}
-              </span>
-            </p>
-            <p className="text-lg">
-              Drivetrain:{" "}
-              <span className="text-accent">
-                {data.drivetrain} (
-                {data.swerveLevel !== SwerveLevel.None && `${data.swerveLevel} `}
-                {data.motorType})
-              </span>
-            </p>
-          </div>
+          <IndividualStats />
+          <RobotCapabilities />
         </div>
       </div>
       <div className="w-1/2 flex flex-col items-center">
         {pit.submitted ? (
-          <img src={data.image} className="rounded-xl w-1/3 h-auto"></img>
+          <img src={pit.data?.image} className="rounded-xl w-1/3 h-auto"></img>
         ) : (
           <></>
         )}
-        <BarGraph
-          label="Notes Scored in Both Amp & Speaker"
-          data={props.matchReports.map(
-            (rep) => rep.data.TeleopScoredSpeaker + rep.data.TeleopScoredAmp
-          )}
-          xlabels={props.matchReports.map((r, i) => String(i + 1))}
-        />
+        <Graph />
       </div>
     </div>
   );
@@ -214,14 +190,8 @@ function TeamSlide(props: {
 
 export default function Pitstats(props: { competition: Competition }) {
   const comp = props.competition;
-  const [teamStatPairs, setTeamStatPairs] = useState<
-    TeamStatPair | undefined
-  >();
+  const [reports, setReports] = useState<{ [teamNumber: number]: { pit: Pitreport | undefined, quant: Report[] } } | undefined>();
 
-  const [avgTeleop, setAvgTeleop] = useState<string[]>([]);
-  const [avgAuto, setAvgAuto] = useState<string[]>([]);
-  const [avgAmp, setAvgAmp] = useState<string[]>([]);
-  const [avgSpeaker, setAvgSpeaker] = useState<string[]>([]);
 
   const [slides, setSlides] = useState<React.JSX.Element[]>([]);
   const slidesRef = useRef<React.JSX.Element[]>(slides);
@@ -233,6 +203,8 @@ export default function Pitstats(props: { competition: Competition }) {
 
   const [usePublicData, setUsePublicData] = useState(true);
 
+  const layout = games[comp.gameId].pitStatsLayout;
+
   const loadReports = async () => {
     const newReports = (await api.competitionReports(
       comp._id,
@@ -242,155 +214,94 @@ export default function Pitstats(props: { competition: Competition }) {
 
     const rankings = await api.compRankings(comp.tbaId);
 
-    var newPairs: TeamReportPair = {};
+    const allReports: typeof reports = {};
+
     newReports.forEach((report) => {
       const n = report.robotNumber;
-      if (!Object.keys(newPairs).includes(n.toString())) {
-        newPairs[n] = [report];
-      } else {
-        newPairs[n].push(report);
+
+      if (!Object.keys(allReports).includes(n.toString())) {
+        allReports[n] = { pit: undefined, quant: [] };
       }
+      
+      allReports[n].quant.push(report);
     });
-
-    var newStatPairs: TeamStatPair = {};
-    Object.keys(newPairs).forEach((key) => {
-      const teamReports = newPairs[Number(key)];
-      newStatPairs[Number(key)] = {
-        avgTeleop:
-          NumericalAverage("TeleopScoredSpeaker", teamReports) +
-          NumericalAverage("TeleopScoredAmp", teamReports),
-        avgAuto:
-          NumericalAverage("AutoScoredSpeaker", teamReports) +
-          NumericalAverage("AutoScoredAmp", teamReports),
-        avgAmp:
-          NumericalAverage("TeleopScoredAmp", teamReports) +
-          NumericalAverage("AutoScoredAmp", teamReports),
-        avgSpeaker:
-          NumericalAverage("TeleopScoredSpeaker", teamReports) +
-          NumericalAverage("AutoScoredSpeaker", teamReports),
-      };
-    });
-
-    const avgTeleop =
-      Object.keys(newStatPairs).sort((a, b) => {
-        const as = newStatPairs[Number(a)];
-        const bs = newStatPairs[Number(b)];
-
-        if (as?.avgTeleop < bs?.avgTeleop) {
-          return 1;
-        } else if (as?.avgTeleop > bs?.avgTeleop) {
-          return -1;
-        }
-
-        return 0;
-      });
-    setAvgTeleop(avgTeleop);
-
-    const avgAuto = 
-    Object.keys(newStatPairs).sort((a, b) => {
-      const as = newStatPairs[Number(a)];
-      const bs = newStatPairs[Number(b)];
-
-      if (as?.avgAuto < bs?.avgAuto) {
-        return 1;
-      } else if (as?.avgAuto > bs?.avgAuto) {
-        return -1;
-      }
-
-      return 0;
-    });
-    setAvgAuto(avgAuto);
-
-    const avgSpeaker = Object.keys(newStatPairs).sort((a, b) => {
-      const as = newStatPairs[Number(a)];
-      const bs = newStatPairs[Number(b)];
-
-      if (as?.avgSpeaker < bs?.avgSpeaker) {
-        return 1;
-      } else if (as?.avgSpeaker > bs?.avgSpeaker) {
-        return -1;
-      }
-
-      return 0;
-    });
-    setAvgSpeaker(avgSpeaker);
-
-    const avgAmp = Object.keys(newStatPairs).sort((a, b) => {
-      const as = newStatPairs[Number(a)];
-      const bs = newStatPairs[Number(b)];
-
-      if (as?.avgAmp < bs?.avgAmp) {
-        return 1;
-      } else if (as?.avgAmp > bs?.avgAmp) {
-        return -1;
-      }
-
-      return 0;
-    });
-    setAvgAmp(avgAmp);
 
     var newPits: PitReportPair = {};
     for (var rid of comp?.pitReports) {
-      const c = await api.findPitreportById(rid);
-      newPits[c.teamNumber] = c;
+      const pitReport = await api.findPitreportById(rid);
+      newPits[pitReport.teamNumber] = pitReport;
+
+      if (!Object.keys(allReports).includes(pitReport.teamNumber.toString())) {
+        allReports[pitReport.teamNumber] = { pit: pitReport, quant: [] };
+      } else {
+        allReports[pitReport.teamNumber].pit = pitReport;
+      }
     }
 
-    const compAverages: DataGroup = {
-      teleop:
-        NumericalAverage("TeleopScoredSpeaker", newReports) +
-        NumericalAverage("TeleopScoredAmp", newReports),
-      auto:
-        NumericalAverage("AutoScoredSpeaker", newReports) +
-        NumericalAverage("AutoScoredAmp", newReports),
-      amp:
-        NumericalAverage("TeleopScoredAmp", newReports) +
-        NumericalAverage("AutoScoredAmp", newReports),
-      speaker:
-        NumericalAverage("TeleopScoredSpeaker", newReports) +
-        NumericalAverage("AutoScoredSpeaker", newReports),
-    };
+    const newReportDict = Object.fromEntries(Object.entries(allReports)
+      .filter(([key, value]) => value.pit?.submitted || value.quant.length > 0)
+      .map(([key, value]) => [Number(key), value]));
+    setReports(newReportDict);
 
-    const teleopPoints = newReports.map(
-      (r) => r.data.TeleopScoredSpeaker + r.data.TeleopScoredAmp
-    );
-    const autoPoints = newReports.map(
-      (r) => r.data.AutoScoredSpeaker + r.data.AutoScoredAmp
-    );
-    const ampPoints = newReports.map(
-      (r) => r.data.TeleopScoredAmp + r.data.AutoScoredAmp
-    );
-    const speakerPoints = newReports.map(
-      (r) => r.data.TeleopScoredSpeaker + r.data.AutoScoredSpeaker
-    );
+    const stats = layout.individualSlideStats.map((stat) => {
+      const entries = Object.entries(newReportDict).map(([team, reports]) => {
+        if (stat.get) {
+          return [team, stat.get(reports.pit, reports.quant)];
+        }
 
-    const compStDevs: DataGroup = {
-      teleop: StandardDeviation(teleopPoints),
-      auto: StandardDeviation(autoPoints),
-      amp: StandardDeviation(ampPoints),
-      speaker: StandardDeviation(speakerPoints),
-    };
+        if (!stat.key)
+          return [team, undefined]
 
-    var newSlides = Object.keys(newStatPairs).map((key) => {
+        if (reports.quant.length > 0 && stat.key in reports.quant[0]) {
+          return [team, NumericalAverage(stat.key as string, reports.quant)];
+        }
+        else if (reports.pit?.data && stat.key in reports.pit?.data) {
+          return [team, reports.pit.data[stat.key as string]];
+        }
+
+        return [team, 0];
+      }).filter((v) => v[1] !== undefined && !isNaN(v[1])) as [string, number][];
+      const values = entries.map((e) => e[1] as number);
+      const teams = entries.map((e) => e[0]);
+
+      const mean = values.reduce((a, b) => a + b, 0) / values.length;
+      const stDev = StandardDeviation(values);
+
+      return {
+        label: stat.label,
+        values: values.map((v, i) => ({ team: teams[i], value: v })),
+        mean,
+        stDev,
+        rankings: values.map((val, index) => ({ value: val, team: teams[index]}))
+                        .sort((a, b) => a.value - b.value)
+                        .map((v) => v.team),
+      };
+    });
+
+    var newSlides = Object.keys(newReportDict).map((key) => {
       return (
         <TeamSlide
           key={key}
           teamNumber={Number(key)}
-          teamStatPairs={newStatPairs}
-          avgTeleop={avgTeleop}
-          avgAmp={avgAmp}
-          avgAuto={avgAuto}
-          avgSpeaker={avgSpeaker}
           pitReport={newPits[Number(key)]}
           matchReports={newReports.filter((r) => r.robotNumber === Number(key))}
           ranking={rankings.find((r) => r.team_key === `frc${key}`)}
           maxRanking={rankings.length}
-          compAverages={compAverages}
-          compStDevs={compStDevs}
-        ></TeamSlide>
+          layout={layout}
+          getBadges={games[comp.gameId].getBadges}
+          stats={stats.map(stat => ({
+              label: stat.label,
+              value: stat.values.filter(v => v.team == key)[0].value,
+              mean: stat.mean,
+              stDev: stat.stDev,
+              rank: stat.rankings.indexOf(key) + 1,
+              maxRanking: rankings.length
+            })
+          )}
+        />
       );
     });
     setSlides(newSlides);
-    setTeamStatPairs(newStatPairs);
   };
 
   useEffect(() => {
@@ -446,6 +357,36 @@ export default function Pitstats(props: { competition: Competition }) {
     setUsePublicData(comp.tbaId !== NotLinkedToTba && confirm(msg));
   }, []);
 
+  function OverallSlide() {
+    const graphs = layout.overallSlideStats.map((stat) => {
+      if (!reports)
+        return "No reports";
+
+      const data = Object.entries(reports).map(([team, reports]) => {
+        if (stat.get) {
+          return stat.get(reports.pit, reports.quant);
+        }
+
+        if (!stat.key)
+          return undefined
+
+        if (reports.pit?.data && stat.key in reports.pit?.data) {
+          return reports.pit.data[stat.key as string];
+        }
+
+        return NumericalAverage(stat.key as string, reports.quant);
+      });
+      
+      return <BarGraph key={JSON.stringify(stat)} label={stat.label} xlabels={Object.keys(reports)} data={data} />
+    });
+
+    return (
+      <div className="w-full h-full bg-base-200 grid grid-cols-2 grid-rows-2 gap-0 rounded-xl">
+        {graphs}
+      </div>
+    );
+  }
+
   return (
     <Container hideMenu={true} requireAuthentication={true} notForMobile={true}>
       <div className="w-full h-full flex flex-col items-center bg-base-300">
@@ -456,7 +397,6 @@ export default function Pitstats(props: { competition: Competition }) {
         <p className="font-mono font-semibold">
           Showing <span className="text-accent">live</span>{ usePublicData && <>, <span className="text-secondary">publicly-available</span></> } data
           <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse inline-block mx-2 translate-y-1"></div>
-          from our <span className="text-accent">26 active scouters</span>
         </p>
 
         <progress
@@ -465,44 +405,13 @@ export default function Pitstats(props: { competition: Competition }) {
           max="100"
         ></progress>
 
-        {!teamStatPairs ? (
+        {!reports ? (
           <h1>Loading...</h1>
-        ) : Object.keys(teamStatPairs).length === 0 ? (
+        ) : Object.keys(reports).length === 0 ? (
           <h1>No data.</h1>
         ) : (
           <div className="w-3/4 h-2/3 flex flex-row p-2">
-            {currentSlide === -1 ? (
-              <div className="w-full h-full bg-base-200 grid grid-cols-2 grid-rows-2 gap-0 rounded-xl">
-                <BarGraph
-                  label="Teleop Points"
-                  xlabels={avgTeleop}
-                  data={avgTeleop.map(
-                    (key) => teamStatPairs[Number(key)].avgTeleop
-                  )}
-                ></BarGraph>
-                <BarGraph
-                  label="Auto Points"
-                  xlabels={avgAuto}
-                  data={avgAuto.map(
-                    (key) => teamStatPairs[Number(key)].avgAuto
-                  )}
-                ></BarGraph>
-                <BarGraph
-                  label="Overall Speaker Points"
-                  xlabels={avgSpeaker}
-                  data={avgSpeaker.map(
-                    (key) => teamStatPairs[Number(key)].avgSpeaker
-                  )}
-                ></BarGraph>
-                <BarGraph
-                  label="Overall Amp Points"
-                  xlabels={avgAmp}
-                  data={avgAmp.map((key) => teamStatPairs[Number(key)].avgAmp)}
-                ></BarGraph>
-              </div>
-            ) : (
-              slides[currentSlide]
-            )}
+            {currentSlide === -1 ? <OverallSlide /> : slides[currentSlide]}
           </div>
         )}
       </div>

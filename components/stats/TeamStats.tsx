@@ -4,15 +4,13 @@ import {
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Badge, Defense, Drivetrain, IntakeTypes, PitReportData, Pitreport, QuantitativeFormData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType, SwerveLevel } from "@/lib/Types";
+import { Badge, PitReportData, Pitreport, QuantitativeFormData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType, SwerveLevel } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
-import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
+import { FaCode, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
-import { Round } from '../../lib/client/StatsMath';
 import { ReactNode, useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Loading from "../Loading";
-import { Crescendo } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -118,8 +116,10 @@ export default function TeamStats(props: {
         return <></>;
       }
 
-      const first = NumericalAverage(pair.stats[0].key as string, props.selectedReports);
-      const second = NumericalAverage(pair.stats[1].key as string, props.selectedReports);
+      const first = pair.stats[0].get?.call(pair.stats[0], pitReport ?? undefined, props.selectedReports)
+        ?? NumericalAverage(pair.stats[0].key as string, props.selectedReports);
+      const second = pair.stats[1].get?.call(pair.stats[1], pitReport ?? undefined, props.selectedReports) 
+        ?? NumericalAverage(pair.stats[1].key as string, props.selectedReports);
 
       return <div className="w-full h-fit flex flex-row items-center">
         <div>
