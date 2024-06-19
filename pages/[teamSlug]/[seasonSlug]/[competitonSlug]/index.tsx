@@ -653,6 +653,7 @@ export default function Home(props: ResolvedUrlData) {
                         {
                           allianceIndices.map((index) =>
                             <input
+                              key={index}
                               type="text"
                               placeholder={`Team ${index + 1}`}
                               className="input input-sm  input-bordered w-1/4"
@@ -673,6 +674,7 @@ export default function Home(props: ResolvedUrlData) {
                         {
                           allianceIndices.map((index) =>
                             <input
+                              key={index}
                               type="text"
                               placeholder={`Team ${index + 1}`}
                               className="input input-sm  input-bordered w-1/4"
