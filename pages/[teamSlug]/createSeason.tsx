@@ -41,7 +41,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
       <Flex mode="row" center={true} className="h-fit py-12 md:py-24">
         <div className="w-2/3 max-sm:w-11/12 flex flex-row max-sm:flex-col max-sm:space-y-4 md:space-x-4">
           {
-            gamesWithIds.map(game => <Card title={game.name} className="w-1/3 bg-base-300">
+            gamesWithIds.map(game => <Card key={game.id} title={game.name} className="w-1/3 bg-base-300">
               <h1 className="text-lg font-semibold">
                 {game.year} {game.league} season
               </h1>
