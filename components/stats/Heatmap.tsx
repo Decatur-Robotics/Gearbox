@@ -15,9 +15,9 @@ var bg: p5Types.Image;
 const resolution = 25;
 var positions: Position[] = [];
 
-export default function Heatmap(props: { selectedReports: Report[] }) {
+export default function Heatmap(props: { selectedReports: Report[], fieldImagePrefix: string }) {
   const setup = (p5: p5Types, canvasParentRef: Element) => {
-    bg = p5.loadImage("/croppedFieldBlue.PNG");
+    bg = p5.loadImage(`/fields/${props.fieldImagePrefix}Blue.PNG`);
     p5.createCanvas(350, 300).parent(canvasParentRef);
     p5.rectMode(p5.CENTER);
     p5.stroke(1);

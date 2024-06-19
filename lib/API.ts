@@ -606,7 +606,7 @@ export namespace API {
       );
 
       const usedComps = data.usePublicData 
-        ? await db.findObjects<Competition>(Collections.Competitions, { publicData: true, tbaId: comp.tbaId })
+        ? await db.findObjects<Competition>(Collections.Competitions, { publicData: true, tbaId: comp.tbaId, gameId: comp.gameId })
         : [comp];
 
       if (data.usePublicData && !comp.publicData)

@@ -19,22 +19,16 @@ export default function Summary(props: { selectedReports: Report[] }) {
       Analysis suggests that this robot favors starting{" "}
       <span className="text-accent">{startingSide}</span> on the field, at{" "}
       <span className="text-accent">{startingAngle}</span> angles of attack.
-      Outfitted with a{" "}
-      <span className="text-accent">
-        {intake.charAt(0).toLowerCase() + intake.slice(1, intake.length)}
-      </span>{" "}
-      intake, this robot is a <span className="text-accent">high</span> auto
-      performer.
       {matches < 5 ? (
         <span className="text-warning">
           {" "}
           <br />
           <br /> However, this robot has only competed in{" "}
-          <span className="text-accent">{matches}</span> matches
+          <span className="text-accent">{matches}</span> matches.
         </span>
       ) : (
         <>
-          This robot has competed in many matches and is very well characterized
+          This robot has competed in {matches} matches and is very well characterized.
         </>
       )}
     </code>

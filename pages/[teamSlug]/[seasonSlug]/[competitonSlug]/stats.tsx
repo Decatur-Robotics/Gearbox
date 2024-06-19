@@ -30,7 +30,7 @@ export default function Stats(props: StatsPageProps) {
   const [pitReports, setPitReports] = useState<Pitreport[]>([]);
   const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
   const [page, setPage] = useState(0);
-  const [usePublicData, setUsePublicData] = useState(false);
+  const [usePublicData, setUsePublicData] = useState(true);
 
   useEffect(() => {
     const i = setInterval(() => {
@@ -133,7 +133,7 @@ export default function Stats(props: StatsPageProps) {
       </div>
 
       {page === 0 ? (
-        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports}></TeamPage>
+        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports} gameId={props.competition.gameId} />
       ) : (
         <></>
       )}
