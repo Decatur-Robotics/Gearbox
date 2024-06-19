@@ -3,8 +3,8 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Form from "@/components/forms/Form";
 import { GetServerSideProps } from "next";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
-import { useEffect } from "react";
-import { games, latestGameId } from "@/lib/games";
+import { games } from "@/lib/games";
+import { latestGameId } from "@/lib/client/GameId";
 
 export default function Homepage(props: ResolvedUrlData) {
   const team = props?.team;

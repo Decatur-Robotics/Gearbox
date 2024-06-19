@@ -346,11 +346,9 @@ export namespace TestGame {
     }
   }
 
-  export const game = new Game("Test", 2024, League.FRC, Crescendo.QuantitativeData, Crescendo.PitData, 
+  export const game = new Game("Test", 2024, League.FTC, Crescendo.QuantitativeData, Crescendo.PitData, 
     pitReportLayout, quantitativeReportLayout, statsLayout, pitStatsLayout, "Crescendo", getBaseBadges, () => 0);
 }
-
-export const latestGameId = GameId.Crescendo;
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
   [GameId.Crescendo]: Crescendo.game,

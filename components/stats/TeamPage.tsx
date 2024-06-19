@@ -92,8 +92,8 @@ function TeamCard(props: {
           <span className="tooltip" data-tip="Difference from comp-wide average">({pointsDiffFromAvgFormatted})</span>
         </p>
         <div className="card-actions">
-          {badges.map((badge) => (
-            <div className={`badge badge-sm badge-${badge.color}`}>{badge.text}</div>
+          {badges.map((badge, index) => (
+            <div key={index} className={`badge badge-sm badge-${badge.color}`}>{badge.text}</div>
           ))}
         </div>
       </div>

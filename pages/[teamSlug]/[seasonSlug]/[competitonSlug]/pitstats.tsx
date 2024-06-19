@@ -93,7 +93,7 @@ function TeamSlide(props: {
     if (!robotCapabilities)
       return <></>;
 
-    const elements = robotCapabilities.map((cap) => {
+    const elements = robotCapabilities.map((cap, index) => {
       let value: any = cap.get?.call(cap, pit, props.matchReports);
 
       if (!value && cap.key) {
@@ -106,7 +106,7 @@ function TeamSlide(props: {
       }
 
       return (
-        <p className="text-lg">
+        <p key={index} className="text-lg">
           {cap.label}: <span className="text-accent">{value}</span>
         </p>
       );
@@ -119,11 +119,11 @@ function TeamSlide(props: {
   }
 
   function IndividualStats() {
-    const elements = props.stats.map(stat => {
+    const elements = props.stats.map((stat, index) => {
       const diff = stat.value - stat.mean;
 
       return (
-        <div>
+        <div key={index}>
           <p className="text-lg">
             {stat.label}: <span className="text-accent">{stat.value}</span>{" "}
             <span className="text-primary">(Ranked #{stat.rank}/{stat.maxRanking})</span>
@@ -166,8 +166,8 @@ function TeamSlide(props: {
           {props.ranking?.record.ties}
         </h2>
 
-        {props.getBadges(props.pitReport, props.matchReports).map((badge) => (
-          <div className={`badge badge-${badge.color} mt-2`}>{badge.text}</div>
+        {props.getBadges(props.pitReport, props.matchReports).map((badge, index) => (
+          <div key={index} className={`badge badge-${badge.color} mt-2`}>{badge.text}</div>
         ))}
 
         <div className="divider w-1/2" />

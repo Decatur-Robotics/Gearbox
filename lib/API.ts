@@ -461,7 +461,8 @@ export namespace API {
           pitReports,
           matches.map((match) => String(match._id)),
           picklist._id.toString(),
-          data.publicData
+          data.publicData,
+          season?.gameId
         )
       );
 

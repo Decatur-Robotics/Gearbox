@@ -29,6 +29,8 @@ import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
+import { games } from "@/lib/games";
+import { latestGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -474,6 +476,11 @@ export default function Home(props: ResolvedUrlData) {
     location.reload();
   }
 
+  const allianceIndices: number[] = [];
+  for (let i = 0; i < games[comp?.gameId ?? latestGameId].allianceSize; i++) {
+    allianceIndices.push(i);
+  }
+
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
@@ -611,6 +618,7 @@ export default function Home(props: ResolvedUrlData) {
 
                   <div className="divider"></div>
                   <h1 className="font-semibold">Edit comp information</h1>
+                  <div>Game: {games[comp?.gameId ?? latestGameId].name}</div>
                   <div className="flex flex-row items-center justify-between">
                     <label className="label">Competition Name</label>
                     <input
@@ -642,77 +650,41 @@ export default function Home(props: ResolvedUrlData) {
                     <div className="w-1/2 flex flex-col items-center">
                       <h1 className="text-red-500 font-bold text-xl">Red</h1>
                       <div className="flex flex-row items-center justify-evenly">
-                        <input
-                          type="text"
-                          placeholder="Team 1"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={redAlliance[0]}
-                          onChange={(e) => {
-                            const c = structuredClone(redAlliance);
-                            c[0] = Number(e.target.value);
-                            setRedAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 2"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={redAlliance[1]}
-                          onChange={(e) => {
-                            const c = structuredClone(redAlliance);
-                            c[1] = Number(e.target.value);
-                            setRedAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 3"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={redAlliance[2]}
-                          onChange={(e) => {
-                            const c = structuredClone(redAlliance);
-                            c[2] = Number(e.target.value);
-                            setRedAlliance(c);
-                          }}
-                        />
+                        {
+                          allianceIndices.map((index) =>
+                            <input
+                              type="text"
+                              placeholder={`Team ${index + 1}`}
+                              className="input input-sm  input-bordered w-1/4"
+                              value={redAlliance[index]}
+                              onChange={(e) => {
+                                const c = structuredClone(redAlliance);
+                                c[index] = Number(e.target.value);
+                                setRedAlliance(c);
+                              }}
+                            />
+                          )
+                        }
                       </div>
                     </div>
                     <div className="w-1/2 flex flex-col items-center">
                       <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
                       <div className="flex flex-row items-center justify-evenly">
-                        <input
-                          type="text"
-                          placeholder="Team 1"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={blueAlliance[0]}
-                          onChange={(e) => {
-                            const c = structuredClone(blueAlliance);
-                            c[0] = Number(e.target.value);
-                            setBlueAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 2"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={blueAlliance[1]}
-                          onChange={(e) => {
-                            const c = structuredClone(blueAlliance);
-                            c[1] = Number(e.target.value);
-                            setBlueAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 3"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={blueAlliance[2]}
-                          onChange={(e) => {
-                            const c = structuredClone(blueAlliance);
-                            c[2] = Number(e.target.value);
-                            setBlueAlliance(c);
-                          }}
-                        />
+                        {
+                          allianceIndices.map((index) =>
+                            <input
+                              type="text"
+                              placeholder={`Team ${index + 1}`}
+                              className="input input-sm  input-bordered w-1/4"
+                              value={blueAlliance[index]}
+                              onChange={(e) => {
+                                const c = structuredClone(blueAlliance);
+                                c[index] = Number(e.target.value);
+                                setBlueAlliance(c);
+                              }}
+                            />
+                          )
+                        }
                       </div>
                     </div>
                   </div>

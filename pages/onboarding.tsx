@@ -7,6 +7,7 @@ import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { CurrentSeason, OffSeason } from "./[teamSlug]/createSeason";
+import { latestGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -94,7 +95,7 @@ export default function Onboarding() {
   async function createSeason() {
     if (!session?.user?._id || !team?._id) return;
 
-    setSeason(await api.createSeason(season.name, season.year, team?._id));
+    setSeason(await api.createSeason(season.name, season.year, latestGameId, team?._id));
     setSeasonCreated(true);
   }
 

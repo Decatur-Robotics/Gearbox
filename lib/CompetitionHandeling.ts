@@ -12,8 +12,6 @@ import { RotateArray, ShuffleArray } from "./Utils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 
-export const MinimumNumberOfScouters = 6;
-
 export async function AssignScoutersToCompetitionMatches(
   teamId: string,
   competitionId: string,
@@ -84,7 +82,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
     
   const bots = match.blueAlliance.concat(match.redAlliance);
   const reports = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < bots.length; i++) {
     const teamNumber = bots[i];
     const scouter = i < (scouters?.length ?? 0) ? scouters?.[i] : undefined;
     const color = match.blueAlliance.includes(teamNumber)

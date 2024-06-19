@@ -199,7 +199,7 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
     });
 
     return (
-      <FormPage title={page.page}>
+      <FormPage key={"form"} title={page.page}>
         {inputs}
         {
           index === layout.length - 1 && (<>

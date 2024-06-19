@@ -8,6 +8,7 @@ import Container from "@/components/Container";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { latestGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -57,7 +58,7 @@ export default function CreateComp(props: ResolvedUrlData) {
       autofill?.start ?? now,
       autofill?.end ?? now,
       season?._id,
-      usePublicData
+      usePublicData,
     );
     var win: Window = window;
     win.location = `/${team?.slug}/${season?.slug}/${comp.slug}`;

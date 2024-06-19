@@ -10,8 +10,8 @@ import {
   Pitreport,
 } from "./Types";
 import { NotLinkedToTba } from "./client/ClientUtils";
-import { GameId } from "./client/GameId";
-import { games, latestGameId } from "./games";
+import { GameId, latestGameId } from "./client/GameId";
+import { games } from "./games";
 
 export namespace TheBlueAlliance {
   export interface SimpleTeam {

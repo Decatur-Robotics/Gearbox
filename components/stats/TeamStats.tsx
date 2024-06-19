@@ -99,12 +99,12 @@ export default function TeamStats(props: {
   const badges = props.getBadges(pitReport ?? undefined, props.selectedReports);
 
   function getSections(header: string, stats: (Stat<PitReportData, QuantitativeFormData> | StatPair<PitReportData, QuantitativeFormData>)[]) {
-    const statElements = stats.map((stat) => {
+    const statElements = stats.map((stat, index) => {
       if ((stat as Stat<PitReportData, QuantitativeFormData>).key) {
         // Single stat
         const singleStat = stat as Stat<PitReportData, QuantitativeFormData>;
 
-        return <h1>
+        return <h1 key={index}>
           {singleStat.label}: {NumericalAverage(singleStat.key as string, props.selectedReports)}
         </h1>
       }
@@ -121,7 +121,7 @@ export default function TeamStats(props: {
       const second = pair.stats[1].get?.call(pair.stats[1], pitReport ?? undefined, props.selectedReports) 
         ?? NumericalAverage(pair.stats[1].key as string, props.selectedReports);
 
-      return <div className="w-full h-fit flex flex-row items-center">
+      return <div key={index} className="w-full h-fit flex flex-row items-center">
         <div>
           <h1>
             {pair.stats[0].label}: {first}
