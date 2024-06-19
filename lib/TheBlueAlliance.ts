@@ -10,7 +10,7 @@ import {
   Pitreport,
 } from "./Types";
 import { NotLinkedToTba } from "./client/ClientUtils";
-import { GameId, latestGameId } from "./client/GameId";
+import { GameId, defaultGameId } from "./client/GameId";
 import { games } from "./games";
 
 export namespace TheBlueAlliance {
@@ -282,7 +282,7 @@ export namespace TheBlueAlliance {
 
       const competitionTeams = await this.req.getCompetitionTeams(tbaId);
       return competitionTeams.map(
-        ({ team_number }) => new Pitreport(team_number, games[gameId ?? latestGameId].createPitReportData())
+        ({ team_number }) => new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData())
       );
     }
 

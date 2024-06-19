@@ -3,4 +3,4 @@ export enum GameId {
   TestGame = "Test"
 }
 
-export const latestGameId = GameId.Crescendo;
+export const defaultGameId = GameId.Crescendo;

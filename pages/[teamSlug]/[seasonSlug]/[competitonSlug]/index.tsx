@@ -30,7 +30,7 @@ import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
-import { latestGameId } from "@/lib/client/GameId";
+import { defaultGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -477,7 +477,7 @@ export default function Home(props: ResolvedUrlData) {
   }
 
   const allianceIndices: number[] = [];
-  for (let i = 0; i < games[comp?.gameId ?? latestGameId].allianceSize; i++) {
+  for (let i = 0; i < games[comp?.gameId ?? defaultGameId].allianceSize; i++) {
     allianceIndices.push(i);
   }
 
@@ -618,7 +618,7 @@ export default function Home(props: ResolvedUrlData) {
 
                   <div className="divider"></div>
                   <h1 className="font-semibold">Edit comp information</h1>
-                  <div>Game: {games[comp?.gameId ?? latestGameId].name}</div>
+                  <div>Game: {games[comp?.gameId ?? defaultGameId].name}</div>
                   <div className="flex flex-row items-center justify-between">
                     <label className="label">Competition Name</label>
                     <input

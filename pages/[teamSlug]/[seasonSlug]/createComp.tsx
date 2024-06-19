@@ -8,7 +8,7 @@ import Container from "@/components/Container";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
-import { latestGameId } from "@/lib/client/GameId";
+import { defaultGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 

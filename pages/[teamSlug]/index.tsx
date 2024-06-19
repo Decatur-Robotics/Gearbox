@@ -31,7 +31,7 @@ import ConfirmModal from "@/lib/client/Confirm";
 import { team } from "slack";
 import { validName } from "@/lib/client/InputVerification";
 import { games } from "@/lib/games";
-import { latestGameId } from "@/lib/client/GameId";
+import { defaultGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -79,7 +79,7 @@ function Overview(props: TeamPageProps) {
                         href={`/${props.team?.slug}/${season.slug}`}
                         className="text-accent"
                       >
-                        {season.name} - {season.year} ({games[season.gameId ?? latestGameId].name})
+                        {season.name} - {season.year} ({games[season.gameId ?? defaultGameId].name})
                       </Link>
                     </li>
                   ))}

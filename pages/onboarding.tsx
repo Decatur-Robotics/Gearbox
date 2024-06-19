@@ -7,7 +7,7 @@ import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { CurrentSeason, OffSeason } from "./[teamSlug]/createSeason";
-import { latestGameId } from "@/lib/client/GameId";
+import { defaultGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -27,8 +27,7 @@ export default function Onboarding() {
   }
   const [joinRequestStatus, setJoinRequestStatus] = useState<JoinRequestStatus>(JoinRequestStatus.NotRequested);
   const [season, setSeason] = useState<Season>(new Date().getMonth() < 6 ? CurrentSeason : OffSeason);
-  const [seasonCreated, setSeasonCreated] = useState<boolean>(false);
-1  
+  const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
   
   if ((session?.user?.onboardingComplete || session?.user?.teams.length === 0) ?? false)
     router.push("/profile");
@@ -95,7 +94,7 @@ export default function Onboarding() {
   async function createSeason() {
     if (!session?.user?._id || !team?._id) return;
 
-    setSeason(await api.createSeason(season.name, season.year, latestGameId, team?._id));
+    setSeason(await api.createSeason(season.name, season.year, defaultGameId, team?._id));
     setSeasonCreated(true);
   }
 
@@ -111,6 +110,9 @@ export default function Onboarding() {
               </div>
               <div className="pb-6">
                 Before you can start on your scouting journey, there&apos;s a bit of set up to do. It will only take a minute.
+                <div className="text-xs mt-2">
+                  (Interactive onboarding does not currently support FTC. If you are in FTC, click the button at the bottom to skip onboarding)
+                </div>
               </div>
               { !teamConfirmed || !team
                   ? <div>

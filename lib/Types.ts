@@ -5,7 +5,7 @@ import {
   User as NextAuthUser,
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { GameId, latestGameId } from "./client/GameId";
+import { GameId, defaultGameId } from "./client/GameId";
 
 /**
  * Standard Account Type
@@ -393,7 +393,7 @@ export class Competition {
     this.matches = matches;
     this.picklist = picklist;
     this.publicData = publicData;
-    this.gameId = gameId ?? latestGameId;
+    this.gameId = gameId ?? defaultGameId;
   }
 }
 
