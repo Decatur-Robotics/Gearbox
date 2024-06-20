@@ -1,6 +1,6 @@
 import { AllianceColor, Report, QuantitativeFormData, QuantitativeReportLayout, QuantitativeReportLayoutElement, QuantitativeReportLayoutElementHolder, IntakeTypes, Defense, Drivetrain } from "@/lib/Types";
 import { useCallback, useState, useEffect } from "react";
-import FormPage, { AutoPage, EndPage, PrematchPage, TeleopPage } from "./FormPages";
+import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
@@ -12,6 +12,7 @@ import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 import StartingPosition from "./StartingPosition";
 import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
+import Slider from "./Sliders";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -95,10 +96,14 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
       else {
         const enums = [IntakeTypes, Defense, Drivetrain];
 
-        for (const e of enums) {
-          if (Object.values(e).includes(formData[element.key])) {
-            element.type = e;
-            break;
+        if (element.key === "Defense")
+          element.type = Defense;
+        else {
+          for (const e of enums) {
+            if (Object.values(e).includes(formData[element.key])) {
+              element.type = e;
+              break;
+            }
           }
         }
 
@@ -148,6 +153,15 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
     if (element.type === "string") {
       return (
         <CommentBox data={formData} callback={setCallback} />
+      );
+    }
+
+    // Enum
+    if (element.type) {
+      return (
+        <Slider data={formData} callback={setCallback} possibleValues={element.type} 
+          title={element.label ?? camelCaseToTitleCase(element.key as string)} value={formData[element.key]}
+          key={element.key} />
       );
     }
   }
@@ -212,8 +226,6 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
       </FormPage>
     );
   });
-
-  console.log(formData);
 
   return (
     <div className="w-full h-fit flex flex-col items-center space-y-2 mb-2">

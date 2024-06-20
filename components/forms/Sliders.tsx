@@ -3,29 +3,39 @@ import { QuantitativeFormData, Defense } from "@/lib/Types";
 export type SliderProps = {
   data: QuantitativeFormData;
   callback: (key: string, value: string | number | boolean) => void;
+  possibleValues: { [key: string]: any };
+  title: string;
+  value: any;
+  key: keyof QuantitativeFormData;
 };
-export default function DefenseSlider(props: SliderProps) {
-  const keys = Object.keys(Defense);
-  const num = keys.indexOf(props.data.Defense);
+export default function Slider(props: SliderProps) {
+  const keys = Object.keys(props.possibleValues);
+  const num = keys.indexOf(props.value);
 
   return (
     <div className="w-full text-center">
-      <h1 className="font-semibold text-xl mb-2">Defense</h1>
+      <h1 className="font-semibold text-xl mb-2">{props.title}</h1>
       <input
         onChange={(e) => {
-          props.callback("Defense", keys[e.target.valueAsNumber]);
+          props.callback(props.key as string, keys[e.target.valueAsNumber]);
         }}
         type="range"
         min={0}
-        max="2"
+        max={keys.length - 1}
         value={num}
         className="range range-primary"
         step="1"
       />
       <div className="w-full flex justify-between text-lg px-2 text-center">
-        <span>None</span>
-        <span>Partial</span>
-        <span>Full</span>
+        {
+          keys.map((key, i) => {
+            return (
+              <span key={i}>
+                {key}
+              </span>
+            );
+          })
+        }
       </div>
     </div>
   );
