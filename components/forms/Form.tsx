@@ -1,4 +1,4 @@
-import { AllianceColor, Report, QuantitativeFormData, QuantitativeReportLayout, QuantitativeReportLayoutElement, QuantitativeReportLayoutElementHolder, IntakeTypes, Defense, Drivetrain } from "@/lib/Types";
+import { AllianceColor, Report, QuantitativeFormData, QuantitativeReportLayout, QuantitativeReportLayoutElement, QuantitativeReportLayoutElementHolder } from "@/lib/Types";
 import { useCallback, useState, useEffect } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -13,6 +13,7 @@ import StartingPosition from "./StartingPosition";
 import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
+import { IntakeTypes, Defense, Drivetrain } from "@/lib/Enums";
 
 const api = new ClientAPI("gearboxiscool");
 

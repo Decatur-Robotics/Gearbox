@@ -6,6 +6,8 @@ import {
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
+import { camelCaseToTitleCase } from "./client/ClientUtils";
+import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
 
 /**
  * Standard Account Type
@@ -100,19 +102,6 @@ export class Team {
     this.seasons = seasons;
     this.requests = requests;
   }
-}
-
-export enum Defense {
-  None = "None",
-  Partial = "Partial",
-  Full = "Full",
-}
-
-export enum IntakeTypes {
-  None = "None",
-  Human = "Human",
-  Ground = "Ground",
-  Both = "Both",
 }
 
 export abstract class QuantitativeFormData {
@@ -296,27 +285,6 @@ export class Season {
     this.competitions = competitions;
     this.gameId = gameId;
   }
-}
-
-export enum Drivetrain {
-  Tank = "Tank",
-  Swerve = "Swerve",
-  Mecanum = "Mecanum",
-}
-
-export enum Motors {
-  CIMs = "CIM",
-  Krakens = "Krakens",
-  Falcons = "Falcons",
-  Talons = "Talons",
-  Neos = "Neos",
-}
-
-export enum SwerveLevel {
-  None = "None",
-  L1 = "L1",
-  L2 = "L2",
-  L3 = "L3",
 }
 
 export abstract class PitReportData {
