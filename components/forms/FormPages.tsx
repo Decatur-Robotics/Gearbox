@@ -1,10 +1,5 @@
 import { ReactNode } from "react";
-import StartingPosition from "./StartingPosition";
-import { AutoButtons, TeleopButtons } from "./Buttons";
-import Slider from "./Sliders";
-import Checkbox, { IntakeType } from "./Checkboxes";
 import { AllianceColor, QuantitativeFormData } from "@/lib/Types";
-import { CommentBox } from "./Comment";
 
 export type PageProps = {
   alliance: AllianceColor;

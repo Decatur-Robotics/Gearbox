@@ -1,4 +1,4 @@
-import { Badge, Competition, Defense, Drivetrain, IntakeTypes, PitReportData, Pitreport, QuantitativeFormData, Report, SubjectiveReport, SwerveLevel } from "@/lib/Types";
+import { Badge, PitReportData, Pitreport, QuantitativeFormData, Report, SubjectiveReport } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import {
@@ -17,6 +17,7 @@ import SmallGraph from "@/components/stats/SmallGraph";
 import Loading from "../Loading";
 import { Crescendo, games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
+import { Drivetrain } from "@/lib/Enums";
 
 function TeamCard(props: {
   number: number;

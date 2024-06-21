@@ -1,25 +1,23 @@
 import { Collections, getDatabase } from "@/lib/MongoDB";
-import { Drivetrain, Game, IntakeTypes, Motors, PitReportLayout, PitReportLayoutElement, Pitreport, SwerveLevel } from "@/lib/Types";
+import { PitReportLayout, PitReportLayoutElement, Pitreport } from "@/lib/Types";
 import { ObjectId } from "mongodb";
 import { GetServerSideProps } from "next";
-import UrlResolver, { ResolvedUrlData, SerializeDatabaseObject } from "@/lib/UrlResolver";
+import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Checkbox, {
-  DrivetrainType,
-  IntakeType,
 } from "@/components/forms/Checkboxes";
-import { CommentBox } from "@/components/forms/Comment";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { FaRobot } from "react-icons/fa";
 import ImageUpload from "@/components/forms/ImageUpload";
-import { Crescendo, games } from "@/lib/games";
+import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
+import { Drivetrain, Motors, SwerveLevel, IntakeTypes } from "@/lib/Enums";
 
 const api = new ClientAPI("gearboxiscool");
 

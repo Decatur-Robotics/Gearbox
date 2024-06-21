@@ -3,14 +3,11 @@ import BarGraph from "@/components/stats/Graph";
 import {
   Badge,
   Competition,
-  IntakeTypes,
   PitReportData,
   PitStatsLayout,
   Pitreport,
   QuantitativeFormData,
   Report,
-  Stat,
-  SwerveLevel,
 } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
@@ -28,23 +25,7 @@ import { Crescendo, games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
-type TeamReportPair = { [key: number]: Report[] };
-type TeamStatPair = {
-  [key: number]: {
-    avgTeleop: number;
-    avgAuto: number;
-    avgSpeaker: number;
-    avgAmp: number;
-  };
-};
 type PitReportPair = { [team: number]: Pitreport };
-
-type DataGroup = {
-  teleop: number;
-  auto: number;
-  amp: number;
-  speaker: number;
-};
 
 function TeamSlide(props: {
   teamNumber: number;

@@ -1,4 +1,5 @@
-import { Report, QuantitativeFormData, Defense } from "@/lib/Types";
+import { Defense } from "@/lib/Enums";
+import { Report } from "@/lib/Types";
 import ClientAPI from "@/lib/client/ClientAPI";
 
 import {

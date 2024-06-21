@@ -1,4 +1,4 @@
-import { QuantitativeFormData, Defense } from "@/lib/Types";
+import { QuantitativeFormData } from "@/lib/Types";
 
 export type SliderProps = {
   data: QuantitativeFormData;

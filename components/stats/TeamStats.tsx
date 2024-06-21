@@ -1,10 +1,8 @@
 import {
-  BooleanAverage,
-  MostCommonValue,
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Badge, PitReportData, Pitreport, QuantitativeFormData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType, SwerveLevel } from "@/lib/Types";
+import { Badge, PitReportData, Pitreport, QuantitativeFormData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
