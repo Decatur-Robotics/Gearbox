@@ -491,7 +491,7 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
                 <a
-                  className="max-sm:w-full btn btn-primary"
+                  className={`max-sm:w-full btn btn-${comp?.tbaId !== NotLinkedToTba ? "primary" : "disabled"}`}
                   href={"/event/" + comp?.tbaId}
                 >
                   Rankings <MdAutoGraph size={30} />
