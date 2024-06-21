@@ -432,7 +432,7 @@ export default function TeamIndex(props: TeamPageProps) {
               <></>
             )}
             <Link
-              href={"https://www.thebluealliance.com/team/4026"}
+              href={`https://www.thebluealliance.com/team/${team?.number}`}
               rel="noopener noreferrer"
               target="_blank"
             >
