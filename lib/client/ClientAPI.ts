@@ -216,7 +216,7 @@ export default class ClientAPI {
     compId: string | undefined,
     tbaId: string | undefined
   ) {
-    return await this.request("/updateCompetition", {
+    return await this.request("/reloadCompetition", {
       compId: compId,
       tbaId: tbaId,
     });
