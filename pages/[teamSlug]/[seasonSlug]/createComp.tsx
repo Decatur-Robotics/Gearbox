@@ -44,13 +44,13 @@ export default function CreateComp(props: ResolvedUrlData) {
   const createComp = async () => {
     setCreatingComp(true);
 
-    const autofill = selection ? await api.getCompetitionAutofillData(
-      results[selection].pair.tbaId
+    // Can't just do selection ? because 0 is a valid selection, but will evaluate to false
+    const selectedId = selection !== undefined ? results[selection].pair.tbaId : undefined;
+    const autofill = selectedId ? await api.getCompetitionAutofillData(
+      selectedId
     ) : undefined;
 
     const now = new Date().getTime();
-
-    console.log(autofill);
 
     const comp = await api.createCompetition(
       autofill?.name ?? name,
@@ -133,7 +133,9 @@ export default function CreateComp(props: ResolvedUrlData) {
                     </div>
                 )}
                 <button className={`btn btn-${selection !== undefined && selection >= 0 ? "primary" : "warning"} w-full`} onClick={createComp}>
-                  Create Competition{(selection === undefined || selection < 0) && " (WARNING: TBA competition not linked. Some features will be unavailable)"}
+                  Create Competition{(selection === undefined || selection < 0) 
+                    ? " (WARNING: TBA competition not linked. Some features will be unavailable)"
+                    : `: ${results[selection].pair.name} (TBA ID: ${results[selection].pair.tbaId})`}
                 </button>
               </div>
             }
