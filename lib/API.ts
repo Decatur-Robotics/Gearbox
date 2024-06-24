@@ -24,7 +24,7 @@ import Auth, { AuthenticationOptions } from "./Auth";
 import { Statbotics } from "./Statbotics";
 import { SerializeDatabaseObject } from "./UrlResolver";
 
-import { QuantitativeFormData } from "./Types";
+import { QuantData } from "./Types";
 import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
@@ -741,7 +741,7 @@ export namespace API {
       const subjectiveReportsPromise = db.countObjects(Collections.SubjectiveReports, {});
       const competitionsPromise = db.countObjects(Collections.Competitions, {});
 
-      const dataPointsPerReport = Reflect.ownKeys(QuantitativeFormData).length;
+      const dataPointsPerReport = Reflect.ownKeys(QuantData).length;
       const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
       const dataPointsPerSubjectiveReport = Reflect.ownKeys(SubjectiveReport).length + 5;
 
@@ -778,7 +778,7 @@ export namespace API {
       }
 
       // Convert reports to row data
-      interface Row extends QuantitativeFormData {
+      interface Row extends QuantData {
         timestamp: number | undefined;
         team: number;
       }

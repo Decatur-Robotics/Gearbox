@@ -1,12 +1,12 @@
-import { QuantitativeFormData } from "@/lib/Types";
+import { QuantData } from "@/lib/Types";
 
 export type SliderProps = {
-  data: QuantitativeFormData;
+  data: QuantData;
   callback: (key: string, value: string | number | boolean) => void;
   possibleValues: { [key: string]: any };
   title: string;
   value: any;
-  key: keyof QuantitativeFormData;
+  dataKey: keyof QuantData;
 };
 export default function Slider(props: SliderProps) {
   const keys = Object.keys(props.possibleValues);
@@ -17,7 +17,7 @@ export default function Slider(props: SliderProps) {
       <h1 className="font-semibold text-xl mb-2">{props.title}</h1>
       <input
         onChange={(e) => {
-          props.callback(props.key as string, keys[e.target.valueAsNumber]);
+          props.callback(props.dataKey as string, keys[e.target.valueAsNumber]);
         }}
         type="range"
         min={0}

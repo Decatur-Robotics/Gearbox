@@ -1,5 +1,5 @@
 import { Collections, getDatabase } from "@/lib/MongoDB";
-import { PitReportLayout, PitReportLayoutElement, Pitreport } from "@/lib/Types";
+import { PitReportData, Pitreport } from "@/lib/Types";
 import { ObjectId } from "mongodb";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
@@ -16,12 +16,12 @@ import { FaRobot } from "react-icons/fa";
 import ImageUpload from "@/components/forms/ImageUpload";
 import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
-import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
-import { Drivetrain, Motors, SwerveLevel, IntakeTypes } from "@/lib/Enums";
+import { makeObjSerializeable } from "@/lib/Utils";
+import { BlockElement, FormLayout, LayoutElement } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PitreportForm(props: { pitreport: Pitreport, layout: PitReportLayout<any> }) {
+export default function PitreportForm(props: { pitreport: Pitreport, layout: FormLayout<PitReportData> }) {
   const { session, status } = useCurrentSession();
   const hide = status === "authenticated";
 
@@ -54,11 +54,8 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: Pit
     );
   }
 
-  function getComponent(key: string | PitReportLayoutElement<any>, isLastInHeader: boolean) {
-    const element = getLayoutElement(key);
-
-    if (typeof key === "object")
-      key = key.key as string;
+  function getComponent(element: LayoutElement<PitReportData>, isLastInHeader: boolean) {
+    const key = element.key as string;
 
     if (element.type === "image")
       return <ImageUpload report={pitreport} callback={setCallback} />
@@ -101,7 +98,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: Pit
             type="radio"
             className={`radio radio-${color}`}
             onChange={() =>
-              setCallback(key, entry[1])
+              setCallback(key, entry[1] as boolean | string | number)
             }
             checked={pitreport.data?.[element.key as string] === entry[1]}
           />
@@ -115,54 +112,22 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: Pit
     </>);
   }
 
-  function getLayoutElement(key: string | PitReportLayoutElement<any>) {
-    const element: PitReportLayoutElement<any> = {
-      key: key as string,
-      label: undefined,
-      type: undefined
-    }
+  const components = Object.entries(props.layout).map(([header, elements]) => {
+    const inputs = elements.map((element, index) => {
+      if (!Array.isArray(element))
+        return getComponent(element as LayoutElement<PitReportData>, index === elements.length - 1);
 
-    const value = pitreport.data?.[key as string];
-    const rawType = typeof value;
-
-    if (typeof key === "object") {
-      // Copy over the values that do exist
-      for (const [k, v] of Object.entries(key)) {
-        element[k] = v;
-      }
-    }
-
-    if (!element.type) {
-      if (rawType !== "string")
-        element.type = rawType;
-      else {
-        const enums = [Drivetrain, Motors, SwerveLevel, IntakeTypes];
-
-        for (const enumType of enums) {
-          if (Object.values(enumType).includes(value)) {
-            element.type = enumType;
-            break;
-          }
-        }
-
-        if (!element.type)
-          element.type = "string";
-      }
-    }
-
-    if (!element.label) {
-      element.label = camelCaseToTitleCase(element.key as string);
-    }
-
-    return element;
-  }
-
-  const components = Object.entries(props.layout).map(([key, value]) => {
-    const inputs = value.map((key, index) => getComponent(key as string, index === value.length - 1));
+      const block = element as BlockElement<PitReportData>;
+      return block.elements?.map((row, rowIndex) =>
+        row.map((element, elementIndex) =>
+          getComponent(element, elementIndex === row.length - 1)
+        )
+      );
+    });
 
     return (
-      <div key={key}>
-        <h1 className="font-semibold text-lg">{key}</h1>
+      <div key={header}>
+        <h1 className="font-semibold text-lg">{header}</h1>
         <div className="translate-x-10">
           {inputs}
         </div>
@@ -212,7 +177,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: { 
       pitreport: SerializeDatabaseObject(pitreport),
-      layout: game.pitReportLayout
+      layout: makeObjSerializeable(game.pitReportLayout)
      },
   };
 };

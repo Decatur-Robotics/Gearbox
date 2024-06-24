@@ -8,6 +8,7 @@ import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
 import { camelCaseToTitleCase } from "./client/ClientUtils";
 import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
+import { FormLayoutProps, FormLayout } from './Layout';
 
 /**
  * Standard Account Type
@@ -104,7 +105,7 @@ export class Team {
   }
 }
 
-export abstract class QuantitativeFormData {
+export abstract class QuantData {
   [key: string]: any;
 
   Presented: boolean = true;
@@ -124,7 +125,7 @@ export enum League {
   FTC = "FTC", FRC = "FRC"
 }
 
-export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReportData extends PitReportData> {
+export class Game<TQuantData extends QuantData, TPitData extends PitReportData> {
   name: string;
 
   year: number;
@@ -132,46 +133,46 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
 
   allianceSize: number
 
-  quantitativeFormDataType: new() => TQuantitativeFormData;
-  pitReportDataType: new() => TPitReportData;
+  quantDataType: new() => TQuantData;
+  pitDataType: new() => TPitData;
 
-  pitReportLayout: PitReportLayout<TPitReportData>;
-  quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>;
-  statsLayout: StatsLayout<TPitReportData, TQuantitativeFormData>;
-  pitStatsLayout: PitStatsLayout<TPitReportData, TQuantitativeFormData>;
+  pitReportLayout: FormLayout<TPitData>;
+  quantitativeReportLayout: FormLayout<TQuantData>;
+  statsLayout: StatsLayout<TPitData, TQuantData>;
+  pitStatsLayout: PitStatsLayout<TPitData, TQuantData>;
 
   fieldImagePrefix: string;
   coverImage: string
 
-  getBadges: (pitData: Pitreport<TPitReportData> | undefined, quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => Badge[];
-  getAvgPoints: (quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => number;
+  getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => Badge[];
+  getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number;
 
   /**
    * @param name 
    * @param year 
    * @param league 
-   * @param quantitativeFormDataType 
-   * @param pitReportDataType 
+   * @param quantDataType 
+   * @param pitDataType 
    * @param pitReportLayout will auto-populate fields from PitReportData (everything not unique to the game)
    */
   constructor(name: string, year: number, league: League, 
-      quantitativeFormDataType: new() => TQuantitativeFormData, pitReportDataType: new() => TPitReportData, 
-      pitReportLayout: PitReportLayout<TPitReportData>, quantitativeReportLayout: QuantitativeReportLayout<TQuantitativeFormData>,
-      statsLayout: StatsLayout<TPitReportData, TQuantitativeFormData>,
-      pitStatsLayout: PitStatsLayout<TPitReportData, TQuantitativeFormData>, fieldImagePrefix: string, 
+      quantDataType: new() => TQuantData, pitDataType: new() => TPitData, 
+      pitReportLayout: FormLayoutProps<TPitData>, quantitativeReportLayout: FormLayoutProps<TQuantData>,
+      statsLayout: StatsLayout<TPitData, TQuantData>,
+      pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, fieldImagePrefix: string, 
       coverImage: string,
-      getBadges: (pitData: Pitreport<TPitReportData> | undefined, quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => Badge[],
-      getAvgPoints: (quantitativeReports: Report<TQuantitativeFormData>[] | undefined) => number) {
+      getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => Badge[],
+      getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number) {
     this.name = name;
     this.year = year;
     this.league = league;
     this.allianceSize = league === League.FRC ? 3 : 2;
 
-    this.quantitativeFormDataType = quantitativeFormDataType;
-    this.pitReportDataType = pitReportDataType;
+    this.quantDataType = quantDataType;
+    this.pitDataType = pitDataType;
 
-    this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout);
-    this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout);
+    this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout, new pitDataType());
+    this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout, new quantDataType());
     this.statsLayout = Game.mergeStatsLayoutWithBaseLayout(statsLayout);
     this.pitStatsLayout = Game.mergePitStatsLayoutWithBaseLayout(pitStatsLayout);
 
@@ -182,7 +183,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     this.getAvgPoints = getAvgPoints;
   }
 
-  private static mergePitLayoutWithBaseLayout<TData extends PitReportData>(layout: PitReportLayout<TData>) {
+  private static mergePitLayoutWithBaseLayout<TData extends PitReportData>(layout: FormLayoutProps<TData>, exampleData: TData) {
     const finalLayout: typeof layout = {
       "Image": [{ key: "image", type: "image" }],
       "Drivetrain": ["drivetrain", "motorType", "swerveLevel"]
@@ -194,10 +195,10 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
 
     finalLayout["Comments"] = ["comments"];
 
-    return finalLayout;
+    return FormLayout.fromProps(finalLayout, exampleData);
   }
   
-  private static mergeQuantitativeLayoutWithBaseLayout<TData extends QuantitativeFormData>(layout: QuantitativeReportLayout<TData>) {
+  private static mergeQuantitativeLayoutWithBaseLayout<TData extends QuantData>(layout: FormLayoutProps<TData>, exampleData: TData) {
     const finalLayout: typeof layout = {
       "Pre-Match": [{ key: "Presented", label: "Robot Present" }, { key: "AutoStartX", type: "startingPos" }],
     };
@@ -210,10 +211,10 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     const keys = Object.keys(layout);
     finalLayout[keys[keys.length - 1]]?.push("comments");
 
-    return finalLayout;
+    return FormLayout.fromProps(finalLayout, exampleData);
   }
 
-  private static mergeStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData>
+  private static mergeStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
       (layout: StatsLayout<TPitData, TQuantData>) {
     const finalLayout: typeof layout = {
       "Positioning": [{label: "Avg Start X", key: "AutoStartX"}, {label: "Avg Start Y", key: "AutoStartY"}, 
@@ -227,7 +228,7 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     return finalLayout;
   }
 
-  private static mergePitStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData>
+  private static mergePitStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
       (layout: PitStatsLayout<TPitData, TQuantData>) {
     const finalLayout: typeof layout = {
       overallSlideStats: [],
@@ -252,12 +253,12 @@ export class Game<TQuantitativeFormData extends QuantitativeFormData, TPitReport
     return finalLayout;
   }
 
-  public createQuantitativeFormData(): TQuantitativeFormData {
-    return new this.quantitativeFormDataType();
+  public createQuantitativeFormData(): TQuantData {
+    return new this.quantDataType();
   }
 
-  public createPitReportData(): TPitReportData {
-    return new this.pitReportDataType();
+  public createPitReportData(): TPitData {
+    return new this.pitDataType();
   }
 }
 
@@ -295,18 +296,6 @@ export abstract class PitReportData {
   motorType: Motors = Motors.Talons;
   swerveLevel: SwerveLevel = SwerveLevel.None;
   comments: string = "";
-}
-
-export type PitReportLayoutElement<TPitData> = {
-  [key: string]: any;
-
-  key: keyof TPitData;
-  label?: string;
-  type?: "string" | "number" | "boolean" | "image" | Object | undefined;
-}
-
-export type PitReportLayout<TPitData extends PitReportData> = {
-  [header: string]: Array<keyof TPitData | PitReportLayoutElement<TPitData>>;
 }
 
 export class Pitreport<TFormData extends PitReportData = PitReportData> {
@@ -422,7 +411,7 @@ export class Match {
   }
 }
 
-export class Report<TFormData extends QuantitativeFormData = QuantitativeFormData>{
+export class Report<TFormData extends QuantData = QuantData>{
   _id: string | undefined;
 
   timestamp: number | undefined; // time it was initially submitted
@@ -455,24 +444,6 @@ export class Report<TFormData extends QuantitativeFormData = QuantitativeFormDat
     this.color = color;
     this.checkedIn = checkedIn;
   }
-}
-
-export type QuantitativeReportLayoutElement<TData extends QuantitativeFormData> = {
-  [key: string]: any;
-
-  key: keyof TData;
-  label?: string;
-  type?: "string" | "number" | "boolean" | "startingPos" | Object | undefined;
-}
-
-export type QuantitativeReportLayoutElementHolder<TData extends QuantitativeFormData> 
-  = keyof TData | QuantitativeReportLayoutElement<TData> | (keyof TData | QuantitativeReportLayoutElement<TData>)[][];
-
-export type QuantitativeReportLayout<TData extends QuantitativeFormData> = {
-  /**
-   * Use 2D array to make a block. Each array in the 2D array will be a column.
-   */
-  [page: string]: Array<QuantitativeReportLayoutElementHolder<TData>>;
 }
 
 export enum SubjectiveReportSubmissionType {
@@ -522,22 +493,22 @@ export type Badge = {
   color: "primary" | "secondary" | "accent" | "success" | "warning" | "info";
 }
 
-export type Stat<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
+export type Stat<TPitData extends PitReportData, TQuantData extends QuantData> = {
   label: string;
   key?: keyof TPitData | keyof TQuantData | undefined;
   get?: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => number;
 }
 
-export type StatPair<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
+export type StatPair<TPitData extends PitReportData, TQuantData extends QuantData> = {
   stats: Stat<TPitData, TQuantData>[];
   label: string;
 }
 
-export type StatsLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
+export type StatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
   [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[];
 }
 
-export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends QuantitativeFormData> = {
+export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
   [key: string]: Stat<TPitData, TQuantData> | Stat<TPitData, TQuantData>[];
 
   overallSlideStats: Stat<TPitData, TQuantData>[];

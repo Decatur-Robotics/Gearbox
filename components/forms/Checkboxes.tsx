@@ -1,14 +1,14 @@
-import { QuantitativeFormData, Pitreport } from "@/lib/Types";
+import { QuantData, Pitreport } from "@/lib/Types";
 import { Crescendo } from "@/lib/games";
 export type CheckboxProps = {
   label: string;
   dataKey: string;
-  data: QuantitativeFormData | Pitreport;
+  data: QuantData | Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
   divider?: boolean;
 };
 export type RadioProps = {
-  data: QuantitativeFormData | Pitreport;
+  data: QuantData | Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
 };
 

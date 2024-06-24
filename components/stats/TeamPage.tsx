@@ -1,4 +1,4 @@
-import { Badge, PitReportData, Pitreport, QuantitativeFormData, Report, SubjectiveReport } from "@/lib/Types";
+import { Badge, PitReportData, Pitreport, QuantData, Report, SubjectiveReport } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import {
@@ -28,7 +28,7 @@ function TeamCard(props: {
   selected: boolean;
   compAvgPoints: number;
   compPointsStDev: number;
-  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantitativeFormData>[]) => Badge[];
+  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[]) => Badge[];
 }) {
   const pitReport = props.pitReport;
   const data = pitReport?.data as PitReportData;

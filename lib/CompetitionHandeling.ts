@@ -5,7 +5,7 @@ import {
   Team,
   Report,
   AllianceColor,
-  QuantitativeFormData,
+  QuantData,
 } from "./Types";
 import { ObjectId } from "mongodb";
 import { RotateArray, ShuffleArray } from "./Utils";

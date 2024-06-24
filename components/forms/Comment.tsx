@@ -1,6 +1,6 @@
-import { QuantitativeFormData, Pitreport } from "@/lib/Types";
+import { QuantData, Pitreport } from "@/lib/Types";
 export type CommentProps = {
-  data: QuantitativeFormData | Pitreport;
+  data: QuantData | Pitreport;
   callback: (key: string, value: string) => void;
 };
 

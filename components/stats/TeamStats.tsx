@@ -2,7 +2,7 @@ import {
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Badge, PitReportData, Pitreport, QuantitativeFormData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
+import { Badge, PitReportData, Pitreport, QuantData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
@@ -17,8 +17,8 @@ export default function TeamStats(props: {
   selectedReports: Report[];
   pitReport: Pitreport | null;
   subjectiveReports: SubjectiveReport[];
-  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantitativeFormData>[]) => Badge[];
-  layout: StatsLayout<PitReportData, QuantitativeFormData>;
+  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[]) => Badge[];
+  layout: StatsLayout<PitReportData, QuantData>;
 }) {
   const [comments, setComments] = useState<{matchNum: number, content: { order: number, jsx: ReactNode}[] }[] | null>(null);
 
@@ -96,11 +96,11 @@ export default function TeamStats(props: {
   const pitReport = props.pitReport;  
   const badges = props.getBadges(pitReport ?? undefined, props.selectedReports);
 
-  function getSections(header: string, stats: (Stat<PitReportData, QuantitativeFormData> | StatPair<PitReportData, QuantitativeFormData>)[]) {
+  function getSections(header: string, stats: (Stat<PitReportData, QuantData> | StatPair<PitReportData, QuantData>)[]) {
     const statElements = stats.map((stat, index) => {
-      if ((stat as Stat<PitReportData, QuantitativeFormData>).key) {
+      if ((stat as Stat<PitReportData, QuantData>).key) {
         // Single stat
-        const singleStat = stat as Stat<PitReportData, QuantitativeFormData>;
+        const singleStat = stat as Stat<PitReportData, QuantData>;
 
         return <h1 key={index}>
           {singleStat.label}: {NumericalAverage(singleStat.key as string, props.selectedReports)}
@@ -108,7 +108,7 @@ export default function TeamStats(props: {
       }
 
       // Stat pair
-      const pair = stat as StatPair<PitReportData, QuantitativeFormData>;
+      const pair = stat as StatPair<PitReportData, QuantData>;
       if (pair.stats.length !== 2) {
         console.error("Invalid stat pair. Wrong # of stats provided.", pair);
         return <></>;

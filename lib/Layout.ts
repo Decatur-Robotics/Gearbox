@@ -1,5 +1,5 @@
 import { camelCaseToTitleCase } from "./client/ClientUtils";
-import { IntakeTypes, Defense, Drivetrain } from "./Enums";
+import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
 
 type StringKeyedObject = { [key: string]: any };
 
@@ -34,28 +34,29 @@ export type BlockElementProps<TData extends StringKeyedObject> = LayoutElementPr
 export class BlockElement<TData extends StringKeyedObject> {
   elements: LayoutElement<TData>[][];
 
-  constructor(elements: LayoutElementProps<TData>[][], dataExample: TData) {
+  constructor(elements: BlockElementProps<TData>, dataExample: TData) {
     this.elements = elements.map(c => c.map(e => LayoutElement.fromProps(e, dataExample)));
+  }
+
+  static isBlock(element: LayoutElement<any> | BlockElement<any>): element is BlockElement<any> {
+    return (element as BlockElement<any>).elements !== undefined;
   }
 }
 
-export type FormLayoutProps<TData extends StringKeyedObject> = { [header: string]: LayoutElementProps<TData>[]};
+export type FormLayoutProps<TData extends StringKeyedObject> = 
+  { [header: string]: (LayoutElementProps<TData> | BlockElementProps<TData>)[]};
 
 export class FormLayout<TData extends StringKeyedObject> {
   [header: string]: (LayoutElement<TData> | BlockElement<TData>)[];
 
-  constructor(elements: (LayoutElementProps<TData> | BlockElementProps<TData>)[], dataExample: TData) {
-    this.elements = elements.map(e => {
-      if (Array.isArray(e))
-        return new BlockElement(e, dataExample);
-      return LayoutElement.fromProps(e, dataExample);
-    });
-  }
-
   static fromProps<TData extends StringKeyedObject>(props: FormLayoutProps<TData>, dataExample: TData): FormLayout<TData> {
-    const layout = new FormLayout([], dataExample);
+    const layout = new FormLayout<TData>();
     for (const header in props) {
-      layout[header] = props[header].map(e => LayoutElement.fromProps(e, dataExample));
+      layout[header] = props[header].map(e => {
+        if (!Array.isArray(e))
+          return LayoutElement.fromProps(e, dataExample);
+        return new BlockElement(e, dataExample);
+      });
     }
 
     return layout;
@@ -70,9 +71,11 @@ export function getType(key: string, exampleData: StringKeyedObject): ElementTyp
   if (type !== "string")
     return type as ElementType;
 
-  const enums = [IntakeTypes, Defense, Drivetrain];
+  const enums = [IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel];
   if (key === "Defense")
     return Defense;
+  if (key === "swerveLevel")
+    return SwerveLevel;
 
   for (const e of enums) {
     if (Object.values(e).includes(exampleData[key]))

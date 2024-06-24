@@ -9,7 +9,7 @@ import {
   CompetitonNameIdPair,
   Report,
   MatchType,
-  QuantitativeFormData,
+  QuantData,
   EventData,
   Pitreport,
   DbPicklist,
@@ -274,7 +274,7 @@ export default class ClientAPI {
 
   async submitForm(
     reportId: string | undefined,
-    formData: QuantitativeFormData | undefined,
+    formData: QuantData | undefined,
     userId: string | undefined
   ) {
     return await this.request("/submitForm", {

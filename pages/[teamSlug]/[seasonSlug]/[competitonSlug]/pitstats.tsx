@@ -6,7 +6,7 @@ import {
   PitReportData,
   PitStatsLayout,
   Pitreport,
-  QuantitativeFormData,
+  QuantData,
   Report,
 } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
@@ -33,8 +33,8 @@ function TeamSlide(props: {
   matchReports: Report[];
   ranking: TheBlueAlliance.SimpleRank | undefined;
   maxRanking: number;
-  layout: PitStatsLayout<PitReportData, QuantitativeFormData>;
-  getBadges: (pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantitativeFormData>[] | undefined) => Badge[];
+  layout: PitStatsLayout<PitReportData, QuantData>;
+  getBadges: (pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantData>[] | undefined) => Badge[];
   stats: { label: string, value: number, mean: number, stDev: number, rank: number, maxRanking: number }[];
 }) {
   const [visible, setVisible] = useState(false);

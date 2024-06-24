@@ -1,18 +1,18 @@
-import { QuantitativeFormData } from "@/lib/Types";
+import { QuantData } from "@/lib/Types";
 export type ButtonProps = {
-  data: QuantitativeFormData;
+  data: QuantData;
   callback: (key: string, value: string | number | boolean) => void;
 };
 
 export function IncrementButton(
-  props: { dataKey: string, data: QuantitativeFormData, 
+  props: { dataKey: string, data: QuantData, 
     callback: (key: string, value: string | number | boolean) => void, text: string, rounded?: string }) {
 
   const roundTop = props.rounded?.includes("t");
   const roundBottom = props.rounded?.includes("b");
 
   return (
-    <div className="flex flex-col h-fit">
+    <div className="flex flex-col h-fit" key={props.dataKey}>
       <button
         onClick={() => {
           props.callback(props.dataKey, props.data[props.dataKey] + 1);

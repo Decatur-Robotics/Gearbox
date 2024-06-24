@@ -657,7 +657,7 @@ export default function Home(props: ResolvedUrlData) {
                               type="text"
                               placeholder={`Team ${index + 1}`}
                               className="input input-sm  input-bordered w-1/4"
-                              value={redAlliance[index]}
+                              value={isNaN(redAlliance[index]) ?? "" ? "" : redAlliance[index]}
                               onChange={(e) => {
                                 const c = structuredClone(redAlliance);
                                 c[index] = Number(e.target.value);

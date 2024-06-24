@@ -1,9 +1,10 @@
 import { Defense, Drivetrain, IntakeTypes } from "./Enums";
-import { Report, Badge, Game, League, PitReportData, PitReportLayout, QuantitativeFormData, QuantitativeReportLayout, Pitreport, StatsLayout, PitStatsLayout } from "./Types";
+import { FormLayoutProps } from "./Layout";
+import { Report, Badge, Game, League, PitReportData, QuantData, Pitreport, StatsLayout, PitStatsLayout } from "./Types";
 import { GameId } from "./client/GameId";
 import { AmpAutoPoints, AmpTeleopPoints, BooleanAverage, MostCommonValue, NumericalTotal, Round, SpeakerAutoPoints, SpeakerTeleopPoints, TrapPoints } from "./client/StatsMath";
 
-function getBaseBadges(pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantitativeFormData>[] | undefined) {
+function getBaseBadges(pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantData>[] | undefined) {
   const badges: Badge[] = [];
   const pitData = pitReport?.data;
 
@@ -42,7 +43,7 @@ function getBaseBadges(pitReport: Pitreport<PitReportData> | undefined, quantita
 }
 
 export namespace Crescendo {
-  export class QuantitativeData extends QuantitativeFormData {
+  export class QuantitativeData extends QuantData {
     AutoScoredAmp: number = 0; // # of times scored in the amp
     AutoMissedAmp: number = 0;
     AutoScoredSpeaker: number = 0;
@@ -75,14 +76,14 @@ export namespace Crescendo {
     autoNotes: number = 0;
   }
 
-  const pitReportLayout: PitReportLayout<PitData> = {
+  const pitReportLayout: FormLayoutProps<PitData> = {
     "Intake": ["intakeType"],
     "Shooter": ["canScoreAmp", "canScoreSpeaker", "fixedShooter", "canScoreFromDistance"],
     "Climber": ["canClimb"],
     "Auto": [{key: "autoNotes", type: "number"}]
   }
 
-  const quantitativeReportLayout: QuantitativeReportLayout<QuantitativeData> = {
+  const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
     "Auto": [
       "MovedOut", 
       [
@@ -325,12 +326,12 @@ export namespace Crescendo {
 }
 
 export namespace TestGame {
-  const pitReportLayout: PitReportLayout<Crescendo.PitData> = {
+  const pitReportLayout: FormLayoutProps<Crescendo.PitData> = {
     "Shooter": ["canScoreAmp", "canScoreSpeaker", "fixedShooter", "canScoreFromDistance"],
     "Climber": ["canClimb"],
   }
 
-  const quantitativeReportLayout: QuantitativeReportLayout<Crescendo.QuantitativeData> = {
+  const quantitativeReportLayout: FormLayoutProps<Crescendo.QuantitativeData> = {
   }
 
   const statsLayout: StatsLayout<Crescendo.PitData, Crescendo.QuantitativeData> = {

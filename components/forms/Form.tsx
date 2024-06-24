@@ -1,5 +1,5 @@
-import { AllianceColor, Report, QuantitativeFormData, QuantitativeReportLayout, QuantitativeReportLayoutElement, QuantitativeReportLayoutElementHolder } from "@/lib/Types";
-import { useCallback, useState, useEffect } from "react";
+import { AllianceColor, Report, QuantData } from "@/lib/Types";
+import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
@@ -13,22 +13,21 @@ import StartingPosition from "./StartingPosition";
 import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
-import { IntakeTypes, Defense, Drivetrain } from "@/lib/Enums";
+import { BlockElement, FormLayout, LayoutElement } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Form(props: { report: Report, layout: QuantitativeReportLayout<QuantitativeFormData>, fieldImagePrefix: string }) {
+export default function Form(props: { report: Report, layout: FormLayout<QuantData>, fieldImagePrefix: string }) {
   const { session, status } = useCurrentSession();
 
   const [page, setPage] = useState(0);
-  const [formData, setFormData] = useState<QuantitativeFormData>(props.report?.data);
+  const [formData, setFormData] = useState<QuantData>(props.report?.data);
   const [syncing, setSyncing] = useState(false);
 
   const alliance = props.report?.color;
 
   async function submitForm() {
     await api.submitForm(props.report?._id, formData, session?.user?._id);
-    console.log("yaya");
     location.href = location.href.substring(0, location.href.lastIndexOf("/"));
   }
 
@@ -61,69 +60,17 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
     setFormData(formData);
   }, [props.report?.data]);
 
-  function getLayoutElement(original: QuantitativeReportLayoutElementHolder<QuantitativeFormData>) {
-    const element: typeof original = {
-      key: original as string,
-      label: camelCaseToTitleCase(original as string),
-    };
+  function elementToNode(element: LayoutElement<QuantData>) {
+    const key = element.key as string;
 
-    // Copy over the rest of the properties
-    if (typeof original === "object") {
-      if (Array.isArray(original)) {
-        const originalBlock = original as (keyof QuantitativeFormData | QuantitativeReportLayoutElement<QuantitativeFormData>)[][];
-        const newBlock: QuantitativeReportLayoutElement<QuantitativeFormData>[][] = [];
-
-        for (let r = 0; r < originalBlock.length; r++) {
-          const row = [];
-          for (let c = 0; c < originalBlock[r].length; c++) {
-            row.push(getLayoutElement(originalBlock[r][c]) as QuantitativeReportLayoutElement<QuantitativeFormData>);
-          }
-          newBlock.push(row);
-        }
-
-        return newBlock;
-      }
-
-      for (const key in original) {
-          element[key] = (original as QuantitativeReportLayoutElement<QuantitativeFormData>)[key];
-      }
-    }
-
-    if (!element.type) {
-      const rawType = typeof formData[element.key];
-
-      if (rawType !== "string")
-        element.type = rawType;
-      else {
-        const enums = [IntakeTypes, Defense, Drivetrain];
-
-        if (element.key === "Defense")
-          element.type = Defense;
-        else {
-          for (const e of enums) {
-            if (Object.values(e).includes(formData[element.key])) {
-              element.type = e;
-              break;
-            }
-          }
-        }
-
-        if (!element.type)
-          element.type = "string";
-      }
-    }
-
-    return element;
-  }
-
-  function elementToNode(element: QuantitativeReportLayoutElement<QuantitativeFormData>) {
     if (element.type === "boolean") {
       return (
         <Checkbox
-          label={element.label ?? element.key as string}
-          dataKey={element.key as string}
+          label={element.label ?? camelCaseToTitleCase(key)}
+          dataKey={key}
           data={formData}
           callback={setCallback}
+          key={key}
         />
       );
     }
@@ -135,6 +82,7 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
           data={formData}
           callback={setCallback}
           fieldImagePrefix={props.fieldImagePrefix}
+          key={key}
         />
       );
     }
@@ -143,33 +91,36 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
       return (
         <input
           type="number"
-          value={formData[element.key as string] as number}
+          value={formData[key] as number}
           onChange={(e) => {
-            setCallback(element.key as string, parseInt(e.target.value));
+            setCallback(key, parseInt(e.target.value));
           }}
+          key={key}
         />
       );
     }
 
     if (element.type === "string") {
       return (
-        <CommentBox data={formData} callback={setCallback} />
+        <CommentBox data={formData} callback={setCallback} key={key} />
       );
     }
 
     // Enum
-    if (element.type) {
+    if (typeof element.type === "object") {
       return (
         <Slider data={formData} callback={setCallback} possibleValues={element.type} 
-          title={element.label ?? camelCaseToTitleCase(element.key as string)} value={formData[element.key]}
-          key={element.key} />
+          title={element.label ?? camelCaseToTitleCase(key)} value={formData[element.key]}
+          dataKey={element.key} key={key} />
       );
     }
   }
 
-  function blockToNode(block: QuantitativeReportLayoutElementHolder<QuantitativeFormData>[][]) {
-    const colCount = block.length;
-    const rowCount = block[0].length;
+  function blockToNode(block: BlockElement<QuantData>) {
+    const blockElements = block.elements;
+
+    const colCount = blockElements.length;
+    const rowCount = blockElements[0].length;
 
     const elements = [];
 
@@ -186,15 +137,17 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
         if (rounding.length === 1)
           rounding = "";
 
-        const element = block[c][r] as QuantitativeReportLayoutElement<QuantitativeFormData>;
+        if (!BlockElement.isBlock(blockElements[c][r])) {
+          const element = blockElements[c][r] as LayoutElement<QuantData>;
 
-        elements.push(<IncrementButton dataKey={element.key as string} data={formData} 
-          text={element.label ?? element.key as string} callback={setCallback} rounded={rounding}/>);
+          elements.push(<IncrementButton dataKey={element.key as string} data={formData} 
+            text={element.label ?? element.key as string} callback={setCallback} rounded={rounding}/>);
+        }
       }
     }
 
     return (
-      <div className="w-full h-full flex flex-col items-center">
+      <div key={block.elements.map(e => e.keys).join(",")} className="w-full h-full flex flex-col items-center">
         <div className={`w-full grid grid-cols-${colCount} grid-rows-${rowCount}`}>
           {elements}
         </div>
@@ -203,14 +156,14 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
   }
 
   // Use an array to preserve the order of pages
-  const layout: { page: string, elements: QuantitativeReportLayoutElementHolder<QuantitativeFormData>[] }[] = [];
-  Object.entries(props.layout).map(([key, value]) => {
-    layout.push({ page: key, elements: value.map((key) => getLayoutElement(key)) });
+  const layout: { page: string, elements: (LayoutElement<QuantData> | BlockElement<QuantData>)[] }[] = [];
+  Object.entries(props.layout).map(([header, elements]) => {
+    layout.push({ page: header, elements });
   });
 
   const pages = layout.map((page, index) => {
     const inputs = page.elements.map((element) => {
-      return Array.isArray(element) ? blockToNode(element) : elementToNode(element as QuantitativeReportLayoutElement<QuantitativeFormData>);
+      return BlockElement.isBlock(element) ? blockToNode(element) : elementToNode(element as LayoutElement<QuantData>);
     });
 
     return (
@@ -227,7 +180,7 @@ export default function Form(props: { report: Report, layout: QuantitativeReport
       </FormPage>
     );
   });
-
+  
   return (
     <div className="w-full h-fit flex flex-col items-center space-y-2 mb-2">
       {pages[page]}

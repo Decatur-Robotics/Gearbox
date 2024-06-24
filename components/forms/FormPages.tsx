@@ -1,15 +1,15 @@
 import { ReactNode } from "react";
-import { AllianceColor, QuantitativeFormData } from "@/lib/Types";
+import { AllianceColor, QuantData } from "@/lib/Types";
 
 export type PageProps = {
   alliance: AllianceColor;
-  data: QuantitativeFormData;
+  data: QuantData;
   callback: (key: string, value: string | number | boolean) => void;
   fieldImagePrefix?: string;
 };
 export type EndPageProps = {
   alliance: AllianceColor;
-  data: QuantitativeFormData;
+  data: QuantData;
   submit: () => void;
   callback: (key: string, value: string | number | boolean) => void;
 };
