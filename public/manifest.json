@@ -3,10 +3,10 @@
   "short_name": "Gearbox",
   "icons": [
     {
-      "src": "/owenToPng.png",
-      "sizes": "512x512",
+      "src": "/favicon.png",
+      "sizes": "220x204",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "theme_color": "#FFFFFF",
