@@ -9,6 +9,9 @@ import { GameId, defaultGameId } from "./client/GameId";
 import { camelCaseToTitleCase } from "./client/ClientUtils";
 import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
 import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
+import { Statbotics } from "./Statbotics";
+import { DatasetJsonLdProps } from "next-seo";
+import Subjective from '../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/[reportId]/subjective';
 
 /**
  * Standard Account Type
@@ -425,7 +428,7 @@ export class Report<TFormData extends QuantData = QuantData>{
   submitted: boolean = false;
   data: TFormData;
 
-  checkedIn: boolean = false;
+  checkInTimestamp: string | undefined;
 
   constructor(
     user: string | undefined,
@@ -434,7 +437,7 @@ export class Report<TFormData extends QuantData = QuantData>{
     color: AllianceColor,
     match: string,
     timestamp: number = 0,
-    checkedIn: boolean
+    checkInTimestamp: string | undefined = undefined
   ) {
     this.timestamp = timestamp;
     this.user = user;
@@ -442,7 +445,7 @@ export class Report<TFormData extends QuantData = QuantData>{
     this.robotNumber = robotNumber;
     this.match = match;
     this.color = color;
-    this.checkedIn = checkedIn;
+    this.checkInTimestamp = checkInTimestamp;
   }
 }
 

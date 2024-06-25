@@ -8,10 +8,19 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { QuantData, Report } from "@/lib/Types";
 import { FormLayout } from "@/lib/Layout";
 import { makeObjSerializeable } from "@/lib/Utils";
+import { useEffect } from "react";
+import ClientAPI from "@/lib/client/ClientAPI";
+
+const api = new ClientAPI("gearboxiscool");
 
 export default function Homepage(props: { report: Report, layout: FormLayout<QuantData>, fieldImgPrefix: string }) {
   const { session, status } = useCurrentSession();
   const hide = status === "authenticated";
+
+  useEffect(() => {
+    if (report)
+      setInterval(() => api.checkInForReport(report._id), 5000);
+  }, []);
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide}>

@@ -8,7 +8,7 @@ const fs = require("fs");
 console.log("Imports complete");
 
 const dev = process.env.NODE_ENV !== "production";
-const port = dev ? 3000 : 443;
+const port = 443;
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
@@ -31,7 +31,14 @@ app.prepare().then(() => {
   try {
     const server = createServer(httpsOptions, async (req, res) => {
       const parsedUrl = parse(req.url, true);
-      await handle(req, res, parsedUrl);
+      const { pathname } = parsedUrl;
+
+      if (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname)) {
+        const filePath = join(__dirname, '.next', pathname)
+        app.serveStatic(req, res, filePath)
+      } else {
+        handle(req, res, parsedUrl)
+      }
     }).listen(port, (err) => {
       if (err) {
         console.log(err);
