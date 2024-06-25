@@ -4,6 +4,7 @@ import {
   MongoClient,
   MongoClientOptions,
   ObjectId,
+  UpdateResult,
 } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
@@ -36,9 +37,10 @@ export enum Collections {
   Forms = "Forms",
   Pitreports = "Pitreports",
   Picklists = "Picklists",
+  SubjectiveReports = "SubjectiveReports",
 }
 
-export async function GetDatabase(): Promise<MongoDBInterface> {
+export async function getDatabase(): Promise<MongoDBInterface> {
   if (!global.interface) {
     await clientPromise;
     const dbInterface = new MongoDBInterface(clientPromise);
@@ -92,13 +94,13 @@ export class MongoDBInterface {
   async updateObjectById<Type>(
     collection: Collections,
     id: ObjectId,
-    newValues: object
-  ): Promise<Type> {
+    newValues: Partial<Type> | { [key: string]: any }
+  ): Promise<UpdateResult<Document> | undefined> {
     var query = { _id: id };
     var updated = { $set: newValues };
-    return (await this?.db
+    return this?.db
       ?.collection(collection)
-      .updateOne(query, updated)) as Type;
+      .updateOne(query, updated);
   }
 
   async findObjectById<Type>(
