@@ -18,8 +18,8 @@ export default function Homepage(props: { report: Report, layout: FormLayout<Qua
   const hide = status === "authenticated";
 
   useEffect(() => {
-    if (report)
-      setInterval(() => api.checkInForReport(report._id), 5000);
+    if (props.report)
+      setInterval(() => api.checkInForReport(props.report._id), 5000);
   }, []);
 
   return (
