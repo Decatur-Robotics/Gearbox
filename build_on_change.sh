@@ -1,5 +1,4 @@
 #!/bin/bash
-echo "Checking for changes in the remote repository"
 REMOTE=origin
 BRANCH=main
 cd ./../home/ubuntu/Gearbox
