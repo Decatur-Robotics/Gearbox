@@ -6,12 +6,8 @@ import {
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
-import { camelCaseToTitleCase } from "./client/ClientUtils";
 import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
 import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
-import { Statbotics } from "./Statbotics";
-import { DatasetJsonLdProps } from "next-seo";
-import Subjective from '../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/[reportId]/subjective';
 
 /**
  * Standard Account Type
