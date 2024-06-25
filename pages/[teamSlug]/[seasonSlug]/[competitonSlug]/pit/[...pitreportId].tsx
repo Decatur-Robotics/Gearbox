@@ -118,7 +118,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
         return getComponent(element as FormElement<PitReportData>, index === elements.length - 1);
 
       const block = element as BlockElement<PitReportData>;
-      return block.elements?.map((row, rowIndex) =>
+      return block?.map((row, rowIndex) =>
         row.map((element, elementIndex) =>
           getComponent(element, elementIndex === row.length - 1)
         )
