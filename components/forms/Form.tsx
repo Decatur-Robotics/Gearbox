@@ -13,7 +13,7 @@ import StartingPosition from "./StartingPosition";
 import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
-import { BlockElement, FormLayout, LayoutElement } from "@/lib/Layout";
+import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -60,7 +60,7 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
     setFormData(formData);
   }, [props.report?.data]);
 
-  function elementToNode(element: LayoutElement<QuantData>) {
+  function elementToNode(element: FormElement<QuantData>) {
     const key = element.key as string;
 
     if (element.type === "boolean") {
@@ -117,10 +117,8 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
   }
 
   function blockToNode(block: BlockElement<QuantData>) {
-    const blockElements = block.elements;
-
-    const colCount = blockElements.length;
-    const rowCount = blockElements[0].length;
+    const colCount = block.length;
+    const rowCount = block[0].length;
 
     const elements = [];
 
@@ -137,8 +135,8 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
         if (rounding.length === 1)
           rounding = "";
 
-        if (!BlockElement.isBlock(blockElements[c][r])) {
-          const element = blockElements[c][r] as LayoutElement<QuantData>;
+        if (!BlockElement.isBlock(block[c][r])) {
+          const element = block[c][r] as FormElement<QuantData>;
 
           elements.push(<IncrementButton dataKey={element.key as string} data={formData} 
             text={element.label ?? element.key as string} callback={setCallback} rounded={rounding}/>);
@@ -147,7 +145,7 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
     }
 
     return (
-      <div key={block.elements.map(e => e.keys).join(",")} className="w-full h-full flex flex-col items-center">
+      <div key={block.map(e => e.keys).join(",")} className="w-full h-full flex flex-col items-center">
         <div className={`w-full grid grid-cols-${colCount} grid-rows-${rowCount}`}>
           {elements}
         </div>
@@ -156,14 +154,14 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
   }
 
   // Use an array to preserve the order of pages
-  const layout: { page: string, elements: (LayoutElement<QuantData> | BlockElement<QuantData>)[] }[] = [];
+  const layout: { page: string, elements: (FormElement<QuantData> | BlockElement<QuantData>)[] }[] = [];
   Object.entries(props.layout).map(([header, elements]) => {
     layout.push({ page: header, elements });
   });
 
   const pages = layout.map((page, index) => {
     const inputs = page.elements.map((element) => {
-      return BlockElement.isBlock(element) ? blockToNode(element) : elementToNode(element as LayoutElement<QuantData>);
+      return BlockElement.isBlock(element) ? blockToNode(element) : elementToNode(element as FormElement<QuantData>);
     });
 
     return (

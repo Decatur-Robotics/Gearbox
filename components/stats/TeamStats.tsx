@@ -2,13 +2,14 @@ import {
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Badge, PitReportData, Pitreport, QuantData, Report, Stat, StatPair, StatsLayout, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
+import { PitReportData, Pitreport, QuantData, Report, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
 import { ReactNode, useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Loading from "../Loading";
+import { StatsLayout, Stat, StatPair, Badge } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 

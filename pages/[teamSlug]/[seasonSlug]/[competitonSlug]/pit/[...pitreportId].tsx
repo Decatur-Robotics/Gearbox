@@ -17,7 +17,7 @@ import ImageUpload from "@/components/forms/ImageUpload";
 import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
 import { makeObjSerializeable } from "@/lib/Utils";
-import { BlockElement, FormLayout, LayoutElement } from "@/lib/Layout";
+import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -54,7 +54,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
     );
   }
 
-  function getComponent(element: LayoutElement<PitReportData>, isLastInHeader: boolean) {
+  function getComponent(element: FormElement<PitReportData>, isLastInHeader: boolean) {
     const key = element.key as string;
 
     if (element.type === "image")
@@ -115,7 +115,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
   const components = Object.entries(props.layout).map(([header, elements]) => {
     const inputs = elements.map((element, index) => {
       if (!Array.isArray(element))
-        return getComponent(element as LayoutElement<PitReportData>, index === elements.length - 1);
+        return getComponent(element as FormElement<PitReportData>, index === elements.length - 1);
 
       const block = element as BlockElement<PitReportData>;
       return block.elements?.map((row, rowIndex) =>

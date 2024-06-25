@@ -8,7 +8,7 @@ import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
 import { camelCaseToTitleCase } from "./client/ClientUtils";
 import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
-import { FormLayoutProps, FormLayout } from './Layout';
+import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
 
 /**
  * Standard Account Type
@@ -486,33 +486,4 @@ export type DbPicklist = {
   picklists: {
     [name: string]: number[];
   };
-}
-
-export type Badge = {
-  text: string;
-  color: "primary" | "secondary" | "accent" | "success" | "warning" | "info";
-}
-
-export type Stat<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  label: string;
-  key?: keyof TPitData | keyof TQuantData | undefined;
-  get?: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => number;
-}
-
-export type StatPair<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  stats: Stat<TPitData, TQuantData>[];
-  label: string;
-}
-
-export type StatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[];
-}
-
-export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  [key: string]: Stat<TPitData, TQuantData> | Stat<TPitData, TQuantData>[];
-
-  overallSlideStats: Stat<TPitData, TQuantData>[];
-  individualSlideStats: Stat<TPitData, TQuantData>[];
-  robotCapabilities: Stat<TPitData, TQuantData>[];
-  graphStat: Stat<TPitData, TQuantData>;
 }

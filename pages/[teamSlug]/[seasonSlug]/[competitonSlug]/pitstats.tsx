@@ -1,10 +1,8 @@
 import Container from "@/components/Container";
 import BarGraph from "@/components/stats/Graph";
 import {
-  Badge,
   Competition,
   PitReportData,
-  PitStatsLayout,
   Pitreport,
   QuantData,
   Report,
@@ -21,7 +19,8 @@ import { MostCommonValue, NumericalAverage, StandardDeviation } from "@/lib/clie
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
-import { Crescendo, games } from "@/lib/games";
+import { games } from "@/lib/games";
+import { PitStatsLayout, Badge } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 

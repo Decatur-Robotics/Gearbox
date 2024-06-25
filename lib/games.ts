@@ -1,6 +1,6 @@
 import { Defense, Drivetrain, IntakeTypes } from "./Enums";
-import { FormLayoutProps } from "./Layout";
-import { Report, Badge, Game, League, PitReportData, QuantData, Pitreport, StatsLayout, PitStatsLayout } from "./Types";
+import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
+import { Report, Game, League, PitReportData, QuantData, Pitreport } from "./Types";
 import { GameId } from "./client/GameId";
 import { AmpAutoPoints, AmpTeleopPoints, BooleanAverage, MostCommonValue, NumericalTotal, Round, SpeakerAutoPoints, SpeakerTeleopPoints, TrapPoints } from "./client/StatsMath";
 

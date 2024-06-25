@@ -1,5 +1,6 @@
-import { Badge, PitReportData, Pitreport, QuantData, Report, SubjectiveReport } from "@/lib/Types";
+import { PitReportData, Pitreport, QuantData, Report, SubjectiveReport } from "@/lib/Types";
 import { useEffect, useState } from "react";
+import { Badge } from "@/lib/Layout";
 
 import {
   AveragePoints,
