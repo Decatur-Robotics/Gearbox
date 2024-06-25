@@ -1,5 +1,6 @@
 const withPwa = require("next-pwa")({
-  dest: "public"
+  dest: "public",
+  cach
 });
 
 /** @type {import('next').NextConfig} */
