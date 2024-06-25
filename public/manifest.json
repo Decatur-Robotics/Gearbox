@@ -1,0 +1,17 @@
+{
+  "name": "Gearbox",
+  "short_name": "Gearbox",
+  "icons": [
+    {
+      "src": "/robot.jpg",
+      "sizes": "220x220",
+      "type": "image/jpg",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
