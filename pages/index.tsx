@@ -276,7 +276,7 @@ export default function Homepage() {
               No Scouters? <span className="text-secondary">No worries.</span>
             </h1>
             <div className="text-xl w-2/3 text-center">
-              With Gearbox, you can access a trove of <span className="text-accent">publicly available data</span> found nowhere else.
+              With Gearbox, you can access a trove of <span className="text-accent">data shared by other teams</span> and found nowhere else.
               Gearbox enables you to utilize shared data, so every team - no matter the size - can develop a 
               {" "}<span className="text-accent">data-backed picklist</span>.
             </div>
