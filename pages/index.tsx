@@ -364,7 +364,7 @@ export default function Homepage() {
               Get started today in <span className="text-secondary">under 5 minutes</span>.
             </h1>
             <div className="text-lg w-2/3 text-center">
-              The future of scouting is waiting - all you need is to sign in. Our interactive 
+              The future of scouting is waiting - all you need to do is to sign in. Our interactive 
               onboarding will get your team ready to scout in less than five minutes.
             </div>
             <a
