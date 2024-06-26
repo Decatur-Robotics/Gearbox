@@ -465,11 +465,6 @@ export default function Home(props: ResolvedUrlData) {
       api.remindSlack(slackId, session.user?.slackId);
   }
 
-  console.log("loadingMatches || loadingReports || loadingUsers:", loadingMatches || loadingMatches || loadingUsers);
-  console.log("loadingMatches:", loadingMatches);
-  console.log("loadingReports:", loadingMatches);
-  console.log("loadingUsers:", loadingUsers);
-
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
