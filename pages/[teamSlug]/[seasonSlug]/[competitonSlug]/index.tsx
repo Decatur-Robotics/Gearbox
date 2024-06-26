@@ -459,8 +459,8 @@ export default function Home(props: ResolvedUrlData) {
   }
     
   function remindUserOnSlack(slackId: string) {
-    if (slackId && session && isManager && confirm("Remind scouter on Slack?"))
-      api.remindSlack(slackId, session.user?.slackId);
+    if (slackId && session.user?.slackId && team?._id && isManager && confirm("Remind scouter on Slack?"))
+      api.remindSlack(slackId, session.user?.slackId, team._id);
   }
 
   function addTeam() {

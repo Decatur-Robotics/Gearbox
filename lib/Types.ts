@@ -70,6 +70,7 @@ export class Team {
   slug: string | undefined;
   tbaId: string | undefined;
   number: number;
+  league: League = League.FRC;
 
   owners: string[];
   users: string[];
@@ -79,7 +80,7 @@ export class Team {
 
   seasons: string[];
 
-  league: League = League.FRC;
+  slackChannel: string | undefined;
 
   constructor(
     name: string,
@@ -92,19 +93,21 @@ export class Team {
     scouters: string[] = [],
     subjectiveScouters: string[] = [],
     requests: string[] = [],
-    seasons: string[] = []
+    seasons: string[] = [],
+    slackChannel: string | undefined = undefined
   ) {
     this.name = name;
     this.slug = slug;
     this.tbaId = tbaId;
     this.number = number;
+    this.league = league;
     this.owners = owners;
     this.users = users;
     this.scouters = scouters;
     this.subjectiveScouters = subjectiveScouters;
     this.seasons = seasons;
     this.requests = requests;
-    this.league = league;
+    this.slackChannel = slackChannel;
   }
 }
 
