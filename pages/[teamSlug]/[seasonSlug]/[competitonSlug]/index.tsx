@@ -845,11 +845,14 @@ export default function Home(props: ResolvedUrlData) {
               ) : <></>}
               <div className="divider my-0"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
-                <div className="w-full flex items-center justify-center">
+                <div className="w-full flex flex-col items-center justify-center">
                   <BsGearFill
                     className="animate-spin-slow"
                     size={75}
-                  ></BsGearFill>
+                  />
+                  {loadingMatches && <h1>Loading Matches...</h1>}
+                  {loadingReports && <h1>Loading Reports...</h1>}
+                  {loadingUsers && <h1>Loading Users...</h1>}
                 </div>
               ) : (
                 <div className="w-full flex flex-col items-center space-y-2">
