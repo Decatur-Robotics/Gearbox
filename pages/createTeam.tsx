@@ -54,7 +54,7 @@ export default function CreateTeam() {
     }
 
     if (
-      (await api.findTeamByNumber(Number(teamNumber)))?.league === league
+      await api.findTeamByNumberAndLeague(Number(teamNumber), league)
     ) {
       setError("This Team Already Exists");
       return;

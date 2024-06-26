@@ -12,7 +12,6 @@ import {
   DbPicklist,
   SubjectiveReport,
   SubjectiveReportSubmissionType,
-  League,
 } from "./Types";
 import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
@@ -25,7 +24,7 @@ import Auth, { AuthenticationOptions } from "./Auth";
 import { Statbotics } from "./Statbotics";
 import { SerializeDatabaseObject } from "./UrlResolver";
 
-import { QuantData } from "./Types";
+import { QuantData, League } from './Types';
 import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
@@ -301,7 +300,10 @@ export namespace API {
       // {
       //     number
       // }
-      return res.status(200).send(await tba.getTeamAutofillData(data.number));
+      return res.status(200).send(data.league === League.FTC 
+        ? await TheOrangeAlliance.getTeam(data.number)
+        : await tba.getTeamAutofillData(data.number)
+      );
     },
 
     competitionAutofill: async (req, res, { tba, data }) => {

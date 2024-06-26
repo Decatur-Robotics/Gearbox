@@ -38,6 +38,9 @@ export namespace TheOrangeAlliance {
       return undefined;
 
     const team = teams[0];
+    if (!team?.team_number || !team?.team_name_short)
+      return undefined;
+    
     return new Team(team.team_name_short, team.team_name_long, team.robot_name, team.team_number, League.FTC);
   }
 }

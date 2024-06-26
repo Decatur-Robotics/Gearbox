@@ -73,10 +73,20 @@ export default class ClientAPI {
     });
   }
 
-  async findTeamByNumber(n: number | undefined): Promise<Team> {
+  async findTeamByNumberAndLeague(n: number, league: League): Promise<Team> {
+    const query = league === League.FRC 
+      ? { 
+          number: n,
+          $or: [ 
+            { league: league }, 
+            { tbaId: { $exists: true } } 
+          ]
+        } 
+      : { number: n, league: league };
+
     return await this.request("/find", {
       collection: "Teams",
-      query: { number: n },
+      query,
     });
   }
 
@@ -119,8 +129,8 @@ export default class ClientAPI {
     return await this.request("/findAll", { collection: "Teams" });
   }
 
-  async getTeamAutofillData(teamNumber: number | undefined): Promise<Team> {
-    return await this.request("/teamAutofill", { number: teamNumber });
+  async getTeamAutofillData(teamNumber: number | undefined, league: League = League.FRC): Promise<Team> {
+    return await this.request("/teamAutofill", { number: teamNumber, league });
   }
 
   async getCompetitionAutofillData(tbaId: string): Promise<Competition> {
