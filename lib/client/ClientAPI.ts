@@ -309,8 +309,8 @@ export default class ClientAPI {
     return await this.request("/matchReports", { matchId: matchId });
   }
 
-  async updateCheckIn(reportId: string | undefined) {
-    return await this.request("/updateCheckIn", { reportId });
+  async checkInForReport(reportId: string | undefined) {
+    return await this.request("/checkInForReport", { reportId });
   }
 
   async updateCheckOut(reportId: string | undefined) {

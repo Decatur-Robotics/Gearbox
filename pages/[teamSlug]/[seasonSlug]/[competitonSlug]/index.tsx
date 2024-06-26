@@ -119,12 +119,9 @@ export default function Home(props: ResolvedUrlData) {
   };
 
   useEffect(() => {
-    console.log("Checking if matches are assigned");
-
     let matchesAssigned = true;
     for (const report of reports) {
       if (!report.user) {
-        console.log("No user assigned to report", report);
         matchesAssigned = false;
         break;
       }
@@ -136,6 +133,7 @@ export default function Home(props: ResolvedUrlData) {
   const loadMatches = async (silent: boolean = false) => {
     if (!silent)
       setLoadingMatches(true);
+    
     window.location.hash = "";
     const matches: Match[] = await api.allCompetitionMatches(comp?._id);
     matches.sort((a, b) => {
@@ -156,13 +154,15 @@ export default function Home(props: ResolvedUrlData) {
     );
 
     setMatches(matches);
+    
     if (!silent)
       setLoadingMatches(false);
   };
 
-  const loadReports = async () => {
+  const loadReports = async (silent: boolean = false) => {
     const scoutingStats = (reps: Report[]) => {
-      setLoadingScoutStats(true);
+      if (!silent)
+        setLoadingScoutStats(true);
       let submittedCount = 0;
       reps.forEach((report) => {
         if (report.submitted) {
@@ -171,10 +171,12 @@ export default function Home(props: ResolvedUrlData) {
       });
 
       setSubmittedReports(submittedCount);
-      setLoadingScoutStats(false);
+      if (!silent)
+        setLoadingScoutStats(false);
     };
 
-    setLoadingReports(true);
+    if (!silent)
+      setLoadingReports(true);
     const newReports: Report[] = await api.competitionReports(
       comp?._id,
       false
@@ -188,15 +190,21 @@ export default function Home(props: ResolvedUrlData) {
       newReportId[report._id] = report;
     });
     setReportsById(newReportId);
-    setLoadingReports(false);
+    if (!silent)
+      setLoadingReports(false);
     scoutingStats(newReports);
   };
 
   useEffect(() => {
-    const loadUsers = async () => {
-      setLoadingUsers(true);
+    setInterval(() => loadReports(true), 5000);
+  }, []);
 
-      if (!team?.scouters || !team.subjectiveScouters) {
+  useEffect(() => {
+    const loadUsers = async () => {
+      if (Object.keys(usersById).length === 0)
+        setLoadingUsers(true);
+
+      if (!team || (!team.scouters && !team.subjectiveScouters)) {
         return;
       }
 
@@ -830,11 +838,14 @@ export default function Home(props: ResolvedUrlData) {
               ) : <></>}
               <div className="divider my-0"></div>
               {loadingMatches || loadingReports || loadingUsers ? (
-                <div className="w-full flex items-center justify-center">
+                <div className="w-full flex flex-col items-center justify-center">
                   <BsGearFill
                     className="animate-spin-slow"
                     size={75}
-                  ></BsGearFill>
+                  />
+                  {loadingMatches && <h1>Loading Matches...</h1>}
+                  {loadingReports && <h1>Loading Reports...</h1>}
+                  {loadingUsers && <h1>Loading Users...</h1>}
                 </div>
               ) : (
                 <div className="w-full flex flex-col items-center space-y-2">
@@ -887,6 +898,11 @@ export default function Home(props: ResolvedUrlData) {
                                       : "bg-blue-500"
                                     : "bg-slate-500";
                                   color = ours ? !report.submitted ? "bg-purple-500" : "bg-purple-300" : color;
+
+                                  if (!report) return <></>;
+
+                                  const timeSinceCheckIn = report.checkInTimestamp && (new Date().getTime() - new Date(report.checkInTimestamp as any).getTime()) / 1000;
+                              
                                   return (
                                     <Link
                                       href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`}
@@ -895,7 +911,7 @@ export default function Home(props: ResolvedUrlData) {
                                         mine && !submitted
                                           ? "border-4"
                                           : "border-2"
-                                      }  rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
+                                      } ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
                                     >
                                       <h1>{report.robotNumber}</h1>
                                     </Link>
