@@ -680,12 +680,20 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
 
-    remindSlack: async (req, res, { slackClient, data }) => {
-      await slackClient.chat.postMessage({
-        token: process.env.SLACK_KEY,
-        channel: process.env.SLACK_CHANNEL,
-        text: `<@${data.slackId}> Please report to our section and prepare for scouting. Sent by <@${data.senderSlackId}>`,
+    remindSlack: async (req, res, { db, slackClient, data }) => {
+      const team = await db.findObjectById<Team>(Collections.Teams, new ObjectId(data.teamId));
+      if (!team)
+        return res.status(200).send({ error: "Team not found" });
+      if (!team.slackChannel)
+        return res.status(200).send({ error: "Team has not linked their Slack channel" });
+
+      const msgRes = await slackClient.chat.postMessage({
+        token: process.env.SLACK_BOT_TOKEN,
+        channel: team.slackChannel,
+        text: `<@${data.slackId}>, please report to our section and prepare for scouting. Sent by <@${data.senderSlackId}>`,
       });
+
+      return res.status(200).send({ result: "success", msgRes });
     },
 
     setSlackId: async (req, res, { db, data }) => {
@@ -809,18 +817,18 @@ export namespace API {
 
       const { rankings } = tbaResult;
 
-      const rank = rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank;
+      const rank = rankings?.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank;
 
       if (!rank) {
         return res.status(200).send({
           place: "?",
-          max: rankings.length,
+          max: rankings?.length,
         });
       }
 
       return res.status(200).send({
-        place: rankings.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank,
-        max: rankings.length,
+        place: rankings?.find((ranking) => ranking.team_key === `frc${data.team}`)?.rank,
+        max: rankings?.length,
       });
     },
 

@@ -59,7 +59,7 @@ export const AuthenticationOptions: AuthOptions = {
         );
         user.id = profile.sub;
         return user;
-      },
+      }
     }),
   ],
   callbacks: {

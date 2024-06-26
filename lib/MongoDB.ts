@@ -1,6 +1,5 @@
 import {
   Db,
-  GridFSBucket,
   MongoClient,
   MongoClientOptions,
   ObjectId,
@@ -8,7 +7,11 @@ import {
 } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  console.error('Invalid/Missing environment variable: "MONGODB_URI"');
+  // Necessary to allow connections from files running outside of Next
+  require("dotenv").config();
+
+  if (!process.env.MONGODB_URI)
+    console.error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
 const uri = process.env.MONGODB_URI ?? "mongodb://localhost:27017";

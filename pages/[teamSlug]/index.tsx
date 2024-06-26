@@ -18,6 +18,7 @@ import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import {
   FaRobot,
+  FaSlack,
   FaSync,
   FaUserFriends,
   FaUserPlus,
@@ -28,8 +29,8 @@ import SeasonCard from "@/components/SeasonCard";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
 import ConfirmModal from "@/lib/client/Confirm";
-import { team } from "slack";
 import { validName } from "@/lib/client/InputVerification";
+import { BsSlack } from "react-icons/bs";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 
@@ -442,6 +443,22 @@ export default function TeamIndex(props: TeamPageProps) {
               </div>
             </Link>
           </Flex>
+          <div className="flex flex-row items-center space-x-1">
+            <BsSlack color={team?.slackChannel ? "green" : "red"} />
+            {
+              team?.slackChannel 
+                ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
+                : <div>
+                    Not linked to Slack.
+                    { team?.owners.includes(session?.user?._id ?? "") && 
+                      <>
+                        {" "}Run <span className="text-accent">/link-notifications {team.number}</span> followed by 
+                        {" "}<span className="text-accent">/invite @Gearbox</span> in Slack to link notifications.
+                      </>
+                    }
+                  </div>
+            }
+          </div>
         </Card>
 
         <div className="flex flex-row justify-start w-2/3 max-sm:w-11/12 ">

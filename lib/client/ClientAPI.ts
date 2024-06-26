@@ -324,10 +324,11 @@ export default class ClientAPI {
   }
 
   async remindSlack(
-    slackId: string | undefined,
-    senderSlackId: string | undefined
+    slackId: string,
+    senderSlackId: string,
+    teamId: string
   ) {
-    return await this.request("/remindSlack", { slackId, senderSlackId });
+    return await this.request("/remindSlack", { slackId, senderSlackId, teamId });
   }
 
   async setSlackId(userId: string | undefined, slackId: string | undefined) {
