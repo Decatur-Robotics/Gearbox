@@ -6,7 +6,7 @@ import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import { Competition, Season, Team, User } from "@/lib/Types";
+import { Competition, League, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
@@ -398,7 +398,7 @@ export default function TeamIndex(props: TeamPageProps) {
   const { session, status } = useCurrentSession();
   const team = props.team;
 
-  const isFrc = team?.tbaId?.startsWith("frc");
+  const isFrc = team?.tbaId || team?.league === League.FRC;
 
   const [page, setPage] = useState(0);
 
@@ -426,11 +426,7 @@ export default function TeamIndex(props: TeamPageProps) {
 
           <div className="divider"></div>
           <Flex mode="row" className="space-x-4">
-            {isFrc ? (
-              <div className="badge badge-secondary md:badge-lg">FRC</div>
-            ) : (
-              <></>
-            )}
+            <div className="badge badge-secondary md:badge-lg">{isFrc ? "FRC" : "FTC"}</div>
             <Link
               href={`https://www.thebluealliance.com/team/${team?.number}`}
               rel="noopener noreferrer"

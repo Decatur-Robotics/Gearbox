@@ -79,11 +79,14 @@ export class Team {
 
   seasons: string[];
 
+  league: League = League.FRC;
+
   constructor(
     name: string,
     slug: string | undefined,
     tbaId: string | undefined,
     number: number,
+    league: League = League.FRC,
     owners: string[] = [],
     users: string[] = [],
     scouters: string[] = [],
@@ -101,6 +104,7 @@ export class Team {
     this.subjectiveScouters = subjectiveScouters;
     this.seasons = seasons;
     this.requests = requests;
+    this.league = league;
   }
 }
 

@@ -14,8 +14,10 @@ import {
   Pitreport,
   DbPicklist,
   SubjectiveReport,
+  League,
 } from "../Types";
 import { GameId } from "./GameId";
+import { TheOrangeAlliance } from "../TheOrangeAlliance";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -152,13 +154,15 @@ export default class ClientAPI {
     name: string,
     number: number,
     creator: string | undefined,
-    tbaId: undefined | string
+    tbaId: undefined | string,
+    league: League
   ): Promise<Team> {
     return await this.request("/createTeam", {
       name: name,
       number: number,
       creator: creator,
       tbaId: tbaId,
+      league: league,
     });
   }
 
@@ -443,6 +447,10 @@ export default class ClientAPI {
 
   async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
     return await this.request("/updateCompNameAndTbaId", { compId, name, tbaId });
+  }
+
+  async getFtcTeamAutofillData(teamNumber: number): Promise<Team> {
+    return await this.request("/getFtcTeamAutofillData", { teamNumber });
   }
 
 }

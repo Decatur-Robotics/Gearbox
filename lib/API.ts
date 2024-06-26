@@ -12,6 +12,7 @@ import {
   DbPicklist,
   SubjectiveReport,
   SubjectiveReportSubmissionType,
+  League,
 } from "./Types";
 import { GenerateSlug, removeDuplicates } from "./Utils";
 import { ObjectId } from "mongodb";
@@ -28,6 +29,7 @@ import { QuantData } from "./Types";
 import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
+import { TheOrangeAlliance } from "./TheOrangeAlliance";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -338,6 +340,7 @@ export namespace API {
         await GenerateSlug(Collections.Teams, data.name),
         data?.tbaId,
         data.number,
+        data.league,
         [data.creator],
         [data.creator],
         [data.creator]
@@ -1016,6 +1019,11 @@ export namespace API {
       });
 
       return res.status(200).send({ result: "success" });
+    },
+
+    getFtcTeamAutofillData: async (req, res, { tba, data }: RouteContents<{ teamNumber: number }>) => {
+      const team = await TheOrangeAlliance.getTeam(data.teamNumber);
+      return res.status(200).send(team);
     }
   };
 }
