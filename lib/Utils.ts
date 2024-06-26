@@ -93,3 +93,12 @@ export function removeDuplicates(...arr: any[]) {
 
   return Array.from(new Set(arr));
 }
+
+/**
+ * Gets around "... cannot be serialized as JSON" error by converting the object to a string and back to an object
+ * 
+ * @returns a clone of the object that is serializable
+ */
+export function makeObjSerializeable(obj: Object) {
+  return JSON.parse(JSON.stringify(obj));
+}

@@ -27,8 +27,8 @@ export default function StartingPosition(props: PageProps) {
   const setup = (p5: p5Types, canvasParentRef: Element) => {
     bg = p5.loadImage(
       props.alliance === AllianceColor.Blue
-        ? "/croppedFieldBlue.PNG"
-        : "/croppedFieldRed.PNG",
+        ? `/fields/${props.fieldImagePrefix}Blue.png`
+        : `/fields/${props.fieldImagePrefix}Red.png`,
     );
     const ctx = p5.createCanvas(350, 300).parent(canvasParentRef);
     ctx.mousePressed(() => {

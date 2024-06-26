@@ -146,13 +146,13 @@ export default function Scouters(props: { team: Team | null, competition: Compet
 
         for (const report of data.pitReports) {
           comments.push({
-            text: report.comments,
+            text: report.data?.comments ?? "",
             user: report.submitter,
             robot: report.teamNumber,
             formType: "Pit Report",
             matchNumber: 0,
             dbId: report._id ?? "",
-            flag: getCommentFlag(report.comments),
+            flag: getCommentFlag(report.data?.comments ?? ""),
             remove: () => removeComment(report._id, removePitComment)
           });
         }

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { FaX } from "react-icons/fa6";
 import { start } from "repl";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -82,7 +83,9 @@ export default function PublicEvent() {
       <Container requireAuthentication={false} hideMenu={!hide}>
         <div className="min-h-[65vh] flex flex-col items-center justify-center space-y-6">
           <FaX size={48} color="red" />
-          <div className="text-4xl font-bold">Error: Event not found</div>
+          <div className="text-4xl font-bold">
+            Error: {eventData?.comp.tbaId === NotLinkedToTba ? "Comp Not Linked to TBA" : "Event not found"}
+          </div>
         </div>
       </Container>
     );

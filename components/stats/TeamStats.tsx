@@ -1,17 +1,15 @@
 import {
-  BooleanAverage,
-  MostCommonValue,
   NumericalAverage,
   ComparativePercent,
 } from "@/lib/client/StatsMath";
-import { Defense, Drivetrain, IntakeTypes, Pitreport, Report, SubjectiveReport, SubjectiveReportSubmissionType, SwerveLevel } from "@/lib/Types";
+import { PitReportData, Pitreport, QuantData, Report, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
 import { PiCrosshair, PiGitFork } from "react-icons/pi";
-import { FaCode, FaCodeFork, FaWifi } from "react-icons/fa6";
+import { FaCode, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
-import { Round } from '../../lib/client/StatsMath';
 import { ReactNode, useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Loading from "../Loading";
+import { StatsLayout, Stat, StatPair, Badge } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -20,6 +18,8 @@ export default function TeamStats(props: {
   selectedReports: Report[];
   pitReport: Pitreport | null;
   subjectiveReports: SubjectiveReport[];
+  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[]) => Badge[];
+  layout: StatsLayout<PitReportData, QuantData>;
 }) {
   const [comments, setComments] = useState<{matchNum: number, content: { order: number, jsx: ReactNode}[] }[] | null>(null);
 
@@ -41,8 +41,8 @@ export default function TeamStats(props: {
       0,
       0,
       pitReport 
-        ? pitReport.comments.length > 0 
-          ? `Pit Report: ${pitReport.comments}` 
+        ? pitReport.data?.comments.length ?? 0 > 0 
+          ? `Pit Report: ${pitReport.data?.comments}` 
           : "No pit report comments."
         : <Loading size={24} />
     );
@@ -74,11 +74,11 @@ export default function TeamStats(props: {
       }
     }
 
-    const commentList = props.selectedReports.filter((report) => report.data.comments.length > 0);
+    const commentList = props.selectedReports?.filter((report) => report.data?.comments.length > 0) ?? [];
     if (commentList.length === 0) return setComments([]);
     
     const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
-      match.number, 0, `Quantitative: ${report.data.comments}`
+      match.number, 0, `Quantitative: ${report.data?.comments}`
     )));
 
     Promise.all(promises).then(() => setComments(newComments));
@@ -94,38 +94,69 @@ export default function TeamStats(props: {
     );
   }
 
-  const pitReport = props.pitReport;
+  const pitReport = props.pitReport;  
+  const badges = props.getBadges(pitReport ?? undefined, props.selectedReports);
 
-  const defense = MostCommonValue("Defense", props.selectedReports);
-  const intake = pitReport?.intakeType //MostCommonValue("IntakeType", props.selectedReports);
-  const cooperates = BooleanAverage("Coopertition", props.selectedReports);
-  const climbs = BooleanAverage("ClimbedStage", props.selectedReports);
-  const parks = BooleanAverage("ParkedStage", props.selectedReports);
-  const understage = BooleanAverage("UnderStage", props.selectedReports);
-  const drivetrain = pitReport?.drivetrain;
+  function getSections(header: string, stats: (Stat<PitReportData, QuantData> | StatPair<PitReportData, QuantData>)[]) {
+    const statElements = stats.map((stat, index) => {
+      if ((stat as Stat<PitReportData, QuantData>).key) {
+        // Single stat
+        const singleStat = stat as Stat<PitReportData, QuantData>;
 
-  let defenseBadgeColor = "outline";
-  if (defense === Defense.Full)
-    defenseBadgeColor = "primary";
-  else if (defense === Defense.Partial)
-    defenseBadgeColor = "accent";
+        return <h1 key={index}>
+          {singleStat.label}: {NumericalAverage(singleStat.key as string, props.selectedReports)}
+        </h1>
+      }
 
-  let intakeBadgeColor = "outline";
-  if (pitReport?.submitted) {
-    if (intake === IntakeTypes.Both)
-      intakeBadgeColor = "primary";
-    else if (intake === IntakeTypes.Ground)
-      intakeBadgeColor = "accent";
-    else if (intake === IntakeTypes.Human)
-      intakeBadgeColor = "secondary";
-    else if (intake === IntakeTypes.None)
-      intakeBadgeColor = "warning";
+      // Stat pair
+      const pair = stat as StatPair<PitReportData, QuantData>;
+      if (pair.stats.length !== 2) {
+        console.error("Invalid stat pair. Wrong # of stats provided.", pair);
+        return <></>;
+      }
+
+      const first = pair.stats[0].get?.call(pair.stats[0], pitReport ?? undefined, props.selectedReports)
+        ?? NumericalAverage(pair.stats[0].key as string, props.selectedReports);
+      const second = pair.stats[1].get?.call(pair.stats[1], pitReport ?? undefined, props.selectedReports) 
+        ?? NumericalAverage(pair.stats[1].key as string, props.selectedReports);
+
+      return <div key={index} className="w-full h-fit flex flex-row items-center">
+        <div>
+          <h1>
+            {pair.stats[0].label}: {first}
+          </h1>
+          <h1>
+            {pair.stats[1].label}: {second}
+          </h1>
+        </div>
+        <PiGitFork className="-rotate-90" size={40} />
+        <p>
+          {pair.label}: {ComparativePercent(pair.stats[0].key as string, pair.stats[1].key as string, props.selectedReports)}
+        </p>
+      </div>
+    });
+    
+    const iconDict: { [header: string]: ReactNode } = {
+      "Positioning": <PiCrosshair size={32} className="inline" />,
+      "Auto": <FaCode size={32} className="inline" />,
+      "Teleop": <FaWifi size={32} className="inline" />,
+      "Comments": <FaComment size={32} className="inline" />
+    };
+    const icon = header in iconDict ? iconDict[header] : <></>;
+
+    return (
+      <div key={header} className="mb-2">
+        <h1 className="text-xl font-semibold">
+          {icon} {header}
+        </h1>
+        <div className="ml-2">
+          {statElements}
+        </div>
+      </div>
+    );
   }
 
-  let drivetrainColor = "outline";
-  if (pitReport?.submitted) {
-    drivetrainColor = pitReport?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
-  }
+  const sections = Object.entries(props.layout).map(([header, stats]) => getSections(header, stats));
 
   return (
     <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">
@@ -134,187 +165,16 @@ export default function TeamStats(props: {
       </h1>
 
       <div className="flex flex-row w-full space-x-2 space-y-1 mt-2 flex-wrap">
-        <div className={`badge badge-${defenseBadgeColor}`}>
-          {defense} Defense
-        </div>
-        <div className={`badge badge-${intakeBadgeColor}`}>
-          {pitReport ? (pitReport.submitted ? intake : "Unknown") : <Loading size={12} className="mr-1" />} Intake
-          { pitReport?.underBumperIntake && " (Under Bumper)" }
-        </div>
-        { cooperates && 
-          <div className="badge badge-primary">Cooperates</div>
+        { badges.map((badge, index) => (
+            <div key={index} className={`badge badge-${badge.color}`}>{badge.text}</div>
+          ))
         }
-        { climbs &&
-          <div className="badge badge-secondary">Climbs</div>}
-        { parks &&
-          <div className="badge badge-accent">Parks</div>}
-        { understage &&
-          <div className="badge badge-neutral">Small Profile</div>}
-        { (!pitReport || pitReport.canScoreFromDistance) && 
-          <div className={`badge badge-${pitReport?.canScoreFromDistance ? "primary" : "neutral"}`}>
-            {pitReport ? (pitReport?.canScoreFromDistance && "Can Score from Distance") : <Loading size={12} />}
-          </div>}
-        <div className={`badge badge-${drivetrainColor}`}>
-          {pitReport ? (pitReport.submitted ? drivetrain : "Unknown") : <Loading size={12} className="mr-1" />} Drivetrain
-          {" "}{ pitReport && <>({pitReport.swerveLevel !== SwerveLevel.None && pitReport.swerveLevel + " "}{pitReport.motorType})</> }
-        </div>
-        { (!pitReport || pitReport.fixedShooter) && 
-          <div className={`badge badge-${pitReport?.fixedShooter ? "error" : "neutral"}`}>
-            {pitReport ? (pitReport?.fixedShooter && "Fixed Shooter") : <Loading size={12} />}
-          </div>}
-        { (!pitReport || pitReport.canScoreSpeaker) && 
-          <div className={`badge badge-${pitReport?.canScoreSpeaker ? "secondary" : "neutral"}`}>
-            {pitReport ? (pitReport?.canScoreSpeaker && "Can Score Speaker") : <Loading size={12} />}
-          </div>}
-        { (!pitReport || pitReport.canScoreAmp) && 
-          <div className={`badge badge-${pitReport?.canScoreAmp ? "accent" : "neutral"}`}>
-            {pitReport ? (pitReport?.canScoreAmp && "Can Score Amp") : <Loading size={12} />}
-          </div>}
-          { (!pitReport || pitReport.autoNotes > 0) && 
-            <div className={`badge badge-${(pitReport?.autoNotes ?? 0) > 0 ? "primary" : "neutral"}`}>
-              {pitReport ? <>Ideal Auto: {pitReport.autoNotes} notes</> : <Loading size={12} />}
-            </div>}
       </div>
 
       <div className="w-1/3 divider"></div>
 
-      <h1 className="text-xl font-semibold">
-        <PiCrosshair size={32} className="inline" /> Positioning
-      </h1>
-      <h1>
-        Avg Starting Position: (
-        {NumericalAverage("AutoStartX", props.selectedReports)},{" "}
-        {NumericalAverage("AutoStartY", props.selectedReports)})
-      </h1>
-      <h1>
-        Avg Starting Angle:{" "}
-        {Round(NumericalAverage("AutoStartAngle", props.selectedReports) *
-          (180 / Math.PI) +
-          180)}
-        °
-      </h1>
-
-      <div className="w-1/3 divider"></div>
-
-      <h1 className="text-xl font-semibold">
-        <FaCode size={32} className="inline" /> Auto
-      </h1>
-
-      <div className="w-full h-fit flex flex-row items-center">
-        <div>
-          <h1>
-            Avg Scored Amp Shots:{" "}
-            {NumericalAverage("AutoScoredAmp", props.selectedReports)}
-          </h1>
-          <h1>
-            Avg Missed Amp Shots:{" "}
-            {NumericalAverage("AutoMissedAmp", props.selectedReports)}
-          </h1>
-        </div>
-        <PiGitFork className="-rotate-90" size={40} />
-        <p>
-          Overall Amp Accuracy:{" "}
-          {ComparativePercent(
-            "AutoScoredAmp",
-            "AutoMissedAmp",
-            props.selectedReports,
-          )}
-        </p>
-      </div>
-
-      <div className="w-full h-fit flex flex-row items-center">
-        <div>
-          <h1>
-            Avg Scored Speaker Shots:{" "}
-            {NumericalAverage("AutoScoredSpeaker", props.selectedReports)}
-          </h1>
-          <h1>
-            Avg Missed Speaker Shots:{" "}
-            {NumericalAverage("AutoMissedSpeaker", props.selectedReports)}
-          </h1>
-        </div>
-        <PiGitFork className="-rotate-90" size={40} />
-        <p>
-          Overall Speaker Accuracy:{" "}
-          {ComparativePercent(
-            "AutoScoredSpeaker",
-            "AutoMissedSpeaker",
-            props.selectedReports,
-          )}
-        </p>
-      </div>
-
-      <div className="w-1/3 divider"></div>
-      <h1 className="text-xl font-semibold">
-        <FaWifi size={32} className="inline" /> Teleop
-      </h1>
-
-      <div className="w-full h-fit flex flex-row items-center">
-        <div>
-          <h1>
-            Avg Scored Amp Shots:{" "}
-            {NumericalAverage("TeleopScoredAmp", props.selectedReports)}
-          </h1>
-          <h1>
-            Avg Missed Amp Shots:{" "}
-            {NumericalAverage("TeleopMissedAmp", props.selectedReports)}
-          </h1>
-        </div>
-        <PiGitFork className="-rotate-90" size={40} />
-        <p>
-          Overall Amp Accuracy:{" "}
-          {ComparativePercent(
-            "TeleopScoredAmp",
-            "TeleopMissedAmp",
-            props.selectedReports,
-          )}
-        </p>
-      </div>
-
-      <div className="w-full h-fit flex flex-row items-center">
-        <div>
-          <h1>
-            Avg Scored Speaker Shots:{" "}
-            {NumericalAverage("TeleopScoredSpeaker", props.selectedReports)}
-          </h1>
-          <h1>
-            Avg Missed Speaker Shots:{" "}
-            {NumericalAverage("TeleopMissedSpeaker", props.selectedReports)}
-          </h1>
-        </div>
-        <PiGitFork className="-rotate-90" size={40} />
-        <p>
-          Overall Speaker Accuracy:{" "}
-          {ComparativePercent(
-            "TeleopScoredSpeaker",
-            "TeleopMissedSpeaker",
-            props.selectedReports,
-          )}
-        </p>
-      </div>
-
-      <div className="w-full h-fit flex flex-row items-center">
-        <div>
-          <h1>
-            Avg Scored Trap Shots:{" "}
-            {NumericalAverage("TeleopScoredTrap", props.selectedReports)}
-          </h1>
-          <h1>
-            Avg Missed Trap Shots:{" "}
-            {NumericalAverage("TeleopMissedTrap", props.selectedReports)}
-          </h1>
-        </div>
-        <PiGitFork className="-rotate-90" size={40} />
-        <p>
-          Overall Auto Amp Accuracy:{" "}
-          {ComparativePercent(
-            "TeleopScoredTrap",
-            "TeleopMissedTrap",
-            props.selectedReports,
-          )}
-        </p>
-      </div>
-
+      {sections}
+      
       <div className="w-1/3 divider"></div>
       <h1 className="text-xl font-semibold">
         <FaComment size={32} className="inline" /> Comments

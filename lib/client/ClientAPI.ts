@@ -6,16 +6,16 @@ import {
   Team,
   User,
   Match,
-  Form,
   CompetitonNameIdPair,
   Report,
   MatchType,
-  FormData,
+  QuantData,
   EventData,
   Pitreport,
   DbPicklist,
   SubjectiveReport,
 } from "../Types";
+import { GameId } from "./GameId";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -53,6 +53,7 @@ export default class ClientAPI {
       },
       body: JSON.stringify(body),
     });
+    
     return await rawResponse.json();
   }
 
@@ -161,10 +162,11 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, teamId: string): Promise<Season> {
+  async createSeason(name: string, year: number, gameId: GameId, teamId: string): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
+      gameId: gameId,
       teamId: teamId,
     });
   }
@@ -210,11 +212,11 @@ export default class ClientAPI {
     });
   }
 
-  async updateCompetition(
+  async reloadCompetition(
     compId: string | undefined,
     tbaId: string | undefined
   ) {
-    return await this.request("/updateCompetition", {
+    return await this.request("/reloadCompetition", {
       compId: compId,
       tbaId: tbaId,
     });
@@ -272,7 +274,7 @@ export default class ClientAPI {
 
   async submitForm(
     reportId: string | undefined,
-    formData: FormData | undefined,
+    formData: QuantData | undefined,
     userId: string | undefined
   ) {
     return await this.request("/submitForm", {
@@ -433,6 +435,14 @@ export default class ClientAPI {
 
   async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
+  }
+
+  async createPitReportForTeam(teamNumber: number, compId: string) {
+    return await this.request("/createPitReportForTeam", { teamNumber, compId });
+  }
+
+  async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
+    return await this.request("/updateCompNameAndTbaId", { compId, name, tbaId });
   }
 
 }

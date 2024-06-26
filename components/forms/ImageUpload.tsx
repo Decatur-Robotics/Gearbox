@@ -10,11 +10,11 @@ const DefaultCompressionOptions = {
 };
 
 export default function ImageUpload(props: {
-  data: Pitreport;
+  report: Pitreport;
   callback: (key: string, value: string | number | boolean) => void;
 }) {
   const [imageUrl, setImageUrl] = useState(
-    props.data.image !== "/robot.jpg" ? props.data.image : ""
+    props.report.data?.image !== "/robot.jpg" ? props.report.data?.image : ""
   );
   const [uploadProgress, setUploadProgress] = useState(-1);
 
