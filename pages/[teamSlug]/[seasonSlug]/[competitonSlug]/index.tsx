@@ -205,7 +205,8 @@ export default function Home(props: ResolvedUrlData) {
       if (Object.keys(usersById).length === 0)
         setLoadingUsers(true);
 
-      if (!team?.scouters || !team.subjectiveScouters) {
+      if (!team || (!team.scouters && !team.subjectiveScouters)) {
+        console.log("No scouters");
         return;
       }
 
