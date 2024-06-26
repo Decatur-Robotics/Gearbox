@@ -124,12 +124,12 @@ export default function Home(props: ResolvedUrlData) {
     let matchesAssigned = true;
     for (const report of reports) {
       if (!report.user) {
-        console.log("No user assigned to report", report);
         matchesAssigned = false;
         break;
       }
     }
 
+    console.log("Matches assigned: " + matchesAssigned);
     setMatchesAssigned(matchesAssigned);
   }, [reports]);
 
