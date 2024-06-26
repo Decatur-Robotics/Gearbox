@@ -13,6 +13,7 @@ import { TimeString } from "@/lib/client/FormatTime";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { defaultGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -132,13 +133,16 @@ export default function Stats(props: StatsPageProps) {
         </a> */}
       </div>
 
-      {page === 0 ? (
-        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports} gameId={props.competition.gameId} />
-      ) : (
-        <></>
+      {page === 0 && (
+        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports} 
+          gameId={props.competition?.gameId ?? defaultGameId} />
       )}
-      {page === 1 ? <PicklistScreen 
-        teams={Array.from(teams)} reports={reports} expectedTeamCount={props.competition.pitReports.length} picklistId={props.competition.picklist}></PicklistScreen> : <></>}
+      {page === 1 
+        ? <PicklistScreen 
+          teams={Array.from(teams)} reports={reports} expectedTeamCount={props.competition.pitReports.length} 
+          picklistId={props.competition.picklist} /> 
+        : <></>
+      }
     </Container>
   );
 }

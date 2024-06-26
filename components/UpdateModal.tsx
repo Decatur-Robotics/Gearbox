@@ -10,7 +10,7 @@ export function UpdateModal(props: {}) {
     const res = localStorage.getItem(`gb-update-${VERSION}`);
     if (modalRef.current && !res) {
       modalRef.current.showModal();
-      localStorage.setItem(VERSION, "true");
+      localStorage.setItem(`gb-update-${VERSION}`, "true");
     }
   });
 
