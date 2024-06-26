@@ -151,7 +151,7 @@ export default function Profile(props: { teamList: Team[] }) {
                               key={team._id}
                             >
                               <h1 className="max-sm:text-sm h-10">
-                                Team{" "}
+                                {team.tbaId ? "FRC" : "FTC"}{" "}
                                 <span className="text-primary">
                                   {team.number}
                                 </span>
