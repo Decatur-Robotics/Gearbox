@@ -27,13 +27,13 @@ export default function PwaConfig() {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:url" content="https://4026.org" />
         <meta name="twitter:title" content="Gearbox" />
-        <meta name="twitter:description" content="Best PWA App in the world" />
+        <meta name="twitter:description" content="Scouting made simple." />
         <meta name="twitter:image" content="https://yourdomain.com/icons/android-chrome-192x192.png" />
         <meta name="twitter:creator" content="@4026" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Gearbox" />
-        <meta property="og:description" content="Best PWA App in the world" />
-        <meta property="og:site_name" content="PWA App" />
+        <meta property="og:description" content="Scouting made simple." />
+        <meta property="og:site_name" content="Gearbox" />
         <meta property="og:url" content="https://4026.org" />
         <meta property="og:image" content="https://4026.org/public/favicon.png" />
 
