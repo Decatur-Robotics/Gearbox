@@ -201,6 +201,7 @@ export default function Home(props: ResolvedUrlData) {
 
   useEffect(() => {
     const loadUsers = async () => {
+      console.log("Loading users...");
       if (Object.keys(usersById).length === 0)
         setLoadingUsers(true);
 
@@ -214,6 +215,7 @@ export default function Home(props: ResolvedUrlData) {
       }
 
       setUsersById(newUsersById);
+      console.log("Loaded users");
       setLoadingUsers(false);
     };
 
