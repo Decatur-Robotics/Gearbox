@@ -1,29 +1,33 @@
-import { AllianceColor, Report, FormData } from "@/lib/Types";
-import { useCallback, useState, useEffect } from "react";
-import { AutoPage, EndPage, PrematchPage, TeleopPage } from "./FormPages";
+import { AllianceColor, Report, QuantData } from "@/lib/Types";
+import { useCallback, useState } from "react";
+import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 
 import ClientAPI from "@/lib/client/ClientAPI";
+import Checkbox from "./Checkboxes";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
+import StartingPosition from "./StartingPosition";
+import { CommentBox } from "./Comment";
+import { IncrementButton } from "./Buttons";
+import Slider from "./Sliders";
+import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");
-//let io: Socket<DefaultEventsMap, DefaultEventsMap>;
 
-export default function Form(props: { report: Report }) {
+export default function Form(props: { report: Report, layout: FormLayout<QuantData>, fieldImagePrefix: string }) {
   const { session, status } = useCurrentSession();
-  //const router = useRouter();
 
   const [page, setPage] = useState(0);
-  const [formData, setFormData] = useState<FormData>(props.report?.data);
+  const [formData, setFormData] = useState<QuantData>(props.report?.data);
   const [syncing, setSyncing] = useState(false);
 
   const alliance = props.report?.color;
 
   async function submitForm() {
     await api.submitForm(props.report?._id, formData, session?.user?._id);
-    console.log("yaya");
     location.href = location.href.substring(0, location.href.lastIndexOf("/"));
   }
 
@@ -37,7 +41,6 @@ export default function Form(props: { report: Report }) {
     (key: any, value: boolean | string | number) => {
       setFormData((old) => {
         let copy = structuredClone(old);
-        //@ts-ignore
         copy[key] = value;
         sync();
         return copy;
@@ -46,46 +49,139 @@ export default function Form(props: { report: Report }) {
     []
   );
 
+  useCallback(() => {
+    // Set all Nan values to 0
+    for (const key in formData) {
+      if (typeof formData[key] === "number" && isNaN(formData[key])) {
+        setCallback(key, 0);
+      }
+    }
+
+    setFormData(formData);
+  }, [props.report?.data]);
+
+  function elementToNode(element: FormElement<QuantData>) {
+    const key = element.key as string;
+
+    if (element.type === "boolean") {
+      return (
+        <Checkbox
+          label={element.label ?? camelCaseToTitleCase(key)}
+          dataKey={key}
+          data={formData}
+          callback={setCallback}
+          key={key}
+        />
+      );
+    }
+
+    if (element.type === "startingPos") {
+      return (
+        <StartingPosition
+          alliance={alliance}
+          data={formData}
+          callback={setCallback}
+          fieldImagePrefix={props.fieldImagePrefix}
+          key={key}
+        />
+      );
+    }
+
+    if (element.type === "number") {
+      return (
+        <input
+          type="number"
+          value={formData[key] as number}
+          onChange={(e) => {
+            setCallback(key, parseInt(e.target.value));
+          }}
+          key={key}
+        />
+      );
+    }
+
+    if (element.type === "string") {
+      return (
+        <CommentBox data={formData} callback={setCallback} key={key} />
+      );
+    }
+
+    // Enum
+    if (typeof element.type === "object") {
+      return (
+        <Slider data={formData} callback={setCallback} possibleValues={element.type} 
+          title={element.label ?? camelCaseToTitleCase(key)} value={formData[element.key]}
+          dataKey={element.key} key={key} />
+      );
+    }
+  }
+
+  function blockToNode(block: BlockElement<QuantData>) {
+    const colCount = block.length;
+    const rowCount = block[0].length;
+
+    const elements = [];
+
+    for (let r = 0; r < rowCount; r++) {
+      for (let c = 0; c < colCount; c++) {
+        let rounding = "";
+        if (r === 0) rounding += "t";
+        else if (r === rowCount - 1) rounding += "b";
+
+        if (c === 0) rounding += "l";
+        else if (c === colCount - 1) rounding += "r";
+
+        // Just having rounded-t will cause side effects
+        if (rounding.length === 1)
+          rounding = "";
+
+        if (!BlockElement.isBlock(block[c][r])) {
+          const element = block[c][r] as FormElement<QuantData>;
+
+          elements.push(<IncrementButton dataKey={element.key as string} data={formData} 
+            text={element.label ?? element.key as string} callback={setCallback} rounded={rounding}/>);
+        }
+      }
+    }
+
+    return (
+      <div key={block.map(e => e.keys).join(",")} className="w-full h-full flex flex-col items-center">
+        <div className={`w-full grid grid-cols-${colCount} grid-rows-${rowCount}`}>
+          {elements}
+        </div>
+      </div>
+    );
+  }
+
+  // Use an array to preserve the order of pages
+  const layout: { page: string, elements: (FormElement<QuantData> | BlockElement<QuantData>)[] }[] = [];
+  Object.entries(props.layout).map(([header, elements]) => {
+    layout.push({ page: header, elements });
+  });
+
+  const pages = layout.map((page, index) => {
+    const inputs = page.elements.map((element) => {
+      return BlockElement.isBlock(element) ? blockToNode(element) : elementToNode(element as FormElement<QuantData>);
+    });
+
+    return (
+      <FormPage key={"form"} title={page.page}>
+        {inputs}
+        {
+          index === layout.length - 1 && (<>
+            <hr className="w-full border-slate-700 border-2"></hr>
+            <button className="btn btn-wide btn-primary " onClick={submitForm}>
+              Submit
+            </button>
+            </>)
+        }
+      </FormPage>
+    );
+  });
+  
   return (
     <div className="w-full h-fit flex flex-col items-center space-y-2 mb-2">
-      {page === 0 ? (
-        <PrematchPage
-          data={formData}
-          callback={setCallback}
-          alliance={alliance}
-        ></PrematchPage>
-      ) : (
-        <></>
-      )}
-      {page === 1 ? (
-        <AutoPage
-          data={formData}
-          callback={setCallback}
-          alliance={alliance}
-        ></AutoPage>
-      ) : (
-        <></>
-      )}
-      {page === 2 ? (
-        <TeleopPage
-          data={formData}
-          callback={setCallback}
-          alliance={alliance}
-        ></TeleopPage>
-      ) : (
-        <></>
-      )}
-      {page === 3 ? (
-        <EndPage
-          data={formData}
-          callback={setCallback}
-          alliance={alliance}
-          submit={submitForm}
-        ></EndPage>
-      ) : (
-        <></>
-      )}
-
+      {pages[page]}
       <div className="w-full h-full">
         <div className="card w-full bg-base-200">
           <div className="card-body flex flex-col items-center">

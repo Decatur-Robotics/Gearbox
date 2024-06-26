@@ -5,9 +5,9 @@ import {
   User as NextAuthUser,
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
-import { Statbotics } from "./Statbotics";
-import { DatasetJsonLdProps } from "next-seo";
-import Subjective from '../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/[reportId]/subjective';
+import { GameId, defaultGameId } from "./client/GameId";
+import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
+import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
 
 /**
  * Standard Account Type
@@ -108,20 +108,7 @@ export class Team {
   }
 }
 
-export enum Defense {
-  None = "None",
-  Partial = "Partial",
-  Full = "Full",
-}
-
-export enum IntakeTypes {
-  None = "None",
-  Human = "Human",
-  Ground = "Ground",
-  Both = "Both",
-}
-
-export class FormData {
+export abstract class QuantData {
   [key: string]: any;
 
   Presented: boolean = true;
@@ -129,41 +116,152 @@ export class FormData {
   AutoStartX: number = 0; // pixel position of robot
   AutoStartY: number = 0;
   AutoStartAngle: number = 0; // stored... but probably wont ever be used
-  AutoScoredAmp: number = 0; // # of times scored in the amp
-  AutoMissedAmp: number = 0;
-  AutoScoredSpeaker: number = 0;
-  AutoMissedSpeaker: number = 0;
-  MovedOut: boolean = false;
-
-  TeleopScoredAmp: number = 0;
-  TeleopMissedAmp: number = 0;
-  TeleopScoredSpeaker: number = 0;
-  TeleopMissedSpeaker: number = 0;
-  TeleopScoredTrap: number = 0;
-  TeleopMissedTrap: number = 0;
 
   Defense: Defense = Defense.None;
 
   drivetrain: Drivetrain = Drivetrain.Tank;
 
-  Coopertition: boolean = false; // true if used any point in match
-  ClimbedStage: boolean = false;
-  ParkedStage: boolean = false;
-  UnderStage: boolean = false;
-
-  intakeType: IntakeTypes = IntakeTypes.Human;
-
   comments: string = "";
 }
 
-export class Form {
-  _id: string | undefined;
-  name: string;
-  data: FormData;
+export enum League {
+  FTC = "FTC", FRC = "FRC"
+}
 
-  constructor(name: string, data: FormData) {
+export class Game<TQuantData extends QuantData, TPitData extends PitReportData> {
+  name: string;
+
+  year: number;
+  league: League;
+
+  allianceSize: number
+
+  quantDataType: new() => TQuantData;
+  pitDataType: new() => TPitData;
+
+  pitReportLayout: FormLayout<TPitData>;
+  quantitativeReportLayout: FormLayout<TQuantData>;
+  statsLayout: StatsLayout<TPitData, TQuantData>;
+  pitStatsLayout: PitStatsLayout<TPitData, TQuantData>;
+
+  fieldImagePrefix: string;
+  coverImage: string
+
+  getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => Badge[];
+  getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number;
+
+  /**
+   * @param name 
+   * @param year 
+   * @param league 
+   * @param quantDataType 
+   * @param pitDataType 
+   * @param pitReportLayout will auto-populate fields from PitReportData (everything not unique to the game)
+   */
+  constructor(name: string, year: number, league: League, 
+      quantDataType: new() => TQuantData, pitDataType: new() => TPitData, 
+      pitReportLayout: FormLayoutProps<TPitData>, quantitativeReportLayout: FormLayoutProps<TQuantData>,
+      statsLayout: StatsLayout<TPitData, TQuantData>,
+      pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, fieldImagePrefix: string, 
+      coverImage: string,
+      getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => Badge[],
+      getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number) {
     this.name = name;
-    this.data = data;
+    this.year = year;
+    this.league = league;
+    this.allianceSize = league === League.FRC ? 3 : 2;
+
+    this.quantDataType = quantDataType;
+    this.pitDataType = pitDataType;
+
+    this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout, new pitDataType());
+    this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout, new quantDataType());
+    this.statsLayout = Game.mergeStatsLayoutWithBaseLayout(statsLayout);
+    this.pitStatsLayout = Game.mergePitStatsLayoutWithBaseLayout(pitStatsLayout);
+
+    this.fieldImagePrefix = fieldImagePrefix;
+    this.coverImage = coverImage;
+
+    this.getBadges = getBadges;
+    this.getAvgPoints = getAvgPoints;
+  }
+
+  private static mergePitLayoutWithBaseLayout<TData extends PitReportData>(layout: FormLayoutProps<TData>, exampleData: TData) {
+    const finalLayout: typeof layout = {
+      "Image": [{ key: "image", type: "image" }],
+      "Drivetrain": ["drivetrain", "motorType", "swerveLevel"]
+    }
+
+    for (const [header, keys] of Object.entries(layout)) {
+      finalLayout[header] = keys;
+    }
+
+    finalLayout["Comments"] = ["comments"];
+
+    return FormLayout.fromProps(finalLayout, exampleData);
+  }
+  
+  private static mergeQuantitativeLayoutWithBaseLayout<TData extends QuantData>(layout: FormLayoutProps<TData>, exampleData: TData) {
+    const finalLayout: typeof layout = {
+      "Pre-Match": [{ key: "Presented", label: "Robot Present" }, { key: "AutoStartX", type: "startingPos" }],
+    };
+
+    // Copy over the rest of the layout
+    for (const [header, keys] of Object.entries(layout)) {
+      finalLayout[header] = keys;
+    }
+
+    const keys = Object.keys(layout);
+    finalLayout[keys[keys.length - 1]]?.push("comments");
+
+    return FormLayout.fromProps(finalLayout, exampleData);
+  }
+
+  private static mergeStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
+      (layout: StatsLayout<TPitData, TQuantData>) {
+    const finalLayout: typeof layout = {
+      "Positioning": [{label: "Avg Start X", key: "AutoStartX"}, {label: "Avg Start Y", key: "AutoStartY"}, 
+        {label: "Avg Start Angle (Deg)", key: "AutoStartAngle"}],
+    }
+
+    for (const [header, stats] of Object.entries(layout)) {
+      finalLayout[header] = stats;
+    }
+
+    return finalLayout;
+  }
+
+  private static mergePitStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
+      (layout: PitStatsLayout<TPitData, TQuantData>) {
+    const finalLayout: typeof layout = {
+      overallSlideStats: [],
+      individualSlideStats: [],
+      robotCapabilities: [
+        { key: "drivetrain", label: "Drivetrain" }
+      ],
+      graphStat: {
+        key: "AutoStartX",
+        label: "Avg Start X",
+      }
+    };
+
+    for (const [key, value] of Object.entries(layout)) {
+      if (!Array.isArray(value)) {
+        finalLayout[key] = value;
+      } else {
+        (finalLayout[key] as []).push(...value as []);
+      }
+    }
+
+    return finalLayout;
+  }
+
+  public createQuantitativeFormData(): TQuantData {
+    return new this.quantDataType();
+  }
+
+  public createPitReportData(): TPitData {
+    return new this.pitDataType();
   }
 }
 
@@ -171,6 +269,8 @@ export class Season {
   _id: string | undefined;
   name: string;
   slug: string | undefined;
+
+  gameId: GameId;
 
   year: number;
 
@@ -180,37 +280,28 @@ export class Season {
     name: string,
     slug: string | undefined,
     year: number,
+    gameId: GameId = GameId.Crescendo,
     competitions: string[] = []
   ) {
     this.name = name;
     this.slug = slug;
     this.year = year;
     this.competitions = competitions;
+    this.gameId = gameId;
   }
 }
 
-export enum Drivetrain {
-  Tank = "Tank",
-  Swerve = "Swerve",
-  Mecanum = "Mecanum",
+export abstract class PitReportData {
+  [key: string]: any;
+
+  image: string = "/robot.jpg";
+  drivetrain: Drivetrain = Drivetrain.Tank;
+  motorType: Motors = Motors.Talons;
+  swerveLevel: SwerveLevel = SwerveLevel.None;
+  comments: string = "";
 }
 
-export enum Motors {
-  CIMs = "CIM",
-  Krakens = "Krakens",
-  Falcons = "Falcons",
-  Talons = "Talons",
-  Neos = "Neos",
-}
-
-export enum SwerveLevel {
-  None = "None",
-  L1 = "L1",
-  L2 = "L2",
-  L3 = "L3",
-}
-
-export class Pitreport {
+export class Pitreport<TFormData extends PitReportData = PitReportData> {
   _id: string | undefined;
 
   teamNumber: number;
@@ -218,22 +309,11 @@ export class Pitreport {
   submitted: boolean = false;
   submitter: string | undefined;
 
-  image: string = "/robot.jpg";
-  intakeType: IntakeTypes = IntakeTypes.None;
-  canClimb: boolean = false;
-  drivetrain: Drivetrain = Drivetrain.Tank;
-  motorType: Motors = Motors.Talons;
-  swerveLevel: SwerveLevel = SwerveLevel.None;
-  fixedShooter: boolean = false;
-  canScoreAmp: boolean = false;
-  canScoreSpeaker: boolean = false;
-  canScoreFromDistance: boolean = false;
-  underBumperIntake: boolean = false;
-  autoNotes: number = 0;
-  comments: string = "";
+  data: TFormData | undefined;
 
-  constructor(teamNumber: number) {
+  constructor(teamNumber: number, data: TFormData) {
     this.teamNumber = teamNumber;
+    this.data = data;
   }
 }
 
@@ -242,6 +322,8 @@ export class Competition {
   name: string;
   slug: string | undefined;
   tbaId: string | undefined;
+
+  gameId: GameId = GameId.Crescendo;
 
   publicData: boolean;
 
@@ -263,6 +345,7 @@ export class Competition {
     matches: string[] = [],
     picklist: string = "",
     publicData = false,
+    gameId: GameId | undefined = undefined
   ) {
     this.name = name;
     this.slug = slug;
@@ -273,6 +356,7 @@ export class Competition {
     this.matches = matches;
     this.picklist = picklist;
     this.publicData = publicData;
+    this.gameId = gameId ?? defaultGameId;
   }
 }
 
@@ -330,7 +414,7 @@ export class Match {
   }
 }
 
-export class Report {
+export class Report<TFormData extends QuantData = QuantData>{
   _id: string | undefined;
 
   timestamp: number | undefined; // time it was initially submitted
@@ -342,13 +426,13 @@ export class Report {
   match: string; // id of match
 
   submitted: boolean = false;
-  data: FormData;
+  data: TFormData;
 
   checkInTimestamp: string | undefined;
 
   constructor(
     user: string | undefined,
-    data: FormData,
+    data: TFormData,
     robotNumber: number,
     color: AllianceColor,
     match: string,

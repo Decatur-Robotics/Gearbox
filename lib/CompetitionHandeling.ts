@@ -5,12 +5,12 @@ import {
   Team,
   Report,
   AllianceColor,
-  FormData,
+  QuantData,
 } from "./Types";
 import { ObjectId } from "mongodb";
 import { RotateArray, ShuffleArray } from "./Utils";
-
-export const MinimumNumberOfScouters = 6;
+import { games } from "./games";
+import { GameId } from "./client/GameId";
 
 export async function AssignScoutersToCompetitionMatches(
   teamId: string,
@@ -22,6 +22,7 @@ export async function AssignScoutersToCompetitionMatches(
     Collections.Competitions,
     new ObjectId(competitionId),
   );
+
   const team = await db.findObject<Team>(
     Collections.Teams,
     new ObjectId(teamId),
@@ -37,7 +38,7 @@ export async function AssignScoutersToCompetitionMatches(
   for (const matchId of matchIds) {
     // Filter out the subjective scouter that will be assigned to this match
     promises.push(AssignScoutersToMatch(
-      matchId, scouters, subjectiveScouters));
+      matchId, scouters, subjectiveScouters, comp.gameId));
     RotateArray(scouters);
     RotateArray(subjectiveScouters);
   }
@@ -49,10 +50,11 @@ export async function AssignScoutersToCompetitionMatches(
 export async function AssignScoutersToMatch(
   matchId: string,
   scouterArray: string[],
-  subjectiveScouterArray: string[]
+  subjectiveScouterArray: string[],
+  gameId: GameId
 ): Promise<any> {
   const subjectiveScouter = subjectiveScouterArray.length > 0 ? subjectiveScouterArray[0] : undefined;
-  const generateReportsPromise = generateReportsForMatch(matchId, 
+  const generateReportsPromise = generateReportsForMatch(matchId, gameId,
     subjectiveScouter ? scouterArray.filter((s) => subjectiveScouter !== s) : scouterArray);
 
   const assignSubjectiveScouterPromise = getDatabase().then((db) =>
@@ -65,7 +67,7 @@ export async function AssignScoutersToMatch(
   return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
 }
 
-export async function generateReportsForMatch(match: string | Match, scouters?: string[]) {
+export async function generateReportsForMatch(match: string | Match, gameId: GameId, scouters?: string[]) {
   const db = await getDatabase();
   if (typeof match === "string") {
     match = await db.findObjectById<Match>(
@@ -80,7 +82,7 @@ export async function generateReportsForMatch(match: string | Match, scouters?: 
     
   const bots = match.blueAlliance.concat(match.redAlliance);
   const reports = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < bots.length; i++) {
     const teamNumber = bots[i];
     const scouter = i < (scouters?.length ?? 0) ? scouters?.[i] : undefined;
     const color = match.blueAlliance.includes(teamNumber)
@@ -94,7 +96,7 @@ export async function generateReportsForMatch(match: string | Match, scouters?: 
 
       const newReport = new Report(
         scouter,
-        new FormData(),
+        games[gameId].createQuantitativeFormData(),
         teamNumber,
         color,
         String(match._id),

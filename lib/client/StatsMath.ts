@@ -1,10 +1,10 @@
 import { Report } from "../Types";
 
-const SpeakerAutoPoints = 5;
-const SpeakerTeleopPoints = 2;
-const AmpAutoPoints = 2;
-const AmpTeleopPoints = 1;
-const TrapPoints = 5;
+export const SpeakerAutoPoints = 5;
+export const SpeakerTeleopPoints = 2;
+export const AmpAutoPoints = 2;
+export const AmpTeleopPoints = 1;
+export const TrapPoints = 5;
 
 export function Round(n: number): number {
   return Math.round(n * 100) / 100;
@@ -61,7 +61,7 @@ export function MostCommonValue(field: string, reports: Report[]) {
 export function BooleanAverage(field: string, reports: Report[]) {
   const trues = reports?.filter((report) => report.data[field] === true).length;
 
-  return trues / reports?.length > 0.5;
+  return trues / Math.max(reports?.length, 1) > 0.5;
 }
 
 export function NumericalAverage(field: string, reports: Report[]) {

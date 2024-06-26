@@ -6,7 +6,8 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
-import { CurrentSeason, OffSeason } from "./[teamSlug]/createSeason";
+import { defaultGameId } from "@/lib/client/GameId";
+import { games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -25,11 +26,12 @@ export default function Onboarding() {
     CreatedTeam
   }
   const [joinRequestStatus, setJoinRequestStatus] = useState<JoinRequestStatus>(JoinRequestStatus.NotRequested);
-  const [season, setSeason] = useState<Season>(new Date().getMonth() < 6 ? CurrentSeason : OffSeason);
-  const [seasonCreated, setSeasonCreated] = useState<boolean>(false);
-1  
+  const [season, setSeason] = useState<Season>();
+  const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
   
-  if ((session?.user?.onboardingComplete || session?.user?.teams.length === 0) ?? false)
+  const game = games[defaultGameId];
+
+  if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
     router.push("/profile");
 
   async function completeOnboarding(redirect: string = "/profile") {
@@ -94,7 +96,7 @@ export default function Onboarding() {
   async function createSeason() {
     if (!session?.user?._id || !team?._id) return;
 
-    setSeason(await api.createSeason(season.name, season.year, team?._id));
+    setSeason(await api.createSeason(game.name, game.year, defaultGameId, team?._id));
     setSeasonCreated(true);
   }
 
@@ -110,6 +112,9 @@ export default function Onboarding() {
               </div>
               <div className="pb-6">
                 Before you can start on your scouting journey, there&apos;s a bit of set up to do. It will only take a minute.
+                <div className="text-xs mt-2">
+                  (Interactive onboarding does not currently support FTC. If you are in FTC, click the button at the bottom to skip onboarding)
+                </div>
               </div>
               { !teamConfirmed || !team
                   ? <div>
@@ -165,7 +170,7 @@ export default function Onboarding() {
                                             Now, we need to create a season. Seasons are used to organize competitions.
                                           </div>
                                           <button className="btn btn-primary mt-2" onClick={createSeason}>
-                                            Create season: {season.name} ({season.year})
+                                            Create season: {game.name} ({game.year})
                                           </button>
                                         </div>
                                       : <div>
@@ -176,7 +181,7 @@ export default function Onboarding() {
                                               <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">Discord</a>.
                                           </div>
                                           <button className="btn btn-primary mt-2" 
-                                              onClick={() => completeOnboarding(`/${team.slug}/${season.slug}/createComp`)}>
+                                              onClick={() => completeOnboarding(`/${team.slug}/${season!.slug}/createComp`)}>
                                             Take me to the create competition page
                                           </button>
                                         </div>

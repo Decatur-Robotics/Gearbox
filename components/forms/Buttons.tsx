@@ -1,26 +1,25 @@
-import { FormData } from "@/lib/Types";
+import { QuantData } from "@/lib/Types";
 export type ButtonProps = {
-  data: FormData;
+  data: QuantData;
   callback: (key: string, value: string | number | boolean) => void;
 };
 
-function IncrementButton(
-  props: { dataKey: string, data: FormData, 
+export function IncrementButton(
+  props: { dataKey: string, data: QuantData, 
     callback: (key: string, value: string | number | boolean) => void, text: string, rounded?: string }) {
 
   const roundTop = props.rounded?.includes("t");
   const roundBottom = props.rounded?.includes("b");
 
-  console.log(props.rounded, roundTop, roundBottom);
   return (
-    <div className="flex flex-col h-full pb-6">
+    <div className="flex flex-col h-fit" key={props.dataKey}>
       <button
         onClick={() => {
           props.callback(props.dataKey, props.data[props.dataKey] + 1);
         }}
         className={`btn btn-outline active:bg-blue-300 
           ${(roundBottom || !props.rounded) && "rounded-none"} ${roundTop && " rounded-br-none rounded-bl-none"} 
-          ${roundTop && (props.rounded === "tl" ? " rounded-tr-none" : "rounded-tl-none")} w-full h-[80%] text-lg 
+          ${roundTop && (props.rounded === "tl" ? " rounded-tr-none" : "rounded-tl-none")} w-full h-[150px] text-lg 
           ${roundTop && ` rounded-${props.rounded}-xl`}`}
       >
         {props.text}: {props.data[props.dataKey]}
