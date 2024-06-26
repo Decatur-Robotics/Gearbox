@@ -119,8 +119,6 @@ export default function Home(props: ResolvedUrlData) {
   };
 
   useEffect(() => {
-    console.log("Checking if matches are assigned");
-
     let matchesAssigned = true;
     for (const report of reports) {
       if (!report.user) {
@@ -129,7 +127,6 @@ export default function Home(props: ResolvedUrlData) {
       }
     }
 
-    console.log("Matches assigned: " + matchesAssigned);
     setMatchesAssigned(matchesAssigned);
   }, [reports]);
 
@@ -464,6 +461,11 @@ export default function Home(props: ResolvedUrlData) {
     if (slackId && session && isManager && confirm("Remind scouter on Slack?"))
       api.remindSlack(slackId, session.user?.slackId);
   }
+
+  console.log("loadingMatches || loadingReports || loadingUsers:", loadingMatches || loadingMatches || loadingUsers);
+  console.log("loadingMatches:", loadingMatches);
+  console.log("loadingReports:", loadingMatches);
+  console.log("loadingUsers:", loadingUsers);
 
   return (
     <Container requireAuthentication={true} hideMenu={false}>
