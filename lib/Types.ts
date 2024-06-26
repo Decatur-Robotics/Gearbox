@@ -79,6 +79,8 @@ export class Team {
 
   seasons: string[];
 
+  slackChannel: string | undefined;
+
   constructor(
     name: string,
     slug: string | undefined,
@@ -89,7 +91,8 @@ export class Team {
     scouters: string[] = [],
     subjectiveScouters: string[] = [],
     requests: string[] = [],
-    seasons: string[] = []
+    seasons: string[] = [],
+    slackChannel: string | undefined = undefined
   ) {
     this.name = name;
     this.slug = slug;
@@ -101,6 +104,7 @@ export class Team {
     this.subjectiveScouters = subjectiveScouters;
     this.seasons = seasons;
     this.requests = requests;
+    this.slackChannel = slackChannel;
   }
 }
 

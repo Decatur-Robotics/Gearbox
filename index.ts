@@ -41,7 +41,7 @@ app.prepare().then(() => {
 
       if (pathname && (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname))) {
         const filePath = join(__dirname, '.next', pathname);
-        (app as any).serveStatic(req, res, filePath)
+        (app as any).serveStatic(req, res, filePath);
       } else {
         handle(req, res, parsedUrl);
       }
@@ -77,11 +77,8 @@ const slackApp = new App({
 slackApp.command(/\/.*/, async (props: { command: SlashCommand, ack: AckFn<string | RespondArguments>, respond: RespondFn }) => {
   const { command, ack, respond } = props;
 
-  console.log("Command received: ", command);
-
   const commandName = command.command.replace("/", "");
   const handler = SlackCommands[commandName];
-  console.log(Object.keys(SlackCommands));  
 
   if (handler) {
     handler(command, ack, respond);

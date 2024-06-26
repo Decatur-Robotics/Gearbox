@@ -19,6 +19,7 @@
     "browser-image-compression": "^2.0.2",
     "cloc": "^2.0.0-cloc",
     "dependencies": "^0.0.1",
+    "dotenv": "^16.4.5",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.1",
     "formidable": "^3.5.1",
