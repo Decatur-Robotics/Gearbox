@@ -7,6 +7,7 @@ import fs from "fs";
 import { App } from "@slack/bolt";
 import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, ServerResponse } from "http";
+import { WebClientEvent } from "@slack/web-api";
 
 console.log("Starting server...");
 
@@ -90,7 +91,7 @@ slackApp.command(/\/.*/, async (props: { command: SlashCommand, ack: AckFn<strin
 });
 
 async function startSlackApp() {
-    await slackApp.start(process.env.PORT || 3000);
+    await slackApp.start(port);
     console.log("Slack bot is running!");
 }
 startSlackApp();
