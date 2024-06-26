@@ -201,7 +201,8 @@ export default function Home(props: ResolvedUrlData) {
 
   useEffect(() => {
     const loadUsers = async () => {
-      setLoadingUsers(true);
+      if (Object.keys(usersById).length === 0)
+        setLoadingUsers(true);
 
       if (!team?.scouters || !team.subjectiveScouters) {
         return;
