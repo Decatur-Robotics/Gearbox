@@ -201,12 +201,10 @@ export default function Home(props: ResolvedUrlData) {
 
   useEffect(() => {
     const loadUsers = async () => {
-      console.log("Loading users...");
       if (Object.keys(usersById).length === 0)
         setLoadingUsers(true);
 
       if (!team || (!team.scouters && !team.subjectiveScouters)) {
-        console.log("No scouters");
         return;
       }
 
@@ -216,7 +214,6 @@ export default function Home(props: ResolvedUrlData) {
       }
 
       setUsersById(newUsersById);
-      console.log("Loaded users");
       setLoadingUsers(false);
     };
 
