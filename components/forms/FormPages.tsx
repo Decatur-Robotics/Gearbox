@@ -1,19 +1,15 @@
 import { ReactNode } from "react";
-import StartingPosition from "./StartingPosition";
-import { AutoButtons, TeleopButtons } from "./Buttons";
-import DefenseSlider from "./Sliders";
-import Checkbox, { IntakeType } from "./Checkboxes";
-import { AllianceColor, FormData } from "@/lib/Types";
-import { CommentBox } from "./Comment";
+import { AllianceColor, QuantData } from "@/lib/Types";
 
 export type PageProps = {
   alliance: AllianceColor;
-  data: FormData;
+  data: QuantData;
   callback: (key: string, value: string | number | boolean) => void;
+  fieldImagePrefix?: string;
 };
 export type EndPageProps = {
   alliance: AllianceColor;
-  data: FormData;
+  data: QuantData;
   submit: () => void;
   callback: (key: string, value: string | number | boolean) => void;
 };
@@ -21,7 +17,6 @@ export type EndPageProps = {
 export default function FormPage(props: {
   children: ReactNode;
   title: string;
-  height?: string;
 }) {
   return (
     <main className="w-full h-full flex-1">
@@ -35,89 +30,5 @@ export default function FormPage(props: {
         </div>
       </div>
     </main>
-  );
-}
-
-export function PrematchPage(props: PageProps) {
-  return <FormPage title="Pre-match">
-    <Checkbox
-        label="Robot Present"
-        dataKey="Presented"
-        data={props.data}
-        callback={props.callback}
-      ></Checkbox>
-      <StartingPosition
-        alliance={props.alliance}
-        data={props.data}
-        callback={props.callback}
-      ></StartingPosition>
-  </FormPage>
-}
-
-export function AutoPage(props: PageProps) {
-  return (
-    <FormPage title="Auto">
-      <Checkbox
-        label="Moved out of starting zone"
-        dataKey="MovedOut"
-        data={props.data}
-        callback={props.callback}
-      ></Checkbox>
-      <br></br>
-      <AutoButtons data={props.data} callback={props.callback}></AutoButtons>
-    </FormPage>
-  );
-}
-
-export function TeleopPage(props: PageProps) {
-  return (
-    <FormPage title="Teleop">
-      <TeleopButtons
-        data={props.data}
-        callback={props.callback}
-      ></TeleopButtons>
-      <DefenseSlider
-        data={props.data}
-        callback={props.callback}
-      ></DefenseSlider>
-    </FormPage>
-  );
-}
-
-export function EndPage(props: EndPageProps) {
-  return (
-    <FormPage title="Summary" height="full">
-      <Checkbox
-        label="Coopertition Activated"
-        dataKey="Coopertition"
-        data={props.data}
-        callback={props.callback}
-      ></Checkbox>
-      
-      <Checkbox
-        label="Climbed Stage"
-        dataKey="ClimbedStage"
-        data={props.data}
-        callback={props.callback}
-      ></Checkbox>
-      <Checkbox
-        label="Parked Stage"
-        dataKey="ParkedStage"
-        data={props.data}
-        callback={props.callback}
-      ></Checkbox>
-      <Checkbox
-        label="Went Under Stage"
-        dataKey="UnderStage"
-        data={props.data}
-        callback={props.callback}
-      ></Checkbox>
-
-      <CommentBox data={props.data} callback={props.callback}></CommentBox>
-      <hr className="w-full border-slate-700 border-2"></hr>
-      <button className="btn btn-wide btn-primary " onClick={props.submit}>
-        Submit
-      </button>
-    </FormPage>
   );
 }

@@ -1,13 +1,10 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { ChangeEvent, useEffect, useState } from "react";
 
-import Image from "next/image";
-
 import ClientAPI from "@/lib/client/ClientAPI";
 import { GetServerSideProps } from "next";
 import {
   AllianceColor,
-  Form,
   Match,
   MatchType,
   Pitreport,
@@ -22,21 +19,18 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import {
   MdAutoGraph,
   MdCoPresent,
-  MdDriveEta,
-  MdInsertPhoto,
   MdQueryStats,
 } from "react-icons/md";
-import { BsClipboard2Check, BsGear, BsGearFill } from "react-icons/bs";
-import { FaBinoculars, FaDatabase, FaEdit, FaSync, FaUserCheck } from "react-icons/fa";
+import { BsClipboard2Check, BsGearFill } from "react-icons/bs";
+import { FaBinoculars, FaDatabase, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
-import { match } from "assert";
-import { report } from "process";
-import { useRouter } from "next/router";
 import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
-import { getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
+import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
+import { games } from "@/lib/games";
+import { defaultGameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -97,6 +91,11 @@ export default function Home(props: ResolvedUrlData) {
 
   const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
 
+  const [teamToAdd, setTeamToAdd] = useState<number | undefined>();
+
+  const [newCompName, setNewCompName] = useState(comp?.name);
+  const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -107,7 +106,7 @@ export default function Home(props: ResolvedUrlData) {
 
         // Fetch pit reports
         const pitReportPromises = pitReports.map(
-          async (id: string) => await api.findPitreportById(id)
+          api.findPitreportById
         );
 
         Promise.all(pitReportPromises).then((reports) => {
@@ -120,6 +119,7 @@ export default function Home(props: ResolvedUrlData) {
 
   useEffect(() => {
     let matchesAssigned = true;
+
     for (const report of reports) {
       if (!report.user) {
         matchesAssigned = false;
@@ -270,7 +270,7 @@ export default function Home(props: ResolvedUrlData) {
     alert("Reloading competition...");
 
     setUpdatingComp("Checking for Updates...");
-    const res = await api.updateCompetition(comp?._id, comp?.tbaId);
+    const res = await api.reloadCompetition(comp?._id, comp?.tbaId);
     if (res.result === "success") {
       window.location.reload();
     } else {
@@ -463,6 +463,35 @@ export default function Home(props: ResolvedUrlData) {
       api.remindSlack(slackId, session.user?.slackId);
   }
 
+  function addTeam() {
+    if (!teamToAdd || !comp?._id) return;
+
+    api.createPitReportForTeam(teamToAdd, comp?._id).then(() => {
+      location.reload();
+    });
+  }
+
+  async function saveCompChanges() {
+    // Check if tbaId is valid
+    if (!comp?.tbaId || !comp?.name || !comp?._id) return;
+
+    let tbaId = newCompTbaId;
+    const autoFillData = await api.getCompetitionAutofillData(tbaId ?? "");
+    if (!autoFillData.name) {
+      if(!confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
+        return;
+      tbaId = NotLinkedToTba;
+    }
+
+    await api.updateCompNameAndTbaId(comp?._id, newCompName ?? "Unnamed", tbaId ?? NotLinkedToTba);
+    location.reload();
+  }
+
+  const allianceIndices: number[] = [];
+  for (let i = 0; i < games[comp?.gameId ?? defaultGameId].allianceSize; i++) {
+    allianceIndices.push(i);
+  }
+
   return (
     <Container requireAuthentication={true} hideMenu={false}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
@@ -473,25 +502,21 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
                 <a
-                  className="max-sm:w-full btn btn-primary"
+                  className={`max-sm:w-full btn btn-${comp?.tbaId !== NotLinkedToTba ? "primary" : "disabled"}`}
                   href={"/event/" + comp?.tbaId}
                 >
                   Rankings <MdAutoGraph size={30} />
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`max-sm:w-full btn btn-secondary ${
-                    noMatches || !matchesAssigned ? "btn-disabled" : ""
-                  }`}
+                  className="max-sm:w-full btn btn-secondary"
                   href={`${comp?.slug}/stats`}
                 >
                   Stats <MdQueryStats size={30} />
                 </a>
                 <div className="divider divider-horizontal"></div>
                 <a
-                  className={`max-sm:w-full btn btn-accent ${
-                    noMatches || !matchesAssigned ? "btn-disabled" : ""
-                  }`}
+                  className="max-sm:w-full btn btn-accent"
                   href={`${comp?.slug}/pitstats`}
                 >
                   Pit Stats <MdCoPresent size={30} />
@@ -534,14 +559,25 @@ export default function Home(props: ResolvedUrlData) {
               <div className="divider"></div>
               {showSettings ? (
                 <div className="w-full">
+                  {
+                    comp?.tbaId === NotLinkedToTba && <>
+                      <div className="w-full flex flex-col items-center justify-center">
+                        <h1 className="text-red-500">This competition is not linked to TBA</h1>
+                        <p>Some features will be unavailable.</p>
+                      </div>
+                      <div className="divider"></div>
+                    </>
+                  }
                   <h1 className="font-semibold text-xl">Settings</h1>
                   <div className="flex flex-col space-y-2 mt-1">
-                    <button
-                      onClick={reloadCompetition}
-                      className="btn btn-md btn-warning w-full"
-                    >
-                      <FaSync></FaSync> Reload Comp from TBA
-                    </button>
+                    { comp?.tbaId !== NotLinkedToTba &&
+                      <button
+                        onClick={reloadCompetition}
+                        className="btn btn-md btn-warning w-full"
+                      >
+                        <FaSync></FaSync> Reload Comp from TBA
+                      </button>
+                    }
                     <button
                       className={
                         "btn btn-primary w-full " +
@@ -592,89 +628,82 @@ export default function Home(props: ResolvedUrlData) {
                   </button> */}
 
                   <div className="divider"></div>
+                  <h1 className="font-semibold">Edit comp information</h1>
+                  <div>Game: {games[comp?.gameId ?? defaultGameId].name}</div>
+                  <div className="flex flex-row items-center justify-between">
+                    <label className="label">Competition Name</label>
+                    <input
+                      type="text"
+                      className="input input-bordered w-2/3"
+                      value={newCompName}
+                      onChange={(e) => {
+                        setNewCompName(e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-row items-center justify-between mb-2"> 
+                    <label className="label">TBA ID</label>
+                      <input
+                        type="text"
+                        className="input input-bordered w-2/3"
+                        value={newCompTbaId}
+                        onChange={(e) => {
+                          setNewCompTbaId(e.target.value);
+                        }}
+                      />
+                  </div>
+                  <button className="btn btn-primary w-full" onClick={saveCompChanges}>Save</button>
+
+                  <div className="divider"></div>
                   <h1 className="font-semibold">Manually add matches</h1>
 
                   <div className="flex flex-row">
                     <div className="w-1/2 flex flex-col items-center">
                       <h1 className="text-red-500 font-bold text-xl">Red</h1>
                       <div className="flex flex-row items-center justify-evenly">
-                        <input
-                          type="text"
-                          placeholder="Team 1"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={redAlliance[0]}
-                          onChange={(e) => {
-                            const c = structuredClone(redAlliance);
-                            c[0] = Number(e.target.value);
-                            setRedAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 2"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={redAlliance[1]}
-                          onChange={(e) => {
-                            const c = structuredClone(redAlliance);
-                            c[1] = Number(e.target.value);
-                            setRedAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 3"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={redAlliance[2]}
-                          onChange={(e) => {
-                            const c = structuredClone(redAlliance);
-                            c[2] = Number(e.target.value);
-                            setRedAlliance(c);
-                          }}
-                        />
+                        {
+                          allianceIndices.map((index) =>
+                            <input
+                              key={index}
+                              type="text"
+                              placeholder={`Team ${index + 1}`}
+                              className="input input-sm  input-bordered w-1/4"
+                              value={!redAlliance[index] || isNaN(redAlliance[index]) ? "" : redAlliance[index]}
+                              onChange={(e) => {
+                                const c = structuredClone(redAlliance);
+                                c[index] = Number(e.target.value);
+                                setRedAlliance(c);
+                              }}
+                            />
+                          )
+                        }
                       </div>
                     </div>
                     <div className="w-1/2 flex flex-col items-center">
                       <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
                       <div className="flex flex-row items-center justify-evenly">
-                        <input
-                          type="text"
-                          placeholder="Team 1"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={blueAlliance[0]}
-                          onChange={(e) => {
-                            const c = structuredClone(blueAlliance);
-                            c[0] = Number(e.target.value);
-                            setBlueAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 2"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={blueAlliance[1]}
-                          onChange={(e) => {
-                            const c = structuredClone(blueAlliance);
-                            c[1] = Number(e.target.value);
-                            setBlueAlliance(c);
-                          }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Team 3"
-                          className="input input-sm  input-bordered w-1/4"
-                          value={blueAlliance[2]}
-                          onChange={(e) => {
-                            const c = structuredClone(blueAlliance);
-                            c[2] = Number(e.target.value);
-                            setBlueAlliance(c);
-                          }}
-                        />
+                        {
+                          allianceIndices.map((index) =>
+                            <input
+                              key={index}
+                              type="text"
+                              placeholder={`Team ${index + 1}`}
+                              className="input input-sm  input-bordered w-1/4"
+                              value={blueAlliance[index]}
+                              onChange={(e) => {
+                                const c = structuredClone(blueAlliance);
+                                c[index] = Number(e.target.value);
+                                setBlueAlliance(c);
+                              }}
+                            />
+                          )
+                        }
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-center">
                     <input
-                      type="text"
+                      type="number"
                       placeholder="Match #"
                       className="input input-md input-bordered w-1/3 mt-2"
                       value={matchNumber}
@@ -693,21 +722,42 @@ export default function Home(props: ResolvedUrlData) {
                   </button>
                   
                   <div className="divider"></div>
-                  <div className="flex flex-row justify-between items-center">
-                    <p className="text-2xl">Make data public?</p>
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-primary"
-                      id="toggle-public-data"
-                      defaultChecked={comp?.publicData}
-                      onChange={togglePublicData}
-                    />
-                  </div>
-                      <p className="text-xs">
-                        Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
-                        Don&apos;t worry - no identifying information will be shared and comments will be hidden; only quantitative
-                        data will be shared.<br/>This setting can be changed at any time.
-                      </p>
+                  <h1 className="font-semibold">Manually add pit reports</h1>
+
+                  <input
+                    type="number"
+                    placeholder="Team #"
+                    className="input input-md input-bordered w-full mt-2"
+                    value={teamToAdd}
+                    onChange={(e) => {setTeamToAdd(Number(e.target.value));}}
+                  />
+
+                  <button
+                    className="btn btn-accent w-full mt-2"
+                    disabled={!teamToAdd}
+                    onClick={addTeam}
+                  >
+                    Add
+                  </button>
+                  
+                  { comp?.tbaId !== NotLinkedToTba && <>
+                    <div className="divider"></div>
+                    <div className="flex flex-row justify-between items-center">
+                      <p className="text-2xl">Make data public?</p>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        id="toggle-public-data"
+                        defaultChecked={comp?.publicData}
+                        onChange={togglePublicData}
+                      />
+                    </div>
+                    <p className="text-xs">
+                      Making your data publicly available helps smaller teams make informed decisions during alliance selection. 
+                      Don&apos;t worry - no identifying information will be shared and comments will be hidden; only quantitative
+                      data will be shared.<br/>This setting can be changed at any time.
+                    </p>
+                  </>}
 
                   <div className="divider"></div>
                   <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/scouters`}>
@@ -994,7 +1044,9 @@ export default function Home(props: ResolvedUrlData) {
                 <h1 className="text-2xl sm:text-3xl font-bold">
                   Pitscouting not available
                 </h1>
-                <div>Could not fetch team list from TBA</div>
+                <div>
+                  {comp?.tbaId !== NotLinkedToTba ? "Could not fetch team list from TBA" : "You'll need to manually add teams from Settings" }
+                </div>
               </div>
             ) : (
               <div className="sm:card-body grow-0">
@@ -1025,7 +1077,7 @@ export default function Home(props: ResolvedUrlData) {
                             {report.submitted ? (
                               <img
                                 alt="img"
-                                src={report.image}
+                                src={report.data?.image}
                                 loading="lazy"
                                 style={{ imageResolution: "72dpi" }}
                                 className="w-2/3 h-auto rounded-lg"

@@ -336,7 +336,7 @@ export default function Container(props: ContainerProps) {
                 {selectedTeamSeasons.map((season, index) => {
                   return (
                     <Link
-                      className="btn btn-ghost w-7/8 bg-base-200 normal-case"
+                      className="btn btn-ghost w-7/8 bg-base-200 normal-case mb-2"
                       href={`/${selectedTeam?.slug}/${season?.slug}`}
                       key={season._id}
                     >

@@ -64,7 +64,13 @@ export default function Homepage() {
                   href={"https://www.firstinspires.org/robotics/frc"}
                   className="text-accent"
                 >
-                  FIRST Robotics
+                  FRC
+                </Link> and{" "}
+                <Link
+                  href={"https://www.firstinspires.org/robotics/ftc"}
+                  className="text-accent"
+                >
+                  FTC
                 </Link>
               </p>
               <div className="flex flex-row space-x-4">

@@ -12,6 +12,7 @@ import { TimeString } from "@/lib/client/FormatTime";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { team } from "slack";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -29,7 +30,7 @@ export default function Stats(props: StatsPageProps) {
   const [pitReports, setPitReports] = useState<Pitreport[]>([]);
   const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
   const [page, setPage] = useState(0);
-  const [usePublicData, setUsePublicData] = useState(false);
+  const [usePublicData, setUsePublicData] = useState(true);
 
   useEffect(() => {
     const i = setInterval(() => {
@@ -50,7 +51,7 @@ export default function Stats(props: StatsPageProps) {
         .then((data) => setReports(data)),
       pitReports.length === 0 &&
         api.getPitReports(props.competition.pitReports).then((data) => {
-          setPitReports(data);
+            setPitReports(data);
           }),
       api.getSubjectiveReportsForComp(props.competition._id!).then(setSubjectiveReports),
     ].flat();
@@ -77,14 +78,14 @@ export default function Stats(props: StatsPageProps) {
       notForMobile={true}
     >
       <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">
-        <button className="btn btn-ghost w-full" onClick={() => setUsePublicData(!usePublicData)}>
-          {
-            usePublicData
-              ? <div className="text-secondary">Using public data</div>
-              : <div>Not using public data</div>
+          {props.competition?.tbaId !== NotLinkedToTba &&
+            <button className="btn btn-ghost w-full" onClick={() => setUsePublicData(!usePublicData)}>
+              { usePublicData
+                ? <div className="text-secondary">Using public data</div>
+                : <div>Not using public data</div> }
+              <div className=" animate-pulse">(Click to toggle)</div>
+            </button>
           }
-          <div className=" animate-pulse">(Click to toggle)</div>
-        </button>
         {/* <h1 className="text-xl">
           Use public data?
         </h1>
@@ -132,7 +133,7 @@ export default function Stats(props: StatsPageProps) {
       </div>
 
       {page === 0 ? (
-        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports}></TeamPage>
+        <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports} gameId={props.competition.gameId} />
       ) : (
         <></>
       )}
