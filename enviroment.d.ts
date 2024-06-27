@@ -8,11 +8,15 @@ declare global {
       GITHUB_SECRET: string;
       GITHUB_ID: string;
 
-      MONGO_DB_URI: string;
+      MONGODB_URI: string;
       DB: string;
 
       TBA_URL: string;
       TBA_KEY: string;
+
+      TOA_URL: string;
+      TOA_KEY: string;
+      TOA_APP_ID: string;
 
       API_URL: string;
       API_KEY: string;

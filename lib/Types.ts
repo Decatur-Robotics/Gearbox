@@ -70,6 +70,7 @@ export class Team {
   slug: string | undefined;
   tbaId: string | undefined;
   number: number;
+  league: League = League.FRC;
 
   owners: string[];
   users: string[];
@@ -86,6 +87,7 @@ export class Team {
     slug: string | undefined,
     tbaId: string | undefined,
     number: number,
+    league: League = League.FRC,
     owners: string[] = [],
     users: string[] = [],
     scouters: string[] = [],
@@ -98,6 +100,7 @@ export class Team {
     this.slug = slug;
     this.tbaId = tbaId;
     this.number = number;
+    this.league = league;
     this.owners = owners;
     this.users = users;
     this.scouters = scouters;

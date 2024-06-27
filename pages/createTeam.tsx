@@ -1,4 +1,4 @@
-import { Team } from "@/lib/Types";
+import { League, Team } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -9,6 +9,7 @@ import Card from "@/components/Card";
 import Flex from "@/components/Flex";
 import Loading from "@/components/Loading";
 import TeamCard from "@/components/TeamCard";
+import { TheOrangeAlliance } from "@/lib/TheOrangeAlliance";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -17,6 +18,7 @@ export default function CreateTeam() {
 
   const [teamNumber, setTeamNumber] = useState<string>();
   const [autoData, setAutoData] = useState<Team>();
+  const [ftcAutoData, setFtcAutoData] = useState<Team>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,31 +28,51 @@ export default function CreateTeam() {
     }
 
     setLoading(true);
+
     setAutoData(undefined);
-    let data = await api.getTeamAutofillData(Number(teamNumber));
-    if (data?.name) {
-      setAutoData(data);
-    }
+    setFtcAutoData(undefined);
+
+    api.getTeamAutofillData(Number(teamNumber)).then((data) => {
+      if (data?.name) {
+        setAutoData(data);
+      }
+    });
+
+    api.getFtcTeamAutofillData(Number(teamNumber)).then((data) => {
+      console.log(data);
+      if (data?.name) {
+        setFtcAutoData(data);
+      }
+    });
+
     setLoading(false);
   };
 
-  const createTeam = async () => {
+  const createTeam = async (league: League) => {
     if (!autoData || !session?.user) {
       return;
     }
 
     if (
-      Object.keys(await api.findTeamByNumber(Number(teamNumber))).length > 0
+      await api.findTeamByNumberAndLeague(Number(teamNumber), league)
     ) {
       setError("This Team Already Exists");
       return;
     }
 
+    const data = league === League.FRC ? autoData : ftcAutoData;
+
+    if (!data) {
+      setError("No Team Found");
+      return;
+    }
+    
     let newTeam = await api.createTeam(
-      autoData.name,
-      autoData.number,
+      data.name,
+      data.number,
       session.user._id,
-      autoData.tbaId
+      data.tbaId,
+      league
     );
 
     const win: Window = window;
@@ -78,25 +100,32 @@ export default function CreateTeam() {
           <input
             className="input input-bordered md:w-1/2"
             placeholder="Team Number"
-            maxLength={4}
+            maxLength={5}
             minLength={1}
             value={teamNumber}
             onChange={(e) => {
               setTeamNumber(e.target.value);
             }}
           ></input>
-          {teamNumber ? (
+          {teamNumber && (
             <div className="md:w-1/2 h-48 mt-10">
               {loading ? (
-                <Loading></Loading>
+                <Loading />
               ) : (
-                <div onClick={createTeam}>
-                  <TeamCard team={autoData}></TeamCard>
+                <div className="flex flex-row space-x-2">
+                  { autoData?.name &&
+                    <div onClick={() => createTeam(League.FRC)}>
+                      <TeamCard team={autoData} />
+                    </div>
+                  }
+                  { ftcAutoData?.name &&
+                    <div onClick={() => createTeam(League.FTC)}>
+                      <TeamCard team={ftcAutoData} />
+                    </div>
+                  }
                 </div>
               )}
             </div>
-          ) : (
-            <></>
           )}
         </Card>
       </Flex>

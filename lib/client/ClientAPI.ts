@@ -14,8 +14,10 @@ import {
   Pitreport,
   DbPicklist,
   SubjectiveReport,
+  League,
 } from "../Types";
 import { GameId } from "./GameId";
+import { TheOrangeAlliance } from "../TheOrangeAlliance";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -71,10 +73,20 @@ export default class ClientAPI {
     });
   }
 
-  async findTeamByNumber(n: number | undefined): Promise<Team> {
+  async findTeamByNumberAndLeague(n: number, league: League): Promise<Team> {
+    const query = league === League.FRC 
+      ? { 
+          number: n,
+          $or: [ 
+            { league: league }, 
+            { tbaId: { $exists: true } } 
+          ]
+        } 
+      : { number: n, league: league };
+
     return await this.request("/find", {
       collection: "Teams",
-      query: { number: n },
+      query,
     });
   }
 
@@ -117,8 +129,8 @@ export default class ClientAPI {
     return await this.request("/findAll", { collection: "Teams" });
   }
 
-  async getTeamAutofillData(teamNumber: number | undefined): Promise<Team> {
-    return await this.request("/teamAutofill", { number: teamNumber });
+  async getTeamAutofillData(teamNumber: number | undefined, league: League = League.FRC): Promise<Team> {
+    return await this.request("/teamAutofill", { number: teamNumber, league });
   }
 
   async getCompetitionAutofillData(tbaId: string): Promise<Competition> {
@@ -152,13 +164,15 @@ export default class ClientAPI {
     name: string,
     number: number,
     creator: string | undefined,
-    tbaId: undefined | string
+    tbaId: undefined | string,
+    league: League
   ): Promise<Team> {
     return await this.request("/createTeam", {
       name: name,
       number: number,
       creator: creator,
       tbaId: tbaId,
+      league: league,
     });
   }
 
@@ -444,6 +458,10 @@ export default class ClientAPI {
 
   async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
     return await this.request("/updateCompNameAndTbaId", { compId, name, tbaId });
+  }
+
+  async getFtcTeamAutofillData(teamNumber: number): Promise<Team> {
+    return await this.request("/getFtcTeamAutofillData", { teamNumber });
   }
 
 }
