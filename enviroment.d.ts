@@ -3,10 +3,13 @@ declare global {
     interface ProcessEnv {
       NEXTAUTH_URL: string;
       NEXTAUTH_SECRET: string;
+      NEXT_PUBLIC_API_URL: string;
+
       GOOGLE_ID: string;
       GOOGLE_SECRET: string;
-      GITHUB_SECRET: string;
+
       GITHUB_ID: string;
+      GITHUB_SECRET: string;
 
       MONGODB_URI: string;
       DB: string;
@@ -23,15 +26,14 @@ declare global {
 
       DEFAULT_IMAGE: string;
       IMAGE_UPLOAD_DIR: string;
-
       FILL_TEAMS: string;
 
       SLACK_KEY: string;
+      SLACK_BOT_TOKEN: string;
       SLACK_CLIENT_ID: string;
       SLACK_CLIENT_SECRET: string;
-      SLACK_CHANNEL: string;
-
-      NEXT_PUBLIC_API_URL: string;
+      SLACK_APP_TOKEN: string;
+      SLACK_SIGNING_SECRET: string;
 
       NODE_ENV: "development" | "production";
     }
