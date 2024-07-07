@@ -7,7 +7,6 @@ import fs from "fs";
 import { App } from "@slack/bolt";
 import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, ServerResponse } from "http";
-import { WebClientEvent } from "@slack/web-api";
 
 console.log("Starting server...");
 
@@ -38,14 +37,7 @@ app.prepare().then(() => {
         return;
 
       const parsedUrl = parse(req.url, true);
-      const { pathname } = parsedUrl;
-
-      if (pathname && (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname))) {
-        const filePath = join(__dirname, '.next', pathname);
-        (app as any).serveStatic(req, res, filePath);
-      } else {
-        handle(req, res, parsedUrl);
-      }
+      handle(req, res, parsedUrl);
     }).listen(port, () => {
       console.log(
         process.env.NODE_ENV +

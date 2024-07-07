@@ -1034,6 +1034,10 @@ export namespace API {
     getFtcTeamAutofillData: async (req, res, { tba, data }: RouteContents<{ teamNumber: number }>) => {
       const team = await TheOrangeAlliance.getTeam(data.teamNumber);
       return res.status(200).send(team);
+    },
+
+    ping: async (req, res, { }) => {
+      return res.status(200).send({ result: "success" });
     }
   };
 }

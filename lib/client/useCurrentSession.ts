@@ -10,8 +10,5 @@ export interface AdvancedSession {
 
 export function useCurrentSession() {
   const { data: session, status } = useSession();
-
-  var newSession = session as AdvancedSession;
-
-  return { session: newSession, status: status };
+  return { session: session as AdvancedSession, status };
 }

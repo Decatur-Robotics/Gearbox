@@ -12,6 +12,8 @@ import useCheckMobile from "@/lib/client/useCheckMobile";
 import { MdInfo, MdWarning } from "react-icons/md";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
+import { stat } from "fs";
+import useIsOnline from "@/lib/client/useIsOnline";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -28,6 +30,10 @@ type ContainerProps = {
 export default function Container(props: ContainerProps) {
   const { session, status } = useCurrentSession();
   const user = session?.user;
+  const isOnline = useIsOnline();
+  useEffect(() => {
+    console.log(status, isOnline);
+  });
   const authenticated = status === "authenticated";
 
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
@@ -153,7 +159,7 @@ export default function Container(props: ContainerProps) {
                 className="grow bg-base-100"
                 placeholder="Search an event"
               />
-              <FaSearch></FaSearch>
+              <FaSearch />
               {eventResults.length > 0 ? (
                 <div className="absolute -translate-x-5 translate-y-20 sm:translate-y-24 w-1/2 sm:w-1/4 bg-base-300 rounded-b-lg sm:p-2">
                   <ul>
@@ -186,16 +192,7 @@ export default function Container(props: ContainerProps) {
                     borderThickness={2}
                   />
                 </Link>
-              ) : (
-                // <Link
-                //   href={"/profile"}
-                //   tabIndex={0}
-                //   className="btn btn-ghost btn-circle avatar sm:mr-5"
-                // >
-                //   <div className="w-10 rounded-full">
-                //     <img src={user?.image} />
-                //   </div>
-                // </Link>
+              ) : isOnline ? (
                 <a
                   href={"/api/auth/signin"}
                   rel="noopener noreferrer"
@@ -203,6 +200,10 @@ export default function Container(props: ContainerProps) {
                 >
                   <button className="btn btn-primary sm:mr-4">Sign In</button>
                 </a>
+              ) : (
+                <button className="btn btn-ghost sm:mr-4">
+                  <MdWarning className="text-2xl"></MdWarning>
+                </button>
               )}
 
               {/*

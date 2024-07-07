@@ -464,4 +464,8 @@ export default class ClientAPI {
     return await this.request("/getFtcTeamAutofillData", { teamNumber });
   }
 
+  async ping() {
+    return await this.request("/ping", {});
+  }
+
 }
