@@ -3,17 +3,19 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { BiMenu, BiPlus, BiHome, BiSolidPhone } from "react-icons/bi";
-import { IoSunny, IoMoon } from "react-icons/io5";
+import { IoSunny, IoMoon, IoCloudOffline } from "react-icons/io5";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
-import { MdInfo, MdWarning } from "react-icons/md";
+import { MdInfo, MdOfflineBolt, MdOfflinePin, MdOfflineShare, MdWarning } from "react-icons/md";
+import { RiWifiOffLine } from "react-icons/ri";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
 import { stat } from "fs";
 import useIsOnline from "@/lib/client/useIsOnline";
+import { forceOfflineMode } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -31,10 +33,7 @@ export default function Container(props: ContainerProps) {
   const { session, status } = useCurrentSession();
   const user = session?.user;
   const isOnline = useIsOnline();
-  useEffect(() => {
-    console.log(status, isOnline);
-  });
-  const authenticated = status === "authenticated";
+  const authenticated = !forceOfflineMode() && status === "authenticated";
 
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [accepted, setAccepted] = useState(false);
@@ -201,9 +200,12 @@ export default function Container(props: ContainerProps) {
                   <button className="btn btn-primary sm:mr-4">Sign In</button>
                 </a>
               ) : (
-                <button className="btn btn-ghost sm:mr-4">
-                  <MdWarning className="text-2xl"></MdWarning>
-                </button>
+                <Link href="offline/competition" className="btn btn-ghost flex flex-row sm:mr-4">
+                  <div className="tooltip tooltip-left" data-tip="You are offline.">
+                    <RiWifiOffLine className="text-2xl" />
+                  </div>
+                  <span>Go to offline scouting</span>
+                </Link>
               )}
 
               {/*

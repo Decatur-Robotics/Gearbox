@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ClientAPI from "./ClientAPI";
 import useInterval from "./useInterval";
+import { forceOfflineMode } from "./ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -16,5 +17,5 @@ export default function useIsOnline() {
   updateOnlineStatus();
   useInterval(updateOnlineStatus, 5000);
 
-  return isOnline;
+  return isOnline && !forceOfflineMode();
 }

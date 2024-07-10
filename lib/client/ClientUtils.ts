@@ -15,3 +15,11 @@ export function camelCaseToTitleCase(str: string) {
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase());
 }
+
+/**
+ * Shortcut for process.env.NEXT_PUBLIC_FORCE_OFFLINE_MODE === "true"
+ * @returns true if the .env is set to force offline mode
+ */
+export function forceOfflineMode() {
+  return process.env.NEXT_PUBLIC_FORCE_OFFLINE_MODE === "true";
+}

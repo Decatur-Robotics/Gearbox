@@ -1,6 +1,8 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
+      // Environment variables are always strings
+
       NEXTAUTH_URL: string;
       NEXTAUTH_SECRET: string;
       NEXT_PUBLIC_API_URL: string;
@@ -34,6 +36,8 @@ declare global {
       SLACK_CLIENT_SECRET: string;
       SLACK_APP_TOKEN: string;
       SLACK_SIGNING_SECRET: string;
+
+      NEXT_PUBLIC_FORCE_OFFLINE_MODE: string;
 
       NODE_ENV: "development" | "production";
     }
