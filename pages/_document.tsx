@@ -8,6 +8,7 @@ export default function Document() {
     <Html lang="en" data-theme="dark">
       <Head>
         <PwaConfig />
+        <meta name="slack-app-id" content="A07BWTTLWDQ" />
       </Head>
       <body>
         <Main />
