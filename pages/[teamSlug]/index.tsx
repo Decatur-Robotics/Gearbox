@@ -450,7 +450,7 @@ export default function TeamIndex(props: TeamPageProps) {
                     { team?.owners.includes(session?.user?._id ?? "") && 
                       <>
                         {" "}<AddToSlack />
-                        {" "}, then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
+                        , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
                         {" "}<span className="text-accent">/invite @Gearbox</span> in Slack to link notifications.
                       </>
                     }
