@@ -8,9 +8,10 @@ import {
   MatchType,
   Pitreport,
   Report,
+  SavedCompetition,
+  SubjectiveReport,
   User,
 } from "@/lib/Types";
-import Container from "@/components/Container";
 
 import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -30,6 +31,8 @@ import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
+import { saveComp } from "@/lib/client/offlineUtils";
+import { toDict } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -59,6 +62,8 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
 
   const [reportsById, setReportsById] = useState<{ [key: string]: Report }>({});
   const [usersById, setUsersById] = useState<{ [key: string]: User }>({});
+
+  const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
 
   //loading states
   const [loadingMatches, setLoadingMatches] = useState(true);
@@ -153,6 +158,10 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
     );
 
     setMatches(matches);
+
+    api.getSubjectiveReportsFromMatches(matches).then((reports) => {
+      setSubjectiveReports(reports);
+    });
     
     if (!silent)
       setLoadingMatches(false);
@@ -490,6 +499,21 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
   for (let i = 0; i < games[comp?.gameId ?? defaultGameId].allianceSize; i++) {
     allianceIndices.push(i);
   }
+
+  // Offline mode
+  useEffect(() => {
+    if (!comp) return;
+
+    // Save comp to local storage
+    const savedComp = new SavedCompetition(comp, games[comp?.gameId ?? defaultGameId]);
+
+    savedComp.matches = toDict(matches);
+    savedComp.quantReports = toDict(reports);
+    savedComp.pitReports = toDict(pitreports);
+    savedComp.subjectiveReports = toDict(subjectiveReports);
+
+    saveComp(savedComp);
+  }, [comp, matches, reports, pitreports, subjectiveReports]);
 
   return (
     <>

@@ -363,6 +363,32 @@ export class Competition {
   }
 }
 
+/**
+ * Holds all data involved in a competition so it can be used offline.
+ */
+export class SavedCompetition {
+  comp: Competition;
+  game: Game<QuantData, PitReportData>;
+
+  matches: { [_id: string]: Match };
+  quantReports: { [_id: string]: Report<QuantData> };
+  subjectiveReports: { [_id: string]: SubjectiveReport };
+  pitReports: { [_id: number]: Pitreport<PitReportData> };
+
+  constructor(comp: Competition, game: Game<QuantData, PitReportData>, matches: { [_id: string]: Match } = {},
+      quantReports: { [_id: string]: Report<QuantData> } = {}, subjectiveReports: { [_id: string]: SubjectiveReport } = {},
+      pitReports: { [_id: number]: Pitreport<PitReportData> } = {}
+  ) {
+    this.comp = comp;
+    this.game = game;
+    
+    this.matches = matches;
+    this.quantReports = quantReports;
+    this.subjectiveReports = subjectiveReports;
+    this.pitReports = pitReports;
+  }
+}
+
 export enum AllianceColor {
   Red = "Red",
   Blue = "Blue",

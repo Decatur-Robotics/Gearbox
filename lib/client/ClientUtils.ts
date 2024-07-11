@@ -23,3 +23,19 @@ export function camelCaseToTitleCase(str: string) {
 export function forceOfflineMode() {
   return process.env.NEXT_PUBLIC_FORCE_OFFLINE_MODE === "true";
 }
+
+/**
+ * @param arr an array of objects with an _id field
+ * @returns a dictionary of the array with the _id as the key
+ */
+export function toDict<TElement extends { _id: string | undefined }>(arr: TElement[]) {
+  const dict: { [_id: string]: TElement } = {};
+
+  arr.forEach((item) => {
+    if (item._id) {
+      dict[item._id] = item;
+    }
+  });
+
+  return dict;
+}

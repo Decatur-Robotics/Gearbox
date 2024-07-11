@@ -1038,6 +1038,15 @@ export namespace API {
 
     ping: async (req, res, { }) => {
       return res.status(200).send({ result: "success" });
+    },
+
+    getSubjectiveReportsFromMatches: async (req, res, { db, data }: RouteContents<{ matches: Match[] }>) => {
+      const matchIds = data.matches.map((match) => match._id?.toString());
+      const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
+        match: { $in: matchIds },
+      });
+
+      return res.status(200).send(reports);
     }
-  };
+  }; 
 }

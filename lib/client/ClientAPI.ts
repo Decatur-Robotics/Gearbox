@@ -468,4 +468,8 @@ export default class ClientAPI {
     return await this.request("/ping", {});
   }
 
+  async getSubjectiveReportsFromMatches(matches: Match[]): Promise<SubjectiveReport[]> {
+    return await this.request("/getSubjectiveReportsFromMatches", { matches });
+  }
+
 }
