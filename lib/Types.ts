@@ -370,6 +370,8 @@ export class SavedCompetition {
   comp: Competition;
   game: Game<QuantData, PitReportData>;
 
+  lastAccessTime: number = Date.now();
+
   team: Team;
   seasonSlug: string | undefined;
 

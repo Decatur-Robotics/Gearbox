@@ -17,8 +17,8 @@ import {
   League,
 } from "../Types";
 import { GameId } from "./GameId";
-import { TheOrangeAlliance } from "../TheOrangeAlliance";
-import { forceOfflineMode } from "./ClientUtils";
+import { updateCompInLocalStorage } from "./offlineUtils";
+import { ObjectId } from 'bson';
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -417,7 +417,14 @@ export default class ClientAPI {
     return await this.request("/getPitReports", { reportIds });
   }
 
-  async changeScouterForReport(reportId: string, scouterId: string) {
+  async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      const report = Object.values(comp.quantReports).find(r => r._id === reportId);
+      if (report) {
+        report.user = scouterId;
+      }
+    });
+
     return await this.request("/changeScouterForReport", { reportId, scouterId });
   }
 
@@ -444,6 +451,8 @@ export default class ClientAPI {
   }
 
   async setCompPublicData(compId: string, publicData: boolean) {
+    updateCompInLocalStorage(compId, (comp) => comp.comp.publicData = publicData);
+
     return await this.request("/setCompPublicData", { compId, publicData });
   }
 
@@ -463,15 +472,35 @@ export default class ClientAPI {
     return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 
-  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
+  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined, compId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      const match = Object.values(comp.matches).find(m => m._id === matchId);
+      if (match) {
+        match.subjectiveScouter = userId;
+      }
+    });
+
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
   async createPitReportForTeam(teamNumber: number, compId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData());
+      pitReport._id = new ObjectId().toString();
+
+      comp.pitReports[pitReport.teamNumber] = pitReport;
+      comp.comp.pitReports.push(pitReport._id);
+    });
+
     return await this.request("/createPitReportForTeam", { teamNumber, compId });
   }
 
   async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      comp.comp.name = name;
+      comp.comp.tbaId = tbaId;
+    });
+
     return await this.request("/updateCompNameAndTbaId", { compId, name, tbaId });
   }
 

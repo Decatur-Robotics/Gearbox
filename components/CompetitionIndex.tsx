@@ -34,6 +34,7 @@ import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
+import { BiExport } from "react-icons/bi";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -114,6 +115,8 @@ export default function CompetitionIndex(props: {
 
   const [newCompName, setNewCompName] = useState(comp?.name);
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
+
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
@@ -389,6 +392,7 @@ export default function CompetitionIndex(props: {
     (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
     
     setMatchBeingEdited(match._id);
+    setQrModalOpen(false);
   }
 
   useInterval(() => loadMatches(true), 5000);
@@ -408,7 +412,7 @@ export default function CompetitionIndex(props: {
       if (!userId || !report || !report._id) return;
 
       console.log(`Changing scouter for report ${report._id} to ${userId}`);
-      api.changeScouterForReport(report._id, userId).then(loadReports);
+      api.changeScouterForReport(report._id, userId, comp?._id ?? "").then(loadReports);
     }
 
     function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
@@ -418,7 +422,7 @@ export default function CompetitionIndex(props: {
       if (!userId || !props.match?._id) return;
 
       console.log(`Changing subjective scouter for match ${props.match?._id} to ${userId}`);
-      api.setSubjectiveScouterForMatch(props.match?._id, userId).then(loadMatches);
+      api.setSubjectiveScouterForMatch(props.match?._id, userId, comp?._id ?? "").then(loadMatches);
     }
 
     return (
@@ -528,6 +532,7 @@ export default function CompetitionIndex(props: {
 
     // Save comp to local storage
     const savedComp = new SavedCompetition(comp, games[comp?.gameId ?? defaultGameId], team, usersById, seasonSlug);
+    savedComp.lastAccessTime = Date.now();
 
     savedComp.matches = toDict(matches);
     savedComp.quantReports = toDict(reports);
@@ -537,13 +542,38 @@ export default function CompetitionIndex(props: {
     saveCompToLocalStorage(savedComp);
   }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
+  function QrModal() {
+    console.log("qrModalOpen", qrModalOpen);
+
+    return (
+      <dialog id="qr-modal" className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+          </form>
+          Test
+        </div>
+      </dialog>
+    )
+  }
+
   return (
     <>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
         <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
           <div className="w-full card bg-base-200 shadow-xl">
             <div className="card-body">
-              <h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
+              <div className="flex flex-row items-center justify-between w-full">
+                <h1 className="card-title text-3xl font-bold">
+                  {comp?.name}
+                </h1>
+                <button onClick={() => setQrModalOpen(true)} className="btn btn-ghost flex flex-row">
+                  <BiExport size={30} />
+                  <div className="max-sm:hidden">
+                    Share
+                  </div>
+                </button>
+              </div>
               <div className="divider"></div>
               <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
                 <a
@@ -1140,9 +1170,8 @@ export default function CompetitionIndex(props: {
           </div>
         </div>
       </div>
-      {
-        isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} />
-      }
+      { isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} /> }
+      { qrModalOpen && <QrModal /> }
     </>
   );
 }

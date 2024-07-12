@@ -15,3 +15,11 @@ export function getAllCompsFromLocalStorage(): SavedCompetition[] {
     .map(k => getCompFromLocalStorage(k.replace("comp-", "")))
     .filter(c => c !== undefined) as SavedCompetition[];
 }
+
+export function updateCompInLocalStorage(compId: string, update: (comp: SavedCompetition) => void) {
+  const comp = getCompFromLocalStorage(compId);
+  if (comp) {
+    update(comp);
+    saveCompToLocalStorage(comp);
+  }
+}

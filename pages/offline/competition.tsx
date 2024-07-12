@@ -9,8 +9,8 @@ export default function CompetitionPage() {
   const [allSavedComps, setAllSavedComps] = useState<SavedCompetition[]>([]);
 
   useEffect(() => {
-    setAllSavedComps(getAllCompsFromLocalStorage());
-  }, []);
+    setAllSavedComps(getAllCompsFromLocalStorage().sort((a, b) => b.lastAccessTime - a.lastAccessTime));
+  }, [savedComp]);
 
   return (
     <Container requireAuthentication={false}>
@@ -22,7 +22,7 @@ export default function CompetitionPage() {
           <option disabled selected>Select a competition</option>
           {
             allSavedComps.map((comp) =>
-              <option key={comp.comp._id} value={comp.comp._id}>{comp.comp.name}</option>
+              <option key={comp.comp._id} value={comp.comp._id}>{comp.team?.league ?? "FRC"} {comp.team?.number} - {comp.comp.name}</option>
             )
           }
         </select>
