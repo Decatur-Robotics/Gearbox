@@ -1,15 +1,36 @@
 import CompetitionIndex from "@/components/CompetitionIndex";
 import Container from "@/components/Container";
-import { Competition, Season, Team } from "@/lib/Types";
+import { getAllCompsFromLocalStorage } from "@/lib/client/offlineUtils";
+import { SavedCompetition } from "@/lib/Types";
+import { useEffect, useState } from "react";
 
 export default function CompetitionPage() {
-  const team: Team = new Team("offline", undefined, undefined, 0);
-  const season: Season = new Season("offline", undefined, new Date().getFullYear());
-  const comp: Competition = new Competition("offline", undefined, undefined, 0, 0);
+  const [savedComp, setSavedComp] = useState<SavedCompetition | undefined>(undefined);
+  const [allSavedComps, setAllSavedComps] = useState<SavedCompetition[]>([]);
+
+  useEffect(() => {
+    setAllSavedComps(getAllCompsFromLocalStorage());
+  }, []);
 
   return (
     <Container requireAuthentication={false}>
-      <CompetitionIndex team={team} season={season} competition={comp} report={undefined} />
+      <label className="form-control">
+        <div className="label">
+          <span className="label-text">Select a competition</span>
+        </div>
+        <select onChange={(e) => setSavedComp(allSavedComps.find(comp => comp.comp._id === e.target.value))}>
+          <option disabled selected>Select a competition</option>
+          {
+            allSavedComps.map((comp) =>
+              <option key={comp.comp._id} value={comp.comp._id}>{comp.comp.name}</option>
+            )
+          }
+        </select>
+      </label>
+      { savedComp &&
+          <CompetitionIndex team={savedComp.team} seasonSlug={savedComp.seasonSlug} competition={savedComp.comp} 
+            fallbackData={savedComp}/>
+      }
     </Container>
   )
 }

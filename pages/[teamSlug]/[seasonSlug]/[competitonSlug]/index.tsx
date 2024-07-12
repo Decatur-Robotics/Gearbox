@@ -6,7 +6,7 @@ import Container from "@/components/Container";
 export default function CompetitionPage(props: ResolvedUrlData) {
   return (
     <Container requireAuthentication={true} hideMenu={false}>
-      <CompetitionIndex {...props} />
+      <CompetitionIndex team={props.team} competition={props.competition} seasonSlug={props.season?._id} />
     </Container>
   );
 }

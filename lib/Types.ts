@@ -370,18 +370,28 @@ export class SavedCompetition {
   comp: Competition;
   game: Game<QuantData, PitReportData>;
 
+  team: Team;
+  seasonSlug: string | undefined;
+
   matches: { [_id: string]: Match };
   quantReports: { [_id: string]: Report<QuantData> };
   subjectiveReports: { [_id: string]: SubjectiveReport };
   pitReports: { [_id: number]: Pitreport<PitReportData> };
 
-  constructor(comp: Competition, game: Game<QuantData, PitReportData>, matches: { [_id: string]: Match } = {},
+  users: { [_id: string]: User };
+
+  constructor(comp: Competition, game: Game<QuantData, PitReportData>, team: Team, users: { [_id: string]: User } = {}, seasonSlug: string | undefined = undefined, matches: { [_id: string]: Match } = {},
       quantReports: { [_id: string]: Report<QuantData> } = {}, subjectiveReports: { [_id: string]: SubjectiveReport } = {},
       pitReports: { [_id: number]: Pitreport<PitReportData> } = {}
   ) {
     this.comp = comp;
     this.game = game;
     
+    this.team = team;
+    this.users = users;
+
+    this.seasonSlug = seasonSlug;
+
     this.matches = matches;
     this.quantReports = quantReports;
     this.subjectiveReports = subjectiveReports;

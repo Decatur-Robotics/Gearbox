@@ -1,4 +1,3 @@
-import { ResolvedUrlData } from "@/lib/UrlResolver";
 import { ChangeEvent, useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
@@ -11,6 +10,8 @@ import {
   SavedCompetition,
   SubjectiveReport,
   User,
+  Team,
+  Competition
 } from "@/lib/Types";
 
 import Link from "next/link";
@@ -31,15 +32,29 @@ import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
-import { saveComp } from "@/lib/client/offlineUtils";
+import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function CompetitionIndex(props: ResolvedUrlData) {
+export default function CompetitionIndex(props: {
+  team: Team | undefined,
+  competition: Competition | undefined,
+  seasonSlug: string | undefined,
+  fallbackData?: SavedCompetition
+}) {
   const team = props.team;
-  const season = props.season;
+  const seasonSlug = props.seasonSlug;
   const comp = props.competition;
+  const fallbackData = props.fallbackData
+    ? {
+        users: props.fallbackData.users,
+        matches: Object.values(props.fallbackData.matches),
+        quantReports: Object.values(props.fallbackData.quantReports),
+        subjectiveReports: Object.values(props.fallbackData.subjectiveReports),
+        pitReports: Object.values(props.fallbackData.pitReports)
+    }
+    : undefined;
 
   const { session, status } = useCurrentSession();
   const isManager = session?.user?._id
@@ -139,7 +154,11 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
       setLoadingMatches(true);
     
     window.location.hash = "";
-    const matches: Match[] = await api.allCompetitionMatches(comp?._id);
+    const matches: Match[] = await api.allCompetitionMatches(comp?._id) ?? Object.values(fallbackData?.matches ?? {});
+
+    if (matches.length === 0)
+      setNoMatches(true);
+    
     matches.sort((a, b) => {
       if (a.number < b.number) {
         return -1;
@@ -150,16 +169,13 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
       return 0;
     });
 
-    if (matches.length === 0)
-      setNoMatches(true);
-
     setQualificationMatches(
       matches.filter((match) => match.type === MatchType.Qualifying)
     );
 
     setMatches(matches);
 
-    api.getSubjectiveReportsFromMatches(matches).then((reports) => {
+    api.getSubjectiveReportsFromMatches(matches, fallbackData?.subjectiveReports).then((reports) => {
       setSubjectiveReports(reports);
     });
     
@@ -185,21 +201,27 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
 
     if (!silent)
       setLoadingReports(true);
+
     const newReports: Report[] = await api.competitionReports(
       comp?._id,
-      false
+      false,
+      false,
+      fallbackData?.quantReports
     );
     setReports(newReports);
-    var newReportId: { [key: string]: Report } = {};
-    newReports.forEach((report) => {
+
+    const newReportId: { [key: string]: Report } = {};
+    newReports?.forEach((report) => {
       if (!report._id) {
         return;
       }
       newReportId[report._id] = report;
     });
     setReportsById(newReportId);
+
     if (!silent)
       setLoadingReports(false);
+
     scoutingStats(newReports);
   };
 
@@ -218,7 +240,7 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
 
       const newUsersById: { [key: string]: User } = {};
       for (const userId of team.users) {
-        newUsersById[userId] = await api.findUserById(userId);
+        newUsersById[userId] = await api.findUserById(userId, fallbackData?.users[userId]);
       }
 
       setUsersById(newUsersById);
@@ -502,18 +524,18 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
 
   // Offline mode
   useEffect(() => {
-    if (!comp) return;
+    if (!comp || !team) return;
 
     // Save comp to local storage
-    const savedComp = new SavedCompetition(comp, games[comp?.gameId ?? defaultGameId]);
+    const savedComp = new SavedCompetition(comp, games[comp?.gameId ?? defaultGameId], team, usersById, seasonSlug);
 
     savedComp.matches = toDict(matches);
     savedComp.quantReports = toDict(reports);
     savedComp.pitReports = toDict(pitreports);
     savedComp.subjectiveReports = toDict(subjectiveReports);
 
-    saveComp(savedComp);
-  }, [comp, matches, reports, pitreports, subjectiveReports]);
+    saveCompToLocalStorage(savedComp);
+  }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
   return (
     <>
@@ -783,7 +805,7 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
                   </>}
 
                   <div className="divider"></div>
-                  <Link href={`/${team?.slug}/${season?.slug}/${comp?.slug}/scouters`}>
+                  <Link href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/scouters`}>
                     <button className="btn btn-lg btn-primary w-full">
                       <FaBinoculars /> Manage Scouters
                     </button>
@@ -978,7 +1000,7 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
                               
                                   return (
                                     <Link
-                                      href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${reportId}`}
+                                      href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
                                       key={reportId}
                                       className={`${color} ${
                                         mine && !submitted
@@ -1042,7 +1064,7 @@ export default function CompetitionIndex(props: ResolvedUrlData) {
                               }
                             </div>
                             <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter].slackId && "-translate-y-1"}`} 
-                              href={`/${team?.slug}/${season?.slug}/${comp?.slug}/${match._id}/subjective`}>
+                              href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}>
                               Add Subjective Report ({`${match.subjectiveReports ? match.subjectiveReports.length : 0} submitted, 
                                 ${match.subjectiveReportsCheckInTimestamps 
                                   ? getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps).length 

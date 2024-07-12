@@ -99,7 +99,13 @@ export default function Container(props: ContainerProps) {
       setLoadingSeasons(true);
 
       let newSeasons: Season[] = [];
-      for (const season of selectedTeam.seasons) {
+
+      if (!selectedTeam?.seasons) {
+        setLoadingSeasons(false);
+        return;
+      }
+      
+      for (const season of selectedTeam?.seasons) {
         newSeasons.push(await api.findSeasonById(season));
       }
 
@@ -293,8 +299,8 @@ export default function Container(props: ContainerProps) {
 
                 {teams.map((team, index) => {
                   var initials = team.name
-                    .split(" ")
-                    .map((section) => section.charAt(0));
+                    ?.split(" ")
+                    ?.map((section) => section.charAt(0));
                   var selected = index === selectedTeamIndex;
                   return (
                     <button

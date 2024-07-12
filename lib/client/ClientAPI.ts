@@ -18,6 +18,7 @@ import {
 } from "../Types";
 import { GameId } from "./GameId";
 import { TheOrangeAlliance } from "../TheOrangeAlliance";
+import { forceOfflineMode } from "./ClientUtils";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -59,11 +60,18 @@ export default class ClientAPI {
     return await rawResponse.json();
   }
 
-  async findUserById(id: string | undefined): Promise<User> {
-    return await this.request("/find", {
-      collection: "users",
-      query: { _id: id },
-    });
+  async findUserById(id: string | undefined, fallback: User | undefined = undefined): Promise<User> {
+    try {
+      return await this.request("/find", {
+        collection: "users",
+        query: { _id: id },
+      });
+    }
+    catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
   async findTeamById(id: string): Promise<Team> {
@@ -309,12 +317,19 @@ export default class ClientAPI {
     });
   }
 
-  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false) {
-    return await this.request("/competitionReports", {
-      compId,
-      submitted,
-      usePublicData
-    });
+  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false, 
+      fallback: Report[] | undefined = undefined) {
+    try {
+      return await this.request("/competitionReports", {
+        compId,
+        submitted,
+        usePublicData
+      });
+    } catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
   async allCompetitionMatches(compId: string | undefined) {
@@ -468,8 +483,15 @@ export default class ClientAPI {
     return await this.request("/ping", {});
   }
 
-  async getSubjectiveReportsFromMatches(matches: Match[]): Promise<SubjectiveReport[]> {
-    return await this.request("/getSubjectiveReportsFromMatches", { matches });
+  async getSubjectiveReportsFromMatches(matches: Match[], fallback: SubjectiveReport[] | undefined = undefined): Promise<SubjectiveReport[]> {
+    try {
+      return await this.request("/getSubjectiveReportsFromMatches", { matches });
+    }
+    catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
 }
