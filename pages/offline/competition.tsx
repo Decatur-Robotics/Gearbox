@@ -18,8 +18,8 @@ export default function CompetitionPage() {
         <div className="label">
           <span className="label-text">Select a competition</span>
         </div>
-        <select onChange={(e) => setSavedComp(allSavedComps.find(comp => comp.comp._id === e.target.value))}>
-          <option disabled selected>Select a competition</option>
+        <select defaultValue="unselected"  onChange={(e) => setSavedComp(allSavedComps.find(comp => comp.comp._id === e.target.value))}>
+          <option disabled selected value="unselected">Select a competition</option>
           {
             allSavedComps.map((comp) =>
               <option key={comp.comp._id} value={comp.comp._id}>{comp.team?.league ?? "FRC"} {comp.team?.number} - {comp.comp.name}</option>

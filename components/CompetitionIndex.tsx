@@ -35,6 +35,7 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
+import QRCode from "react-qr-code";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -426,11 +427,9 @@ export default function CompetitionIndex(props: {
     }
 
     return (
-      <dialog id="edit-match-modal" className="modal">
+      <dialog id="edit-match-modal" className="modal" open={matchBeingEdited !== undefined}>
         <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
-          </form>
+          <button onClick={() => setMatchBeingEdited(undefined)} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
           <h3 className="text-xl">Editing Match {props.match?.number}</h3>
           <table className="space-x-2">
             <thead>
@@ -489,15 +488,6 @@ export default function CompetitionIndex(props: {
     );
   }
 
-  useEffect(() => {
-    const modal = document.getElementById("edit-match-modal") as HTMLDialogElement | undefined;
-
-    if (matchBeingEdited && isManager)
-      modal?.showModal();
-    else
-      modal?.close();
-  }, [matchBeingEdited]);
-
   function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
     if (!comp?._id) return;
     api.setCompPublicData(comp?._id, e.target.checked);
@@ -554,27 +544,28 @@ export default function CompetitionIndex(props: {
   }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
   function QrModal() {
+    if (!fallbackData) return (<></>);
+
+    const  { users, matches, quantReports, ...qrData } = fallbackData;
+
     return (
-      <dialog id="qr-modal" className="modal">
+      <dialog id="qr-modal" className="modal" open={qrModalOpen}>
         <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
-            Testing
-          </form>
-          Testing
+          <button onClick={() => setQrModalOpen(false)} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+          <h1 className="text-xl">Share Competition</h1>
+          <div className="w-full flex items-center justify-center pt-3">
+            <QRCode 
+              value={JSON.stringify({ 
+                matches: fallbackData.matches,
+                pitReports: fallbackData.pitReports,
+              })} 
+              size={256} 
+            />
+          </div>
         </div>
       </dialog>
     )
   }
-
-  useEffect(() => {
-    const modal = document.getElementById("qr-modal") as HTMLDialogElement | undefined;
-
-    if (qrModalOpen)
-      modal?.showModal();
-    else
-      modal?.close();
-  }, [qrModalOpen]);
 
   return (
     <>
