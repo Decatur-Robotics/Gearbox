@@ -22,14 +22,14 @@ import {
   MdCoPresent,
   MdQueryStats,
 } from "react-icons/md";
-import { BsClipboard2Check, BsGearFill } from "react-icons/bs";
+import { BsClipboard2Check, BsGearFill, BsQrCode, BsQrCodeScan } from "react-icons/bs";
 import { FaBinoculars, FaDatabase, FaSync, FaUserCheck } from "react-icons/fa";
 import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
-import { NotLinkedToTba, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
+import { NotLinkedToTba, download, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
@@ -77,10 +77,11 @@ export default function CompetitionIndex(props: {
   const [assigningMatches, setAssigningMatches] = useState(false);
   const [noMatches, setNoMatches] = useState(false);
 
+  const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
+
   const [reportsById, setReportsById] = useState<{ [key: string]: Report }>({});
   const [usersById, setUsersById] = useState<{ [key: string]: User }>({});
-
-  const [subjectiveReports, setSubjectiveReports] = useState<SubjectiveReport[]>([]);
+  const [subjectiveReportsById, setSubjectiveReportsById] = useState<{ [key: string]: SubjectiveReport }>({});
 
   //loading states
   const [loadingMatches, setLoadingMatches] = useState(true);
@@ -117,7 +118,7 @@ export default function CompetitionIndex(props: {
   const [newCompName, setNewCompName] = useState(comp?.name);
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
 
-  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
@@ -181,6 +182,15 @@ export default function CompetitionIndex(props: {
 
     api.getSubjectiveReportsFromMatches(matches, fallbackData?.subjectiveReports).then((reports) => {
       setSubjectiveReports(reports);
+
+      const newReportIds: { [key: string]: SubjectiveReport } = {};
+      reports.forEach((report) => {
+        if (!report._id) {
+          return;
+        }
+        newReportIds[report._id] = report;
+      });
+      setSubjectiveReportsById(newReportIds);
     });
     
     if (!silent)
@@ -363,13 +373,7 @@ export default function CompetitionIndex(props: {
     });
 
     if (res.csv) {
-      const blob = new Blob([res.csv], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${comp?.name}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      download(`${comp?.name ?? "Competition"}.csv`, res.csv, "text/csv");
     } else {
       console.error("No CSV data returned from server");
 
@@ -393,7 +397,7 @@ export default function CompetitionIndex(props: {
     (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
     
     setMatchBeingEdited(match._id);
-    setQrModalOpen(false);
+    setDownloadModalOpen(false);
   }
 
   useInterval(() => loadMatches(true), 5000);
@@ -527,8 +531,7 @@ export default function CompetitionIndex(props: {
     allianceIndices.push(i);
   }
 
-  // Offline mode
-  useEffect(() => {
+  function getSavedCompetition() {
     if (!comp || !team) return;
 
     // Save comp to local storage
@@ -539,29 +542,32 @@ export default function CompetitionIndex(props: {
     savedComp.quantReports = toDict(reports);
     savedComp.pitReports = toDict(pitreports);
     savedComp.subjectiveReports = toDict(subjectiveReports);
+    
+    return savedComp;
+  }
 
-    saveCompToLocalStorage(savedComp);
+  // Offline mode
+  useEffect(() => {
+    const savedComp = getSavedCompetition();
+
+    if (savedComp)
+      saveCompToLocalStorage(savedComp);
   }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
-  function QrModal() {
-    if (!fallbackData) return (<></>);
-
-    const  { users, matches, quantReports, ...qrData } = fallbackData;
+  function DownloadModal() {
+    function downloadJson() {
+      const savedComp = getSavedCompetition();
+      download("competition.json", JSON.stringify(savedComp), "application/json");
+    }
 
     return (
-      <dialog id="qr-modal" className="modal" open={qrModalOpen}>
+      <dialog id="qr-modal" className="modal" open={downloadModalOpen}>
         <div className="modal-box">
-          <button onClick={() => setQrModalOpen(false)} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+          <button onClick={() => setDownloadModalOpen(false)} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
           <h1 className="text-xl">Share Competition</h1>
-          <div className="w-full flex items-center justify-center pt-3">
-            <QRCode 
-              value={JSON.stringify({ 
-                matches: fallbackData.matches,
-                pitReports: fallbackData.pitReports,
-              })} 
-              size={256} 
-            />
-          </div>
+          <button onClick={downloadJson} className="btn btn-primary mt-2">
+            Download JSON
+          </button>
         </div>
       </dialog>
     )
@@ -577,7 +583,7 @@ export default function CompetitionIndex(props: {
                 <h1 className="card-title text-3xl font-bold">
                   {comp?.name}
                 </h1>
-                <button onClick={() => setQrModalOpen(true)} className="btn btn-ghost flex flex-row">
+                <button onClick={() => setDownloadModalOpen(true)} className="btn btn-ghost flex flex-row">
                   <BiExport size={30} />
                   <div className="max-sm:hidden">
                     Share
@@ -1008,8 +1014,8 @@ export default function CompetitionIndex(props: {
                             <div
                               id={`//match${index}`}
                               className="md:relative md:-translate-y-80"
-                            ></div>
-                            <div className="items-middle flex flex-row items-center">
+                            />
+                            <div className="items-middle flex flex-row items-center pt-4">
                               <h1 className="text-2xl font-bold">
                                 Match {match.number}
                               </h1>
@@ -1017,7 +1023,6 @@ export default function CompetitionIndex(props: {
                             </div>
                             <div className="flex flex-col items-center space-y-4">
                               <div className="w-full flex flex-row items-center space-x-2">
-                                
                                 {match.reports.map((reportId) => {
                                   const report = reportsById[reportId];
                                   if (!report) return <></>;
@@ -1102,7 +1107,7 @@ export default function CompetitionIndex(props: {
                                     </div>
                                   : <div>No subjective scouter assigned</div>
                               }
-                            </div>
+                              </div>
                             <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter].slackId && "-translate-y-1"}`} 
                               href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}>
                               Add Subjective Report ({`${match.subjectiveReports ? match.subjectiveReports.length : 0} submitted, 
@@ -1110,7 +1115,7 @@ export default function CompetitionIndex(props: {
                                   ? getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps).length 
                                   : 0} in progress`})
                             </Link>
-                          </div>
+                        </div>
                         ))}
                       </div>
                       <div className="w-full flex items-center justify-center mt-2">
@@ -1181,7 +1186,7 @@ export default function CompetitionIndex(props: {
         </div>
       </div>
       { isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} /> }
-      <QrModal />
+      <DownloadModal />
     </>
   );
 }

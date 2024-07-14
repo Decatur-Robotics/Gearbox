@@ -39,3 +39,13 @@ export function toDict<TElement extends { _id: string | undefined }>(arr: TEleme
 
   return dict;
 }
+
+export function download(filename: string, content: string, type: string = "text/plain") {
+  const blob = new Blob([content], { type });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
