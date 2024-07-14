@@ -440,30 +440,32 @@ export default function CompetitionIndex(props: {
                 <th>Scouter</th>
               </tr>
             </thead>
-            {
-              teams.map((team, index) => 
-                <tr key={index}>
-                  <td className={index < 3 ? "text-blue-500" : "text-red-500"}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
-                  <td>{team}</td>
-                  <td>
-                    <select onChange={(e) => changeScouter(e, reports[index])}>
-                      {
-                        reports[index]?.user && usersById[reports[index].user ?? ""]
-                          ? <option value={reports[index].user}>
-                              {usersById[reports[index].user ?? ""]?.name}</option>
-                          : <></>
-                      }
-                      <option value={undefined}>None</option>
-                      {
-                        Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
-                          <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
-                        )
-                      }
-                    </select>
-                  </td>
-                </tr>
-              )
-            }
+            <tbody>
+              {
+                teams.map((team, index) => 
+                  <tr key={index}>
+                    <td className={index < 3 ? "text-blue-500" : "text-red-500"}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
+                    <td>{team}</td>
+                    <td>
+                      <select onChange={(e) => changeScouter(e, reports[index])}>
+                        {
+                          reports[index]?.user && usersById[reports[index].user ?? ""]
+                            ? <option value={reports[index].user}>
+                                {usersById[reports[index].user ?? ""]?.name}</option>
+                            : <></>
+                        }
+                        <option value={undefined}>None</option>
+                        {
+                          Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
+                            <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
+                          )
+                        }
+                      </select>
+                    </td>
+                  </tr>
+                )
+              }
+            </tbody>
           </table>
           <div className="flex flex-row space-x-2">
             <label>Subjective Scouter:</label>
@@ -486,6 +488,15 @@ export default function CompetitionIndex(props: {
       </dialog>
     );
   }
+
+  useEffect(() => {
+    const modal = document.getElementById("edit-match-modal") as HTMLDialogElement | undefined;
+
+    if (matchBeingEdited && isManager)
+      modal?.showModal();
+    else
+      modal?.close();
+  }, [matchBeingEdited]);
 
   function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
     if (!comp?._id) return;
@@ -543,19 +554,27 @@ export default function CompetitionIndex(props: {
   }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
   function QrModal() {
-    console.log("qrModalOpen", qrModalOpen);
-
     return (
       <dialog id="qr-modal" className="modal">
         <div className="modal-box">
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+            Testing
           </form>
-          Test
+          Testing
         </div>
       </dialog>
     )
   }
+
+  useEffect(() => {
+    const modal = document.getElementById("qr-modal") as HTMLDialogElement | undefined;
+
+    if (qrModalOpen)
+      modal?.showModal();
+    else
+      modal?.close();
+  }, [qrModalOpen]);
 
   return (
     <>
@@ -1171,7 +1190,7 @@ export default function CompetitionIndex(props: {
         </div>
       </div>
       { isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} /> }
-      { qrModalOpen && <QrModal /> }
+      <QrModal />
     </>
   );
 }
