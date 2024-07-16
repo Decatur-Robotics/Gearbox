@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import {
@@ -11,7 +11,8 @@ import {
   SubjectiveReport,
   User,
   Team,
-  Competition
+  Competition,
+  League
 } from "@/lib/Types";
 
 import Link from "next/link";
@@ -35,7 +36,6 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
-import QRCode from "react-qr-code";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -397,7 +397,7 @@ export default function CompetitionIndex(props: {
     (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
     
     setMatchBeingEdited(match._id);
-    setDownloadModalOpen(false);
+    closeDownloadModal();
   }
 
   useInterval(() => loadMatches(true), 5000);
@@ -554,19 +554,51 @@ export default function CompetitionIndex(props: {
       saveCompToLocalStorage(savedComp);
   }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
+  function openDownloadModal() {
+    setDownloadModalOpen(true);
+  }
+
+  function closeDownloadModal() {
+    setDownloadModalOpen(false);
+  }
+
+  const [uploadedComp, setUploadedComp] = useState<SavedCompetition | undefined>(undefined);
   function DownloadModal() {
+
     function downloadJson() {
       const savedComp = getSavedCompetition();
-      download("competition.json", JSON.stringify(savedComp), "application/json");
+      download(`${team?.league ?? League.FRC}${team?.number}-${comp?.name}.json`, JSON.stringify(savedComp), "application/json");
+    }
+
+    function uploadComp(e: ChangeEvent<HTMLInputElement>) {
+      console.log("Uploading comp...");
+      const file = e.target.files?.[0];
+  
+      if (!file) return;
+  
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = JSON.parse(e.target?.result as string) as SavedCompetition;
+        setUploadedComp(data);
+        console.log("Uploaded comp", data);
+      }
+  
+      reader.readAsText(file);
     }
 
     return (
       <dialog id="qr-modal" className="modal" open={downloadModalOpen}>
         <div className="modal-box">
-          <button onClick={() => setDownloadModalOpen(false)} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
+          <button onClick={closeDownloadModal} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
           <h1 className="text-xl">Share Competition</h1>
-          <button onClick={downloadJson} className="btn btn-primary mt-2">
+          <button onClick={downloadJson} className="btn btn-primary mt-2 no-animation">
             Download JSON
+          </button>
+          <div className="divider"></div>
+          <h1 className="text-xl">Import Competition Reports</h1>
+          <input id="file" name="file" type="file" accept=".json" className="file-input" onChange={uploadComp} />
+          <button className={`btn btn-${uploadedComp ? "primary" : "disabled"}`}>
+            Import{uploadedComp && ` ${uploadedComp.team?.league ?? "FRC"} ${uploadedComp.team?.number} - ${uploadedComp.comp.name}`}
           </button>
         </div>
       </dialog>
@@ -583,10 +615,10 @@ export default function CompetitionIndex(props: {
                 <h1 className="card-title text-3xl font-bold">
                   {comp?.name}
                 </h1>
-                <button onClick={() => setDownloadModalOpen(true)} className="btn btn-ghost flex flex-row">
+                <button onClick={openDownloadModal} className="btn btn-ghost flex flex-row">
                   <BiExport size={30} />
                   <div className="max-sm:hidden">
-                    Share
+                    Import/Export
                   </div>
                 </button>
               </div>
@@ -1184,9 +1216,9 @@ export default function CompetitionIndex(props: {
             )}
           </div>
         </div>
+        { isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} /> }
+        <DownloadModal />
       </div>
-      { isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} /> }
-      <DownloadModal />
     </>
   );
 }
