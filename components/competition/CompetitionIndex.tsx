@@ -36,6 +36,8 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
+import DownloadModal from "./DownloadModal";
+import EditMatchModal from "./EditMatchModal";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -402,95 +404,7 @@ export default function CompetitionIndex(props: {
 
   useInterval(() => loadMatches(true), 5000);
 
-  function EditMatchModal(props: { match?: Match }) {
-    if (props.match === undefined) return (<></>);
-
-    const teams = props.match.blueAlliance.concat(props.match.redAlliance);
-
-    const reports = props.match.reports.map(reportId => reportsById[reportId]);
-    if (!reports) return (<></>);
-
-    function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
-      e.preventDefault();
-
-      const userId = e.target.value;
-      if (!userId || !report || !report._id) return;
-
-      console.log(`Changing scouter for report ${report._id} to ${userId}`);
-      api.changeScouterForReport(report._id, userId, comp?._id ?? "").then(loadReports);
-    }
-
-    function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
-      e.preventDefault();
-
-      const userId = e.target.value;
-      if (!userId || !props.match?._id) return;
-
-      console.log(`Changing subjective scouter for match ${props.match?._id} to ${userId}`);
-      api.setSubjectiveScouterForMatch(props.match?._id, userId, comp?._id ?? "").then(loadMatches);
-    }
-
-    return (
-      <dialog id="edit-match-modal" className="modal" open={matchBeingEdited !== undefined}>
-        <div className="modal-box">
-          <button onClick={() => setMatchBeingEdited(undefined)} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
-          <h3 className="text-xl">Editing Match {props.match?.number}</h3>
-          <table className="space-x-2">
-            <thead>
-              <tr>
-                <th>Position</th>
-                <th>Team</th>
-                <th>Scouter</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                teams.map((team, index) => 
-                  <tr key={index}>
-                    <td className={index < 3 ? "text-blue-500" : "text-red-500"}>{index < 3 ? "Blue" : "Red"} {index % 3 + 1}</td>
-                    <td>{team}</td>
-                    <td>
-                      <select onChange={(e) => changeScouter(e, reports[index])}>
-                        {
-                          reports[index]?.user && usersById[reports[index].user ?? ""]
-                            ? <option value={reports[index].user}>
-                                {usersById[reports[index].user ?? ""]?.name}</option>
-                            : <></>
-                        }
-                        <option value={undefined}>None</option>
-                        {
-                          Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
-                            <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
-                          )
-                        }
-                      </select>
-                    </td>
-                  </tr>
-                )
-              }
-            </tbody>
-          </table>
-          <div className="flex flex-row space-x-2">
-            <label>Subjective Scouter:</label>
-            <select onChange={changeSubjectiveScouter}>
-              {
-                props.match?.subjectiveScouter && usersById[props.match.subjectiveScouter]
-                  ? <option value={props.match.subjectiveScouter}>
-                      {usersById[props.match.subjectiveScouter].name}</option>
-                  : <></>
-              }
-              <option value={undefined}>None</option>
-              {
-                Object.keys(usersById).filter(id => id !== props.match?.subjectiveScouter).map(userId => 
-                  <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
-                )
-              }
-            </select>
-          </div>
-        </div>
-      </dialog>
-    );
-  }
+  
 
   function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
     if (!comp?._id) return;
@@ -560,49 +474,6 @@ export default function CompetitionIndex(props: {
 
   function closeDownloadModal() {
     setDownloadModalOpen(false);
-  }
-
-  const [uploadedComp, setUploadedComp] = useState<SavedCompetition | undefined>(undefined);
-  function DownloadModal() {
-
-    function downloadJson() {
-      const savedComp = getSavedCompetition();
-      download(`${team?.league ?? League.FRC}${team?.number}-${comp?.name}.json`, JSON.stringify(savedComp), "application/json");
-    }
-
-    function uploadComp(e: ChangeEvent<HTMLInputElement>) {
-      console.log("Uploading comp...");
-      const file = e.target.files?.[0];
-  
-      if (!file) return;
-  
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = JSON.parse(e.target?.result as string) as SavedCompetition;
-        setUploadedComp(data);
-        console.log("Uploaded comp", data);
-      }
-  
-      reader.readAsText(file);
-    }
-
-    return (
-      <dialog id="qr-modal" className="modal" open={downloadModalOpen}>
-        <div className="modal-box">
-          <button onClick={closeDownloadModal} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">X</button>
-          <h1 className="text-xl">Share Competition</h1>
-          <button onClick={downloadJson} className="btn btn-primary mt-2 no-animation">
-            Download JSON
-          </button>
-          <div className="divider"></div>
-          <h1 className="text-xl">Import Competition Reports</h1>
-          <input id="file" name="file" type="file" accept=".json" className="file-input" onChange={uploadComp} />
-          <button className={`btn btn-${uploadedComp ? "primary" : "disabled"}`}>
-            Import{uploadedComp && ` ${uploadedComp.team?.league ?? "FRC"} ${uploadedComp.team?.number} - ${uploadedComp.comp.name}`}
-          </button>
-        </div>
-      </dialog>
-    )
   }
 
   return (
@@ -1216,8 +1087,26 @@ export default function CompetitionIndex(props: {
             )}
           </div>
         </div>
-        { isManager && <EditMatchModal match={matches.find(m => m._id === matchBeingEdited!)} /> }
-        <DownloadModal />
+        { isManager && 
+          <EditMatchModal 
+            close={() => setMatchBeingEdited(undefined)} 
+            match={matches.find(m => m._id === matchBeingEdited!)}
+            reportsById={reportsById}
+            usersById={usersById}
+            comp={comp}
+            loadReports={loadReports}
+            loadMatches={loadMatches}
+          /> 
+        }
+        { (team && comp) &&
+          <DownloadModal 
+            open={downloadModalOpen} 
+            close={() => setDownloadModalOpen(false)} 
+            team={team} 
+            comp={comp} 
+            getSavedComp={getSavedCompetition} 
+          />
+        }
       </div>
     </>
   );

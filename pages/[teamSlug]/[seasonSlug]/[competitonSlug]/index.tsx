@@ -1,6 +1,6 @@
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
-import CompetitionIndex from "@/components/CompetitionIndex";
+import CompetitionIndex from "@/components/competition/CompetitionIndex";
 import Container from "@/components/Container";
 
 export default function CompetitionPage(props: ResolvedUrlData) {
