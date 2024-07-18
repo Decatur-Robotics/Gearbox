@@ -38,6 +38,7 @@ import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
+import useIsOnline from "@/lib/client/useIsOnline";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -121,6 +122,8 @@ export default function CompetitionIndex(props: {
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
 
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+
+  const isOnline = useIsOnline();
 
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
@@ -458,6 +461,12 @@ export default function CompetitionIndex(props: {
     savedComp.subjectiveReports = toDict(subjectiveReports);
     
     return savedComp;
+  }
+
+  function setSavedCompetition(comp: SavedCompetition) {
+    saveCompToLocalStorage(comp);
+
+    location.reload();
   }
 
   // Offline mode
@@ -1104,7 +1113,8 @@ export default function CompetitionIndex(props: {
             close={() => setDownloadModalOpen(false)} 
             team={team} 
             comp={comp} 
-            getSavedComp={getSavedCompetition} 
+            getSavedComp={getSavedCompetition}
+            setSavedComp={setSavedCompetition}
           />
         }
       </div>

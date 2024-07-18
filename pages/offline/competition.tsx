@@ -10,9 +10,11 @@ export default function CompetitionPage() {
   const [allSavedComps, setAllSavedComps] = useState<SavedCompetition[]>([]);
   const [loadFromFile, setLoadFromFile] = useState(false);
   const [uploadedComp, setUploadedComp] = useState<SavedCompetition | undefined>(undefined);
+  const [lastSelectedComp, setLastSelectedComp] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setAllSavedComps(getAllCompsFromLocalStorage().sort((a, b) => b.lastAccessTime - a.lastAccessTime));
+    setLastSelectedComp(localStorage.getItem("lastSelectedOfflineComp") ?? undefined);
   }, [savedComp]);
 
   function selectComp(id: string) {
@@ -23,8 +25,18 @@ export default function CompetitionPage() {
     }
 
     setLoadFromFile(false);
-    setSavedComp(allSavedComps.find(comp => comp.comp._id === id))
+
+    const comp = allSavedComps.find(comp => comp.comp._id === id);
+    if (!comp)
+      return;
+    
+    localStorage.setItem("lastSelectedOfflineComp", id);
+    setSavedComp(comp)
   }
+
+  useEffect(() => {
+    selectComp(lastSelectedComp ?? "unselected");
+  }, [allSavedComps, lastSelectedComp]);
 
   function fileSelected(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -58,8 +70,13 @@ export default function CompetitionPage() {
         <div className="label">
           <span className="label-text">Select a competition</span>
         </div>
-        <select defaultValue="unselected"  onChange={(e) => selectComp(e.target.value)}>
-          <option disabled selected value="unselected">Select a competition</option>
+        <select defaultValue={lastSelectedComp} onChange={(e) => selectComp(e.target.value)}>
+          <option disabled selected value="unselected">
+            { allSavedComps.find(comp => comp.comp._id === lastSelectedComp) 
+                ? formatCompName(allSavedComps.find(comp => comp.comp._id === lastSelectedComp)!) 
+                : "Select a competition"
+            }
+          </option>
           {
             allSavedComps.map((comp) =>
               <option key={comp.comp._id} value={comp.comp._id}>{formatCompName(comp)}</option>

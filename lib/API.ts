@@ -13,7 +13,8 @@ import {
   SubjectiveReport,
   SubjectiveReportSubmissionType,
 } from "./Types";
-import { GenerateSlug, removeDuplicates } from "./Utils";
+import { GenerateSlug } from "./Utils";
+import { removeDuplicates } from "./client/ClientUtils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";

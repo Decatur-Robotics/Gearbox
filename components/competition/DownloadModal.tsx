@@ -1,4 +1,5 @@
 import { download } from "@/lib/client/ClientUtils";
+import { mergeSavedComps } from "@/lib/client/offlineUtils";
 import { SavedCompetition, League, Team, Competition } from "@/lib/Types";
 import { useState, ChangeEvent } from "react";
 
@@ -8,6 +9,7 @@ export default function DownloadModal(props: {
     team: Team, 
     comp: Competition, 
     getSavedComp: () => SavedCompetition | undefined
+    setSavedComp: (comp: SavedCompetition) => void
   }) {
   const { team, comp } = props;
 
@@ -36,6 +38,11 @@ export default function DownloadModal(props: {
 
   function importComp() {
     const current = props.getSavedComp();
+
+    if (!current || !uploadedComp) return;
+
+    mergeSavedComps(current, uploadedComp);
+    props.setSavedComp(current);
   }
 
   return (

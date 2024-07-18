@@ -84,17 +84,6 @@ export function RotateArray(array: any[]) {
 }
 
 /**
- * Removes duplicate elements from an array. **Not in place.**
- * @param arr the arr to remove duplicates from. Flattens and recurses on the array.
- * @returns A new array with no duplicates.
- */
-export function removeDuplicates(...arr: any[]) {
-  arr = arr.map((a) => Array.isArray(a) ? removeDuplicates(...a) : a).flat();
-
-  return Array.from(new Set(arr));
-}
-
-/**
  * Gets around "... cannot be serialized as JSON" error by converting the object to a string and back to an object
  * 
  * @returns a clone of the object that is serializable
