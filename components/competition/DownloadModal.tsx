@@ -1,7 +1,12 @@
+import ClientAPI from "@/lib/client/ClientAPI";
 import { download } from "@/lib/client/ClientUtils";
 import { mergeSavedComps } from "@/lib/client/offlineUtils";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import useIsOnline from "@/lib/client/useIsOnline";
 import { SavedCompetition, League, Team, Competition } from "@/lib/Types";
 import { useState, ChangeEvent } from "react";
+
+const api = new ClientAPI("gearboxiscool");
 
 export default function DownloadModal(props: { 
     open: boolean, 
@@ -13,8 +18,15 @@ export default function DownloadModal(props: {
   }) {
   const { team, comp } = props;
 
+  const { session, status } = useCurrentSession();
+  const isManager = session?.user?._id
+    ? team?.owners.includes(session.user?._id)
+    : false;
+
   const [uploadedComp, setUploadedComp] = useState<SavedCompetition | undefined>(undefined);
 
+  const isOnline = useIsOnline();
+  
   function downloadJson() {
     const savedComp = props.getSavedComp();
     download(`${team?.league ?? League.FRC}${team?.number}-${comp?.name}.json`, JSON.stringify(savedComp), "application/json");
@@ -53,13 +65,19 @@ export default function DownloadModal(props: {
         <button onClick={downloadJson} className="btn btn-primary mt-2 w-full">
           Download JSON
         </button>
-        <div className="divider"></div>
+        <div className="divider" />
         <h1 className="text-xl">Import Competition Reports</h1>
         <input onChange={uploadComp} id="file" name="file" type="file" accept=".json" className="file-input w-full" />
         <br />
         <button onClick={importComp} className={`btn btn-${uploadedComp ? "primary" : "disabled"} mt-2 w-full`}>
           Import{uploadedComp && ` ${uploadedComp.team?.league ?? "FRC"} ${uploadedComp.team?.number} - ${uploadedComp.comp.name}`}
         </button>
+        <div className="divider" />
+        { isManager &&
+          <button className={`btn btn-${isOnline ? "primary" : "disabled"}`}>
+            Sync to cloud
+          </button>
+        }
       </div>
     </dialog>
   )

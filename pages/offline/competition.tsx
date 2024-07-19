@@ -2,8 +2,7 @@ import CompetitionIndex from "@/components/competition/CompetitionIndex";
 import Container from "@/components/Container";
 import { getAllCompsFromLocalStorage, saveCompToLocalStorage } from "@/lib/client/offlineUtils";
 import { SavedCompetition } from "@/lib/Types";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import Form from '../../components/forms/Form';
+import { ChangeEvent, useEffect, useState } from "react";
 
 export default function CompetitionPage() {
   const [savedComp, setSavedComp] = useState<SavedCompetition | undefined>(undefined);
@@ -15,7 +14,7 @@ export default function CompetitionPage() {
   useEffect(() => {
     setAllSavedComps(getAllCompsFromLocalStorage().sort((a, b) => b.lastAccessTime - a.lastAccessTime));
     setLastSelectedComp(localStorage.getItem("lastSelectedOfflineComp") ?? undefined);
-  }, [savedComp]);
+  }, []);
 
   function selectComp(id: string) {
     if (id === "load") {

@@ -81,7 +81,10 @@ export default function Container(props: ContainerProps) {
       setLoadingTeams(true);
       let newTeams: Team[] = [];
       for (const team of user.teams) {
-        newTeams.push(await api.findTeamById(team));
+        const foundTeam = await api.findTeamById(team).catch(() => undefined);
+        if (!foundTeam)
+          continue;
+        newTeams.push(foundTeam);
       }
       setTeams(newTeams);
 

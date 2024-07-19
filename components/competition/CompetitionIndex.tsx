@@ -21,6 +21,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import {
   MdAutoGraph,
   MdCoPresent,
+  MdErrorOutline,
   MdQueryStats,
 } from "react-icons/md";
 import { BsClipboard2Check, BsGearFill, BsQrCode, BsQrCodeScan } from "react-icons/bs";
@@ -38,7 +39,6 @@ import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
-import useIsOnline from "@/lib/client/useIsOnline";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -57,7 +57,7 @@ export default function CompetitionIndex(props: {
         matches: Object.values(props.fallbackData.matches),
         quantReports: Object.values(props.fallbackData.quantReports),
         subjectiveReports: Object.values(props.fallbackData.subjectiveReports),
-        pitReports: Object.values(props.fallbackData.pitReports)
+        pitReports: Object.values(props.fallbackData.pitReports),
     }
     : undefined;
 
@@ -123,8 +123,6 @@ export default function CompetitionIndex(props: {
 
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
 
-  const isOnline = useIsOnline();
-
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -164,7 +162,9 @@ export default function CompetitionIndex(props: {
       setLoadingMatches(true);
     
     window.location.hash = "";
-    const matches: Match[] = await api.allCompetitionMatches(comp?._id) ?? Object.values(fallbackData?.matches ?? {});
+    let matches: Match[] = await api.allCompetitionMatches(comp?._id, fallbackData?.matches) ?? fallbackData?.matches;
+    if (matches.length === 0)
+      matches = fallbackData?.matches ?? [];
 
     if (matches.length === 0)
       setNoMatches(true);
@@ -221,12 +221,15 @@ export default function CompetitionIndex(props: {
     if (!silent)
       setLoadingReports(true);
 
-    const newReports: Report[] = await api.competitionReports(
+    let newReports: Report[] = await api.competitionReports(
       comp?._id,
       false,
       false,
       fallbackData?.quantReports
     );
+    if (newReports.length === 0)
+      newReports = fallbackData?.quantReports ?? [];
+
     setReports(newReports);
 
     const newReportId: { [key: string]: Report } = {};
@@ -274,7 +277,12 @@ export default function CompetitionIndex(props: {
       const newPitReports: Pitreport[] = [];
       let submitted = 0;
       for (const pitreportId of comp?.pitReports) {
-        const pitreport = await api.findPitreportById(pitreportId);
+        const pitreport = await api.findPitreportById(pitreportId).catch((e) => fallbackData?.pitReports.find((r) => r._id === pitreportId));
+
+        if (!pitreport) {
+          continue;
+        }
+
         if (pitreport.submitted) {
           submitted++;
         }
@@ -406,8 +414,6 @@ export default function CompetitionIndex(props: {
   }
 
   useInterval(() => loadMatches(true), 5000);
-
-  
 
   function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
     if (!comp?._id) return;
@@ -937,7 +943,10 @@ export default function CompetitionIndex(props: {
                               <div className="w-full flex flex-row items-center space-x-2">
                                 {match.reports.map((reportId) => {
                                   const report = reportsById[reportId];
-                                  if (!report) return <></>;
+
+                                  if (!report) return (
+                                    <MdErrorOutline size={24} />
+                                  );
 
                                   const submitted = report.submitted;
                                   const mine =
@@ -951,19 +960,16 @@ export default function CompetitionIndex(props: {
                                     : "bg-slate-500";
                                   color = ours ? !report.submitted ? "bg-purple-500" : "bg-purple-300" : color;
 
-                                  if (!report) return <></>;
-
                                   const timeSinceCheckIn = report.checkInTimestamp && (new Date().getTime() - new Date(report.checkInTimestamp as any).getTime()) / 1000;
                               
                                   return (
                                     <Link
                                       href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
                                       key={reportId}
-                                      className={`${color} ${
-                                        mine && !submitted
-                                          ? "border-4"
-                                          : "border-2"
-                                      } ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
+                                      className={`${color} ${mine && !submitted ? "border-4": "border-2"} 
+                                        ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
+                                        rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`
+                                      }
                                     >
                                       <h1>{report.robotNumber}</h1>
                                     </Link>

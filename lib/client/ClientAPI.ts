@@ -65,7 +65,7 @@ export default class ClientAPI {
       return await this.request("/find", {
         collection: "users",
         query: { _id: id },
-      });
+      }).catch(() => fallback);
     }
     catch(e) {
       if (fallback)
@@ -332,8 +332,14 @@ export default class ClientAPI {
     }
   }
 
-  async allCompetitionMatches(compId: string | undefined) {
-    return await this.request("/allCompetitionMatches", { compId: compId });
+  async allCompetitionMatches(compId: string | undefined, fallback: Match[] | undefined = undefined) {
+    try {
+      return await this.request("/allCompetitionMatches", { compId: compId });
+    } catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
   async matchReports(matchId: string | undefined) {
