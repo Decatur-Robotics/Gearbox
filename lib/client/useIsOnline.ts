@@ -8,18 +8,21 @@ const api = new ClientAPI("gearboxiscool");
 export default function useIsOnline() {
   const [isOnline, setIsOnline] = useState(true);
 
-  function updateOnlineStatus() {
+  async function updateOnlineStatus() {
     // Don't check if we just checked, even if it was in another useIsOnline hook
-    const lastIsOnlineCheck = localStorage.getItem("lastIsOnlineCheck");
+    const lastIsOnlineCheck = localStorage.getItem("lastIsOnlineChecTime");
     if (lastIsOnlineCheck && Date.now() - parseInt(lastIsOnlineCheck) < 5000) {
-      return;
+      return localStorage.getItem("lastIsOnlineCheckResult") == "true";
     }
 
-    api.ping()
-      .then(() => setIsOnline(true))
-      .catch(() => setIsOnline(false));
+    let online = false;
+    await api.ping()
+      .then(() => online = true)
+      .catch(() => {});
 
-    localStorage.setItem("lastIsOnlineCheck", Date.now().toString());
+    setIsOnline(online);
+    localStorage.setItem("lastIsOnlineCheckTime", Date.now().toString());
+    localStorage.setItem("lastIsOnlineCheckResult", Date.now().toString());
   }
 
   useEffect(() => {

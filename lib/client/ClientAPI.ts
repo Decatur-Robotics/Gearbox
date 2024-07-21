@@ -60,7 +60,10 @@ export default class ClientAPI {
     
     return await rawResponse.json();
   }
-
+  
+  /**
+   * @param fallback only use if you are just a fetching a single user. Using fallback for many users will take a long time.
+   */
   async findUserById(id: string | undefined, fallback: User | undefined = undefined): Promise<User> {
     try {
       return await this.request("/find", {

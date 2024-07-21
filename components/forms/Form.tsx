@@ -14,21 +14,49 @@ import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
+import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
+import Loading from "../Loading";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Form(props: { report: Report, layout: FormLayout<QuantData>, fieldImagePrefix: string }) {
+export default function Form(props: { report: Report, layout: FormLayout<QuantData>, fieldImagePrefix: string, compId?: string | undefined }) {
   const { session, status } = useCurrentSession();
 
   const [page, setPage] = useState(0);
   const [formData, setFormData] = useState<QuantData>(props.report?.data);
   const [syncing, setSyncing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const alliance = props.report?.color;
 
   async function submitForm() {
-    await api.submitForm(props.report?._id, formData, session?.user?._id);
-    location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+    setSubmitting(true);
+
+    try {
+      await api.submitForm(props.report?._id, formData, session?.user?._id);
+      if (location.href.includes("offline"))
+        location.href = `/offline/${props.compId}`;
+      else
+        location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+    }
+    catch (e) {
+      console.error(e);
+
+      if (props.compId) {
+        updateCompInLocalStorage(props.compId, (comp) => {
+          const report = comp.quantReports[props.report._id ?? ""]
+
+          report.data = formData;
+          report.submitted = true;
+
+          return comp;
+        });
+
+        location.href = `/offline/${props.compId}`;
+      }
+
+      setSubmitting(false);
+    }
   }
 
   const sync = async () => {
@@ -170,8 +198,8 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
         {
           index === layout.length - 1 && (<>
             <hr className="w-full border-slate-700 border-2"></hr>
-            <button className="btn btn-wide btn-primary " onClick={submitForm}>
-              Submit
+            <button className={`btn btn-wide btn-${submitting ? "disabled" : "primary"}`} onClick={submitForm}>
+              {submitting ? <Loading bg="" size={8} /> : "Submit"}
             </button>
             </>)
         }

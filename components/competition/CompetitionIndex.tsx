@@ -39,6 +39,8 @@ import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
+import { BSON } from "bson";
+import useIsOnline from "@/lib/client/useIsOnline";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -123,6 +125,8 @@ export default function CompetitionIndex(props: {
 
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
 
+  const isOnline = useIsOnline();
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -169,15 +173,7 @@ export default function CompetitionIndex(props: {
     if (matches.length === 0)
       setNoMatches(true);
     
-    matches.sort((a, b) => {
-      if (a.number < b.number) {
-        return -1;
-      }
-      if (a.number > b.number) {
-        return 1;
-      }
-      return 0;
-    });
+    matches.sort((a, b) => a.number - b.number);
 
     setQualificationMatches(
       matches.filter((match) => match.type === MatchType.Qualifying)
@@ -261,9 +257,16 @@ export default function CompetitionIndex(props: {
       }
 
       const newUsersById: { [key: string]: User } = {};
+      const promises: Promise<any>[] = [];
       for (const userId of team.users) {
-        newUsersById[userId] = await api.findUserById(userId, fallbackData?.users[userId]);
+        promises.push(api.findUserById(userId, fallbackData?.users[userId]).then((user) => {
+          if (user) {
+            newUsersById[userId] = user;
+          }
+        }));
       }
+
+      await Promise.all(promises);
 
       setUsersById(newUsersById);
       setLoadingUsers(false);
@@ -341,13 +344,31 @@ export default function CompetitionIndex(props: {
   };
 
   const createMatch = async () => {
-    await api.createMatch(
-      comp?._id,
-      Number(matchNumber),
-      MatchType.Qualifying,
-      blueAlliance as number[],
-      redAlliance as number[]
-    );
+    try {
+      await api.createMatch(
+        comp?._id,
+        Number(matchNumber),
+        MatchType.Qualifying,
+        blueAlliance as number[],
+        redAlliance as number[]
+      );
+    } catch (e) {
+      console.error(e);
+
+      // Save match to local storage
+      const savedComp = getSavedCompetition();
+      if (!savedComp) return;
+
+      const match = new Match(Number(matchNumber), "", "", Date.now(), MatchType.Qualifying, 
+        blueAlliance as number[], redAlliance as number[]);
+      match._id = new BSON.ObjectId().toHexString();
+
+      savedComp.matches[match._id] = match;
+      savedComp?.comp.matches.push(match._id);
+
+      saveCompToLocalStorage(savedComp);
+    }
+
     location.reload();
   };
 
@@ -954,10 +975,8 @@ export default function CompetitionIndex(props: {
                                   );
 
                                   const submitted = report.submitted;
-                                  const mine =
-                                    report.user === session.user?._id;
-                                  const ours =
-                                    report.robotNumber === team?.number;
+                                  const mine = session && report.user === session.user?._id;
+                                  const ours = report.robotNumber === team?.number;
                                   let color = !submitted
                                     ? report.color === AllianceColor.Red
                                       ? "bg-red-500"
@@ -969,7 +988,10 @@ export default function CompetitionIndex(props: {
                               
                                   return (
                                     <Link
-                                      href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
+                                      href={isOnline 
+                                        ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`
+                                        : `/offline/${comp?._id}/quant/${reportId}`
+                                      }
                                       key={reportId}
                                       className={`${color} ${mine && !submitted ? "border-4": "border-2"} 
                                         ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
@@ -1032,7 +1054,10 @@ export default function CompetitionIndex(props: {
                               }
                               </div>
                             <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter].slackId && "-translate-y-1"}`} 
-                              href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}>
+                              href={isOnline 
+                                      ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`
+                                      : `/offline/${comp?._id}/subjective/${match._id}`
+                              }>
                               Add Subjective Report ({`${match.subjectiveReports ? match.subjectiveReports.length : 0} submitted, 
                                 ${match.subjectiveReportsCheckInTimestamps 
                                   ? getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps).length 
