@@ -5,6 +5,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useIsOnline from "@/lib/client/useIsOnline";
 import { SavedCompetition, League, Team, Competition } from "@/lib/Types";
 import { useState, ChangeEvent } from "react";
+import Loading from "../Loading";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -24,6 +25,7 @@ export default function DownloadModal(props: {
     : false;
 
   const [uploadedComp, setUploadedComp] = useState<SavedCompetition | undefined>(undefined);
+  const [uploadingToCloud, setUploadingToCloud] = useState(false);
 
   const isOnline = useIsOnline();
   
@@ -32,7 +34,7 @@ export default function DownloadModal(props: {
     download(`${team?.league ?? League.FRC}${team?.number}-${comp?.name}.json`, JSON.stringify(savedComp), "application/json");
   }
 
-  function uploadComp(e: ChangeEvent<HTMLInputElement>) {
+  function uploadCompFromFile(e: ChangeEvent<HTMLInputElement>) {
     console.log("Uploading comp...");
     const file = e.target.files?.[0];
 
@@ -57,6 +59,20 @@ export default function DownloadModal(props: {
     props.setSavedComp(current);
   }
 
+  function uploadCompToCloud() {
+    const savedComp = props.getSavedComp();
+    if (!savedComp) return;
+
+    setUploadingToCloud(true);
+    try {
+      api.uploadSavedComp(savedComp);
+    }
+    catch (e) {
+      console.error(e);
+    }
+    setUploadingToCloud(false);
+  }
+
   return (
     <dialog id="download-modal" className="modal" open={props.open}>
       <div className="modal-box">
@@ -67,15 +83,15 @@ export default function DownloadModal(props: {
         </button>
         <div className="divider" />
         <h1 className="text-xl">Import Competition Reports</h1>
-        <input onChange={uploadComp} id="file" name="file" type="file" accept=".json" className="file-input w-full" />
+        <input onChange={uploadCompFromFile} id="file" name="file" type="file" accept=".json" className="file-input w-full" />
         <br />
         <button onClick={importComp} className={`btn btn-${uploadedComp ? "primary" : "disabled"} mt-2 w-full`}>
           Import{uploadedComp && ` ${uploadedComp.team?.league ?? "FRC"} ${uploadedComp.team?.number} - ${uploadedComp.comp.name}`}
         </button>
         <div className="divider" />
         { isManager &&
-          <button className={`btn btn-${isOnline ? "primary" : "disabled"}`}>
-            Sync to cloud
+          <button onClick={uploadCompToCloud} className={`btn btn-${isOnline && !uploadingToCloud ? "primary" : "disabled"}`}>
+            {!uploadingToCloud ? "Upload local data" : <Loading />}
           </button>
         }
       </div>

@@ -15,9 +15,10 @@ import {
   DbPicklist,
   SubjectiveReport,
   League,
+  SavedCompetition,
 } from "../Types";
 import { GameId } from "./GameId";
-import { updateCompInLocalStorage } from "./offlineUtils";
+import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
 import { ObjectId } from 'bson';
 
 export enum ClientRequestMethod {
@@ -285,13 +286,21 @@ export default class ClientAPI {
   async assignScouters(
     teamId: string | undefined,
     compId: string | undefined,
-    shuffle: boolean = false
+    shuffle: boolean = false,
+    fallback: SavedCompetition | undefined = undefined
   ) {
-    return await this.request("/assignScouters", {
-      teamId: teamId,
-      compId: compId,
-      shuffle: shuffle,
-    });
+    try {
+      return await this.request("/assignScouters", {
+        teamId: teamId,
+        compId: compId,
+        shuffle: shuffle,
+      });
+    } catch(e) {
+      if (fallback) {
+        updateCompInLocalStorage(fallback.comp._id ?? "", assignScoutersOffline);
+        return fallback;
+      }
+    }
   }
 
   async submitForm(
@@ -527,6 +536,10 @@ export default class ClientAPI {
         return fallback;
       throw e;
     }
+  }
+
+  async uploadSavedComp(save: SavedCompetition): Promise<void> {
+    return await this.request("/uploadSavedComp", { save });
   }
 
 }

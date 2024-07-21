@@ -1,5 +1,5 @@
 import { Competition, Match, Pitreport, Report, SavedCompetition } from "../Types";
-import { removeDuplicates } from "../client/ClientUtils";
+import { removeDuplicates, rotateArray } from "./ClientUtils";
 
 export function saveCompToLocalStorage(comp: SavedCompetition) {
   localStorage.setItem(`comp-${comp.comp._id}`, JSON.stringify(comp));
@@ -114,4 +114,30 @@ export function mergeSavedComps(original: SavedCompetition, incoming: SavedCompe
 
   original.users = { ...original.users, ...incoming.users };
   original.subjectiveReports = { ...original.subjectiveReports, ...incoming.subjectiveReports };
+}
+
+/**
+ * Assigns scouters in place. Works the same as @see assignScoutersToMatches but can be done offline.
+ */
+export function assignScoutersOffline(save: SavedCompetition) {
+  const { team, matches, quantReports } = save;
+
+  let scouters = team.scouters;
+  let subjectiveScouters = team.subjectiveScouters;
+
+  for (const match of Object.values(matches)) {
+    const subjectiveScouter = subjectiveScouters.length > 0 ? subjectiveScouters[0] : undefined;
+    if (subjectiveScouter) {
+      match.subjectiveScouter = subjectiveScouter;
+      rotateArray(subjectiveScouters);
+    }
+    
+    const reports = match.reports.map(r => quantReports[r]);
+    const scoutersForMatch = scouters.filter(id => !subjectiveScouters.includes(id)).slice(0, reports.length);
+    for (let i = 0; i < reports.length; i++) {
+      reports[i].user = scoutersForMatch[i];
+    }
+
+    rotateArray(scouters);
+  }
 }

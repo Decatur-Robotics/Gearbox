@@ -1,6 +1,7 @@
 import { Team, User } from "../Types";
 import { getDatabase, Collections } from "../MongoDB";
-import { GenerateSlug, RandomArrayValue } from "../Utils";
+import { GenerateSlug } from "../Utils";
+import { randomArrayValue } from "../client/ClientUtils";
 import { ObjectId } from "mongodb";
 
 const firstNameMaleURL = "https://www.randomlists.com/data/names-male.json";
@@ -30,7 +31,7 @@ async function fetchNames(): Promise<[string[], string[]]> {
 
 async function randomName(): Promise<string> {
   const [first, last] = await fetchNames();
-  return RandomArrayValue(first) + " " + RandomArrayValue(last);
+  return randomArrayValue(first) + " " + randomArrayValue(last);
 }
 
 export async function fakeUser(teamId: string | undefined): Promise<User> {

@@ -16,7 +16,7 @@ import { FaRobot } from "react-icons/fa";
 import ImageUpload from "@/components/forms/ImageUpload";
 import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
-import { makeObjSerializeable } from "@/lib/Utils";
+import { makeObjSerializeable } from "@/lib/client/ClientUtils";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 
 const api = new ClientAPI("gearboxiscool");

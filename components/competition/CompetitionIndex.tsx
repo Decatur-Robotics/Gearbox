@@ -308,7 +308,12 @@ export default function CompetitionIndex(props: {
 
   const assignScouters = async () => {
     setAssigningMatches(true);
-    const res = await api.assignScouters(team?._id, comp?._id, true);
+    const res = await api.assignScouters(team?._id, comp?._id, true, props.fallbackData);
+
+    if (props.fallbackData && res === props.fallbackData) {
+      location.reload();
+      return;
+    }
 
     if ((res.result as string).toLowerCase() !== "success") {
       alert(res.result);
@@ -1016,8 +1021,8 @@ export default function CompetitionIndex(props: {
                                           .includes(match.subjectiveScouter)) &&
                                           <div className="tooltip" data-tip="Scouting in progress"><Loading size={24}/></div>}
                                       { isManager && usersById[match.subjectiveScouter ?? ""]?.slackId
-                                        ? <button className="btn btn-link p-0 m-0" 
-                                            onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
+                                        ? <button className="text-primary hover:underline mb-1" 
+                                              onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
                                             Subjective Scouter: {usersById[match.subjectiveScouter].name}
                                           </button>
                                         : <div>Subjective Scouter: {usersById[match.subjectiveScouter ?? ""].name}</div>
