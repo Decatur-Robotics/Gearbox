@@ -89,10 +89,10 @@ export default function CompetitionIndex(props: {
   const [subjectiveReportsById, setSubjectiveReportsById] = useState<{ [key: string]: SubjectiveReport }>({});
 
   //loading states
-  const [loadingMatches, setLoadingMatches] = useState(true);
-  const [loadingReports, setLoadingReports] = useState(true);
-  const [loadingScoutStats, setLoadingScoutStats] = useState(true);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [loadingScoutStats, setLoadingScoutStats] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [submissionRate, setSubmissionRate] = useState(0);
   const [submittedReports, setSubmittedReports] = useState<number | undefined>(
@@ -152,7 +152,7 @@ export default function CompetitionIndex(props: {
     if (!fallbackData)
       return;
 
-    console.log("Initially loading fallback data...");
+    console.log("Initially loading fallback data:", fallbackData);
 
     if (!matches)
       setMatches(fallbackData.matches);
@@ -164,9 +164,12 @@ export default function CompetitionIndex(props: {
       setSubjectiveReports(fallbackData.subjectiveReports);
     if (!usersById)
       setUsersById(fallbackData.users);
-  }, [fallbackData]);
+  }, [props.fallbackData?.comp._id]);
 
   useEffect(() => {
+    if (!reports)
+      return;
+
     let matchesAssigned = true;
 
     for (const report of reports) {
@@ -188,13 +191,19 @@ export default function CompetitionIndex(props: {
     if (matches.length === 0)
       matches = fallbackData?.matches ?? [];
 
-    if (matches.length === 0)
+    if (!matches || matches.length === 0) {
       setNoMatches(true);
+
+      if (!silent)
+        setLoadingMatches(false);
+
+      return;
+    }
     
-    matches.sort((a, b) => a.number - b.number);
+    matches?.sort((a, b) => a.number - b.number);
 
     setQualificationMatches(
-      matches.filter((match) => match.type === MatchType.Qualifying)
+      matches?.filter((match) => match.type === MatchType.Qualifying)
     );
 
     setMatches(matches);
@@ -241,19 +250,20 @@ export default function CompetitionIndex(props: {
       false,
       fallbackData?.quantReports
     );
-    if (newReports.length === 0)
+
+    if (!newReports || newReports.length === 0)
       newReports = fallbackData?.quantReports ?? [];
 
     setReports(newReports);
 
-    const newReportId: { [key: string]: Report } = {};
+    const newReportsById: { [key: string]: Report } = {};
     newReports?.forEach((report) => {
       if (!report._id) {
         return;
       }
-      newReportId[report._id] = report;
+      newReportsById[report._id] = report;
     });
-    setReportsById(newReportId);
+    setReportsById(newReportsById);
 
     if (!silent)
       setLoadingReports(false);
@@ -419,7 +429,7 @@ export default function CompetitionIndex(props: {
   function toggleShowSubmittedMatches() {
     setShowSubmittedMatches(!showSubmittedMatches);
 
-    loadMatches();
+    loadMatches(matches !== undefined);
   }
 
   const [exportPending, setExportPending] = useState(false);

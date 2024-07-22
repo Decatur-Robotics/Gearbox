@@ -12,9 +12,8 @@ export default function useOfflineCompFromRouter() {
   const [match, setMatch] = useState<Match | undefined>(undefined);
 
   useEffect(() => {
-
-    if (compId) {
-      console.log("Loading offline comp from router");
+    if (compId && !savedComp) {
+      console.log("Loading offline comp from router", router.query);
       
       const comp = getCompFromLocalStorage(compId as string);
       if (!comp)

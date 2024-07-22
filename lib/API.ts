@@ -104,11 +104,8 @@ export namespace API {
       //@ts-ignore
       //prettier-ignore
       if (!req.headers.referer?.includes("/event/") && req.headers.referer?.split("/")[3].length > 0) {
-        const session = await getServerSession(req, res, AuthenticationOptions);
-
         if (
-          req.headers[GearboxHeader]?.toString() !== process.env.API_KEY ||
-          !session
+          req.headers[GearboxHeader]?.toString() !== process.env.API_KEY
         ) {
           new UnauthorizedError(res);
         }
