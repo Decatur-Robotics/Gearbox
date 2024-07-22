@@ -14,7 +14,7 @@ export default function OfflineSubjectiveReport() {
 
   return (
     <Container requireAuthentication={false}>
-      <SubjectiveReportForm match={match} />
+      <SubjectiveReportForm match={match} compId={savedComp?.comp._id} />
     </Container>
   );
 }

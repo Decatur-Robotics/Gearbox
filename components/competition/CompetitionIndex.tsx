@@ -149,6 +149,24 @@ export default function CompetitionIndex(props: {
   };
 
   useEffect(() => {
+    if (!fallbackData)
+      return;
+
+    console.log("Initially loading fallback data...");
+
+    if (!matches)
+      setMatches(fallbackData.matches);
+    if (!reports)
+      setReports(fallbackData.quantReports);
+    if (!pitreports)
+      setPitreports(fallbackData.pitReports);
+    if (!subjectiveReports)
+      setSubjectiveReports(fallbackData.subjectiveReports);
+    if (!usersById)
+      setUsersById(fallbackData.users);
+  }, [fallbackData]);
+
+  useEffect(() => {
     let matchesAssigned = true;
 
     for (const report of reports) {
@@ -273,7 +291,9 @@ export default function CompetitionIndex(props: {
     };
 
     const loadPitreports = async () => {
-      setLoadingPitreports(true);
+      if (pitreports.length === 0)
+       setLoadingPitreports(true);
+  
       if (!comp?.pitReports) {
         return;
       }
@@ -298,8 +318,8 @@ export default function CompetitionIndex(props: {
 
     if (!assigningMatches) {
       loadUsers();
-      loadMatches();
-      loadReports();
+      loadMatches(matches !== undefined);
+      loadReports(reports !== undefined);
       loadPitreports();
     }
 
@@ -1053,7 +1073,7 @@ export default function CompetitionIndex(props: {
                                   : <div>No subjective scouter assigned</div>
                               }
                               </div>
-                            <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter].slackId && "-translate-y-1"}`} 
+                            <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`} 
                               href={isOnline 
                                       ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`
                                       : `/offline/${comp?._id}/subjective/${match._id}`
@@ -1101,8 +1121,8 @@ export default function CompetitionIndex(props: {
                     </div>
                   ) : (
                     pitreports
-                      .sort((a, b) => a.teamNumber - b.teamNumber)
-                      .map((report) => (
+                      ?.sort((a, b) => a.teamNumber - b.teamNumber)
+                      ?.map((report) => (
                         <Link
                           className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
                           href={window.location.href + `/pit/${report._id}`}

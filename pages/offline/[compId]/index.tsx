@@ -7,9 +7,10 @@ export default function OfflineCompetitionPage() {
 
   return (
     <Container requireAuthentication={false}>
-      { savedComp &&
-          <CompetitionIndex team={savedComp.team} seasonSlug={savedComp.seasonSlug} competition={savedComp.comp} 
+      { savedComp 
+          ? <CompetitionIndex team={savedComp.team} seasonSlug={savedComp.seasonSlug} competition={savedComp.comp} 
             fallbackData={savedComp}/>
+          : <div>Loading...</div>
       }
     </Container>
   )

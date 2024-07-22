@@ -12,7 +12,10 @@ export default function useOfflineCompFromRouter() {
   const [match, setMatch] = useState<Match | undefined>(undefined);
 
   useEffect(() => {
+
     if (compId) {
+      console.log("Loading offline comp from router");
+      
       const comp = getCompFromLocalStorage(compId as string);
       if (!comp)
         return;
@@ -25,7 +28,7 @@ export default function useOfflineCompFromRouter() {
       if (matchId)
         setMatch(comp.matches[matchId as string]);
     }
-  }, [compId, quantReportId, matchId]);
+  });
 
   return { savedComp, quantReport, match };
 }
