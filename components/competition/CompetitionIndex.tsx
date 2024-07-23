@@ -34,7 +34,7 @@ import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, download, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
-import { saveCompToLocalStorage } from "@/lib/client/offlineUtils";
+import { saveCompToLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
@@ -49,6 +49,7 @@ export default function CompetitionIndex(props: {
   competition: Competition | undefined,
   seasonSlug: string | undefined,
   fallbackData?: SavedCompetition
+  overrideIsManager?: boolean
 }) {
   const team = props.team;
   const seasonSlug = props.seasonSlug;
@@ -65,8 +66,8 @@ export default function CompetitionIndex(props: {
 
   const { session, status } = useCurrentSession();
   const isManager = session?.user?._id
-    ? team?.owners.includes(session.user?._id)
-    : false;
+    ? team?.owners.includes(session.user?._id) || props.overrideIsManager
+    : false || props.overrideIsManager;
 
   const [showSettings, setShowSettings] = useState(false);
   const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
@@ -147,24 +148,6 @@ export default function CompetitionIndex(props: {
         });
       });
   };
-
-  useEffect(() => {
-    if (!fallbackData)
-      return;
-
-    console.log("Initially loading fallback data:", fallbackData);
-
-    if (!matches)
-      setMatches(fallbackData.matches);
-    if (!reports)
-      setReports(fallbackData.quantReports);
-    if (!pitreports)
-      setPitreports(fallbackData.pitReports);
-    if (!subjectiveReports)
-      setSubjectiveReports(fallbackData.subjectiveReports);
-    if (!usersById)
-      setUsersById(fallbackData.users);
-  }, [props.fallbackData?.comp._id]);
 
   useEffect(() => {
     if (!reports)
@@ -301,10 +284,12 @@ export default function CompetitionIndex(props: {
     };
 
     const loadPitreports = async () => {
+      console.log("Loading pit reports...");
       if (pitreports.length === 0)
        setLoadingPitreports(true);
   
       if (!comp?.pitReports) {
+        setLoadingPitreports(false);
         return;
       }
       const newPitReports: Pitreport[] = [];
@@ -338,6 +323,24 @@ export default function CompetitionIndex(props: {
       regeneratePitReports();
     }
   }, [assigningMatches]);
+
+  useEffect(() => {
+    if (!fallbackData)
+      return;
+
+    console.log("Initially loading fallback data:", fallbackData);
+
+    if (!matches)
+      setMatches(fallbackData.matches);
+    if (!reports)
+      setReports(fallbackData.quantReports);
+    if (!pitreports)
+      setPitreports(fallbackData.pitReports);
+    if (!subjectiveReports)
+      setSubjectiveReports(fallbackData.subjectiveReports);
+    if (!usersById)
+      setUsersById(fallbackData.users);
+  }, [props.fallbackData?.comp._id]);
 
   const assignScouters = async () => {
     setAssigningMatches(true);
@@ -482,9 +485,28 @@ export default function CompetitionIndex(props: {
   }
 
   function addTeam() {
+    console.log("Adding pit report for team", teamToAdd);
     if (!teamToAdd || !comp?._id) return;
 
-    api.createPitReportForTeam(teamToAdd, comp?._id).then(() => {
+    api.createPitReportForTeam(teamToAdd, comp?._id)
+    .catch((e) => {
+      console.error(e);
+
+      // Save pit report to local storage
+      if (!comp._id)
+        return;
+
+      console.log("Adding pit report to local storage");
+      updateCompInLocalStorage(comp?._id, (comp) => {
+        const pitreport = {
+          ...new Pitreport(teamToAdd, games[comp.comp.gameId].createPitReportData()),
+          _id: new BSON.ObjectId().toHexString()
+        };
+        comp.pitReports[teamToAdd] = pitreport;
+        comp.comp.pitReports.push(pitreport._id!);
+      });
+    })
+    .finally(() => {
       location.reload();
     });
   }
@@ -1127,7 +1149,7 @@ export default function CompetitionIndex(props: {
                       <BsGearFill
                         className="animate-spin-slow"
                         size={75}
-                      ></BsGearFill>
+                      />
                     </div>
                   ) : (
                     pitreports
@@ -1135,7 +1157,7 @@ export default function CompetitionIndex(props: {
                       ?.map((report) => (
                         <Link
                           className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
-                          href={window.location.href + `/pit/${report._id}`}
+                          href={window.location.href + `/pit/${window.location.href.includes("offline") ? report.teamNumber : report._id}`}
                           key={report._id}
                         >
                           <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">

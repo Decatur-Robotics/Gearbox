@@ -1,15 +1,16 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { SavedCompetition, Report, Match } from "../Types";
+import { SavedCompetition, Report, Match, Pitreport } from "../Types";
 import { getCompFromLocalStorage } from "./offlineUtils";
 
 export default function useOfflineCompFromRouter() {
   const router = useRouter();
-  const { compId, quantReportId, matchId } = router.query;
+  const { compId, quantReportId, matchId, teamNumber } = router.query;
 
   const [savedComp, setSavedComp] = useState<SavedCompetition | undefined>(undefined);
   const [quantReport, setQuantReport] = useState<Report | undefined>(undefined);
   const [match, setMatch] = useState<Match | undefined>(undefined);
+  const [pitReport, setPitReport] = useState<Pitreport | undefined>(undefined);
 
   useEffect(() => {
     if (compId && !savedComp) {
@@ -26,8 +27,11 @@ export default function useOfflineCompFromRouter() {
 
       if (matchId)
         setMatch(comp.matches[matchId as string]);
+
+      if (teamNumber)
+        setPitReport(comp.pitReports[+teamNumber]);
     }
   });
 
-  return { savedComp, quantReport, match };
+  return { savedComp, quantReport, match, pitReport };
 }

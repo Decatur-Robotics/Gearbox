@@ -9,7 +9,7 @@ export default function OfflineCompetitionPage() {
     <Container requireAuthentication={false}>
       { savedComp 
           ? <CompetitionIndex team={savedComp.team} seasonSlug={savedComp.seasonSlug} competition={savedComp.comp} 
-            fallbackData={savedComp}/>
+            fallbackData={savedComp} overrideIsManager={true} />
           : <div>Loading...</div>
       }
     </Container>
