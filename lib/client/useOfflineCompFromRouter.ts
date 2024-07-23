@@ -5,7 +5,7 @@ import { getCompFromLocalStorage } from "./offlineUtils";
 
 export default function useOfflineCompFromRouter() {
   const router = useRouter();
-  const { compId, quantReportId, matchId, teamNumber } = router.query;
+  const { compId, quantReportId, matchId, pitReportId } = router.query;
 
   const [savedComp, setSavedComp] = useState<SavedCompetition | undefined>(undefined);
   const [quantReport, setQuantReport] = useState<Report | undefined>(undefined);
@@ -28,8 +28,8 @@ export default function useOfflineCompFromRouter() {
       if (matchId)
         setMatch(comp.matches[matchId as string]);
 
-      if (teamNumber)
-        setPitReport(comp.pitReports[+teamNumber]);
+      if (pitReportId)
+        setPitReport(comp.pitReports[pitReportId as string]);
     }
   });
 

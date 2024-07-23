@@ -378,7 +378,7 @@ export class SavedCompetition {
   matches: { [_id: string]: Match };
   quantReports: { [_id: string]: Report<QuantData> };
   subjectiveReports: { [_id: string]: SubjectiveReport };
-  pitReports: { [_id: number]: Pitreport<PitReportData> };
+  pitReports: { [_id: string]: Pitreport<PitReportData> };
 
   users: { [_id: string]: User };
 

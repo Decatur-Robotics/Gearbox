@@ -128,6 +128,31 @@ export default function CompetitionIndex(props: {
 
   const isOnline = useIsOnline();
 
+  useEffect(() => {
+    if (!fallbackData) {
+      console.log("No fallback data provided");
+
+      return;
+    }
+
+    console.log("Initially loading fallback data:", fallbackData);
+
+    if (!matches)
+      setMatches(fallbackData.matches);
+    if (!reports)
+      setReports(fallbackData.quantReports);
+    if (!pitreports) {
+      setPitreports(fallbackData.pitReports);
+      setLoadingPitreports(false);
+    }
+    if (!subjectiveReports)
+      setSubjectiveReports(fallbackData.subjectiveReports);
+    if (!usersById) {
+      setUsersById(fallbackData.users);
+      setLoadingUsers(false);
+    }
+  }, [props.fallbackData?.comp._id]);
+
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -260,6 +285,8 @@ export default function CompetitionIndex(props: {
 
   useEffect(() => {
     const loadUsers = async () => {
+      console.log("Loading users...");
+
       if (Object.keys(usersById).length === 0)
         setLoadingUsers(true);
 
@@ -284,7 +311,7 @@ export default function CompetitionIndex(props: {
     };
 
     const loadPitreports = async () => {
-      console.log("Loading pit reports...");
+      console.log("Loading pit reports... Current:", pitreports);
       if (pitreports.length === 0)
        setLoadingPitreports(true);
   
@@ -294,18 +321,25 @@ export default function CompetitionIndex(props: {
       }
       const newPitReports: Pitreport[] = [];
       let submitted = 0;
+      const promises: Promise<any>[] = [];
       for (const pitreportId of comp?.pitReports) {
-        const pitreport = await api.findPitreportById(pitreportId).catch((e) => fallbackData?.pitReports.find((r) => r._id === pitreportId));
+        promises.push(api.findPitreportById(pitreportId)
+          .catch((e) => fallbackData?.pitReports.find((r) => r._id === pitreportId))
+          .then((pitreport) => {
+            if (!pitreport) {
+              return;
+            }
 
-        if (!pitreport) {
-          continue;
-        }
-
-        if (pitreport.submitted) {
-          submitted++;
-        }
-        newPitReports.push(pitreport);
+            if (pitreport.submitted) {
+              submitted++;
+            }
+            newPitReports.push(pitreport);
+          }));
       }
+
+      await Promise.all(promises);
+
+      console.log("Loaded pit reports:", newPitReports);
       setSubmittedPitreports(submitted);
       setPitreports(newPitReports);
       setLoadingPitreports(false);
@@ -323,24 +357,6 @@ export default function CompetitionIndex(props: {
       regeneratePitReports();
     }
   }, [assigningMatches]);
-
-  useEffect(() => {
-    if (!fallbackData)
-      return;
-
-    console.log("Initially loading fallback data:", fallbackData);
-
-    if (!matches)
-      setMatches(fallbackData.matches);
-    if (!reports)
-      setReports(fallbackData.quantReports);
-    if (!pitreports)
-      setPitreports(fallbackData.pitReports);
-    if (!subjectiveReports)
-      setSubjectiveReports(fallbackData.subjectiveReports);
-    if (!usersById)
-      setUsersById(fallbackData.users);
-  }, [props.fallbackData?.comp._id]);
 
   const assignScouters = async () => {
     setAssigningMatches(true);
@@ -1157,7 +1173,7 @@ export default function CompetitionIndex(props: {
                       ?.map((report) => (
                         <Link
                           className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
-                          href={window.location.href + `/pit/${window.location.href.includes("offline") ? report.teamNumber : report._id}`}
+                          href={window.location.href + `/pit/${report._id}`}
                           key={report._id}
                         >
                           <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">

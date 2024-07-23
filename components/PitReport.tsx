@@ -36,7 +36,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     api.updatePitreport(props.pitReport?._id, {
       ...report,
       submitted: true,
-      submitter: session.user?._id
+      submitter: session?.user?._id
     })
     .catch((e) => {
       console.error("Error submitting pitreport", e);
@@ -44,7 +44,12 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
       if (!props.compId) return;
 
       updateCompInLocalStorage(props.compId, (comp) => {
-        comp.pitReports[pitreport.teamNumber] = {
+        if (!pitreport._id) {
+          console.error("Pitreport has no _id");
+          return;
+        }
+
+        comp.pitReports[pitreport._id] = {
           ...pitreport,
           submitted: true,
           submitter: session?.user?._id

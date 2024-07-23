@@ -5,6 +5,7 @@ import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
 export default function OfflinePitReport() {
   const { savedComp, pitReport } = useOfflineCompFromRouter();
 
+  console.log("Pit Report", pitReport);
   return (
     <Container requireAuthentication={false}>
       { savedComp && pitReport
