@@ -39,6 +39,8 @@ declare global {
 
       NEXT_PUBLIC_FORCE_OFFLINE_MODE: string;
 
+      NEXT_PUBLIC_BUILD_TIME: string;
+
       NODE_ENV: "development" | "production";
     }
   }

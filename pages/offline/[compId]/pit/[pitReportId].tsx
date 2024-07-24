@@ -9,7 +9,7 @@ export default function OfflinePitReport() {
   return (
     <Container requireAuthentication={false}>
       { savedComp && pitReport
-          ? <PitReportForm pitReport={pitReport} layout={savedComp.game.pitReportLayout} />
+          ? <PitReportForm pitReport={pitReport} layout={savedComp.game.pitReportLayout} compId={savedComp.comp._id} />
           : <div>Loading...</div>
       }
     </Container>

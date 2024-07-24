@@ -8,7 +8,7 @@ import Flex from "./Flex";
 import Checkbox from "./forms/Checkboxes";
 import ImageUpload from "./forms/ImageUpload";
 import Card from "./Card";
-import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
+import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -33,6 +33,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     // Remove _id from object
     const { _id, ...report } = pitreport;
 
+    console.log("Submitting pitreport", report);
     api.updatePitreport(props.pitReport?._id, {
       ...report,
       submitted: true,
@@ -41,13 +42,15 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     .catch((e) => {
       console.error("Error submitting pitreport", e);
 
-      if (!props.compId) return;
+      if (!props.compId || !pitreport._id) return;
 
       updateCompInLocalStorage(props.compId, (comp) => {
         if (!pitreport._id) {
           console.error("Pitreport has no _id");
           return;
         }
+
+        console.log("Updating pitreport in local storage");
 
         comp.pitReports[pitreport._id] = {
           ...pitreport,
@@ -57,10 +60,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
       });
     })
     .finally(() => {
-      location.href = location.href.substring(
-        0,
-        location.href.lastIndexOf("/pit")
-      );
+      location.href = location.href.substring(0, location.href.lastIndexOf("/pit"));
     });
   }
 
