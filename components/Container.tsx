@@ -209,7 +209,7 @@ export default function Container(props: ContainerProps) {
                   <button className="btn btn-primary sm:mr-4">Sign In</button>
                 </a>
               ) : (
-                <Link href="offline" className="btn btn-ghost flex flex-row sm:mr-4">
+                <Link href="/offline" className="btn btn-ghost flex flex-row sm:mr-4">
                   <div className="tooltip tooltip-left" data-tip="You are offline.">
                     <RiWifiOffLine className="text-2xl" />
                   </div>

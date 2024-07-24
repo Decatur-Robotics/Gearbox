@@ -6,18 +6,10 @@ import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { useCallback, useState } from "react";
-import Checkbox, {
-} from "@/components/forms/Checkboxes";
-import ClientAPI from "@/lib/client/ClientAPI";
-import Flex from "@/components/Flex";
-import Card from "@/components/Card";
-import { FaRobot } from "react-icons/fa";
-import ImageUpload from "@/components/forms/ImageUpload";
 import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
 import { makeObjSerializeable } from "@/lib/client/ClientUtils";
-import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
+import { FormLayout } from "@/lib/Layout";
 import PitReportForm from "@/components/PitReport";
 
 export default function PitreportForm(props: { pitreport: Pitreport, layout: FormLayout<PitReportData> }) {
