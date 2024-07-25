@@ -1,11 +1,12 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { download } from "@/lib/client/ClientUtils";
-import { mergeSavedComps } from "@/lib/client/offlineUtils";
+import { mergeSavedComps, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useIsOnline from "@/lib/client/useIsOnline";
-import { SavedCompetition, League, Team, Competition } from "@/lib/Types";
+import { SavedCompetition, League, Team, Competition, Report, Pitreport, SubjectiveReport } from "@/lib/Types";
 import { useState, ChangeEvent } from "react";
 import Loading from "../Loading";
+import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -73,6 +74,59 @@ export default function DownloadModal(props: {
     setUploadingToCloud(false);
   }
 
+  /**
+   * Untested because my laptop doesn't have a camera.
+   *  - Renato
+   */
+  function readQrCode(code: IDetectedBarcode[]) {
+    type QrData = {
+      quantReport?: Report,
+      pitReport?: Pitreport,
+      subjectiveReport?: SubjectiveReport
+    }
+
+    const data = code[0].rawValue;
+    const qrData = JSON.parse(data) as QrData;
+
+    if (!qrData.quantReport && !qrData.pitReport && !qrData.subjectiveReport) {
+      console.error("Invalid QR code data", qrData);
+      return;
+    }
+
+    if (!props.comp._id)
+      return;
+
+    updateCompInLocalStorage(props.comp._id, (comp) => {
+      if (qrData.quantReport) {
+        if (!qrData.quantReport._id) {
+          console.error("Quant report has no _id", qrData.quantReport);
+          return;
+        }
+
+        comp.quantReports[qrData.quantReport._id] = qrData.quantReport;
+      }
+      
+      if (qrData.pitReport) {
+        if (!qrData.pitReport._id) {
+          console.error("Pit report has no _id", qrData.pitReport);
+          return;
+        }
+
+        comp.pitReports[qrData.pitReport._id] = qrData.pitReport;
+      }
+
+      if (qrData.subjectiveReport) {
+        if (!qrData.subjectiveReport._id) {
+          console.error("Subjective report has no _id", qrData.subjectiveReport);
+          return;
+        }
+
+        comp.subjectiveReports[qrData.subjectiveReport._id] = qrData.subjectiveReport;
+        comp.matches[qrData.subjectiveReport.match].subjectiveReports.push(qrData.subjectiveReport._id);
+      }
+    })
+  }
+
   return (
     <dialog id="download-modal" className="modal" open={props.open}>
       <div className="modal-box">
@@ -90,10 +144,15 @@ export default function DownloadModal(props: {
         </button>
         <div className="divider" />
         { isManager &&
-          <button onClick={uploadCompToCloud} className={`btn btn-${isOnline && !uploadingToCloud ? "primary" : "disabled"}`}>
-            {!uploadingToCloud ? "Upload local data" : <Loading />}
-          </button>
+          <>
+            <button onClick={uploadCompToCloud} className={`btn btn-${isOnline && !uploadingToCloud ? "primary" : "disabled"}`}>
+              {!uploadingToCloud ? "Upload local data" : <Loading />}
+            </button>
+            <div className="divider" />
+          </>
         }
+        <h1 className="text-xl">Read QR Data</h1>
+        <Scanner onScan={readQrCode}/>
       </div>
     </dialog>
   )

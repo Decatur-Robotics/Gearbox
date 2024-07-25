@@ -9,6 +9,7 @@ import Checkbox from "./forms/Checkboxes";
 import ImageUpload from "./forms/ImageUpload";
 import Card from "./Card";
 import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
+import QRCode from "react-qr-code";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -162,6 +163,17 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
         <button className="btn btn-primary " onClick={submit}>
           Submit
         </button>
+      </Card>
+      <Card title="Share while offline">
+        <div className="w-full flex justify-center">
+          <QRCode value={JSON.stringify({
+            pitReport: {
+              ...pitreport,
+              submitted: true,
+              submitter: session?.user?._id
+            }
+          })} />
+        </div>
       </Card>
     </Flex>
   );

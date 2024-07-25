@@ -16,6 +16,8 @@ import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import Loading from "../Loading";
+import QRCode from "react-qr-code";
+import Card from "../Card";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -195,18 +197,27 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
     return (
       <FormPage key={"form"} title={page.page}>
         {inputs}
-        {
-          index === layout.length - 1 && (<>
-            <hr className="w-full border-slate-700 border-2"></hr>
-            <button className={`btn btn-wide btn-${submitting ? "disabled" : "primary"}`} onClick={submitForm}>
-              {submitting ? <Loading bg="" size={8} /> : "Submit"}
-            </button>
-            </>)
-        }
       </FormPage>
     );
   });
-  
+
+  pages.push(
+    <FormPage key={"form"} title={"Submit"}>
+      <button className={`btn btn-wide btn-${submitting ? "disabled" : "primary"} text-xl mb-6`} onClick={submitForm}>
+        {submitting ? <Loading bg="" size={8} /> : "Submit"}
+      </button>
+      <Card className="justify-center w-fit bg-base-300" title="Share while offline">
+        <QRCode value={JSON.stringify({
+          quantReport: {
+            ...props.report,
+            data: formData,
+            submitted: true
+          }
+        })} />
+      </Card>
+    </FormPage>
+  );
+
   return (
     <div className="w-full h-fit flex flex-col items-center space-y-2 mb-2">
       {pages[page]}
@@ -246,7 +257,7 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
 
               <button
                 className="btn btn-primary"
-                disabled={page === 3}
+                disabled={page === pages.length - 1}
                 onClick={() => {
                   setPage(page + 1);
                 }}
