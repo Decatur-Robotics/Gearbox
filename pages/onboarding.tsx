@@ -33,8 +33,8 @@ export default function Onboarding() {
   
   const game = games[defaultGameId];
 
-  // if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
-  //   router.push("/profile");
+  if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
+    router.push("/profile");
 
   async function completeOnboarding(redirect: string = "/profile") {
     if (!session?.user?._id) return;
