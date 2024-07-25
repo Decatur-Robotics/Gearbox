@@ -69,7 +69,7 @@ export default function PublicEvent() {
 
   if (eventData === null) {
     return (
-      <Container requireAuthentication={false} hideMenu={!hide}>
+      <Container requireAuthentication={false} hideMenu={!hide} title="Event Loading...">
         <div className=" min-h-[65vh] flex flex-col items-center justify-center space-y-6">
           <div className="loading loading-spinner loading-lg"></div>
           <div className="text-4xl font-bold">Loading...</div>
@@ -80,7 +80,7 @@ export default function PublicEvent() {
 
   if (eventData === undefined || eventData.firstRanking === undefined) {
     return (
-      <Container requireAuthentication={false} hideMenu={!hide}>
+      <Container requireAuthentication={false} hideMenu={!hide} title="Event not Found">
         <div className="min-h-[65vh] flex flex-col items-center justify-center space-y-6">
           <FaX size={48} color="red" />
           <div className="text-4xl font-bold">
@@ -200,7 +200,7 @@ export default function PublicEvent() {
   }
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide}>
+    <Container requireAuthentication={false} hideMenu={!hide} title={`${eventData.comp.name} (event)`}>
       <div className="min-h-screen w-full max-sm:w-screen flex flex-col items-center justify-center space-y-6">
         <div className="card w-5/6 bg-base-200 shadow-xl mt-6">
           <div className="card-body min-h-1/2 w-full bg-accent rounded-t-lg"></div>

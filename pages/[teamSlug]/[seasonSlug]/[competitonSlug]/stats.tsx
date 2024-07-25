@@ -77,6 +77,7 @@ export default function Stats(props: StatsPageProps) {
       requireAuthentication={false}
       hideMenu={true}
       notForMobile={true}
+      title={`Stats | ${props.competition.name}`}
     >
       <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">
           {props.competition?.tbaId !== NotLinkedToTba &&

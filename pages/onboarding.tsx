@@ -101,7 +101,7 @@ export default function Onboarding() {
   }
 
   return (
-    <Container requireAuthentication={true}>
+    <Container requireAuthentication={true} title="Onboarding">
       { !session?.user && <Loading size={64} /> }
       <div className="w-full flex justify-center p-12">
         <div className="card bg-base-200 w-2/3">

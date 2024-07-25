@@ -136,7 +136,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
   });
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide}>
+    <Container requireAuthentication={false} hideMenu={!hide} title={`${pitreport.teamNumber} | Pit Scouting`}>
       <Flex mode="col" className="items-center w-screen h-full space-y-4">
         <Card className="w-1/4" coloredTop="bg-accent">
           <Flex center={true} mode="col">

@@ -66,7 +66,7 @@ export default function Subjective(props: ResolvedUrlData) {
   useInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000, [router]);
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title={`${match?.number} | Subjective Scouting`}>
       <div className="flex flex-col items-center p-12">
             { !match 
               ? 

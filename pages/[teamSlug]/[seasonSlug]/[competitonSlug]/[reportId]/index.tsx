@@ -23,7 +23,7 @@ export default function Homepage(props: { report: Report, layout: FormLayout<Qua
   }, []);
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide}>
+    <Container requireAuthentication={false} hideMenu={!hide} title={`${props.report.robotNumber} | Quant Scouting`}>
       {props.report ? (
         <Form report={props.report} layout={props.layout} fieldImagePrefix={props.fieldImgPrefix} />
       ) : (

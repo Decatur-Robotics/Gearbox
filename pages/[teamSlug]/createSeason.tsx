@@ -37,7 +37,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
   });
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title="Create Season">
       <Flex mode="row" center={true} className="h-fit py-12 md:py-24">
         <div className="w-2/3 max-sm:w-11/12 flex flex-row max-sm:flex-col max-sm:space-y-4 md:space-x-4">
           {

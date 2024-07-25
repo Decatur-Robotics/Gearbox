@@ -34,6 +34,8 @@ declare global {
       SLACK_APP_TOKEN: string;
       SLACK_SIGNING_SECRET: string;
 
+      NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: string;
+
       NODE_ENV: "development" | "production";
     }
   }

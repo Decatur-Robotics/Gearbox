@@ -69,7 +69,7 @@ export default function CreateComp(props: ResolvedUrlData) {
   }, [name]);
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title="Create Competition">
       <Flex center={true} mode="col" className="w-full h-92 my-10">
         <Card title={"Create Competition"} className="w-1/3">
           <div>

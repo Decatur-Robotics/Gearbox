@@ -86,7 +86,7 @@ export default function CreateTeam() {
   ///*** query and prevent dups! */
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title="Create Team">
       <Flex
         mode="col"
         className="md:h-full items-center md:justify-center max-sm:py-10"
