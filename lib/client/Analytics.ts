@@ -10,7 +10,7 @@ enum EventCategory {
   Comp = "Competition",
 }
 
-if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID)
+if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
   ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
 
 function triggerEvent(optionsOrName: string | UaEventOptions) {
