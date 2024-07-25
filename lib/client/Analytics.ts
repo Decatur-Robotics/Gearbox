@@ -24,11 +24,11 @@ function triggerEvent(optionsOrName: string | UaEventOptions) {
 }
 
 export namespace Analytics {
-  export function onboardingCompleted(name: string) {
+  export function onboardingCompleted(name: string, teamNumber: number, league: League) {
     triggerEvent({
       category: EventCategory.User,
       action: "Onboarding Complete",
-      label: name
+      label: `${name} joined ${league} ${teamNumber}`
     });
   }
 

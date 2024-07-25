@@ -42,7 +42,7 @@ export default function Onboarding() {
     api.setOnboardingCompleted(session?.user?._id);
     router.push(redirect);
 
-    Analytics.onboardingCompleted(session?.user?.name ?? "Unknown User");
+    Analytics.onboardingCompleted(session?.user?.name ?? "Unknown User", teamNumber ?? -1, league ?? League.FRC);
   }
 
   async function teamNumberChanged(e: ChangeEvent<HTMLInputElement>) {
