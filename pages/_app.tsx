@@ -10,7 +10,8 @@ import { NextSeo } from "next-seo";
 
 import ReactGA from "react-ga4";
 
-ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
+if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
+  ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
 
 export default function App({
   Component,
