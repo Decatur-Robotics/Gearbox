@@ -34,6 +34,7 @@ import { BsSlack } from "react-icons/bs";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -140,6 +141,9 @@ function Roster(props: TeamPageProps) {
     if (accept) {
       setUsers([...users, user]);
     }
+
+    Analytics.teamJoinRequestHandled(team?.number ?? -1, team?.league ?? League.FRC, 
+      user.name ?? "Unknown User", session.user?.name ?? "Unknown User", accept);
   };
 
   const updateScouter = async (userId: string) => {

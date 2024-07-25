@@ -14,10 +14,19 @@ import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Form(props: { report: Report, layout: FormLayout<QuantData>, fieldImagePrefix: string }) {
+export type FormProps = {
+  report: Report;
+  layout: FormLayout<QuantData>;
+  fieldImagePrefix: string;
+  teamNumber: number;
+  compName: string;
+};
+
+export default function Form(props: FormProps) {
   const { session, status } = useCurrentSession();
 
   const [page, setPage] = useState(0);
@@ -29,6 +38,8 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
   async function submitForm() {
     await api.submitForm(props.report?._id, formData, session?.user?._id);
     location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+
+    Analytics.quantReportSubmitted(props.report.robotNumber, props.teamNumber, props.compName, session.user?.name ?? "Unknown User");
   }
 
   const sync = async () => {

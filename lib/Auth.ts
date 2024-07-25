@@ -7,8 +7,11 @@ import { Collections, getDatabase, clientPromise } from "./MongoDB";
 import { Admin, ObjectId } from "mongodb";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
+import { Analytics } from '@/lib/client/Analytics';
 
 var db = getDatabase();
+
+const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
 
 export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -74,9 +77,24 @@ export const AuthenticationOptions: AuthOptions = {
     async redirect({ url, baseUrl }) {
       return baseUrl + "/onboarding";
     },
+
+    async signIn({ user, account, profile, email, credentials }) {
+      Analytics.signIn(user.name ?? "Unknown User");
+
+      return true;
+    }
   },
   debug: false,
-  adapter: MongoDBAdapter(clientPromise, { databaseName: process.env.DB }),
+  adapter: {
+    ...adapter,
+    createUser: async (user) => {
+      const createdUser = await adapter.createUser!(user);
+
+      Analytics.newSignUp(user.name ?? "Unknown User");
+
+      return createdUser;
+    }
+  },
   pages: {
     //signIn: "/signin",
   },

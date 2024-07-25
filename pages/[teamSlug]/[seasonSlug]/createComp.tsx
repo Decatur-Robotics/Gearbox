@@ -9,10 +9,14 @@ import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
+import { Analytics } from "@/lib/client/Analytics";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function CreateComp(props: ResolvedUrlData) {
+  const { session } = useCurrentSession();
+
   const team = props.team;
   const season = props.season;
 
@@ -62,6 +66,8 @@ export default function CreateComp(props: ResolvedUrlData) {
     );
     var win: Window = window;
     win.location = `/${team?.slug}/${season?.slug}/${comp.slug}`;
+
+    Analytics.compCreated(comp.name, comp.gameId, team?.number ?? -1, session?.user?.name ?? "Unknown User");
   };
 
   useEffect(() => {

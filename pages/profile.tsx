@@ -16,6 +16,7 @@ import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -55,6 +56,8 @@ export default function Profile(props: { teamList: Team[] }) {
     await api.requestToJoinTeam(user?._id, teamId);
     setLoadingRequest(false);
     setSentRequest(true);
+
+    Analytics.requestedToJoinTeam(teamId, user?.name ?? "Unknown User");
   };
 
   return (
