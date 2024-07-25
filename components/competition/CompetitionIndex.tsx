@@ -284,10 +284,10 @@ export default function CompetitionIndex(props: {
   }, []);
 
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadUsers = async (silent: boolean = false) => {
       console.log("Loading users...");
 
-      if (Object.keys(usersById).length === 0)
+      if (Object.keys(usersById).length === 0 && !silent)
         setLoadingUsers(true);
 
       if (!team || (!team.scouters && !team.subjectiveScouters)) {
@@ -310,9 +310,9 @@ export default function CompetitionIndex(props: {
       setLoadingUsers(false);
     };
 
-    const loadPitreports = async () => {
+    const loadPitreports = async (silent: boolean = false) => {
       console.log("Loading pit reports... Current:", pitreports);
-      if (pitreports.length === 0)
+      if (pitreports.length === 0 && !silent)
        setLoadingPitreports(true);
   
       if (!comp?.pitReports) {

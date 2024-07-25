@@ -32,19 +32,24 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
   const alliance = props.report?.color;
 
   async function submitForm() {
+    console.log("Submitting form...");
+
     setSubmitting(true);
 
-    try {
-      await api.submitForm(props.report?._id, formData, session?.user?._id);
-      if (location.href.includes("offline"))
-        location.href = `/offline/${props.compId}`;
-      else
-        location.href = location.href.substring(0, location.href.lastIndexOf("/"));
-    }
-    catch (e) {
-      console.error(e);
+    api.submitForm(props.report?._id, formData, session?.user?._id)
+      .finally(() => {
+        console.log("Submitted form successfully!");
+        if (location.href.includes("offline"))
+          location.href = `/offline/${props.compId}`;
+        else
+          location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+      })
+      .catch((e) => {
+        console.error(e);
+  
+        if (!props.compId)
+          return;
 
-      if (props.compId) {
         updateCompInLocalStorage(props.compId, (comp) => {
           const report = comp.quantReports[props.report._id ?? ""]
 
@@ -53,12 +58,7 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
 
           return comp;
         });
-
-        location.href = `/offline/${props.compId}`;
-      }
-
-      setSubmitting(false);
-    }
+      });
   }
 
   const sync = async () => {

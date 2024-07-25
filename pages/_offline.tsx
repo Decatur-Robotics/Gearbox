@@ -1,6 +1,11 @@
 import Container from "@/components/Container"
+import { useEffect } from "react";
 
 export default function Fallback() {
+  useEffect(() => {
+    setTimeout(location.reload, 2500);
+  }, []);
+
   return (
     <Container requireAuthentication={false}>
       <div>
