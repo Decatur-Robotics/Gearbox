@@ -74,11 +74,11 @@ export const AuthenticationOptions: AuthOptions = {
       return session;
     },
 
-    async redirect({ url, baseUrl }) {
+    async redirect({ baseUrl }) {
       return baseUrl + "/onboarding";
     },
 
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user }) {
       Analytics.signIn(user.name ?? "Unknown User");
 
       return true;
