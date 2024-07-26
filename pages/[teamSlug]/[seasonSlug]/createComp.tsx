@@ -67,7 +67,7 @@ export default function CreateComp(props: ResolvedUrlData) {
     var win: Window = window;
     win.location = `/${team?.slug}/${season?.slug}/${comp.slug}`;
 
-    Analytics.compCreated(comp.name, comp.gameId, team?.number ?? -1, session?.user?.name ?? "Unknown User");
+    Analytics.compCreated(comp.name, comp.gameId, usePublicData, team?.number ?? -1, session?.user?.name ?? "Unknown User");
   };
 
   useEffect(() => {

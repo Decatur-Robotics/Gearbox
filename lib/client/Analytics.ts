@@ -82,11 +82,11 @@ export namespace Analytics {
     });
   }
 
-  export function compCreated(compName: string, gameId: GameId, teamNumber: number, username: string) {
+  export function compCreated(compName: string, gameId: GameId, usePublicData: boolean, teamNumber: number, username: string) {
     triggerEvent({
       category: EventCategory.Season,
       action: "Create Competition",
-      label: `${compName} for ${gameId} for team ${teamNumber} by ${username}`
+      label: `${compName} for ${gameId} by ${teamNumber} ${username} (public: ${usePublicData})`
     });
   }
 
@@ -94,7 +94,7 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Comp,
       action: "Submit Quantitative Report",
-      label: `${teamScouted} for ${compName} by ${teamNumber} ${username}`
+      label: `${teamScouted} for ${compName} by ${teamNumber} ${username}. `
     });
   }
 
