@@ -3,14 +3,14 @@ import Container from "@/components/Container";
 import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
 
 export default function OfflineCompetitionPage() {
-  const { savedComp } = useOfflineCompFromRouter();
+  const { savedComp, status } = useOfflineCompFromRouter();
 
   return (
     <Container requireAuthentication={false}>
       { savedComp 
           ? <CompetitionIndex team={savedComp.team} seasonSlug={savedComp.seasonSlug} competition={savedComp.comp} 
             fallbackData={savedComp} overrideIsManager={true} />
-          : <div>Loading...</div>
+          : <div>Loading... Status: {status}</div>
       }
     </Container>
   )

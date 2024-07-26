@@ -12,7 +12,8 @@ import {
   User,
   Team,
   Competition,
-  League
+  League,
+  DbPicklist
 } from "@/lib/Types";
 
 import Link from "next/link";
@@ -110,6 +111,8 @@ export default function CompetitionIndex(props: {
     setAttemptedRegeneratingPitReports,
   ] = useState(false);
 
+  const [picklists, setPicklists] = useState<DbPicklist | undefined>();
+
   const [updatingComp, setUpdatingComp] = useState("");
 
   const [ranking, setRanking] = useState<{
@@ -151,6 +154,8 @@ export default function CompetitionIndex(props: {
       setUsersById(fallbackData.users);
       setLoadingUsers(false);
     }
+    if (!picklists)
+      setPicklists(props.fallbackData?.picklists);
   }, [props.fallbackData?.comp._id]);
 
   const regeneratePitReports = async () => {
@@ -351,6 +356,10 @@ export default function CompetitionIndex(props: {
       loadReports(reports !== undefined);
       loadPitreports();
     }
+
+    // Load picklists
+    if (comp?._id)
+      api.getPicklist(comp?._id).then(setPicklists);
 
     // Resync pit reports if none are present
     if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
@@ -559,6 +568,8 @@ export default function CompetitionIndex(props: {
     savedComp.quantReports = toDict(reports);
     savedComp.pitReports = toDict(pitreports);
     savedComp.subjectiveReports = toDict(subjectiveReports);
+
+    savedComp.picklists = picklists;
     
     return savedComp;
   }
@@ -568,6 +579,14 @@ export default function CompetitionIndex(props: {
 
     location.reload();
   }
+
+  useEffect(() => {
+    const comp = getSavedCompetition();
+    if (comp) {
+      console.log("Saving competition to local storage... Comp:", comp);
+      saveCompToLocalStorage(comp);
+    }
+  }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
 
   // Offline mode
   useEffect(() => {
@@ -613,7 +632,7 @@ export default function CompetitionIndex(props: {
                 <div className="divider divider-horizontal"></div>
                 <a
                   className="max-sm:w-full btn btn-secondary"
-                  href={`${comp?.slug}/stats`}
+                  href={`${isOnline ? comp?.slug : comp?._id}/stats`}
                 >
                   Stats <MdQueryStats size={30} />
                 </a>

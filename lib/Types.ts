@@ -380,11 +380,13 @@ export class SavedCompetition {
   subjectiveReports: { [_id: string]: SubjectiveReport };
   pitReports: { [_id: string]: Pitreport<PitReportData> };
 
+  picklists: DbPicklist | undefined;
+
   users: { [_id: string]: User };
 
   constructor(comp: Competition, game: Game<QuantData, PitReportData>, team: Team, users: { [_id: string]: User } = {}, seasonSlug: string | undefined = undefined, matches: { [_id: string]: Match } = {},
       quantReports: { [_id: string]: Report<QuantData> } = {}, subjectiveReports: { [_id: string]: SubjectiveReport } = {},
-      pitReports: { [_id: number]: Pitreport<PitReportData> } = {}
+      pitReports: { [_id: number]: Pitreport<PitReportData> } = {}, picklists: DbPicklist | undefined = undefined
   ) {
     this.comp = comp;
     this.game = game;
@@ -398,6 +400,8 @@ export class SavedCompetition {
     this.quantReports = quantReports;
     this.subjectiveReports = subjectiveReports;
     this.pitReports = pitReports;
+
+    this.picklists = picklists;
   }
 }
 

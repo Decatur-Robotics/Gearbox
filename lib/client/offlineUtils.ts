@@ -114,6 +114,17 @@ export function mergeSavedComps(original: SavedCompetition, incoming: SavedCompe
 
   original.users = { ...original.users, ...incoming.users };
   original.subjectiveReports = { ...original.subjectiveReports, ...incoming.subjectiveReports };
+
+  if (incoming.picklists) {
+    if (!original.picklists) 
+      original.picklists = incoming.picklists;
+    else
+      for (const key in incoming.picklists.picklists) {
+        if (!original.picklists.picklists[key]) {
+          original.picklists.picklists[key] = incoming.picklists.picklists[key];
+        }
+      }
+  }
 }
 
 /**

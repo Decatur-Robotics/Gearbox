@@ -10,7 +10,7 @@ export default function useIsOnline() {
 
   async function updateOnlineStatus() {
     // Don't check if we just checked, even if it was in another useIsOnline hook
-    const lastIsOnlineCheck = localStorage.getItem("lastIsOnlineChecTime");
+    const lastIsOnlineCheck = localStorage.getItem("lastIsOnlineCheckTime");
     if (lastIsOnlineCheck && Date.now() - parseInt(lastIsOnlineCheck) < 5000) {
       return localStorage.getItem("lastIsOnlineCheckResult") == "true";
     }
