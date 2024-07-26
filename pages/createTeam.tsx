@@ -76,7 +76,7 @@ export default function CreateTeam() {
       league
     );
 
-    Analytics.teamCreated(data.number, data.name, data.league, session?.user?.name ?? "Unknown User");
+    Analytics.teamCreated(data.number, data.league, session?.user?.name ?? "Unknown User");
 
     const win: Window = window;
     win.location = `/${newTeam.slug}`;

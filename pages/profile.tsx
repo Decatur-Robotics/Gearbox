@@ -51,13 +51,13 @@ export default function Profile(props: { teamList: Team[] }) {
     }
   }, [session?.user]);
 
-  const requestTeam = async (teamId: string) => {
+  const requestTeam = async (teamId: string, teamNumber: number) => {
     setLoadingRequest(true);
     await api.requestToJoinTeam(user?._id, teamId);
     setLoadingRequest(false);
     setSentRequest(true);
 
-    Analytics.requestedToJoinTeam(teamId, user?.name ?? "Unknown User");
+    Analytics.requestedToJoinTeam(teamNumber, user?.name ?? "Unknown User");
   };
 
   return (
@@ -149,7 +149,7 @@ export default function Profile(props: { teamList: Team[] }) {
                             <div
                               className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
                               onClick={() => {
-                                requestTeam(String(team._id));
+                                requestTeam(String(team._id), team.number);
                               }}
                               key={team._id}
                             >

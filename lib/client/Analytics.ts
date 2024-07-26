@@ -10,18 +10,33 @@ enum EventCategory {
   Comp = "Competition",
 }
 
+/**
+ * Event parameters must be added as custom dimensions in Google Analytics. Go to Admin > Custom definitions.
+ */
+type EventParams = UaEventOptions & {
+  teamNumber?: number;
+  username?: string;
+  league?: League;
+  gameId?: GameId;
+  compName?: string;
+  usePublicData?: boolean;
+  teamScouted?: number;
+  targetName?: string;
+}
+
 if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
   ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
 
-function triggerEvent(optionsOrName: string | UaEventOptions) {
+function triggerEvent(params: EventParams) {
   if (!ReactGA._hasLoadedGA)
     console.error("Google Analytics not loaded");
 
   if (!ReactGA.isInitialized)
     console.error("Google Analytics not initialized");
 
-  console.log("Event triggered:", optionsOrName);
-  ReactGA.event(optionsOrName);
+  console.log("Event triggered:", params);
+  const { action, ...options } = params;
+  ReactGA.event(action, options);
 }
 
 export namespace Analytics {
@@ -29,7 +44,9 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.User,
       action: "onboarding_complete",
-      label: `${name} joined ${league} ${teamNumber}`
+      username: name,
+      teamNumber,
+      league
     });
   }
 
@@ -37,7 +54,7 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.User,
       action: "new_sign_up",
-      label: name
+      username: name
     });
   }
 
@@ -45,23 +62,26 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.User,
       action: "sign_in",
-      label: name
+      username: name
     });
   }
 
-  export function teamCreated(number: number, name: string, league: League, username: string) {
+  export function teamCreated(number: number, league: League, username: string) {
     triggerEvent({
       category: EventCategory.Team,
       action: "create_team",
-      label: `Team ${number} - ${name} (${league}) by ${username}`
+      teamNumber: number,
+      username,
+      league
     });
   }
 
-  export function requestedToJoinTeam(teamId: string, username: string) {
+  export function requestedToJoinTeam(teamNumber: number, username: string) {
     triggerEvent({
       category: EventCategory.Team,
       action: "request_to_join_team",
-      label: `Team ${teamId} by ${username}`
+      teamNumber,
+      username
     });
   }
 
@@ -70,7 +90,11 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Team,
       action: `team_join_request_${accepted ? "accepted" : "declined"}`,
-      label: `${league} ${teamNumber} by ${requesterName} ${accepted ? "Accepted" : "Declined"} by ${doneByName}`
+      label: accepted ? "accepted" : "declined",
+      teamNumber,
+      username: doneByName,
+      targetName: requesterName,
+      league
     });
   }
 
@@ -78,7 +102,9 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Season,
       action: "create_season",
-      label: `${gameId} for team ${teamNumber} by ${username}`
+      gameId,
+      teamNumber,
+      username
     });
   }
 
@@ -86,7 +112,11 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Season,
       action: "create_competition",
-      label: `${compName} for ${gameId} by ${teamNumber} ${username} (public: ${usePublicData})`
+      compName,
+      gameId,
+      usePublicData,
+      teamNumber,
+      username
     });
   }
 
@@ -94,7 +124,10 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Comp,
       action: "submit_quantitative_report",
-      label: `${teamScouted} for ${compName} by ${teamNumber} ${username}. `
+      teamNumber,
+      username,
+      compName,
+      teamScouted
     });
   }
 
@@ -102,7 +135,10 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Comp,
       action: "submit_pit_report",
-      label: `${teamScouted} for ${compName} by ${teamNumber} ${username}`
+      teamNumber,
+      username,
+      compName,
+      teamScouted
     });
   }
 
@@ -110,7 +146,10 @@ export namespace Analytics {
     triggerEvent({
       category: EventCategory.Comp,
       action: "submit_subjective_report",
-      label: `[${teamsWithComments.join(", ")}] for ${compName} by ${teamNumber} ${username}`
+      label: teamsWithComments.join(", "),
+      teamNumber,
+      username,
+      compName
     });
   }
 }
