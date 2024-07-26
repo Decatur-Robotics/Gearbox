@@ -28,7 +28,7 @@ export namespace Analytics {
   export function onboardingCompleted(name: string, teamNumber: number, league: League) {
     triggerEvent({
       category: EventCategory.User,
-      action: "Onboarding Complete",
+      action: "onboarding_complete",
       label: `${name} joined ${league} ${teamNumber}`
     });
   }
@@ -36,7 +36,7 @@ export namespace Analytics {
   export function newSignUp(name: string) {
     triggerEvent({
       category: EventCategory.User,
-      action: "New Sign Up",
+      action: "new_sign_up",
       label: name
     });
   }
@@ -44,7 +44,7 @@ export namespace Analytics {
   export function signIn(name: string) {
     triggerEvent({
       category: EventCategory.User,
-      action: "Sign In",
+      action: "sign_in",
       label: name
     });
   }
@@ -52,7 +52,7 @@ export namespace Analytics {
   export function teamCreated(number: number, name: string, league: League, username: string) {
     triggerEvent({
       category: EventCategory.Team,
-      action: "Create Team",
+      action: "create_team",
       label: `Team ${number} - ${name} (${league}) by ${username}`
     });
   }
@@ -60,7 +60,7 @@ export namespace Analytics {
   export function requestedToJoinTeam(teamId: string, username: string) {
     triggerEvent({
       category: EventCategory.Team,
-      action: "Request To Join Team",
+      action: "request_to_join_team",
       label: `Team ${teamId} by ${username}`
     });
   }
@@ -69,7 +69,7 @@ export namespace Analytics {
       accepted: boolean) {
     triggerEvent({
       category: EventCategory.Team,
-      action: `Team Join Request ${accepted ? "Accepted" : "Declined"}`,
+      action: `team_join_request_${accepted ? "accepted" : "declined"}`,
       label: `${league} ${teamNumber} by ${requesterName} ${accepted ? "Accepted" : "Declined"} by ${doneByName}`
     });
   }
@@ -77,7 +77,7 @@ export namespace Analytics {
   export function seasonCreated(gameId: GameId, teamNumber: number, username: string) {
     triggerEvent({
       category: EventCategory.Season,
-      action: "Create Season",
+      action: "create_season",
       label: `${gameId} for team ${teamNumber} by ${username}`
     });
   }
@@ -85,7 +85,7 @@ export namespace Analytics {
   export function compCreated(compName: string, gameId: GameId, usePublicData: boolean, teamNumber: number, username: string) {
     triggerEvent({
       category: EventCategory.Season,
-      action: "Create Competition",
+      action: "create_competition",
       label: `${compName} for ${gameId} by ${teamNumber} ${username} (public: ${usePublicData})`
     });
   }
@@ -93,7 +93,7 @@ export namespace Analytics {
   export function quantReportSubmitted(teamScouted: number, teamNumber: number, compName: string, username: string) {
     triggerEvent({
       category: EventCategory.Comp,
-      action: "Submit Quantitative Report",
+      action: "submit_quantitative_report",
       label: `${teamScouted} for ${compName} by ${teamNumber} ${username}. `
     });
   }
@@ -101,7 +101,7 @@ export namespace Analytics {
   export function pitReportSubmitted(teamScouted: number, teamNumber: number, compName: string, username: string) {
     triggerEvent({
       category: EventCategory.Comp,
-      action: "Submit Pit Report",
+      action: "submit_pit_report",
       label: `${teamScouted} for ${compName} by ${teamNumber} ${username}`
     });
   }
@@ -109,7 +109,7 @@ export namespace Analytics {
   export function subjectiveReportSubmitted(teamsWithComments: string[], teamNumber: number, compName: string, username: string) {
     triggerEvent({
       category: EventCategory.Comp,
-      action: "Submit Subjective Report",
+      action: "submit_subjective_report",
       label: `[${teamsWithComments.join(", ")}] for ${compName} by ${teamNumber} ${username}`
     });
   }
