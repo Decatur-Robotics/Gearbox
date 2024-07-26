@@ -113,8 +113,9 @@ export namespace API {
       }
 
       const routeRaw = req.url.replace(this.basePath, "");
-      const route = routeRaw.substring(0, routeRaw.indexOf("?"));
-      console.log(routeRaw, "->", route);
+      const route = routeRaw.includes("?") 
+        ? routeRaw.substring(0, routeRaw.indexOf("?")) 
+        : routeRaw;
 
       if (route in this.routes) {
         this.routes[route](req, res, {
