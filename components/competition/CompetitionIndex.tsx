@@ -76,7 +76,8 @@ export default function CompetitionIndex(props: {
   const [redAlliance, setRedAlliance] = useState<number[]>([]);
 
   const [matches, setMatches] = useState<Match[]>([]);
-  const [qualificationMatches, setQualificationMatches] = useState<Match[]>([]);
+  const qualificationMatches = matches.filter((match) => match.type === MatchType.Qualifying);
+
   const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -140,17 +141,21 @@ export default function CompetitionIndex(props: {
 
     console.log("Initially loading fallback data:", fallbackData);
 
-    if (!matches)
+    if (!matches || matches.length === 0)
       setMatches(fallbackData.matches);
-    if (!reports)
+    if (!reports || reports.length === 0) {
       setReports(fallbackData.quantReports);
-    if (!pitreports) {
+      setReportsById(toDict(fallbackData.quantReports));
+    }
+    if (!pitreports || pitreports.length === 0) {
       setPitreports(fallbackData.pitReports);
       setLoadingPitreports(false);
     }
-    if (!subjectiveReports)
+    if (!subjectiveReports || subjectiveReports.length === 0)
       setSubjectiveReports(fallbackData.subjectiveReports);
-    if (!usersById) {
+    console.log(usersById);
+    if (!usersById || Object.keys(usersById).length === 0) {
+      console.log("Setting users by id", fallbackData.users);
       setUsersById(fallbackData.users);
       setLoadingUsers(false);
     }
@@ -214,10 +219,6 @@ export default function CompetitionIndex(props: {
     }
     
     matches?.sort((a, b) => a.number - b.number);
-
-    setQualificationMatches(
-      matches?.filter((match) => match.type === MatchType.Qualifying)
-    );
 
     setMatches(matches);
 
@@ -302,11 +303,17 @@ export default function CompetitionIndex(props: {
       const newUsersById: { [key: string]: User } = {};
       const promises: Promise<any>[] = [];
       for (const userId of team.users) {
-        promises.push(api.findUserById(userId, fallbackData?.users[userId]).then((user) => {
-          if (user) {
-            newUsersById[userId] = user;
-          }
-        }));
+        promises.push(api.findUserById(userId, fallbackData?.users[userId])
+          .then((user) => {
+            if (user) {
+              newUsersById[userId] = user;
+            }
+          })
+          .catch((e) => {
+            if (fallbackData?.users[userId])
+              newUsersById[userId] = fallbackData.users[userId];
+          })
+        );
       }
 
       await Promise.all(promises);
@@ -351,10 +358,10 @@ export default function CompetitionIndex(props: {
     };
 
     if (!assigningMatches) {
-      loadUsers();
+      loadUsers(true);
       loadMatches(matches !== undefined);
       loadReports(reports !== undefined);
-      loadPitreports();
+      loadPitreports(true);
     }
 
     // Load picklists
@@ -430,29 +437,29 @@ export default function CompetitionIndex(props: {
     location.reload();
   };
 
-  useEffect(() => {
-    if (
-      qualificationMatches.length > 0 &&
-      Object.keys(reportsById).length > 0 &&
-      !showSubmittedMatches
-    ) {
-      const b = qualificationMatches.filter((match) => {
-        let s = true;
+  // useEffect(() => {
+  //   if (
+  //     qualificationMatches.length > 0 &&
+  //     Object.keys(reportsById).length > 0 &&
+  //     !showSubmittedMatches
+  //   ) {
+  //     const b = qualificationMatches.filter((match) => {
+  //       let s = true;
 
-        for (const id of match.reports) {
-          const r = reportsById[id];
-          if (!r?.submitted) {
-            s = false;
-            break;
-          }
-        }
-        return !s;
-      });
-      if (b.length > 0) {
-        setQualificationMatches(b);
-      }
-    }
-  }, [reportsById, matches, showSubmittedMatches]);
+  //       for (const id of match.reports) {
+  //         const r = reportsById[id];
+  //         if (!r?.submitted) {
+  //           s = false;
+  //           break;
+  //         }
+  //       }
+  //       return !s;
+  //     });
+  //     if (b.length > 0) {
+  //       setQualificationMatches(b);
+  //     }
+  //   }
+  // }, [reportsById, matches, showSubmittedMatches]);
 
   function toggleShowSubmittedMatches() {
     setShowSubmittedMatches(!showSubmittedMatches);
@@ -1021,7 +1028,7 @@ export default function CompetitionIndex(props: {
                 </div>
               ) : (
                 <div className="w-full flex flex-col items-center space-y-2">
-                  {noMatches ? (
+                  {noMatches || matches.length === 0 ? (
                     <div className="flex flex-col items-center justify-center font-bold space-y-4">
                       <h1>No Match Schedule Available</h1>
                       <button

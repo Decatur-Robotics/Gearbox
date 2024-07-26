@@ -5,10 +5,10 @@ import { getCompFromLocalStorage } from "./offlineUtils";
 import useDynamicState from "./useDynamicState";
 
 export enum OfflineLoadStatus {
-  Loaded,
-  WaitingForUseEffect,
-  WaitingForQuery,
-  NoCompInQuery
+  Loaded = "Loaded",
+  WaitingForUseEffect = "Waiting for useEffect",
+  WaitingForQuery = "Waiting for query",
+  NoCompInQuery = "No comp in query",
 }
 
 export default function useOfflineCompFromRouter() {
