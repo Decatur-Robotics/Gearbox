@@ -303,7 +303,7 @@ export default function Container(props: ContainerProps) {
                 {teams.map((team, index) => {
                   var initials = team.name
                     ?.split(" ")
-                    ?.map((section) => section.charAt(0));
+                    ?.map((section) => section.charAt(0)) ?? "?";
                   var selected = index === selectedTeamIndex;
                   return (
                     <button

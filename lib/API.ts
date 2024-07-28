@@ -111,7 +111,10 @@ export namespace API {
         }
       }
 
-      var route = req.url.replace(this.basePath, "");
+      const routeRaw = req.url.replace(this.basePath, "");
+      const route = routeRaw.includes("?") 
+        ? routeRaw.substring(0, routeRaw.indexOf("?")) 
+        : routeRaw;
 
       if (route in this.routes) {
         this.routes[route](req, res, {
@@ -1071,7 +1074,10 @@ export namespace API {
       }
 
       await Promise.all(promises);
-
+      return res.status(200).send({ result: "success" });
+    },
+      
+    addSlackBot: async (req, res, { db, data }) => {
       return res.status(200).send({ result: "success" });
     }
   }; 
