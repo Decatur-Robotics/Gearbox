@@ -41,6 +41,7 @@ export enum Collections {
   Pitreports = "Pitreports",
   Picklists = "Picklists",
   SubjectiveReports = "SubjectiveReports",
+  SlackInstallations = "SlackInstallations",
 }
 
 export async function getDatabase(): Promise<MongoDBInterface> {

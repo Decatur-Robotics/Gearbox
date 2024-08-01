@@ -33,6 +33,8 @@ declare global {
       SLACK_CLIENT_SECRET: string;
       SLACK_APP_TOKEN: string;
       SLACK_SIGNING_SECRET: string;
+      SLACK_STATE_SECRET: string;
+      SLACK_PORT: string;
 
       NODE_ENV: "development" | "production";
     }
