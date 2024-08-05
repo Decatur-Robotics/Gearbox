@@ -14,6 +14,8 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
+import PredictionScreen from "@/components/stats/PredictionScreen";
+import { games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -109,18 +111,18 @@ export default function Stats(props: StatsPageProps) {
             setPage(1);
           }}
         >
-          Picklist (Beta)
+          Picklist
         </a>
         <a
           role="tab"
-          className={`tab tab-disabled tab-md ${
+          className={`tab tab-md ${
             page === 2 ? "tab-active" : ""
           }`}
           onClick={() => {
-            // setPage(2);
+            setPage(2);
           }}
         >
-          Prediction (Coming Soon!)
+          Prediction
         </a>
         {/* <a role="tab" className={`tab tab-md `} onClick={resync}>
           Resync {" "}
@@ -137,11 +139,14 @@ export default function Stats(props: StatsPageProps) {
         <TeamPage reports={reports} pitReports={pitReports} subjectiveReports={subjectiveReports} 
           gameId={props.competition?.gameId ?? defaultGameId} />
       )}
-      {page === 1 
-        ? <PicklistScreen 
+      {page === 1 && 
+        <PicklistScreen 
           teams={Array.from(teams)} reports={reports} expectedTeamCount={props.competition.pitReports.length} 
           picklistId={props.competition.picklist} /> 
-        : <></>
+      }
+      {
+        page === 2 && 
+          <PredictionScreen reports={reports} teams={Array.from(teams)} game={games[props.competition.gameId]} />
       }
     </Container>
   );
