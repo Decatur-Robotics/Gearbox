@@ -1,15 +1,10 @@
 import { join } from "path";
-import { SlashCommand, AckFn, RespondArguments, RespondFn, SocketModeReceiver } from '@slack/bolt';
 import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
 import fs from "fs";
-import { App } from "@slack/bolt";
-import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, request, ServerResponse } from "http";
-import { WebClientEvent } from "@slack/web-api";
 import { startSlackApp } from "./lib/Slack";
-import { StringIndexed } from "@slack/bolt/dist/types/helpers";
 
 console.log("Starting server...");
 
