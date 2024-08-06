@@ -56,6 +56,9 @@ export default function PredictionScreen(props: { reports: Report[], teams: numb
   const avgPointsBlueAllianceIndividual = blueAllianceFilled.map((team) => props.game.getAvgPoints(reportsByTeam[team!]));
   const avgPointsRedAllianceIndividual = redAllianceFilled.map((team) => props.game.getAvgPoints(reportsByTeam[team!]));
 
+  const totalPointsBlueAlliance = avgPointsBlueAllianceIndividual.reduce((acc, points) => acc + points, 0);
+  const totalPointsRedAlliance = avgPointsRedAllianceIndividual.reduce((acc, points) => acc + points, 0);
+
   const datasets = [];
   for (let i = 0; i < Math.max(avgPointsBlueAllianceIndividual.length, avgPointsRedAllianceIndividual.length); i++) {
     const blue = avgPointsBlueAllianceIndividual[i] || undefined;
@@ -68,6 +71,17 @@ export default function PredictionScreen(props: { reports: Report[], teams: numb
     });
   }
 
+  const pointDiff = totalPointsBlueAlliance - totalPointsRedAlliance;
+  let winner = "Tie";
+  let color = "";
+  if (pointDiff > 0) {
+    winner = "Blue Alliance";
+    color = "blue-500";
+  } else if (pointDiff < 0) {
+    winner = "Red Alliance";
+    color = "red-500";
+  }
+
   return (
     <div className="w-full h-fit flex flex-col space-y-2">
       <div className="flex flex-row w-full">
@@ -76,6 +90,9 @@ export default function PredictionScreen(props: { reports: Report[], teams: numb
         <AllianceBuilder teams={props.teams} alliance={redAlliance} 
           update={(index, team) => updateAlliance(setRedAlliance, redAlliance, index, team)} name="Red" color="red-500" />
       </div>
+      <h1 className={`text-xl text-center text-${color}`}>
+        {pointDiff != 0 ? `${winner} wins by ${Math.abs(pointDiff)} points` : winner} ({totalPointsBlueAlliance} - {totalPointsRedAlliance})
+      </h1>
       <div className="flex flex-row w-full">
         <Bar 
           data={{
