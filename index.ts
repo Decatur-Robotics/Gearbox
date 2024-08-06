@@ -28,6 +28,7 @@ console.log("HTTPS options set");
 
 startSlackApp();
 
+console.log("App preparing...");
 app.prepare().then(() => {
   console.log("App prepared. Creating server...");
 
@@ -82,5 +83,3 @@ app.prepare().then(() => {
     throw err;
   }
 });
-
-console.log("App preparing...");
