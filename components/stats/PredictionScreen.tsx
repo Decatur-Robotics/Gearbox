@@ -93,7 +93,8 @@ export default function PredictionScreen(props: { reports: Report[], teams: numb
       <h1 className={`text-xl text-center text-${color}`}>
         {pointDiff != 0 ? `${winner} wins by ${Math.abs(pointDiff)} points` : winner} ({totalPointsBlueAlliance} - {totalPointsRedAlliance})
       </h1>
-      <div className="flex flex-row w-full">
+      {/* If we don't have bar graph in a div, it will vertically expand into infinity. Don't question it. - Renato */ }
+      <div>
         <Bar 
           data={{
             datasets,
