@@ -25,8 +25,8 @@ export default function Profile(props: { teamList: Team[] }) {
   const user = session?.user;
   const teamList = props.teamList;
 
-  const owner = user?.owner ? user?.owner.length > 0 : false;
-  const member = user?.teams ? user.teams.length > 0 : false;
+  const owner = user?.owner ? user?.owner?.length > 0 : false;
+  const member = user?.teams ? user.teams?.length > 0 : false;
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);

@@ -112,7 +112,10 @@ export namespace API {
         }
       }
 
-      var route = req.url.replace(this.basePath, "");
+      const routeRaw = req.url.replace(this.basePath, "");
+      const route = routeRaw.includes("?") 
+        ? routeRaw.substring(0, routeRaw.indexOf("?")) 
+        : routeRaw;
 
       if (route in this.routes) {
         this.routes[route](req, res, {
@@ -1032,6 +1035,10 @@ export namespace API {
     getFtcTeamAutofillData: async (req, res, { tba, data }: RouteContents<{ teamNumber: number }>) => {
       const team = await TheOrangeAlliance.getTeam(data.teamNumber);
       return res.status(200).send(team);
+    },
+
+    addSlackBot: async (req, res, { db, data }) => {
+      return res.status(200).send({ result: "success" });
     }
   };
 }

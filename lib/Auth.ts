@@ -45,7 +45,7 @@ export const AuthenticationOptions: AuthOptions = {
       }),
       */
     SlackProvider({
-      clientId: process.env.SLACK_CLIENT_ID as string,
+      clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
       clientSecret: process.env.SLACK_CLIENT_SECRET as string,
       profile: async (profile) => {
         const user = new User(
