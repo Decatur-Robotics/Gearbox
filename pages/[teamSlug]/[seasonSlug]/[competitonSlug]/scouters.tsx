@@ -222,7 +222,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
     }
   }, [shouldRegenerateScouterData, lastCountedMatch]);
     
-  return (<Container requireAuthentication={true} hideMenu={false}>
+  return (<Container requireAuthentication={true} hideMenu={false} title={`Scouter Management | ${props.competition?.name}`}>
     {
       !isManager ? 
         <div className="card w-1/3 max-sm:w-2/3 bg-base-200 m-12">

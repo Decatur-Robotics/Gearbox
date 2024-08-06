@@ -493,7 +493,7 @@ export default function Home(props: ResolvedUrlData) {
   }
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title={props.competition?.name ?? "Competition Loading"}>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-center justify-center max-sm:content-center sm:space-x-6 space-y-2 overflow-hidden max-sm:my-4 md:ml-4">
         <div className="w-[90%] sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
           <div className="w-full card bg-base-200 shadow-xl">
