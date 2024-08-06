@@ -56,10 +56,17 @@ export default function PredictionScreen(props: { reports: Report[], teams: numb
   const avgPointsBlueAllianceIndividual = blueAllianceFilled.map((team) => props.game.getAvgPoints(reportsByTeam[team!]));
   const avgPointsRedAllianceIndividual = redAllianceFilled.map((team) => props.game.getAvgPoints(reportsByTeam[team!]));
 
-  const avgPointsBlueAllianceTotal = avgPointsBlueAllianceIndividual.reduce((acc, points) => acc + points, 0);
-  const avgPointsRedAllianceTotal = avgPointsRedAllianceIndividual.reduce((acc, points) => acc + points, 0);
+  const datasets = [];
+  for (let i = 0; i < Math.max(avgPointsBlueAllianceIndividual.length, avgPointsRedAllianceIndividual.length); i++) {
+    const blue = avgPointsBlueAllianceIndividual[i] || undefined;
+    const red = avgPointsRedAllianceIndividual[i] || undefined;
 
-  console.log(blueAlliance, blueAllianceFilled, avgPointsBlueAllianceIndividual);
+    datasets.push({
+      data: [blue, red],
+      label: `Team ${blueAllianceFilled[i] || "Empty"} vs Team ${redAllianceFilled[i] || "Empty"}`,
+      backgroundColor: [`rgba(0, ${i * 255 / 2}, 235, 1)`, `rgba(235, ${i * 255 / 2}, 0, 1)`],
+    });
+  }
 
   return (
     <div className="w-full h-fit flex flex-col space-y-2">
@@ -72,22 +79,20 @@ export default function PredictionScreen(props: { reports: Report[], teams: numb
       <div className="flex flex-row w-full">
         <Bar 
           data={{
-            datasets: [
-              ({
-                data: avgPointsBlueAllianceIndividual
-                        .concat(avgPointsRedAllianceIndividual)
-                        .concat([avgPointsBlueAllianceTotal, avgPointsRedAllianceTotal]),
-                label: "Average Points",
-                backgroundColor: Array(blueAllianceFilled.length).fill("blue")
-                                  .concat(Array(redAllianceFilled.length).fill("red"))
-                                  .concat(["blue", "red"]),
-              })
-            ],
-            labels: blueAllianceFilled.concat(redAllianceFilled).map((team) => team!.toString()).concat(["Blue Alliance", "Red Alliance"]),
+            datasets,
+            labels: ["Blue Alliance", "Red Alliance"],
           }} 
           options={{
             responsive: true,
             maintainAspectRatio: false,
+            scales: {
+              x: {
+                stacked: true
+              },
+              y: {
+                stacked: true
+              }
+            }
           }}
           height={"450px"}
         />
