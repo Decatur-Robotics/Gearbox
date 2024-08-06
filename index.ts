@@ -10,7 +10,7 @@ console.log("Starting server...");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = 443;
-const app = next({ dev });
+const app = next({ dev, port });
 const handle = app.getRequestHandler();
 
 console.log("Constants set");
