@@ -14,7 +14,7 @@ function AllianceBuilder(props: {
       <h1 className={`text-${props.color} text-center`}>{props.name} Alliance</h1>
       <div className="flex flex-row items-stretch">
         {props.alliance.map((team, index) => 
-          <select className="w-full select" value={team} onChange={(e) => props.update(index, parseInt(e.target.value))}>
+          <select key={index} className="w-full select" value={team} onChange={(e) => props.update(index, parseInt(e.target.value))}>
             <option value={undefined}>Empty</option>
             {props.teams.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
