@@ -10,6 +10,7 @@ import Flex from "@/components/Flex";
 import Loading from "@/components/Loading";
 import TeamCard from "@/components/TeamCard";
 import { TheOrangeAlliance } from "@/lib/TheOrangeAlliance";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -67,13 +68,15 @@ export default function CreateTeam() {
       return;
     }
     
-    let newTeam = await api.createTeam(
+    const newTeam = await api.createTeam(
       data.name,
       data.number,
       session.user._id,
       data.tbaId,
       league
     );
+
+    Analytics.teamCreated(data.number, data.league, session?.user?.name ?? "Unknown User");
 
     const win: Window = window;
     win.location = `/${newTeam.slug}`;
@@ -86,7 +89,7 @@ export default function CreateTeam() {
   ///*** query and prevent dups! */
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title="Create Team">
       <Flex
         mode="col"
         className="md:h-full items-center md:justify-center max-sm:py-10"

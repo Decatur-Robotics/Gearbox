@@ -36,6 +36,8 @@ declare global {
       SLACK_STATE_SECRET: string;
       SLACK_PORT: string;
 
+      NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: string;
+
       NODE_ENV: "development" | "production";
     }
   }

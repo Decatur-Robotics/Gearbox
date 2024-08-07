@@ -9,8 +9,9 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { NextSeo } from "next-seo";
 
 import ReactGA from "react-ga4";
-// convert to .env
-ReactGA.initialize("G-1BFJYBDC76");
+
+if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
+  ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
 
 export default function App({
   Component,

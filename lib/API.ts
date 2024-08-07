@@ -247,15 +247,13 @@ export namespace API {
 
       team.requests = removeDuplicates([...team.requests, data.userId]);
 
-      return res
-        .status(200)
-        .send(
-          await db.updateObjectById<Team>(
-            Collections.Teams,
-            new ObjectId(data.teamId),
-            team
-          )
-        );
+      await db.updateObjectById<Team>(
+        Collections.Teams,
+        new ObjectId(data.teamId),
+        team
+      )
+
+      return res.status(200).send({ result: "success" });
     },
 
     handleRequest: async (req, res, { db, data }) => {

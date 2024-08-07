@@ -16,6 +16,7 @@ import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -50,15 +51,17 @@ export default function Profile(props: { teamList: Team[] }) {
     }
   }, [session?.user]);
 
-  const requestTeam = async (teamId: string) => {
+  const requestTeam = async (teamId: string, teamNumber: number) => {
     setLoadingRequest(true);
     await api.requestToJoinTeam(user?._id, teamId);
     setLoadingRequest(false);
     setSentRequest(true);
+
+    Analytics.requestedToJoinTeam(teamNumber, user?.name ?? "Unknown User");
   };
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title="Profile">
       <UpdateModal />
       <Flex className="my-8 space-y-4" center={true} mode="col">
         <Card title={user?.name} coloredTop="bg-accent">
@@ -146,7 +149,7 @@ export default function Profile(props: { teamList: Team[] }) {
                             <div
                               className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
                               onClick={() => {
-                                requestTeam(String(team._id));
+                                requestTeam(String(team._id), team.number);
                               }}
                               key={team._id}
                             >

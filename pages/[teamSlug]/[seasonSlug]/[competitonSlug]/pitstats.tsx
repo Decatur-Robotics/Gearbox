@@ -368,7 +368,7 @@ export default function Pitstats(props: { competition: Competition }) {
   }
 
   return (
-    <Container hideMenu={true} requireAuthentication={true} notForMobile={true}>
+    <Container hideMenu={true} requireAuthentication={true} notForMobile={true} title={`Pit Stats | ${props.competition.name}`}>
       <div className="w-full h-full flex flex-col items-center bg-base-300">
         <h1 className="text-4xl font-bold text-center mt-2 ">
           <BsGearFill className="inline animate-spin-slow"></BsGearFill> Gearbox

@@ -12,12 +12,14 @@ import useCheckMobile from "@/lib/client/useCheckMobile";
 import { MdInfo, MdWarning } from "react-icons/md";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
+import Head from "next/head";
 
 const api = new ClientAPI("gearboxiscool");
 
 type ContainerProps = {
   children: ReactNode;
   requireAuthentication: boolean;
+  title: string;
   /**
    * Hides the button to open the sidebar.
    */
@@ -118,6 +120,10 @@ export default function Container(props: ContainerProps) {
       className="w-full h-screen flex flex-col overflow-x-hidden"
       data-theme={theme}
     >
+      <Head>
+        <title>{props.title !== "Gearbox" ? `${props.title} | Gearbox` : props.title}</title>
+      </Head>
+
       <DiscordBanner />
 
       <div className="drawer">
