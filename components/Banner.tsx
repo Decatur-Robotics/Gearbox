@@ -1,4 +1,6 @@
 import { FaDiscord } from "react-icons/fa";
+import DbInterface from "@/lib/client/DbInterface";
+import { useEffect } from "react";
 
 export default function Banner(props: { children: React.ReactNode }) {
   return (

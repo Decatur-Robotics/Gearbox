@@ -1,9 +1,11 @@
+import DbInterface from './client/DbInterface';
 import {
   Db,
+  Filter,
   MongoClient,
   MongoClientOptions,
   ObjectId,
-  UpdateResult,
+  Document,
 } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
@@ -57,7 +59,7 @@ export async function getDatabase(): Promise<MongoDBInterface> {
   return global.interface;
 }
 
-export class MongoDBInterface {
+export class MongoDBInterface implements DbInterface {
   promise: Promise<MongoClient> | undefined;
   client: MongoClient | undefined;
   db: Db | undefined;
@@ -99,10 +101,10 @@ export class MongoDBInterface {
     collection: Collections,
     id: ObjectId,
     newValues: Partial<Type> | { [key: string]: any }
-  ): Promise<UpdateResult<Document> | undefined> {
+  ): Promise<void> {
     var query = { _id: id };
     var updated = { $set: newValues };
-    return this?.db
+    this?.db
       ?.collection(collection)
       .updateOne(query, updated);
   }
@@ -115,26 +117,26 @@ export class MongoDBInterface {
     return (await this?.db?.collection(collection).findOne(query)) as Type;
   }
 
-  async findObject<Type>(
+  async findObject<Type extends Document>(
     collection: Collections,
-    query: object
-  ): Promise<Type> {
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
+    query: Filter<Type>
+  ): Promise<Type | undefined | null> {
+    return (await this?.db?.collection(collection).findOne(query as Document)) as Type | undefined | null;
   }
 
   async findObjects<Type>(
     collection: Collections,
-    query: object
+    query: Filter<Type>
   ): Promise<Type[]> {
     return (await this?.db
       ?.collection(collection)
-      .find(query)
+      .find(query as Document)
       .toArray()) as Type[];
   }
 
-  async countObjects(
+  async countObjects<Type>(
     collection: Collections,
-    query: object
+    query: Filter<Type>
   ): Promise<number | undefined> {
     return await this?.db?.collection(collection).countDocuments(query);
   }

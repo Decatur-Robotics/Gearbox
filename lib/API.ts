@@ -769,10 +769,10 @@ export namespace API {
         new ObjectId(data.compId)
       );
       const matches = await db.findObjects<Match>(Collections.Matches, {
-        _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
+        _id: { $in: comp.matches },
       });
       const allReports = await db.findObjects<Report>(Collections.Reports, {
-        match: { $in: matches.map((match) => match?._id?.toString()) },
+        match: { $in: matches.map((match) => match?._id?.toString() ?? "") },
       });
       const reports = allReports.filter((report) => report.submitted);
 
@@ -899,7 +899,7 @@ export namespace API {
       }).then((r) => quantitativeReports.push(...r)));
 
       promises.push(db.findObjects<Pitreport>(Collections.Pitreports, {
-        _id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+        _id: { $in: comp.pitReports },
         submitted: true
       }).then((r) => pitReports.push(...r)));
 
@@ -949,7 +949,7 @@ export namespace API {
         submitter: data.userId,
         submitted: match.subjectiveScouter === data.userId 
           ? SubjectiveReportSubmissionType.ByAssignedScouter
-          : team.subjectiveScouters.includes(data.userId)
+          : team?.subjectiveScouters.includes(data.userId)
             ? SubjectiveReportSubmissionType.BySubjectiveScouter
             : SubjectiveReportSubmissionType.ByNonSubjectiveScouter,
       };
@@ -976,12 +976,12 @@ export namespace API {
 
       const matchIds = comp.matches.map((matchId) => new ObjectId(matchId));
       const matches = await db.findObjects<Match>(Collections.Matches, {
-        _id: { $in: matchIds },
+        _id: { $in: matchIds.map((id) => id.toString()) },
       });
 
       const reportIds = matches.flatMap((match) => match.subjectiveReports ?? []);
       const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
-        _id: { $in: reportIds.map((id) => new ObjectId(id)) },
+        _id: { $in: reportIds },
       });
 
       return res.status(200).send(reports);
