@@ -23,7 +23,7 @@ export default function CreateTeam() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [allianceNumber,setAllianceNumber] = useState<number>();
-  const [allianceName, setAllianceName] = useState<string>()
+  const [allianceName, setAllianceName] = useState<string>();
 
   const searchTeam = async () => {
     if (!teamNumber) {
@@ -52,6 +52,7 @@ export default function CreateTeam() {
   };
 
   const createTeam = async (league: League) => {
+    setError("")
     if (!autoData || !session?.user) {
       return;
     }
@@ -85,15 +86,12 @@ export default function CreateTeam() {
   };
 
   async function createAlliance(league: League){
+    setError("")
     console.log("Beginning Alliance Creation")
     if (!session?.user) {
       return;
     }
 
-    if(!allianceName) {
-      setError("Your alliance must have a name")
-      return
-    }
 
     if (
       await api.findTeamByNumberAndLeague(Number(allianceNumber), league)
@@ -106,6 +104,11 @@ export default function CreateTeam() {
 
     if (allianceNumber?.toString().length!=7){
       setError("Alliances must have a seven digit number")
+      return
+    }
+
+    if(!allianceName) {
+      setError("Your alliance must have a name")
       return
     }
     console.log("Made part 2")
