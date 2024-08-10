@@ -76,7 +76,12 @@ export default function Footer() {
         >
           <FaList className="inline mr-1" size={16}/>About Us
         </Link>
-        <div>Version {new Date(+process.env.NEXT_PUBLIC_BUILD_TIME).toISOString()}</div>
+        <div>
+          Version {(() => {
+            const timestamp = new Date(+process.env.NEXT_PUBLIC_BUILD_TIME);
+            return timestamp.toDateString() + " " + timestamp.toTimeString();
+          })()}
+        </div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <Link
