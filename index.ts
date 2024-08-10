@@ -10,7 +10,7 @@ console.log("Starting server...");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = 443;
-const app = next({ dev });
+const app = next({ dev, port });
 const handle = app.getRequestHandler();
 
 console.log("Constants set");
@@ -28,6 +28,7 @@ console.log("HTTPS options set");
 
 startSlackApp();
 
+console.log("App preparing...");
 app.prepare().then(() => {
   console.log("App prepared. Creating server...");
 
@@ -82,5 +83,3 @@ app.prepare().then(() => {
     throw err;
   }
 });
-
-console.log("App preparing...");

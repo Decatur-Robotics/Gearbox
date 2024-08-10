@@ -18,10 +18,11 @@ import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
 import { makeObjSerializeable } from "@/lib/Utils";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PitreportForm(props: { pitreport: Pitreport, layout: FormLayout<PitReportData> }) {
+export default function PitreportForm(props: { pitreport: Pitreport, layout: FormLayout<PitReportData>, teamNumber: number, compName: string }) {
   const { session, status } = useCurrentSession();
   const hide = status === "authenticated";
 
@@ -51,6 +52,13 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
     location.href = location.href.substring(
       0,
       location.href.lastIndexOf("/pit")
+    );
+
+    Analytics.pitReportSubmitted(
+      props.pitreport.teamNumber,
+      props.teamNumber,
+      props.compName,
+      session.user?.name ?? "Unknown User"
     );
   }
 
@@ -136,7 +144,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
   });
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide}>
+    <Container requireAuthentication={false} hideMenu={!hide} title={`${pitreport.teamNumber} | Pit Scouting`}>
       <Flex mode="col" className="items-center w-screen h-full space-y-4">
         <Card className="w-1/4" coloredTop="bg-accent">
           <Flex center={true} mode="col">
@@ -177,7 +185,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: { 
       pitreport: SerializeDatabaseObject(pitreport),
-      layout: makeObjSerializeable(game.pitReportLayout)
+      layout: makeObjSerializeable(game.pitReportLayout),
+      teamNumber: urlData.team?.number,
+      compName: urlData.competition?.name
      },
   };
 };

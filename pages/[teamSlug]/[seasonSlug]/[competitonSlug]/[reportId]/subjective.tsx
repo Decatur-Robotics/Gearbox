@@ -1,6 +1,7 @@
 import Container from "@/components/Container";
 import { Match, SubjectiveReportSubmissionType } from "@/lib/Types";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
+import { Analytics } from "@/lib/client/Analytics";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useInterval from "@/lib/client/useInterval";
@@ -60,13 +61,20 @@ export default function Subjective(props: ResolvedUrlData) {
     }, session.session.user?._id!, teamSlug as string).then((res) => {
       window.location.href = `/${teamSlug}/${seasonSlug}/${competitonSlug}`;
     });
+
+    const teamsWithComments = [...(e.target as any)].map((element: any, index: number) =>
+      ["Whole Match"].concat(match?.blueAlliance.concat(match.redAlliance).map((n) => n.toString()) ?? [])[index]
+    );
+
+    Analytics.subjectiveReportSubmitted(teamsWithComments, props.team?.number ?? -1, props.competition?.name ?? "Unknown Competition", 
+      session.session.user?.name ?? "Unknown User");
   }
 
   // We have to use router as a dependency because it is only populated after the first render (during hydration)
   useInterval(() => api.checkInForSubjectiveReport(matchId as string), 5000, [router]);
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title={`${match?.number} | Subjective Scouting`}>
       <div className="flex flex-col items-center p-12">
             { !match 
               ? 

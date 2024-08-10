@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { defaultGameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -40,6 +41,8 @@ export default function Onboarding() {
 
     api.setOnboardingCompleted(session?.user?._id);
     router.push(redirect);
+
+    Analytics.onboardingCompleted(session?.user?.name ?? "Unknown User", teamNumber ?? -1, league ?? League.FRC);
   }
 
   async function teamNumberChanged(e: ChangeEvent<HTMLInputElement>) {
@@ -101,7 +104,7 @@ export default function Onboarding() {
   }
 
   return (
-    <Container requireAuthentication={true}>
+    <Container requireAuthentication={true} title="Onboarding">
       { !session?.user && <Loading size={64} /> }
       <div className="w-full flex justify-center p-12">
         <div className="card bg-base-200 w-2/3">

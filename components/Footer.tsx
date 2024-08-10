@@ -11,7 +11,9 @@ import {
 import { TbUfo } from "react-icons/tb";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
+import { HiStatusOnline } from "react-icons/hi";
 import { VERSION } from "./UpdateModal";
+
 export default function Footer() {
   return (
     <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
@@ -25,55 +27,59 @@ export default function Footer() {
           >
             Team 4026
           </a>
-          <TbUfo size={30} className="inline ml-2"></TbUfo>
+          <TbUfo size={30} className="inline ml-2" />
         </p>
         <div className="divider divider-vertical"> </div>
         <div className="flex flex-row space-x-2">
           <Link
             href={"https://www.instagram.com/decaturrobotics4026/?img_index=1"}
           >
-            <FaInstagram size={30} className="ml-4"></FaInstagram>
+            <FaInstagram size={30} className="ml-4" />
           </Link>
           <Link href={"https://www.facebook.com/DecaturRobotics4026/"}>
-            <FaFacebook size={30}></FaFacebook>
+            <FaFacebook size={30} />
           </Link>
           <Link href={"https://github.com/Decatur-Robotics"}>
-            <FaGithub size={30}></FaGithub>
+            <FaGithub size={30} />
           </Link>
           <Link href={"https://discord.gg/ha7AnqxFDD"}>
-            <FaDiscord size={30}></FaDiscord>
+            <FaDiscord size={30} />
           </Link>
         </div>
       </aside>
       <nav className="max-sm:pl-8">
         <h6 className="footer-title">More</h6>
-        <a
+        <Link
           className="link link-hover"
           href="mailto:gearbox@decaturrobotics.org"
         >
           <MdAlternateEmail
             className="inline mr-1"
             size={16}
-          ></MdAlternateEmail>
+          />
           Contact
-        </a>
-        <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">
-          <FaBug className="inline mr-1" size={16}></FaBug>
+        </Link>
+        <Link className="link link-hover" href="https://discord.gg/ha7AnqxFDD">
+          <FaBug className="inline mr-1" size={16} />
           Bug Report/Feature Request
-        </a>
+        </Link>
+        <Link className="link link-hover" href={"https://status.4026.org/"}>
+          <HiStatusOnline className="inline mr-1" size={16} />
+          Status
+        </Link>
       </nav>
       <nav className="max-sm:pl-8">
         <h6 className="footer-title">About</h6>
-        <a
+        <Link
           className="link link-hover"
           href="https://www.decaturrobotics.org/our-team"
         >
-          <FaList className="inline mr-1" size={16}></FaList>About Us
-        </a>
+          <FaList className="inline mr-1" size={16}/>About Us
+        </Link>
         <div>Version {VERSION}</div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
-        <a
+        <Link
           className="bg-indigo-600 p-4 rounded-lg text-white font-bold flex flex-row"
           href="https://www.thebluealliance.com/"
         >
@@ -83,11 +89,11 @@ export default function Footer() {
             height="25"
             alt="tba"
             className="mr-6"
-          ></Image>
+          />
           The Blue Alliance
-        </a>
-        <div className="divider divider-horizontal"></div>
-        <a
+        </Link>
+        <div className="divider divider-horizontal" />
+        <Link
           className="bg-gray-600 p-4 rounded-lg text-white font-bold flex flex-row"
           href="https://www.statbotics.io/"
         >
@@ -97,16 +103,16 @@ export default function Footer() {
             height="25"
             alt="tba"
             className="mr-6"
-          ></img>
+          />
           Statbotics
-        </a>
-        <div className="divider divider-horizontal"></div>
-        <a
+        </Link>
+        <div className="divider divider-horizontal" />
+        <Link
           className="bg-red-600 p-4 rounded-lg text-white font-bold flex flex-row"
           href="https://frc-events.firstinspires.org/services/api"
         >
-          <img src="/FIRST.png" width="90" height="25" alt="tba"></img>
-        </a>
+          <img src="/FIRST.png" width="90" height="25" alt="tba" />
+        </Link>
       </div>
     </footer>
   );

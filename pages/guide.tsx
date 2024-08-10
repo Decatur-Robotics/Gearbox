@@ -6,6 +6,7 @@ export default function Guide() {
       requireAuthentication={false}
       hideMenu={true}
       notForMobile={true}
+      title="Guide"
     >
       <div className="w-full h-full flex justify-center">
         <div className="w-full md:w-1/2 min-h-screen flex flex-col items-center mt-4 indent-8">

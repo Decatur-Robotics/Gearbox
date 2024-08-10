@@ -49,7 +49,7 @@ export default function Homepage() {
   const thirdVisible = useIsVisible(thirdSection);
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide}>
+    <Container requireAuthentication={false} hideMenu={!hide} title="Gearbox">
       <div className="w-full min-h-screen flex lg:flex-row flex-col">
         <div className="hero pt-10 pb-10 md:min-h-screen bg-base-200 lg:w-1/2 w-full">
           <div className="hero-content">
