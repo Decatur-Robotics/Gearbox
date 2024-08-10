@@ -1,4 +1,4 @@
-import Collections from './client/Collections';
+import CollectionId from './client/CollectionId';
 import DbInterface from './client/DbInterface';
 import {
   Db,
@@ -61,7 +61,7 @@ export class MongoDBInterface implements DbInterface {
     const collections = await this.db?.listCollections().toArray();
     if (collections?.length === 0) {
       try {
-        Object.values(Collections).forEach(
+        Object.values(CollectionId).forEach(
           async (collectionName) =>
             await this.db?.createCollection(collectionName)
         );
@@ -71,21 +71,21 @@ export class MongoDBInterface implements DbInterface {
     }
   }
 
-  async addObject<Type>(collection: Collections, object: any): Promise<Type> {
+  async addObject<Type>(collection: CollectionId, object: any): Promise<Type> {
     const ack = await this?.db?.collection(collection).insertOne(object);
     object._id = ack?.insertedId;
     return object as Type;
   }
 
-  async deleteObjectById(collection: Collections, id: ObjectId) {
+  async deleteObjectById(collection: CollectionId, id: ObjectId) {
     var query = { _id: id };
     await this?.db?.collection(collection).deleteOne(query);
   }
 
   async updateObjectById<Type>(
-    collection: Collections,
+    collection: CollectionId,
     id: ObjectId,
-    newValues: Partial<Type> | { [key: string]: any }
+    newValues: Partial<Type>
   ): Promise<void> {
     var query = { _id: id };
     var updated = { $set: newValues };
@@ -95,7 +95,7 @@ export class MongoDBInterface implements DbInterface {
   }
 
   async findObjectById<Type>(
-    collection: Collections,
+    collection: CollectionId,
     id: ObjectId
   ): Promise<Type> {
     var query = { _id: id };
@@ -103,15 +103,15 @@ export class MongoDBInterface implements DbInterface {
   }
 
   async findObject<Type extends Document>(
-    collection: Collections,
-    query: Filter<Type>
+    collection: CollectionId,
+    query: object
   ): Promise<Type | undefined | null> {
     return (await this?.db?.collection(collection).findOne(query as Document)) as Type | undefined | null;
   }
 
   async findObjects<Type extends Document>(
-    collection: Collections,
-    query: Filter<Type>
+    collection: CollectionId,
+    query: object
   ): Promise<Type[]> {
     return (await this?.db
       ?.collection(collection)
@@ -119,9 +119,9 @@ export class MongoDBInterface implements DbInterface {
       .toArray()) as unknown as Type[];
   }
 
-  async countObjects<Type>(
-    collection: Collections,
-    query: Filter<Type> | Type
+  async countObjects(
+    collection: CollectionId,
+    query: object
   ): Promise<number | undefined> {
     return await this?.db?.collection(collection).countDocuments(query as Document);
   }

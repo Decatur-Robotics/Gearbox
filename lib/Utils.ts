@@ -4,7 +4,8 @@
  * This is a general collection of commoly used functions
  */
 
-import { Collections, getDatabase } from "./MongoDB";
+import CollectionId from "./client/CollectionId";
+import { getDatabase } from "./MongoDB";
 
 // get the database for some functions that use it
 const db = getDatabase();
@@ -31,7 +32,7 @@ export function CleanUsername(username: string): string {
  * @returns - A Unique SLUG
  */
 export async function GenerateSlug(
-  collection: Collections,
+  collection: CollectionId,
   name: string,
   index: number = 0,
 ): Promise<string> {

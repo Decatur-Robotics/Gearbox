@@ -1,16 +1,21 @@
 import { ObjectId, Document } from "bson";
 import { LocalStorageDb, MinimongoDb } from "minimongo";
 import DbInterface from "./DbInterface";
-import Collections from "./Collections";
+import CollectionId from "./CollectionId";
+import { useState, useEffect } from "react";
 
 export default class MiniMongoInterface implements DbInterface {
   db: MinimongoDb | undefined;
 
   init(): Promise<void>
   {
-    this.db = new LocalStorageDb({}, console.log, console.error);
+    this.db = new LocalStorageDb(
+      {}, 
+      () => console.log("MiniMongo DB initialized"), 
+      (err: unknown) => console.error("MiniMongo DB failed to initialize:", err)
+    );
 
-    for (const collectionName in Collections)
+    for (const collectionName in CollectionId)
     {
       this.db.addCollection(collectionName);
     }
@@ -18,7 +23,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.resolve();
   }
 
-  addObject<Type>(collection: Collections, object: any): Promise<Type>
+  addObject<Type>(collection: CollectionId, object: any): Promise<Type>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -31,7 +36,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.reject("Collection not found: " + collection);
   }
 
-  deleteObjectById(collection: Collections, id: ObjectId): Promise<void>
+  deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -44,7 +49,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.reject("Collection not found: " + collection);
   }
 
-  updateObjectById<Type>(collection: Collections, id: ObjectId, newValues: Partial<Type>): Promise<void>
+  updateObjectById<Type>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -57,7 +62,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.reject("Collection not found: " + collection);
   }
 
-  findObjectById<Type>(collection: Collections, id: ObjectId): Promise<Type>
+  findObjectById<Type>(collection: CollectionId, id: ObjectId): Promise<Type>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -69,7 +74,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.reject("Collection not found: " + collection);
   }
 
-  findObject<Type extends Document>(collection: Collections, query: object): Promise<Type | undefined | null>
+  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -82,7 +87,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.reject("Collection not found: " + collection);
   }
   
-  findObjects<Type>(collection: Collections, query: object): Promise<Type[]>
+  findObjects<Type>(collection: CollectionId, query: object): Promise<Type[]>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -94,7 +99,7 @@ export default class MiniMongoInterface implements DbInterface {
     return Promise.reject("Collection not found: " + collection);
   }
 
-  countObjects<Type>(collection: Collections, query: object): Promise<number | undefined>
+  countObjects(collection: CollectionId, query: object): Promise<number | undefined>
   {
     const foundCollection = this.db?.collections[collection];
 
@@ -104,6 +109,17 @@ export default class MiniMongoInterface implements DbInterface {
     }
 
     return Promise.reject("Collection not found: " + collection);
-  }
-  
+  }  
+}
+
+export function useLocalDb(): MiniMongoInterface | undefined
+{
+  const [db, setDb] = useState<MiniMongoInterface>();
+
+  useEffect(() => {
+    const db = new MiniMongoInterface();
+    db.init().then(() => setDb(db));
+  }, []);
+
+  return db;
 }

@@ -7,11 +7,12 @@ import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
 import { ObjectId } from "mongodb";
+import Collections from "@/lib/client/Collections";
 
 const api = new ClientAPI("gearboxiscool");
 

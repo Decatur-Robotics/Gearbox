@@ -1,4 +1,4 @@
-enum Collections {
+enum CollectionId {
   Seasons = "Seasons",
   Competitions = "Competitions",
   Matches = "Matches",
@@ -15,4 +15,4 @@ enum Collections {
 }
 
 // We can't do export default enum Collections
-export default Collections;
+export default CollectionId;

@@ -5,7 +5,8 @@ import UrlResolver, {
 } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import Collections from "@/lib/client/Collections";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { FaPlus } from "react-icons/fa";

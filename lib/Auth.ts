@@ -8,7 +8,7 @@ import { Admin, ObjectId } from "mongodb";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
-import Collections from "./client/Collections";
+import CollectionId from "./client/CollectionId";
 
 var db = getDatabase();
 
@@ -26,7 +26,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(Collections.Users, profile.name),
+          await GenerateSlug(CollectionId.Users, profile.name),
           [],
           []
         );
@@ -54,7 +54,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(Collections.Users, profile.name),
+          await GenerateSlug(CollectionId.Users, profile.name),
           [],
           [],
           profile.sub,
@@ -69,7 +69,7 @@ export const AuthenticationOptions: AuthOptions = {
   callbacks: {
     async session({ session, user }) {
       session.user = await (await db).findObjectById(
-        Collections.Users,
+        CollectionId.Users,
         new ObjectId(user.id)
       );
       return session;

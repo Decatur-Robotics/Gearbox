@@ -1,8 +1,9 @@
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import { Competition, Match, Team, User, Report } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
+import Collections from "@/lib/client/Collections";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
