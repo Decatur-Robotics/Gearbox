@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { Collections, getDatabase, MongoDBInterface } from "./MongoDB";
+import { getDatabase, MongoDBInterface } from "./MongoDB";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import {
   Competition,
@@ -29,6 +29,7 @@ import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
+import Collections from "./client/Collections";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";

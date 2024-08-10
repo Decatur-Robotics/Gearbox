@@ -1,7 +1,8 @@
 import { Team, User } from "../Types";
-import { getDatabase, Collections } from "../MongoDB";
+import { getDatabase } from "../MongoDB";
 import { GenerateSlug, RandomArrayValue } from "../Utils";
 import { ObjectId } from "mongodb";
+import Collections from "../client/Collections";
 
 const firstNameMaleURL = "https://www.randomlists.com/data/names-male.json";
 const firstNameFemaleURL = "https://www.randomlists.com/data/names-female.json";

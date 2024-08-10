@@ -1,4 +1,4 @@
-import { getDatabase, Collections } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import {
   Competition,
   Match,
@@ -11,6 +11,7 @@ import { ObjectId } from "mongodb";
 import { RotateArray, ShuffleArray } from "./Utils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
+import Collections from "./client/Collections";
 
 export async function AssignScoutersToCompetitionMatches(
   teamId: string,
@@ -28,8 +29,8 @@ export async function AssignScoutersToCompetitionMatches(
     new ObjectId(teamId),
   );
   const matchIds = comp.matches;
-  let scouters = team.scouters;
-  let subjectiveScouters = team.subjectiveScouters;
+  let scouters = team?.scouters ?? [];
+  let subjectiveScouters = team?.subjectiveScouters ?? [];
 
   scouters = shuffle ? ShuffleArray(scouters) : scouters;
   subjectiveScouters = shuffle ? ShuffleArray(subjectiveScouters) : subjectiveScouters;

@@ -1,3 +1,4 @@
+import Collections from './client/Collections';
 import DbInterface from './client/DbInterface';
 import {
   Db,
@@ -29,22 +30,6 @@ if (!global.clientPromise) {
 clientPromise = global.clientPromise;
 
 export { clientPromise };
-
-export enum Collections {
-  Seasons = "Seasons",
-  Competitions = "Competitions",
-  Matches = "Matches",
-  Reports = "Reports",
-  Teams = "Teams",
-  Users = "users",
-  Accounts = "accounts",
-  Sessions = "sessions",
-  Forms = "Forms",
-  Pitreports = "Pitreports",
-  Picklists = "Picklists",
-  SubjectiveReports = "SubjectiveReports",
-  SlackInstallations = "SlackInstallations",
-}
 
 export async function getDatabase(): Promise<MongoDBInterface> {
   if (!global.interface) {
@@ -124,20 +109,20 @@ export class MongoDBInterface implements DbInterface {
     return (await this?.db?.collection(collection).findOne(query as Document)) as Type | undefined | null;
   }
 
-  async findObjects<Type>(
+  async findObjects<Type extends Document>(
     collection: Collections,
     query: Filter<Type>
   ): Promise<Type[]> {
     return (await this?.db
       ?.collection(collection)
       .find(query as Document)
-      .toArray()) as Type[];
+      .toArray()) as unknown as Type[];
   }
 
   async countObjects<Type>(
     collection: Collections,
-    query: Filter<Type>
+    query: Filter<Type> | Type
   ): Promise<number | undefined> {
-    return await this?.db?.collection(collection).countDocuments(query);
+    return await this?.db?.collection(collection).countDocuments(query as Document);
   }
 }

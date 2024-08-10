@@ -1,39 +1,109 @@
-import { ObjectId, Document, Filter } from "mongodb";
-import { Collections } from "../MongoDB";
+import { ObjectId, Document } from "bson";
+import { LocalStorageDb, MinimongoDb } from "minimongo";
 import DbInterface from "./DbInterface";
+import Collections from "./Collections";
 
 export default class MiniMongoInterface implements DbInterface {
+  db: MinimongoDb | undefined;
+
   init(): Promise<void>
   {
-    throw new Error("Method not implemented.");
+    this.db = new LocalStorageDb({}, console.log, console.error);
+
+    for (const collectionName in Collections)
+    {
+      this.db.addCollection(collectionName);
+    }
+
+    return Promise.resolve();
   }
+
   addObject<Type>(collection: Collections, object: any): Promise<Type>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      foundCollection.upsert(object);
+      return Promise.resolve(object as Type);
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
+
   deleteObjectById(collection: Collections, id: ObjectId): Promise<void>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      foundCollection.remove(id.toHexString());
+      return Promise.resolve();
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
+
   updateObjectById<Type>(collection: Collections, id: ObjectId, newValues: Partial<Type>): Promise<void>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      foundCollection.upsert({ _id: id.toHexString(), ...newValues });
+      return Promise.resolve();
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
+
   findObjectById<Type>(collection: Collections, id: ObjectId): Promise<Type>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      return Promise.resolve(foundCollection.findOne(id.toHexString()) as Type);
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
-  findObject<Type extends Document>(collection: Collections, query: Filter<Type>): Promise<Type | undefined | null>
+
+  findObject<Type extends Document>(collection: Collections, query: object): Promise<Type | undefined | null>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      const foundObj = foundCollection.findOne(query);
+      return Promise.resolve(foundObj);
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
-  findObjects<Type>(collection: Collections, query: Filter<Type>): Promise<Type[]>
+  
+  findObjects<Type>(collection: Collections, query: object): Promise<Type[]>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      return foundCollection.find(query).fetch();
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
-  countObjects<Type>(collection: Collections, query: Filter<Type>): Promise<number | undefined>
+
+  countObjects<Type>(collection: Collections, query: object): Promise<number | undefined>
   {
-    throw new Error("Method not implemented.");
+    const foundCollection = this.db?.collections[collection];
+
+    if (foundCollection)
+    {
+      return Promise.resolve(foundCollection.find(query).fetch().then((objs) => objs.length));
+    }
+
+    return Promise.reject("Collection not found: " + collection);
   }
   
 }

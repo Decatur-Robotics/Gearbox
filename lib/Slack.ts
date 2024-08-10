@@ -1,6 +1,6 @@
 import { SlashCommand, AckFn, RespondArguments, RespondFn, App, Installation } from "@slack/bolt";
 import SlackCommands from "./SlackCommands";
-import { Collections, getDatabase } from "./MongoDB";
+import { getDatabase } from "./MongoDB";
 
 const slackApp = new App({
   // token: process.env.SLACK_BOT_TOKEN,
@@ -35,7 +35,7 @@ const slackApp = new App({
         }
       });
 
-      console.log("Found installation", installation.team?.name);
+      console.log("Found installation", installation?.team?.name);
 
       if (!installation) {
         throw new Error("No installation found");

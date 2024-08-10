@@ -3,11 +3,12 @@ import Google from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import { Collections, getDatabase, clientPromise } from "./MongoDB";
+import { getDatabase, clientPromise } from "./MongoDB";
 import { Admin, ObjectId } from "mongodb";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
+import Collections from "./client/Collections";
 
 var db = getDatabase();
 

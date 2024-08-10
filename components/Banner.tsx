@@ -1,8 +1,16 @@
-import { FaDiscord } from "react-icons/fa";
-import DbInterface from "@/lib/client/DbInterface";
+import MiniMongoInterface from "@/lib/client/MiniMongoInterface";
 import { useEffect } from "react";
+import { FaDiscord } from "react-icons/fa";
 
 export default function Banner(props: { children: React.ReactNode }) {
+  useEffect(() => {
+    console.log("Instantiating MiniMongoInterface...");
+    const db = new MiniMongoInterface();
+    console.log("Initializing MiniMongoInterface...");
+    db.init();
+    console.log("MiniMongoInterface initialized.");
+  }, []);
+
   return (
     <div
       role="alert"
