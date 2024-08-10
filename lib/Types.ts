@@ -131,7 +131,7 @@ export enum League {
   FTC = "FTC", FRC = "FRC"
 }
 
-export class Game<TQuantData extends QuantData, TPitData extends PitReportData> {
+export class Game<TQuantData extends QuantData = QuantData, TPitData extends PitReportData = PitReportData> {
   name: string;
 
   year: number;
@@ -360,6 +360,48 @@ export class Competition {
     this.picklist = picklist;
     this.publicData = publicData;
     this.gameId = gameId ?? defaultGameId;
+  }
+}
+
+/**
+ * Holds all data involved in a competition so it can be used offline.
+ */
+export class SavedCompetition {
+  comp: Competition;
+  game: Game<QuantData, PitReportData>;
+
+  lastAccessTime: number = Date.now();
+
+  team: Team;
+  seasonSlug: string | undefined;
+
+  matches: { [_id: string]: Match };
+  quantReports: { [_id: string]: Report<QuantData> };
+  subjectiveReports: { [_id: string]: SubjectiveReport };
+  pitReports: { [_id: string]: Pitreport<PitReportData> };
+
+  picklists: DbPicklist | undefined;
+
+  users: { [_id: string]: User };
+
+  constructor(comp: Competition, game: Game<QuantData, PitReportData>, team: Team, users: { [_id: string]: User } = {}, seasonSlug: string | undefined = undefined, matches: { [_id: string]: Match } = {},
+      quantReports: { [_id: string]: Report<QuantData> } = {}, subjectiveReports: { [_id: string]: SubjectiveReport } = {},
+      pitReports: { [_id: number]: Pitreport<PitReportData> } = {}, picklists: DbPicklist | undefined = undefined
+  ) {
+    this.comp = comp;
+    this.game = game;
+    
+    this.team = team;
+    this.users = users;
+
+    this.seasonSlug = seasonSlug;
+
+    this.matches = matches;
+    this.quantReports = quantReports;
+    this.subjectiveReports = subjectiveReports;
+    this.pitReports = pitReports;
+
+    this.picklists = picklists;
   }
 }
 

@@ -74,15 +74,15 @@ export default function Homepage() {
                 </Link>
               </p>
               <div className="flex flex-row space-x-4">
-                <a
+                <Link
                   className="btn btn-lg btn-primary normal-case"
                   href="profile"
                 >
                   Get Started
-                </a>
-                <a className="btn btn-lg btn-accent normal-case" href="/guide">
+                </Link>
+                <Link className="btn btn-lg btn-accent normal-case" href="/guide">
                   Guide
-                </a>
+                </Link>
               </div>
             </div>
           </div>

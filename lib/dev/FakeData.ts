@@ -1,6 +1,7 @@
 import { Team, User } from "../Types";
 import { getDatabase } from "../MongoDB";
-import { GenerateSlug, RandomArrayValue } from "../Utils";
+import { GenerateSlug } from "../Utils";
+import { randomArrayValue } from "../client/ClientUtils";
 import { ObjectId } from "mongodb";
 import Collections from "../client/Collections";
 
@@ -31,7 +32,7 @@ async function fetchNames(): Promise<[string[], string[]]> {
 
 async function randomName(): Promise<string> {
   const [first, last] = await fetchNames();
-  return RandomArrayValue(first) + " " + RandomArrayValue(last);
+  return randomArrayValue(first) + " " + randomArrayValue(last);
 }
 
 export async function fakeUser(teamId: string | undefined): Promise<User> {

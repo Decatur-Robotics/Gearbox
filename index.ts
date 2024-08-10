@@ -3,7 +3,9 @@ import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
 import fs from "fs";
-import { IncomingMessage, request, ServerResponse } from "http";
+import { App } from "@slack/bolt";
+import SlackCommands from "./lib/SlackCommands";
+import { IncomingMessage, ServerResponse, request } from "http";
 import { startSlackApp } from "./lib/Slack";
 
 console.log("Starting server...");

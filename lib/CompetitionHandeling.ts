@@ -8,7 +8,7 @@ import {
   QuantData,
 } from "./Types";
 import { ObjectId } from "mongodb";
-import { RotateArray, ShuffleArray } from "./Utils";
+import { rotateArray, shuffleArray } from "./client/ClientUtils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import Collections from "./client/Collections";
@@ -32,16 +32,16 @@ export async function AssignScoutersToCompetitionMatches(
   let scouters = team?.scouters ?? [];
   let subjectiveScouters = team?.subjectiveScouters ?? [];
 
-  scouters = shuffle ? ShuffleArray(scouters) : scouters;
-  subjectiveScouters = shuffle ? ShuffleArray(subjectiveScouters) : subjectiveScouters;
+  scouters = shuffle ? shuffleArray(scouters) : scouters;
+  subjectiveScouters = shuffle ? shuffleArray(subjectiveScouters) : subjectiveScouters;
 
   const promises: Promise<any>[] = [];
   for (const matchId of matchIds) {
     // Filter out the subjective scouter that will be assigned to this match
     promises.push(AssignScoutersToMatch(
       matchId, scouters, subjectiveScouters, comp.gameId));
-    RotateArray(scouters);
-    RotateArray(subjectiveScouters);
+    rotateArray(scouters);
+    rotateArray(subjectiveScouters);
   }
 
   await Promise.all(promises);

@@ -5,6 +5,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
 import ClientAPI from "@/lib/client/ClientAPI";
+import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 
 type CardData = { 
   number: number;
@@ -164,7 +165,7 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklistId: string }) {
+export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklist: DbPicklist, compId: string }) {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
 
   enum LoadState {
@@ -182,10 +183,12 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
       acc.picklists[picklist.name] = picklist.teams.map((team) => team.number);
       return acc;
     }, {
-      _id: props.picklistId,
+      _id: props.picklist._id,
       picklists: {}
     });
 
+    updateCompInLocalStorage(props.compId, (comp) => comp.picklists = picklistDict);
+    
     api.updatePicklist(picklistDict);
   }
 
@@ -204,28 +207,31 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
     });
   }
 
+  function loadDbPicklist(picklistDict: DbPicklist) {
+    setPicklists(Object.entries(picklistDict.picklists).map((picklist, index) => {
+          const newPicklist: Picklist = {
+            index,
+            name: picklist[0],
+            teams: picklist[1].map((team: number) => ({ number: team })),
+            update: updatePicklist
+          };
+
+          for (const team of newPicklist.teams) {
+            team.picklistIndex = newPicklist.index;
+          }
+
+          return newPicklist;
+        }));
+  }
+
   useEffect(() => {
     if (loadingPicklists !== LoadState.NotLoaded) return;
 
     setLoadingPicklists(LoadState.Loading);
-    api.getPicklist(props.picklistId).then((picklistDict) => {
-      setPicklists(Object.entries(picklistDict.picklists).map((picklist, index) => {
-        const newPicklist: Picklist = {
-          index,
-          name: picklist[0],
-          teams: picklist[1].map((team: number) => ({ number: team })),
-          update: updatePicklist
-        };
+    api.getPicklist(props.picklist._id).then(loadDbPicklist);
+    loadDbPicklist(props.picklist);
 
-        for (const team of newPicklist.teams) {
-          team.picklistIndex = newPicklist.index;
-        }
-
-        return newPicklist;
-      }));
-
-      setLoadingPicklists(LoadState.Loaded);
-    });
+    setLoadingPicklists(LoadState.Loaded);
   });
 
   const addPicklist = () => {

@@ -14,6 +14,12 @@ const nextConfig = {
       "files.slack.com",
     ],
   },
+  publicRuntimeConfig: {
+    buildTime: Date.now(),
+  },
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: Date.now().toString(),
+  }
 };
 
 module.exports = withPwa(nextConfig);

@@ -14,6 +14,10 @@ import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
+import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
+import Loading from "../Loading";
+import QRCode from "react-qr-code";
+import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
@@ -24,6 +28,7 @@ export type FormProps = {
   fieldImagePrefix: string;
   teamNumber: number;
   compName: string;
+  compId: string;
 };
 
 export default function Form(props: FormProps) {
@@ -32,12 +37,38 @@ export default function Form(props: FormProps) {
   const [page, setPage] = useState(0);
   const [formData, setFormData] = useState<QuantData>(props.report?.data);
   const [syncing, setSyncing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const alliance = props.report?.color;
 
   async function submitForm() {
-    await api.submitForm(props.report?._id, formData, session?.user?._id);
-    location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+    console.log("Submitting form...");
+
+    setSubmitting(true);
+
+    api.submitForm(props.report?._id, formData, session?.user?._id)
+      .finally(() => {
+        console.log("Submitted form successfully!");
+        if (location.href.includes("offline"))
+          location.href = `/offline/${props.compId}`;
+        else
+          location.href = location.href.substring(0, location.href.lastIndexOf("/"));
+      })
+      .catch((e) => {
+        console.error(e);
+  
+        if (!props.compId)
+          return;
+
+        updateCompInLocalStorage(props.compId, (comp) => {
+          const report = comp.quantReports[props.report._id ?? ""]
+
+          report.data = formData;
+          report.submitted = true;
+
+          return comp;
+        });
+      });
 
     Analytics.quantReportSubmitted(props.report.robotNumber, props.teamNumber, props.compName, session.user?.name ?? "Unknown User");
   }
@@ -178,18 +209,27 @@ export default function Form(props: FormProps) {
     return (
       <FormPage key={"form"} title={page.page}>
         {inputs}
-        {
-          index === layout.length - 1 && (<>
-            <hr className="w-full border-slate-700 border-2"></hr>
-            <button className="btn btn-wide btn-primary " onClick={submitForm}>
-              Submit
-            </button>
-            </>)
-        }
       </FormPage>
     );
   });
-  
+
+  pages.push(
+    <FormPage key={"form"} title={"Submit"}>
+      <button className={`btn btn-wide btn-${submitting ? "disabled" : "primary"} text-xl mb-6`} onClick={submitForm}>
+        {submitting ? <Loading bg="" size={8} /> : "Submit"}
+      </button>
+      <Card className="justify-center w-fit bg-base-300" title="Share while offline">
+        <QRCode value={JSON.stringify({
+          quantReport: {
+            ...props.report,
+            data: formData,
+            submitted: true
+          }
+        })} />
+      </Card>
+    </FormPage>
+  );
+
   return (
     <div className="w-full h-fit flex flex-col items-center space-y-2 mb-2">
       {pages[page]}
@@ -229,7 +269,7 @@ export default function Form(props: FormProps) {
 
               <button
                 className="btn btn-primary"
-                disabled={page === 3}
+                disabled={page === pages.length - 1}
                 onClick={() => {
                   setPage(page + 1);
                 }}
