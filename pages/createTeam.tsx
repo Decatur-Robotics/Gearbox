@@ -22,6 +22,8 @@ export default function CreateTeam() {
   const [ftcAutoData, setFtcAutoData] = useState<Team>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [allianceNumber,setAllianceNumber] = useState<number>();
+  const [allianceName, setAllianceName] = useState<string>()
 
   const searchTeam = async () => {
     if (!teamNumber) {
@@ -82,6 +84,45 @@ export default function CreateTeam() {
     win.location = `/${newTeam.slug}`;
   };
 
+  async function createAlliance(league: League){
+    console.log("Beginning Alliance Creation")
+    if (!session?.user) {
+      return;
+    }
+
+    if(!allianceName) {
+      setError("Your alliance must have a name")
+      return
+    }
+
+    if (
+      await api.findTeamByNumberAndLeague(Number(allianceNumber), league)
+    ) {
+      console.log(allianceNumber)
+      console.log(league)
+      setError("This Team Already Exists");
+      return;
+    }
+
+    if (allianceNumber?.toString().length!=7){
+      setError("Alliances must have a seven digit number")
+      return
+    }
+    console.log("Made part 2")
+
+    
+    const newTeam = await api.createTeam(
+      allianceName,
+      allianceNumber!,
+      session.user._id,
+      "none",
+      league
+    );
+    console.log("Created")
+    const win: Window = window;
+    win.location = `/${newTeam.slug}`;
+  }
+
   useEffect(() => {
     searchTeam();
   }, [teamNumber]);
@@ -110,6 +151,25 @@ export default function CreateTeam() {
               setTeamNumber(e.target.value);
             }}
           ></input>
+          <input
+            className="input input-bordered md:w-1/2"
+            placeholder="Alliance Number (7 characters)"
+            maxLength={7}
+            minLength={7}
+            value={allianceNumber}
+            onChange={(e) => {
+              setAllianceNumber(Number(e.target.value));
+            }}
+          ></input>
+          <input
+            className="input input-bordered md:w-1/2"
+            placeholder="Alliance Name"
+            value={allianceName}
+            onChange={(e) => {
+              setAllianceName(e.target.value);
+            }}
+          ></input>
+          <div className="btn" onClick={() => createAlliance(League.FRC)}>Create Alliance Test</div>
           {teamNumber && (
             <div className="md:w-1/2 h-48 mt-10">
               {loading ? (
@@ -120,6 +180,7 @@ export default function CreateTeam() {
                     <div onClick={() => createTeam(League.FRC)}>
                       <TeamCard team={autoData} />
                     </div>
+                    
                   }
                   { ftcAutoData?.name &&
                     <div onClick={() => createTeam(League.FTC)}>

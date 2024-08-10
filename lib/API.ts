@@ -216,7 +216,7 @@ export namespace API {
 
       let obj = await db.findObject(collection, query);
       if (!obj) {
-        obj = {};
+        obj = false;
       }
 
       res.status(200).send(obj);
