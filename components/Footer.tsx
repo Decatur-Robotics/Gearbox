@@ -76,7 +76,7 @@ export default function Footer() {
         >
           <FaList className="inline mr-1" size={16}/>About Us
         </Link>
-        <div>Version {VERSION}</div>
+        <div>Version {new Date(+process.env.NEXT_PUBLIC_BUILD_TIME).toISOString()}</div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <Link

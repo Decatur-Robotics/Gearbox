@@ -15,9 +15,11 @@ import {
   DbPicklist,
   SubjectiveReport,
   League,
+  SavedCompetition,
 } from "../Types";
 import { GameId } from "./GameId";
-import { TheOrangeAlliance } from "../TheOrangeAlliance";
+import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
+import { ObjectId } from 'bson';
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -58,12 +60,22 @@ export default class ClientAPI {
     
     return await rawResponse.json();
   }
-
-  async findUserById(id: string | undefined): Promise<User> {
-    return await this.request("/find", {
-      collection: "users",
-      query: { _id: id },
-    });
+  
+  /**
+   * @param fallback only use if you are just a fetching a single user. Using fallback for many users will take a long time.
+   */
+  async findUserById(id: string | undefined, fallback: User | undefined = undefined): Promise<User> {
+    try {
+      return await this.request("/find", {
+        collection: "users",
+        query: { _id: id },
+      }).catch(() => fallback);
+    }
+    catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
   async findTeamById(id: string): Promise<Team> {
@@ -277,13 +289,21 @@ export default class ClientAPI {
   async assignScouters(
     teamId: string | undefined,
     compId: string | undefined,
-    shuffle: boolean = false
+    shuffle: boolean = false,
+    fallback: SavedCompetition | undefined = undefined
   ) {
-    return await this.request("/assignScouters", {
-      teamId: teamId,
-      compId: compId,
-      shuffle: shuffle,
-    });
+    try {
+      return await this.request("/assignScouters", {
+        teamId: teamId,
+        compId: compId,
+        shuffle: shuffle,
+      });
+    } catch(e) {
+      if (fallback) {
+        updateCompInLocalStorage(fallback.comp._id ?? "", assignScoutersOffline);
+        return fallback;
+      }
+    }
   }
 
   async submitForm(
@@ -309,16 +329,29 @@ export default class ClientAPI {
     });
   }
 
-  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false) {
-    return await this.request("/competitionReports", {
-      compId,
-      submitted,
-      usePublicData
-    });
+  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false, 
+      fallback: Report[] | undefined = undefined) {
+    try {
+      return await this.request("/competitionReports", {
+        compId,
+        submitted,
+        usePublicData
+      });
+    } catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
-  async allCompetitionMatches(compId: string | undefined) {
-    return await this.request("/allCompetitionMatches", { compId: compId });
+  async allCompetitionMatches(compId: string | undefined, fallback: Match[] | undefined = undefined) {
+    try {
+      return await this.request("/allCompetitionMatches", { compId: compId });
+    } catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
   }
 
   async matchReports(matchId: string | undefined) {
@@ -402,7 +435,14 @@ export default class ClientAPI {
     return await this.request("/getPitReports", { reportIds });
   }
 
-  async changeScouterForReport(reportId: string, scouterId: string) {
+  async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      const report = Object.values(comp.quantReports).find(r => r._id === reportId);
+      if (report) {
+        report.user = scouterId;
+      }
+    });
+
     return await this.request("/changeScouterForReport", { reportId, scouterId });
   }
 
@@ -429,6 +469,8 @@ export default class ClientAPI {
   }
 
   async setCompPublicData(compId: string, publicData: boolean) {
+    updateCompInLocalStorage(compId, (comp) => comp.comp.publicData = publicData);
+
     return await this.request("/setCompPublicData", { compId, publicData });
   }
 
@@ -448,20 +490,59 @@ export default class ClientAPI {
     return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 
-  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined) {
+  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined, compId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      const match = Object.values(comp.matches).find(m => m._id === matchId);
+      if (match) {
+        match.subjectiveScouter = userId;
+      }
+    });
+
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
   async createPitReportForTeam(teamNumber: number, compId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData());
+      pitReport._id = new ObjectId().toString();
+
+      comp.pitReports[pitReport.teamNumber] = pitReport;
+      comp.comp.pitReports.push(pitReport._id);
+    });
+
     return await this.request("/createPitReportForTeam", { teamNumber, compId });
   }
 
   async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
+    updateCompInLocalStorage(compId, (comp) => {
+      comp.comp.name = name;
+      comp.comp.tbaId = tbaId;
+    });
+
     return await this.request("/updateCompNameAndTbaId", { compId, name, tbaId });
   }
 
   async getFtcTeamAutofillData(teamNumber: number): Promise<Team> {
     return await this.request("/getFtcTeamAutofillData", { teamNumber });
+  }
+
+  async ping() {
+    return await this.request("/ping", {});
+  }
+
+  async getSubjectiveReportsFromMatches(matches: Match[], fallback: SubjectiveReport[] | undefined = undefined): Promise<SubjectiveReport[]> {
+    try {
+      return await this.request("/getSubjectiveReportsFromMatches", { matches });
+    }
+    catch(e) {
+      if (fallback)
+        return fallback;
+      throw e;
+    }
+  }
+
+  async uploadSavedComp(save: SavedCompetition): Promise<void> {
+    return await this.request("/uploadSavedComp", { save });
   }
 
 }

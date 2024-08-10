@@ -3,15 +3,19 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { BiMenu, BiPlus, BiHome, BiSolidPhone } from "react-icons/bi";
-import { IoSunny, IoMoon } from "react-icons/io5";
+import { IoSunny, IoMoon, IoCloudOffline } from "react-icons/io5";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
-import { MdInfo, MdWarning } from "react-icons/md";
+import { MdInfo, MdOfflineBolt, MdOfflinePin, MdOfflineShare, MdWarning } from "react-icons/md";
+import { RiWifiOffLine } from "react-icons/ri";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
+import { stat } from "fs";
+import useIsOnline from "@/lib/client/useIsOnline";
+import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
 
 const api = new ClientAPI("gearboxiscool");
@@ -30,7 +34,8 @@ type ContainerProps = {
 export default function Container(props: ContainerProps) {
   const { session, status } = useCurrentSession();
   const user = session?.user;
-  const authenticated = status === "authenticated";
+  const isOnline = useIsOnline();
+  const authenticated = !forceOfflineMode() && status === "authenticated";
 
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [accepted, setAccepted] = useState(false);
@@ -78,7 +83,10 @@ export default function Container(props: ContainerProps) {
       setLoadingTeams(true);
       let newTeams: Team[] = [];
       for (const team of user.teams) {
-        newTeams.push(await api.findTeamById(team));
+        const foundTeam = await api.findTeamById(team).catch(() => undefined);
+        if (!foundTeam)
+          continue;
+        newTeams.push(foundTeam);
       }
       setTeams(newTeams);
 
@@ -96,7 +104,13 @@ export default function Container(props: ContainerProps) {
       setLoadingSeasons(true);
 
       let newSeasons: Season[] = [];
-      for (const season of selectedTeam.seasons) {
+
+      if (!selectedTeam?.seasons) {
+        setLoadingSeasons(false);
+        return;
+      }
+      
+      for (const season of selectedTeam?.seasons) {
         newSeasons.push(await api.findSeasonById(season));
       }
 
@@ -159,7 +173,7 @@ export default function Container(props: ContainerProps) {
                 className="grow bg-base-100"
                 placeholder="Search an event"
               />
-              <FaSearch></FaSearch>
+              <FaSearch />
               {eventResults.length > 0 ? (
                 <div className="absolute -translate-x-5 translate-y-20 sm:translate-y-24 w-1/2 sm:w-1/4 bg-base-300 rounded-b-lg sm:p-2">
                   <ul>
@@ -192,16 +206,7 @@ export default function Container(props: ContainerProps) {
                     borderThickness={2}
                   />
                 </Link>
-              ) : (
-                // <Link
-                //   href={"/profile"}
-                //   tabIndex={0}
-                //   className="btn btn-ghost btn-circle avatar sm:mr-5"
-                // >
-                //   <div className="w-10 rounded-full">
-                //     <img src={user?.image} />
-                //   </div>
-                // </Link>
+              ) : isOnline ? (
                 <a
                   href={"/api/auth/signin"}
                   rel="noopener noreferrer"
@@ -209,6 +214,13 @@ export default function Container(props: ContainerProps) {
                 >
                   <button className="btn btn-primary sm:mr-4">Sign In</button>
                 </a>
+              ) : (
+                <Link href="/offline" className="btn btn-ghost flex flex-row sm:mr-4">
+                  <div className="tooltip tooltip-left" data-tip="You are offline.">
+                    <RiWifiOffLine className="text-2xl" />
+                  </div>
+                  <span>Go to offline scouting</span>
+                </Link>
               )}
 
               {/*
@@ -297,7 +309,7 @@ export default function Container(props: ContainerProps) {
                 {teams.map((team, index) => {
                   var initials = team.name
                     ?.split(" ")
-                    .map((section) => section.charAt(0)) ?? "?";
+                    ?.map((section) => section.charAt(0)) ?? "?";
                   var selected = index === selectedTeamIndex;
                   return (
                     <button
