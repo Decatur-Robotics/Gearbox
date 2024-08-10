@@ -28,6 +28,7 @@ export type FormProps = {
   fieldImagePrefix: string;
   teamNumber: number;
   compName: string;
+  compId: string;
 };
 
 export default function Form(props: FormProps) {

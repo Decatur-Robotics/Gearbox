@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import Container from "@/components/Container";
 import PicklistScreen from "./stats/Picklist";
 import TeamPage from "./stats/TeamPage";
+import PredictionScreen from "./stats/PredictionScreen";
+import { games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -75,6 +77,7 @@ export default function Stats(props: StatsPageProps) {
       requireAuthentication={false}
       hideMenu={true}
       notForMobile={true}
+      title="Stats"
     >
       <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">
           {props.competition?.tbaId !== NotLinkedToTba &&
@@ -115,7 +118,7 @@ export default function Stats(props: StatsPageProps) {
             page === 2 ? "tab-active" : ""
           }`}
           onClick={() => {
-            // setPage(2);
+            setPage(2);
           }}
         >
           Prediction (Coming Soon!)
@@ -136,10 +139,12 @@ export default function Stats(props: StatsPageProps) {
           gameId={props.competition?.gameId ?? defaultGameId} />
       )}
       {page === 1 
-        ? <PicklistScreen 
+        && <PicklistScreen 
           teams={Array.from(teams)} reports={reports} expectedTeamCount={props.competition.pitReports.length} 
-          picklist={props.picklists} compId={props.competition._id ?? ""} /> 
-        : <></>
+          picklist={props.picklists} compId={props.competition._id ?? ""} />
+      }
+      {
+        page === 2 && <PredictionScreen reports={reports} teams={Array.from(teams)} game={games[props.competition.gameId]} />
       }
     </Container>
   );

@@ -33,7 +33,7 @@ export default function SelectCompetitionPage() {
   }
 
   return (
-    <Container requireAuthentication={false}>
+    <Container requireAuthentication={false} title="Select an Offline Competition">
       <div className="flex flex-col items-center p-8 space-y-6">
         <div className="card bg-base-200 w-[80%] shadow-xl">
           <div className="card-body">

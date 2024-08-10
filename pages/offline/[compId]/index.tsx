@@ -6,7 +6,7 @@ export default function OfflineCompetitionPage() {
   const { savedComp, status } = useOfflineCompFromRouter();
 
   return (
-    <Container requireAuthentication={false}>
+    <Container requireAuthentication={false} title={savedComp?.comp.name ?? "Competition Loading..."}>
       { savedComp 
           ? <CompetitionIndex team={savedComp.team} seasonSlug={savedComp.seasonSlug} competition={savedComp.comp} 
             fallbackData={savedComp} overrideIsManager={true} />

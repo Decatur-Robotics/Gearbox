@@ -7,14 +7,14 @@ export default function OfflineSubjectiveReport() {
 
   if (!match)
     return (
-      <Container requireAuthentication={false}>
+      <Container requireAuthentication={false} title="Subjective Scouting">
         <div>Loading...</div>
       </Container>
     );
 
   return (
-    <Container requireAuthentication={false}>
-      <SubjectiveReportForm match={match} compId={savedComp?.comp._id} />
+    <Container requireAuthentication={false} title={`${match?.number} | Subjective Scouting`}>
+      <SubjectiveReportForm match={match} compId={savedComp?.comp._id} teamNumber={savedComp?.team.number} compName={savedComp?.comp.name} />
     </Container>
   );
 }

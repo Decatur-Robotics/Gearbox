@@ -6,6 +6,7 @@ import fs from "fs";
 import { App } from "@slack/bolt";
 import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, ServerResponse, request } from "http";
+import { startSlackApp } from "./lib/Slack";
 
 console.log("Starting server...");
 

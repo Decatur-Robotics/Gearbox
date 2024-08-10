@@ -74,8 +74,6 @@ export default function Footer() {
           className="link link-hover"
           href="https://www.decaturrobotics.org/our-team"
         >
-          <FaList className="inline mr-1" size={16}></FaList>About Us
-        </a>
           <FaList className="inline mr-1" size={16}/>About Us
         </Link>
         <div>Version {new Date(+process.env.NEXT_PUBLIC_BUILD_TIME).toISOString()}</div>

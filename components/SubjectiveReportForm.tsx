@@ -9,10 +9,11 @@ import React, { createRef, FormEvent, useState } from "react";
 import Loading from "./Loading";
 import Card from "./Card";
 import QRCode from "react-qr-code";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function SubjectiveReportForm(props: { match: Match, compId?: string }) {
+export default function SubjectiveReportForm(props: { match: Match, compId?: string, teamNumber?: number, compName?: string }) {
   const router = useRouter();
   const { teamSlug, seasonSlug, competitonSlug } = router.query;
   
@@ -84,6 +85,14 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
           comp.matches[match._id as string].subjectiveReports.push(subjectiveReport._id!);
         });
       })
+      .then(() => {
+        const teamsWithComments = [...(e.target as any)].map((element: any, index: number) =>
+          ["Whole Match"].concat(match?.blueAlliance.concat(match.redAlliance).map((n) => n.toString()) ?? [])[index]
+        );
+    
+        Analytics.subjectiveReportSubmitted(teamsWithComments, props.teamNumber ?? -1, props.compName ?? "Unknown Competition", 
+          session.session.user?.name ?? "Unknown User");
+      })
       .finally(() => {
         if (location.href.includes("offline"))
           location.href = `/offline/${props.compId}`;
@@ -94,6 +103,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
 
   // We have to use router as a dependency because it is only populated after the first render (during hydration)
   useInterval(() => api.checkInForSubjectiveReport(match._id as string), 5000, [router]);
+  
   return (   
     <div className="flex flex-col items-center p-12 space-y-6">
       { !match 

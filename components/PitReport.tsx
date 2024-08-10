@@ -10,10 +10,12 @@ import ImageUpload from "./forms/ImageUpload";
 import Card from "./Card";
 import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import QRCode from "react-qr-code";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PitReportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, compId?: string }) {
+export default function PitReportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, compId?: string, 
+    usersteamNumber?: number, compName?: string, username?: string }) {
   const { session } = useCurrentSession();
 
   const [pitreport, setPitreport] = useState(props.pitReport);
@@ -59,6 +61,9 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
           submitter: session?.user?._id
         };
       });
+    })
+    .then(() => {
+      Analytics.pitReportSubmitted(pitreport.teamNumber, props.usersteamNumber ?? -1, props.compName ?? "Unknown", props.username ?? "Unknown");
     })
     .finally(() => {
       location.href = location.href.substring(0, location.href.lastIndexOf("/pit"));
