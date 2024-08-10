@@ -18,10 +18,19 @@ import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import Loading from "../Loading";
 import QRCode from "react-qr-code";
 import Card from "../Card";
+import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function Form(props: { report: Report, layout: FormLayout<QuantData>, fieldImagePrefix: string, compId?: string | undefined }) {
+export type FormProps = {
+  report: Report;
+  layout: FormLayout<QuantData>;
+  fieldImagePrefix: string;
+  teamNumber: number;
+  compName: string;
+};
+
+export default function Form(props: FormProps) {
   const { session, status } = useCurrentSession();
 
   const [page, setPage] = useState(0);
@@ -59,6 +68,8 @@ export default function Form(props: { report: Report, layout: FormLayout<QuantDa
           return comp;
         });
       });
+
+    Analytics.quantReportSubmitted(props.report.robotNumber, props.teamNumber, props.compName, session.user?.name ?? "Unknown User");
   }
 
   const sync = async () => {

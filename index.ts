@@ -1,18 +1,17 @@
 import { join } from "path";
-import { SlashCommand, AckFn, RespondArguments, RespondFn } from '@slack/bolt';
 import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
 import fs from "fs";
 import { App } from "@slack/bolt";
 import SlackCommands from "./lib/SlackCommands";
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse, request } from "http";
 
 console.log("Starting server...");
 
 const dev = process.env.NODE_ENV !== "production";
 const port = 443;
-const app = next({ dev });
+const app = next({ dev, port });
 const handle = app.getRequestHandler();
 
 console.log("Constants set");
@@ -28,6 +27,9 @@ const httpsOptions = {
 
 console.log("HTTPS options set");
 
+startSlackApp();
+
+console.log("App preparing...");
 app.prepare().then(() => {
   console.log("App prepared. Creating server...");
 
@@ -37,7 +39,34 @@ app.prepare().then(() => {
         return;
 
       const parsedUrl = parse(req.url, true);
-      handle(req, res, parsedUrl);
+      const { pathname } = parsedUrl;
+
+      if (pathname && (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname))) {
+        const filePath = join(__dirname, '.next', pathname);
+        (app as any).serveStatic(req, res, filePath);
+      } else if (pathname && pathname.startsWith("/slack")) {
+        console.log("Slack event received: " + parsedUrl.pathname);
+        
+        // Pipe request to slack app
+        const newReq = request(
+          Object.assign(
+            {},
+            parse("http://localhost:" + process.env.SLACK_PORT + req.url),
+            {
+              method: req.method,
+              path: req.url,
+            }
+          ),
+          (newRes) => {
+            res.writeHead(newRes.statusCode || 200, newRes.headers);
+            newRes.pipe(res);
+          }
+        );
+
+        req.pipe(newReq);
+      } else {
+        handle(req, res, parsedUrl);
+      }
     }).listen(port, () => {
       console.log(
         process.env.NODE_ENV +
@@ -55,35 +84,3 @@ app.prepare().then(() => {
     throw err;
   }
 });
-
-console.log("App preparing...");
-
-// Slack bot
-
-const slackApp = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  socketMode: true,
-  appToken: process.env.SLACK_APP_TOKEN,
-});
-
-slackApp.command(/\/.*/, async (props: { command: SlashCommand, ack: AckFn<string | RespondArguments>, respond: RespondFn }) => {
-  const { command, ack, respond } = props;
-
-  const commandName = command.command.replace("/", "");
-  const handler = SlackCommands[commandName];
-
-  if (handler) {
-    handler(command, ack, respond);
-  }
-  else {
-    await ack();
-    await respond(`Command not found: ` + commandName);
-  }
-});
-
-async function startSlackApp() {
-    await slackApp.start(port);
-    console.log("Slack bot is running!");
-}
-startSlackApp();

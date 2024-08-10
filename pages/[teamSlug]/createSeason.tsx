@@ -11,12 +11,16 @@ import Card from "@/components/Card";
 import { FaPlus } from "react-icons/fa";
 import { GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
+import { Analytics } from "@/lib/client/Analytics";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
 const api = new ClientAPI("gearboxiscool");
 
 type CreateSeasonProps = { team: Team; existingSeasons: Season[] };
 
 export default function CreateSeason(props: CreateSeasonProps) {
+  const { session } = useCurrentSession();
+
   const team = props.team;
 
   const createSeason = async (gameId: GameId) => {
@@ -30,6 +34,8 @@ export default function CreateSeason(props: CreateSeasonProps) {
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;
+
+    Analytics.seasonCreated(gameId, team.number, session.user?.name ?? "Unknown User");
   };
 
   const gamesWithIds = Object.entries(games).map(([id, game]) => {
@@ -37,7 +43,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
   });
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title="Create Season">
       <Flex mode="row" center={true} className="h-fit py-12 md:py-24">
         <div className="w-2/3 max-sm:w-11/12 flex flex-row max-sm:flex-col max-sm:space-y-4 md:space-x-4">
           {

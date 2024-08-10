@@ -5,7 +5,7 @@ import Container from "@/components/Container";
 
 export default function CompetitionPage(props: ResolvedUrlData) {
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title={props.competition?.name ?? "Competition Loading"}>
       <CompetitionIndex team={props.team} competition={props.competition} seasonSlug={props.season?._id} />
     </Container>
   );

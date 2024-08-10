@@ -131,7 +131,7 @@ export enum League {
   FTC = "FTC", FRC = "FRC"
 }
 
-export class Game<TQuantData extends QuantData, TPitData extends PitReportData> {
+export class Game<TQuantData extends QuantData = QuantData, TPitData extends PitReportData = PitReportData> {
   name: string;
 
   year: number;

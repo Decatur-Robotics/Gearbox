@@ -227,7 +227,7 @@ export default class ClientAPI {
     end: number,
     seasonId: string | undefined,
     publicData: boolean
-  ) {
+  ): Promise<Competition> {
     return await this.request("/createCompetiton", {
       name,
       tbaId,

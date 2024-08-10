@@ -29,7 +29,7 @@ export default function Home(props: SeasonPageProps) {
   const owner = team?.owners.includes(session?.user?._id as string);
 
   return (
-    <Container requireAuthentication={true} hideMenu={false}>
+    <Container requireAuthentication={true} hideMenu={false} title={season.name}>
       <Flex mode="col" className="space-y-4 py-20 min-h-screen items-center">
         <Card title={season.name} coloredTop="bg-primary">
           <h1 className="font-semibold text-lg">
