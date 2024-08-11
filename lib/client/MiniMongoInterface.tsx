@@ -1,5 +1,5 @@
 import { ObjectId, Document } from "bson";
-import { LocalStorageDb, MinimongoDb } from "minimongo";
+import { LocalStorageDb, MinimongoCollection, MinimongoDb } from "minimongo";
 import DbInterface from "./DbInterface";
 import CollectionId from "./CollectionId";
 import { useState, useEffect } from "react";
@@ -11,16 +11,52 @@ export default class MiniMongoInterface implements DbInterface {
   {
     this.db = new LocalStorageDb(
       {}, 
-      () => console.log("MiniMongo DB initialized"), 
+      () => console.log("MiniMongo DB created"), 
       (err: unknown) => console.error("MiniMongo DB failed to initialize:", err)
     );
 
     for (const collectionName in CollectionId)
     {
       this.db.addCollection(collectionName);
+      this.loadCollectionFromLocalStorage(collectionName as CollectionId);
     }
 
+    console.log("MiniMongo DB loaded from local storage");
     return Promise.resolve();
+  }
+
+  private loadCollectionFromLocalStorage(collectionId: CollectionId) {
+    const collection = this.db?.collections[collectionId];    
+    if (!collection)
+      return;
+
+    const objects = localStorage.getItem("db-" + collection.name);
+    if (objects)
+    {
+      const parsedObjects = JSON.parse(objects) as unknown;
+
+      if (!Array.isArray(parsedObjects))
+        return;
+
+      for (const obj of parsedObjects)
+      {
+        collection.upsert(obj);
+      }
+
+      console.log(`Loaded ${parsedObjects.length} documents from local storage for collection: ${collection.name}`);
+    }
+  }
+
+  /**
+   * Minimongo does not support saving collections to local storage out of the box.
+   * You MUST call this method to save the collection or else your changes will not be saved!
+   */
+  private async saveCollection(collection: MinimongoCollection): Promise<void> {
+    if (!collection)
+      return Promise.reject("Collection not found");
+
+    const objects = await collection.find({}).fetch();
+    localStorage.setItem("db-" + collection.name, JSON.stringify(objects));
   }
 
   addObject<Type>(collection: CollectionId, object: any): Promise<Type>
@@ -30,6 +66,7 @@ export default class MiniMongoInterface implements DbInterface {
     if (foundCollection)
     {
       foundCollection.upsert(object);
+      this.saveCollection(foundCollection);
       return Promise.resolve(object as Type);
     }
 
@@ -43,6 +80,7 @@ export default class MiniMongoInterface implements DbInterface {
     if (foundCollection)
     {
       foundCollection.remove(id.toHexString());
+      this.saveCollection(foundCollection);
       return Promise.resolve();
     }
 
@@ -56,6 +94,7 @@ export default class MiniMongoInterface implements DbInterface {
     if (foundCollection)
     {
       foundCollection.upsert({ _id: id.toHexString(), ...newValues });
+      this.saveCollection(foundCollection);
       return Promise.resolve();
     }
 

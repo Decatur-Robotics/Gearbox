@@ -12,7 +12,7 @@ import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
 import { ObjectId } from "mongodb";
-import Collections from "@/lib/client/Collections";
+import Collections from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 

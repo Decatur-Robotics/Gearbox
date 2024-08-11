@@ -13,7 +13,7 @@ import PitReportForm from "@/components/PitReport";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import { Analytics } from "@/lib/client/Analytics";
 import ClientAPI from "@/lib/client/ClientAPI";
-import Collections from "@/lib/client/Collections";
+import Collections from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 

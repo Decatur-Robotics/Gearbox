@@ -12,7 +12,7 @@ import { IoCheckmarkCircle, IoMail } from "react-icons/io5";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
 import { getDatabase } from "@/lib/MongoDB";
-import Collections from "@/lib/client/Collections";
+import Collections from "@/lib/client/CollectionId";
 import { GetServerSideProps } from "next";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";

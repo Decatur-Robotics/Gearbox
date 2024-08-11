@@ -21,7 +21,7 @@ import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { PitStatsLayout, Badge } from "@/lib/Layout";
-import Collections from "@/lib/client/Collections";
+import Collections from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 

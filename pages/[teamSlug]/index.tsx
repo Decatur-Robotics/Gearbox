@@ -13,7 +13,7 @@ import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
 import { getDatabase } from "@/lib/MongoDB";
-import Collections from "@/lib/client/Collections";
+import Collections from "@/lib/client/CollectionId";
 import { ObjectId } from "mongodb";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";

@@ -4,7 +4,7 @@ import UrlResolver, { SerializeDatabaseObject, SerializeDatabaseObjects } from "
 import { getDatabase } from "@/lib/MongoDB";
 import { DbPicklist, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import StatsPage, { StatsPageProps } from "@/components/StatsPage";
-import Collections from "@/lib/client/Collections";
+import Collections from "@/lib/client/CollectionId";
 
 export default function Stats(props: StatsPageProps) {
   return <StatsPage {...props} />;
