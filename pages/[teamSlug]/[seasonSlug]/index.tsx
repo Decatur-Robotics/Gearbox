@@ -39,13 +39,12 @@ export default function Home(props: SeasonPageProps) {
         </Card>
 
         <Card title={"Season Overview"}>
-          <h1 className="font-semibold text-lg">Select a Competition</h1>
           {comp?.length === 0 || !comp ? (
             <div className="w-full h-32">
-              <Loading></Loading>
+              <h1 className="font-semibold text-lg">You currently have no competitions</h1>
             </div>
           ) : (
-            <></>
+            <h1 className="font-semibold text-lg">Select a Competition</h1>
           )}
           {comp.map((comp) => (
             <Link

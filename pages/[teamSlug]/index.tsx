@@ -56,7 +56,7 @@ function Overview(props: TeamPageProps) {
           <Link
             href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
           >
-            <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
+            {(props.currentCompetition == null)? <h1>You have no competitions</h1>: <CompetitionCard comp={props.currentCompetition}></CompetitionCard>}
           </Link>
         </div>
         <div className="divider divider-horizontal max-sm:divider-vertical"></div>
