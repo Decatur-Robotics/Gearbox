@@ -24,6 +24,9 @@ export default function CreateTeam() {
   const [error, setError] = useState("");
   const [allianceNumber,setAllianceNumber] = useState<number>();
   const [allianceName, setAllianceName] = useState<string>();
+  const [creatingTeam, setCreatingTeam] = useState<boolean>();
+  const [settingState, setSettingState] = useState<boolean>(true)
+
 
   const searchTeam = async () => {
     if (!teamNumber) {
@@ -138,11 +141,27 @@ export default function CreateTeam() {
         mode="col"
         className="md:h-full items-center md:justify-center max-sm:py-10"
       >
-        <Card title="Create a Team" className="">
+        {settingState ?  
+        <Card title="Create an Organization" className="">
+          <div className="divider"></div>
+        <div className="btn btn-primary" onClick={()=>{
+          setSettingState(false)
+          setCreatingTeam(false)
+          }}>Create an Alliance</div>
+        <div></div>
+        <div className="btn btn-primary" onClick={()=>{
+          setSettingState(false)
+          setCreatingTeam(true)
+        }}>Create a team</div>
+        </Card>
+        :
+        
+        creatingTeam? <Card title="Create a Team" className="">
           <h1 className="font-semibold text-accent md:ml-4">
             Search our database with your teams number
           </h1>
           <h1 className="text-error">{error}</h1>
+          <div className="btn btn-primary" onClick={()=>setSettingState(true)}>Go Back</div>
           <div className="divider"></div>
           <input
             className="input input-bordered md:w-1/2"
@@ -154,25 +173,6 @@ export default function CreateTeam() {
               setTeamNumber(e.target.value);
             }}
           ></input>
-          <input
-            className="input input-bordered md:w-1/2"
-            placeholder="Alliance Number (7 characters)"
-            maxLength={7}
-            minLength={7}
-            value={allianceNumber}
-            onChange={(e) => {
-              setAllianceNumber(Number(e.target.value));
-            }}
-          ></input>
-          <input
-            className="input input-bordered md:w-1/2"
-            placeholder="Alliance Name"
-            value={allianceName}
-            onChange={(e) => {
-              setAllianceName(e.target.value);
-            }}
-          ></input>
-          <div className="btn" onClick={() => createAlliance(League.FRC)}>Create Alliance Test</div>
           {teamNumber && (
             <div className="md:w-1/2 h-48 mt-10">
               {loading ? (
@@ -194,7 +194,38 @@ export default function CreateTeam() {
               )}
             </div>
           )}
-        </Card>
+        </Card> 
+
+        : 
+
+        <Card title="Create an Alliance" className="">
+          <h1 className="font-semibold text-accent md:ml-4">
+            Create your Scouting Alliance
+          </h1>
+          <h1 className="text-error">{error}</h1>
+          <div className="btn btn-primary" onClick={()=>setSettingState(true)}>Go Back</div>
+          <div className="divider"></div>
+          <input
+            className="input input-bordered md:w-1/2"
+            placeholder="Alliance ID (7 characters)"
+            maxLength={7}
+            minLength={7}
+            value={allianceNumber}
+            onChange={(e) => {
+              setAllianceNumber(Number(e.target.value));
+            }}
+          ></input>
+          <input
+            className="input input-bordered md:w-1/2"
+            placeholder="Alliance Name"
+            value={allianceName}
+            onChange={(e) => {
+              setAllianceName(e.target.value);
+            }}
+          ></input>
+          <div></div>
+          <div className="btn btn-secondary" onClick={() => createAlliance(League.FRC)}>Create Alliance</div>
+        </Card>}
       </Flex>
     </Container>
   );
