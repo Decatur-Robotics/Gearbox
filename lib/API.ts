@@ -12,8 +12,10 @@ import {
   DbPicklist,
   SubjectiveReport,
   SubjectiveReportSubmissionType,
+  SavedCompetition,
 } from "./Types";
-import { GenerateSlug, removeDuplicates } from "./Utils";
+import { GenerateSlug } from "./Utils";
+import { removeDuplicates } from "./client/ClientUtils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
@@ -102,11 +104,8 @@ export namespace API {
       //@ts-ignore
       //prettier-ignore
       if (!req.headers.referer?.includes("/event/") && req.headers.referer?.split("/")[3].length > 0) {
-        const session = await getServerSession(req, res, AuthenticationOptions);
-
         if (
-          req.headers[GearboxHeader]?.toString() !== process.env.API_KEY ||
-          !session
+          req.headers[GearboxHeader]?.toString() !== process.env.API_KEY
         ) {
           new UnauthorizedError(res);
         }
@@ -1037,8 +1036,47 @@ export namespace API {
       return res.status(200).send(team);
     },
 
+    ping: async (req, res, { }) => {
+      return res.status(200).send({ result: "success" });
+    },
+
+    getSubjectiveReportsFromMatches: async (req, res, { db, data }: RouteContents<{ matches: Match[] }>) => {
+      const matchIds = data.matches.map((match) => match._id?.toString());
+      const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
+        match: { $in: matchIds },
+      });
+
+      return res.status(200).send(reports);
+    },
+
+    uploadSavedComp: async (req, res, { db, data }: RouteContents<{ save: SavedCompetition }>) => {
+      const { comp, matches, quantReports: reports, pitReports, subjectiveReports } = data.save;
+
+      const promises: Promise<any>[] = [];
+      promises.push(db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(comp._id), comp));
+
+      for (const match of Object.values(matches)) {
+        promises.push(db.updateObjectById<Match>(Collections.Matches, new ObjectId(match._id), match));
+      }
+
+      for (const report of Object.values(reports)) {
+        promises.push(db.updateObjectById<Report>(Collections.Reports, new ObjectId(report._id), report));
+      }
+
+      for (const report of Object.values(subjectiveReports)) {
+        promises.push(db.updateObjectById<SubjectiveReport>(Collections.SubjectiveReports, new ObjectId(report._id), report));
+      }
+
+      for (const report of Object.values(pitReports)) {
+        promises.push(db.updateObjectById<Pitreport>(Collections.Pitreports, new ObjectId(report._id), report));
+      }
+
+      await Promise.all(promises);
+      return res.status(200).send({ result: "success" });
+    },
+      
     addSlackBot: async (req, res, { db, data }) => {
       return res.status(200).send({ result: "success" });
     }
-  };
+  }; 
 }

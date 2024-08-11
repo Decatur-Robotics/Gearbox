@@ -7,7 +7,7 @@ import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import { QuantData, Report } from "@/lib/Types";
 import { FormLayout } from "@/lib/Layout";
-import { makeObjSerializeable } from "@/lib/Utils";
+import { makeObjSerializeable } from "@/lib/client/ClientUtils";
 import { useEffect } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 
