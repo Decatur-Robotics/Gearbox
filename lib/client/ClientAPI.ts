@@ -209,14 +209,16 @@ export default class ClientAPI {
     number: number,
     type: MatchType,
     blueAlliance: number[],
-    redAlliance: number[]
+    redAlliance: number[],
+    ownerTeam: string
   ) {
     return await this.request("/createMatch", {
-      number: number,
-      type: type,
-      blueAlliance: blueAlliance,
-      redAlliance: redAlliance,
-      compId: compId,
+      number,
+      type,
+      blueAlliance,
+      redAlliance,
+      compId,
+      ownerTeam
     });
   }
 
@@ -423,8 +425,8 @@ export default class ClientAPI {
     return await this.request("/exportCompAsCsv", { compId });
   }
 
-  async regeneratePitReports(tbaId: string | undefined, compId: string | undefined) {
-    return await this.request("/regeneratePitReports", { tbaId, compId });
+  async regeneratePitReports(tbaId: string, compId: string, ownerTeam: string) {
+    return await this.request("/regeneratePitReports", { tbaId, compId, ownerTeam });
   }
 
   async teamCompRanking(tbaId: string, team: number): Promise<{ place: number | string, max: number }> {
@@ -501,9 +503,9 @@ export default class ClientAPI {
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
-  async createPitReportForTeam(teamNumber: number, compId: string) {
+  async createPitReportForTeam(teamNumber: number, compId: string, ownerTeam: string) {
     updateCompInLocalStorage(compId, (comp) => {
-      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData());
+      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData(), ownerTeam);
       pitReport._id = new ObjectId().toString();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;

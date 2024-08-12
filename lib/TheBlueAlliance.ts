@@ -237,7 +237,8 @@ export namespace TheBlueAlliance {
         undefined,
         competitonData.key,
         ConvertDate(competitonData.start_date),
-        ConvertDate(competitonData.end_date)
+        ConvertDate(competitonData.end_date),
+        ""
       );
 
       // maybe give automatic matches later, once scouting is more stabilized
@@ -253,7 +254,8 @@ export namespace TheBlueAlliance {
         data.time,
         competitionLevelToMatchType(data.comp_level),
         tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-        tbaIdsToTeamNumbers(data.alliances.red.team_keys)
+        tbaIdsToTeamNumbers(data.alliances.red.team_keys),
+        ""
       );
     }
 
@@ -270,7 +272,8 @@ export namespace TheBlueAlliance {
             data.time,
             competitionLevelToMatchType(data.comp_level),
             tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-            tbaIdsToTeamNumbers(data.alliances.red.team_keys)
+            tbaIdsToTeamNumbers(data.alliances.red.team_keys),
+            ""
           )
       ) ?? [];
       return matches;
@@ -282,7 +285,7 @@ export namespace TheBlueAlliance {
 
       const competitionTeams = await this.req.getCompetitionTeams(tbaId);
       return competitionTeams.map(
-        ({ team_number }) => new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData())
+        ({ team_number }) => new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData(), "")
       );
     }
 

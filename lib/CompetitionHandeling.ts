@@ -101,6 +101,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
         teamNumber,
         color,
         String(match._id),
+        match.ownerTeam,
         0
       );
 

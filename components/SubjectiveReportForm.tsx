@@ -30,6 +30,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
   function getReportFromForm(e: FormEvent<HTMLFormElement>): SubjectiveReport {
     return {
       _id: undefined,
+      ownerTeam: match.ownerTeam,
       match: match._id as string,
       matchNumber: match?.number ?? 0,
       wholeMatchComment: (e.target as any)[0].value,

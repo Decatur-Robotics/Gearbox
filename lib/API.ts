@@ -145,9 +145,10 @@ export namespace API {
     );
   }
 
-  async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string, gameId: GameId): Promise<string[]> {
+  async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string, gameId: GameId, 
+      ownerTeam: string): Promise<string[]> {
     var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
-    pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.Pitreports, report))._id)
+    pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.Pitreports, { ...report, ownerTeam  }))._id)
 
     return pitreports.map((pit) => String(pit._id));
   }
@@ -371,7 +372,7 @@ export namespace API {
     },
 
     // NEEDS TO BE ADDED TO TEAM DUMBASS
-    createSeason: async (req, res, { db, data }) => {
+    createSeason: async (req, res, { db, data }: RouteContents<{ year: number, gameId: GameId, teamId: string, name: string }>) => {
       // {
       //     year
       //     name
@@ -383,7 +384,8 @@ export namespace API {
           data.name,
           await GenerateSlug(CollectionId.Seasons, data.name),
           data.year,
-          data.gameId
+          data.gameId,
+          data.teamId
         )
       );
       var team = await db.findObjectById<Team>(
@@ -417,7 +419,7 @@ export namespace API {
           (await db.addObject<Match>(CollectionId.Matches, match))._id
       );
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId, (await comp).ownerTeam);
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -449,7 +451,7 @@ export namespace API {
       );
       
       const season = await seasonPromise;
-      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId, season.ownerTeam);
 
       const picklist = await db.addObject<DbPicklist>(CollectionId.Picklists, {
         _id: new ObjectId(),
@@ -464,6 +466,7 @@ export namespace API {
           data.tbaId,
           data.start,
           data.end,
+          season._id ?? "",
           pitReports,
           matches.map((match) => String(match._id)),
           picklist._id.toString(),
@@ -492,7 +495,7 @@ export namespace API {
     regeneratePitReports: async (req, res, { db, data, tba }) => {
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, data.ownerTeam);
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -519,7 +522,8 @@ export namespace API {
           data.time,
           data.type,
           data.redAlliance,
-          data.blueAlliance
+          data.blueAlliance,
+          data.ownerTeam
         )
       );
 
@@ -1006,7 +1010,7 @@ export namespace API {
 
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId));
 
-      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
+      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam);
       const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
 
       if (!pitReportId)

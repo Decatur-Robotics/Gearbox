@@ -166,7 +166,7 @@ export default function CompetitionIndex(props: {
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
-      .regeneratePitReports(comp?.tbaId, comp?._id)
+      .regeneratePitReports(comp?.tbaId!, comp?._id!, team?._id!)
       .then(({ pitReports }: { pitReports: string[] }) => {
         setAttemptedRegeneratingPitReports(true);
         setLoadingPitreports(true);
@@ -415,7 +415,8 @@ export default function CompetitionIndex(props: {
         Number(matchNumber),
         MatchType.Qualifying,
         blueAlliance as number[],
-        redAlliance as number[]
+        redAlliance as number[],
+        team?._id!
       );
     } catch (e) {
       console.error(e);
@@ -425,7 +426,7 @@ export default function CompetitionIndex(props: {
       if (!savedComp) return;
 
       const match = new Match(Number(matchNumber), "", "", Date.now(), MatchType.Qualifying, 
-        blueAlliance as number[], redAlliance as number[]);
+        blueAlliance as number[], redAlliance as number[], team?._id!);
       match._id = new BSON.ObjectId().toHexString();
 
       savedComp.matches[match._id] = match;
@@ -520,7 +521,7 @@ export default function CompetitionIndex(props: {
     console.log("Adding pit report for team", teamToAdd);
     if (!teamToAdd || !comp?._id) return;
 
-    api.createPitReportForTeam(teamToAdd, comp?._id)
+    api.createPitReportForTeam(teamToAdd, comp?._id, team?._id!)
     .catch((e) => {
       console.error(e);
 
@@ -531,7 +532,7 @@ export default function CompetitionIndex(props: {
       console.log("Adding pit report to local storage");
       updateCompInLocalStorage(comp?._id, (comp) => {
         const pitreport = {
-          ...new Pitreport(teamToAdd, games[comp.comp.gameId].createPitReportData()),
+          ...new Pitreport(teamToAdd, games[comp.comp.gameId].createPitReportData(), team?._id!),
           _id: new BSON.ObjectId().toHexString()
         };
         comp.pitReports[teamToAdd] = pitreport;
