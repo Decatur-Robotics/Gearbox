@@ -31,6 +31,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
     return {
       _id: undefined,
       ownerTeam: match.ownerTeam,
+      ownerComp: match.ownerComp,
       match: match._id as string,
       matchNumber: match?.number ?? 0,
       wholeMatchComment: (e.target as any)[0].value,

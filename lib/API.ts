@@ -523,7 +523,8 @@ export namespace API {
           data.type,
           data.redAlliance,
           data.blueAlliance,
-          data.ownerTeam
+          data.ownerTeam,
+          data.ownerComp
         )
       );
 
@@ -1010,7 +1011,7 @@ export namespace API {
 
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId));
 
-      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam);
+      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam, comp._id!);
       const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
 
       if (!pitReportId)

@@ -39,6 +39,16 @@ export class OwnedByTeam extends HasId {
   }
 }
 
+export class OwnedByComp extends OwnedByTeam {
+  ownerComp: string;
+
+  constructor(ownerTeam: string, ownerComp: string) {
+    super(ownerTeam);
+
+    this.ownerComp = ownerComp;
+  }
+}
+
 export class User extends HasId implements NextAuthUser {
   id: string = "";
   name: string | undefined;
@@ -322,7 +332,7 @@ export abstract class PitReportData {
   comments: string = "";
 }
 
-export class Pitreport<TFormData extends PitReportData = PitReportData> extends OwnedByTeam {
+export class Pitreport<TFormData extends PitReportData = PitReportData> extends OwnedByComp {
   teamNumber: number;
 
   submitted: boolean = false;
@@ -330,8 +340,8 @@ export class Pitreport<TFormData extends PitReportData = PitReportData> extends 
 
   data: TFormData | undefined;
 
-  constructor(teamNumber: number, data: TFormData, ownerTeam: string) {
-    super(ownerTeam);
+  constructor(teamNumber: number, data: TFormData, ownerTeam: string, ownerComp: string) {
+    super(ownerTeam, ownerComp);
 
     this.teamNumber = teamNumber;
     this.data = data;
@@ -438,7 +448,7 @@ export enum MatchType {
   Finals = "Finals",
 }
 
-export class Match extends OwnedByTeam {
+export class Match extends OwnedByComp {
   slug: string | undefined;
   tbaId: string | undefined;
 
@@ -465,9 +475,10 @@ export class Match extends OwnedByTeam {
     blueAlliance: Alliance,
     redAlliance: Alliance,
     ownerTeam: string,
+    ownerComp: string,
     reports: string[] = [],
   ) {
-    super(ownerTeam);
+    super(ownerTeam, ownerComp);
 
     this.number = number;
     this.tbaId = tbaId;
@@ -480,7 +491,7 @@ export class Match extends OwnedByTeam {
   }
 }
 
-export class Report<TFormData extends QuantData = QuantData> extends OwnedByTeam {
+export class Report<TFormData extends QuantData = QuantData> extends OwnedByComp {
   timestamp: number | undefined; // time it was initially submitted
   user: string | undefined; // id of user assigned to report
   submitter: string | undefined; // id of user who submitted the report
@@ -501,10 +512,11 @@ export class Report<TFormData extends QuantData = QuantData> extends OwnedByTeam
     color: AllianceColor,
     match: string,
     ownerTeam: string,
+    ownerComp: string,
     timestamp: number = 0,
     checkInTimestamp: string | undefined = undefined
   ) {
-    super(ownerTeam);
+    super(ownerTeam, ownerComp);
 
     this.timestamp = timestamp;
     this.user = user;
@@ -523,7 +535,7 @@ export enum SubjectiveReportSubmissionType {
   NotSubmitted = "NotSubmitted",
 }
 
-export class SubjectiveReport extends OwnedByTeam {
+export class SubjectiveReport extends OwnedByComp {
   submitter: string | undefined;
   submitted: SubjectiveReportSubmissionType = SubjectiveReportSubmissionType.NotSubmitted;
 
@@ -533,8 +545,8 @@ export class SubjectiveReport extends OwnedByTeam {
   wholeMatchComment: string = "";
   robotComments: { [key: number]: string } = {};
 
-  constructor(match: string, matchNumber: number, ownerTeam: string) {
-    super(ownerTeam);
+  constructor(match: string, matchNumber: number, ownerTeam: string, ownerComp: string) {
+    super(ownerTeam, ownerComp);
 
     this.match = match;
     this.matchNumber = matchNumber;

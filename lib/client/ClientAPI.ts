@@ -210,7 +210,8 @@ export default class ClientAPI {
     type: MatchType,
     blueAlliance: number[],
     redAlliance: number[],
-    ownerTeam: string
+    ownerTeam: string,
+    ownerComp: string
   ) {
     return await this.request("/createMatch", {
       number,
@@ -218,7 +219,8 @@ export default class ClientAPI {
       blueAlliance,
       redAlliance,
       compId,
-      ownerTeam
+      ownerTeam,
+      ownerComp,
     });
   }
 
@@ -505,7 +507,7 @@ export default class ClientAPI {
 
   async createPitReportForTeam(teamNumber: number, compId: string, ownerTeam: string) {
     updateCompInLocalStorage(compId, (comp) => {
-      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData(), ownerTeam);
+      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData(), ownerTeam, compId);
       pitReport._id = new ObjectId().toString();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;
