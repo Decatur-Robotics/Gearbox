@@ -79,6 +79,9 @@ export default function DownloadModal(props: {
    *  - Renato
    */
   function readQrCode(code: IDetectedBarcode[]) {
+    if (!confirm("Scan QR code?"))
+      return;
+
     type QrData = {
       quantReport?: Report,
       pitReport?: Pitreport,
