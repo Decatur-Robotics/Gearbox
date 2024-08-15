@@ -10,6 +10,7 @@ import Loading from "./Loading";
 import Card from "./Card";
 import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
+import QrCode from "./QrCode";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -137,7 +138,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
           </div>
           <Card title="Share while offline" className="w-[80%]">
             <div className="w-full flex justify-center">
-              <QRCode value={JSON.stringify({
+              <QrCode value={JSON.stringify({
                 subjectiveReport: {
                   ...report,
                   _id: new BSON.ObjectId().toHexString()

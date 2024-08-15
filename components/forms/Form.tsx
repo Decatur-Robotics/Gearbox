@@ -19,6 +19,7 @@ import Loading from "../Loading";
 import QRCode from "react-qr-code";
 import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
+import QrCode from "../QrCode";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -219,7 +220,7 @@ export default function Form(props: FormProps) {
         {submitting ? <Loading bg="" size={8} /> : "Submit"}
       </button>
       <Card className="justify-center w-fit bg-base-300" title="Share while offline">
-        <QRCode value={JSON.stringify({
+        <QrCode value={JSON.stringify({
           quantReport: {
             ...props.report,
             data: formData,

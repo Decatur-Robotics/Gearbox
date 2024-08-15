@@ -11,6 +11,7 @@ import Card from "./Card";
 import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
+import QrCode from "./QrCode";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -171,7 +172,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
       </Card>
       <Card title="Share while offline">
         <div className="w-full flex justify-center">
-          <QRCode value={JSON.stringify({
+          <QrCode value={JSON.stringify({
             pitReport: {
               ...pitreport,
               submitted: true,
