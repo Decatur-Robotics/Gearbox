@@ -79,9 +79,11 @@ export default function DownloadModal(props: {
    *  - Renato
    */
   function readQrCode(code: IDetectedBarcode[]) {
+    console.log("Found QR code...");
     if (!confirm("Scan QR code?"))
       return;
 
+    console.log("Reading QR code...");
     type QrData = {
       quantReport?: Report,
       pitReport?: Pitreport,
@@ -90,6 +92,7 @@ export default function DownloadModal(props: {
 
     const data = code[0].rawValue;
     const qrData = JSON.parse(data) as QrData;
+    console.log("Read QR code");
 
     if (!qrData.quantReport && !qrData.pitReport && !qrData.subjectiveReport) {
       console.error("Invalid QR code data", qrData);
