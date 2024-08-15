@@ -2,57 +2,129 @@ import { ObjectId } from "bson"
 import CollectionId from "./client/CollectionId"
 import { getDatabase } from "./MongoDB"
 import { Account, Competition, DbPicklist, Match, OwnedByComp, OwnedByTeam, Pitreport, Report, Season, Session, SubjectiveReport, Team, User } from "./Types"
+import DbInterface from "./client/DbInterface"
 
-type Collection<TDocument> = {
-  canRead: (userId: string, document: TDocument) => Promise<boolean> | boolean
-  canWrite: (userId: string, document: TDocument, update: Partial<TDocument>) => Promise<boolean> | boolean
+class Collection<TDocument> {
+  canRead: (userId: string, document: TDocument, db: DbInterface) => Promise<boolean>
+  canWrite: (userId: string, document: TDocument, update: Partial<TDocument>, db: DbInterface) => Promise<boolean>
+
+  constructor(
+      canRead: (userId: string, document: TDocument, db: DbInterface) => Promise<boolean>, 
+      canWrite: (userId: string, document: TDocument, update: Partial<TDocument>, db: DbInterface) => Promise<boolean>
+    ) {
+    this.canRead = canRead;
+    this.canWrite = canWrite;
+  }
 }
 
-async function canReadOwnedByTeam<TDocument extends OwnedByTeam>(userId: string, document: TDocument) {
-  const team = await getDatabase().then((db) => db.findObjectById<Team>(CollectionId.Teams, new ObjectId(document.ownerTeam)));
+namespace AccessLevels {
+  export namespace Read {
+    export async function ifOnOwnerTeam<TDocument extends OwnedByTeam | Team>(userId: string, document: TDocument, db: DbInterface) {
+      const team = "ownerTeam" in document
+        ? db.findObjectById<Team>(CollectionId.Teams, new ObjectId(document.ownerTeam))
+        : Promise.resolve(document as Team);
 
-  return team?.users.includes(userId);
-}
+      return (await team)?.users.includes(userId);
+    }
 
-async function canReadOwnedByComp<TDocument extends OwnedByComp>(userId: string, document: TDocument) {
-  const comp = getDatabase().then((db) => db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(document.ownerComp)));
-  const canReadTeam = canReadOwnedByTeam(userId, document);
+    export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: string, document: TDocument, 
+        db: DbInterface) {
+      const comp = "ownerComp" in document 
+        ? db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(document.ownerComp))
+        : Promise.resolve(document as Competition);
+      const canReadTeam = ifOnOwnerTeam(userId, document, db);
 
-  return (await comp).publicData || await canReadTeam;
+      return (await comp).publicData || await canReadTeam;
+    }
+
+    export async function never() {
+      return false;
+    }
+
+    export async function always() {
+      return true;
+    }
+  }
+
+  export namespace Write {
+    export async function ifOnOwnerTeam<TDocument extends OwnedByTeam>(userId: string, document: TDocument, update: Partial<TDocument>, 
+        db: DbInterface) {
+      return Read.ifOnOwnerTeam(userId, document, db);
+    }
+    
+    export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: string, document: TDocument, 
+        update: Partial<TDocument>, db: DbInterface) {
+      return Read.ifOnOwnerTeamOrCompIsPublic(userId, document, db);
+    }
+
+    export async function ifOnOwnerTeamOrQueryIsLimitedToKeys<TDocument extends OwnedByTeam | Team>(
+        userId: string, document: TDocument, query: any, db: DbInterface, allowedKeys: (keyof TDocument)[]) {
+      const isOnTeam = Read.ifOnOwnerTeam(userId, document, query);
+
+      return isOnTeam || Object.keys(query).every(key => allowedKeys.includes(key as keyof TDocument));
+    }
+
+    export async function always() {
+      return true;
+    }
+
+    export async function never() {
+      return false;
+    }
+  }
 }
 
 export const Collections: { [id in CollectionId]: Collection<any> } = {
-  [CollectionId.Seasons]: {
-    canRead: canReadOwnedByTeam
-  } as Collection<Season>,
-  [CollectionId.Competitions]: {
-    canRead: canReadOwnedByTeam
-  } as Collection<Competition>,
-  [CollectionId.Matches]: {
-    canRead: canReadOwnedByComp
-  } as Collection<Match>,
-  [CollectionId.Reports]: {
-    canRead: canReadOwnedByComp
-  } as Collection<Report>,
-  [CollectionId.Teams]: {
-    canRead: (userId, document) => true,
-    canWrite: (userId, document, update) => 
-    {
-      return true;
-    },
-  } as Collection<Team>,
-  [CollectionId.Users]: {} as Collection<User>,
-  [CollectionId.Accounts]: {} as Collection<Account>,
-  [CollectionId.Sessions]: {} as Collection<Session>,
-  [CollectionId.Forms]: {} as Collection<unknown>,
-  [CollectionId.Pitreports]: {
-    canRead: canReadOwnedByComp
-  } as Collection<Pitreport>,
-  [CollectionId.Picklists]: {
-    canRead: canReadOwnedByComp
-  } as Collection<DbPicklist>,
-  [CollectionId.SubjectiveReports]: {
-    canRead: canReadOwnedByComp
-  } as Collection<SubjectiveReport>,
-  [CollectionId.SlackInstallations]: {} as Collection<unknown>,
+  [CollectionId.Seasons]: new Collection<Season>(
+    AccessLevels.Read.ifOnOwnerTeam, 
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.Competitions]: new Collection<Competition>(
+    AccessLevels.Read.ifOnOwnerTeamOrCompIsPublic, 
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.Matches]: new Collection<Match>(
+    AccessLevels.Read.ifOnOwnerTeamOrCompIsPublic, 
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.Reports]: new Collection<Report>(
+    AccessLevels.Read.ifOnOwnerTeamOrCompIsPublic, 
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.Teams]: new Collection<Team>(
+    AccessLevels.Read.always, 
+    (...args) => AccessLevels.Write.ifOnOwnerTeamOrQueryIsLimitedToKeys(...args, ["requests"])
+  ),
+  [CollectionId.Users]: new Collection<User>(
+    AccessLevels.Read.always,
+    AccessLevels.Write.always
+  ),
+  [CollectionId.Accounts]: new Collection<Account>(
+    AccessLevels.Read.always,
+    AccessLevels.Write.always
+  ),
+  [CollectionId.Sessions]: new Collection<Session>(
+    AccessLevels.Read.always,
+    AccessLevels.Write.always
+  ),
+  [CollectionId.Forms]: new Collection<unknown>(
+    AccessLevels.Read.always,
+    AccessLevels.Write.always
+  ),
+  [CollectionId.Pitreports]: new Collection<Pitreport>(
+    AccessLevels.Read.ifOnOwnerTeamOrCompIsPublic,
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.Picklists]: new Collection<DbPicklist>(
+    AccessLevels.Read.ifOnOwnerTeamOrCompIsPublic,
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.SubjectiveReports]: new Collection<SubjectiveReport>(
+    AccessLevels.Read.ifOnOwnerTeamOrCompIsPublic,
+    AccessLevels.Write.ifOnOwnerTeam
+  ),
+  [CollectionId.SlackInstallations]: new Collection<unknown>(
+    AccessLevels.Read.never,
+    AccessLevels.Write.never
+  ),
 }

@@ -566,6 +566,10 @@ export interface EventData {
 
 export type DbPicklist = {
   _id: string;
+
+  ownerTeam: string;
+  ownerComp: string;
+
   picklists: {
     [name: string]: number[];
   };
