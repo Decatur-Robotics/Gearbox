@@ -350,7 +350,7 @@ export namespace CenterStage {
 
   const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
     "Auto": [
-      [["AutoScoredBackstage", "AutoScoredBackdrop"]],
+      [["AutoScoredBackstage"], ["AutoScoredBackdrop"]],
       "AutoPlacedPixelOnSpikeMark",
       "AutoParked"
     ],
@@ -384,18 +384,18 @@ export namespace CenterStage {
     ],
     "Teleop": [
       {
-        stats: [
-          { label: "Avg Scored Backstage", key: "TeleopScoredBackstage" }
-        ],
-        label: "Overall Teleop Accuracy"
+        label: "Avg Scored Backstage", key: "TeleopScoredBackstage"
+      },
+      {
+        label: "Avg Mosaics", key: "Mosaics"
+      },
+      {
+        label: "Avg Set Lines Reached", key: "SetLinesReached"
       }
     ],
     "Endgame": [
       {
-        stats: [
-          { label: "Avg Landing Zone Reached", key: "LandingZoneReached" }
-        ],
-        label: "Overall Endgame Accuracy"
+        label: "Avg Landing Zone Reached", key: "LandingZoneReached"
       }
     ]
   }
@@ -483,6 +483,8 @@ export namespace CenterStage {
 
   /** NOT ACCURATE, just for demo */
   function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+    console.log("Getting avg points");
+
     if (!reports) return 0;
 
     const autoBackstage = NumericalTotal("AutoScoredBackstage", reports);
@@ -492,7 +494,9 @@ export namespace CenterStage {
     const setLines = NumericalTotal("SetLinesReached", reports);
     const landingZone = NumericalTotal("LandingZoneReached", reports);
 
-    return Round(autoBackstage + autoBackdrop + teleopBackstage + mosaics + setLines + landingZone) / reports.length;
+    console.log(`Reports: ${reports.length}`);
+    console.log(`Auto Backstage: ${autoBackstage}, Auto Backdrop: ${autoBackdrop}, Teleop Backstage: ${teleopBackstage}, Mosaics: ${mosaics}, Set Lines: ${setLines}, Landing Zone: ${landingZone}`);
+    return Round(autoBackstage + autoBackdrop + teleopBackstage + mosaics + setLines + landingZone) / Math.max(reports.length, 1);
   }
 
   export const game = new Game("Center Stage", 2024, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
