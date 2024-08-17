@@ -20,6 +20,7 @@ import {
 import { GameId } from "./GameId";
 import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
 import { ObjectId } from 'bson';
+import { games } from "../games";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -503,7 +504,8 @@ export default class ClientAPI {
 
   async createPitReportForTeam(teamNumber: number, compId: string) {
     updateCompInLocalStorage(compId, (comp) => {
-      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData());
+      // Can't use comp.game because JSON doesn't save methods
+      const pitReport = new Pitreport(teamNumber, games[comp.comp.gameId].createPitReportData());
       pitReport._id = new ObjectId().toString();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;
