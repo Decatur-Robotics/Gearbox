@@ -1,6 +1,6 @@
 export enum GameId {
   Crescendo = "Crescendo",
-  TestGame = "Test"
+  CenterStage = "CenterStage"
 }
 
 export const defaultGameId = GameId.Crescendo;

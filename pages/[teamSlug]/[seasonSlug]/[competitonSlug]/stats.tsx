@@ -15,6 +15,7 @@ import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import StatsPage, { StatsPageProps } from "@/components/StatsPage";
+import { ObjectId } from "mongodb";
 
 export default function Stats(props: StatsPageProps) {
   return <StatsPage {...props} />;
@@ -36,9 +37,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     match: { $in: url.competition?.matches },
   });
 
-  const picklists = await db.findObject<DbPicklist>(Collections.Picklists, {
-    _id: url.competition?.picklist,
-  });
+  const picklists = await db.findObjectById<DbPicklist>(Collections.Picklists, new ObjectId(url.competition?.picklist));
+  console.log("Found picklists:", url.competition?.picklist, picklists);
 
   return {
     props: {

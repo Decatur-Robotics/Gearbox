@@ -165,30 +165,44 @@ export default function Form(props: FormProps) {
 
     const elements = [];
 
+    console.log(`Block: ${rowCount}x${colCount}: ${block.flat().map(e => e.key).join(", ")}`);
     for (let r = 0; r < rowCount; r++) {
       for (let c = 0; c < colCount; c++) {
-        let rounding = "";
-        if (r === 0) rounding += "t";
-        else if (r === rowCount - 1) rounding += "b";
+        let topRounding = "", bottomRounding = "";
 
-        if (c === 0) rounding += "l";
-        else if (c === colCount - 1) rounding += "r";
+        if (r === 0) {
+          if (c === 0 || c === colCount - 1)
+            topRounding = "t";
 
-        // Just having rounded-t will cause side effects
-        if (rounding.length === 1)
-          rounding = "";
+          if (colCount > 1) {
+            if (c === 0) topRounding += "l";
+            if (c === colCount - 1) topRounding += "r";
+          }
+        }
+
+        if (r === rowCount - 1) {
+          if (c === 0 || c === colCount - 1)
+            bottomRounding = "b";
+
+          if (colCount > 1) {
+            if (c === 0) bottomRounding += "l";
+            if (c === colCount - 1) bottomRounding += "r";
+          }
+        }
+
+        console.log(`(${r}, ${c}) - ${topRounding}, ${bottomRounding}`);
 
         if (!BlockElement.isBlock(block[c][r])) {
           const element = block[c][r] as FormElement<QuantData>;
 
           elements.push(<IncrementButton dataKey={element.key as string} data={formData} 
-            text={element.label ?? element.key as string} callback={setCallback} rounded={rounding}/>);
+            text={element.label ?? element.key as string} callback={setCallback} topRounding={topRounding} bottomRounding={bottomRounding} />);
         }
       }
     }
 
     return (
-      <div key={block.map(e => e.keys).join(",")} className="w-full h-full flex flex-col items-center">
+      <div key={block.map(e => e.keys).join(",")} className="w-full flex flex-col items-center">
         <div className={`w-full grid grid-cols-${colCount} grid-rows-${rowCount}`}>
           {elements}
         </div>

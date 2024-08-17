@@ -42,6 +42,8 @@ function getBaseBadges(pitReport: Pitreport<PitReportData> | undefined, quantita
   return badges;
 }
 
+// Data keys use upper camel case so they can be used as labels in the forms
+
 export namespace Crescendo {
   export class QuantitativeData extends QuantData {
     AutoScoredAmp: number = 0; // # of times scored in the amp
@@ -325,36 +327,184 @@ export namespace Crescendo {
    getBadges, getAvgPoints);
 }
 
-export namespace TestGame {
-  const pitReportLayout: FormLayoutProps<Crescendo.PitData> = {
-    "Shooter": ["canScoreAmp", "canScoreSpeaker", "fixedShooter", "canScoreFromDistance"],
-    "Climber": ["canClimb"],
+export namespace CenterStage {
+  export class QuantitativeData extends QuantData {
+    AutoScoredBackstage: number = 0;
+    AutoScoredBackdrop: number = 0;
+    AutoPlacedPixelOnSpikeMark: boolean = false;
+    AutoParked: boolean = false;
+
+    TeleopScoredBackstage: number = 0;
+    Mosaics: number = 0;
+    SetLinesReached: number = 0;
+
+    LandingZoneReached: number = 0;
+    EndgameParked: boolean = false;
+    EndgameClimbed: boolean = false;
   }
 
-  const quantitativeReportLayout: FormLayoutProps<Crescendo.QuantitativeData> = {
+  export class PitData extends PitReportData {
+    HasTeamProp: boolean = false;
+    HasDrone: boolean = false;
   }
 
-  const statsLayout: StatsLayout<Crescendo.PitData, Crescendo.QuantitativeData> = {
+  const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+    "Auto": [
+      [["AutoScoredBackstage"], ["AutoScoredBackdrop"]],
+      "AutoPlacedPixelOnSpikeMark",
+      "AutoParked"
+    ],
+    "Teleop": [
+      [
+        ["TeleopScoredBackstage"], 
+        ["Mosaics"], 
+        ["SetLinesReached"]
+      ]
+    ],
+    "Endgame": [
+      [["LandingZoneReached"]],
+      "EndgameParked",
+      "EndgameClimbed"
+    ]
   }
 
-  const pitStatsLayout: PitStatsLayout<Crescendo.PitData, Crescendo.QuantitativeData> = {
-    overallSlideStats: [{ key: "autoNotes", label: "Auto Notes Scored" }],
-    individualSlideStats: [],
-    robotCapabilities: [],
+  const pitReportLayout: FormLayoutProps<PitData> = {
+    "Props": ["HasTeamProp", "HasDrone"]
+  }
+
+  const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+    "Auto": [
+      {
+        stats: [
+          { label: "Avg Scored Backstage", key: "AutoScoredBackstage" },
+          { label: "Avg Scored Backdrop", key: "AutoScoredBackdrop" }
+        ],
+        label: "Overall Auto Accuracy"
+      }
+    ],
+    "Teleop": [
+      {
+        label: "Avg Scored Backstage", key: "TeleopScoredBackstage"
+      },
+      {
+        label: "Avg Mosaics", key: "Mosaics"
+      },
+      {
+        label: "Avg Set Lines Reached", key: "SetLinesReached"
+      }
+    ],
+    "Endgame": [
+      {
+        label: "Avg Landing Zone Reached", key: "LandingZoneReached"
+      }
+    ]
+  }
+
+  const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+    overallSlideStats: [
+      {
+        label: "Avg Props",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          return quantitativeReports.reduce(
+            (acc, report) => acc + report.data.HasTeamProp + report.data.HasDrone, 0)
+            / quantitativeReports.length;
+        }
+      }
+    ],
+    individualSlideStats: [
+      {
+        label: "Avg Auto Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const autoBackstage = NumericalTotal("AutoScoredBackstage", quantitativeReports);
+          const autoBackdrop = NumericalTotal("AutoScoredBackdrop", quantitativeReports);
+
+          return Round(autoBackstage + autoBackdrop) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Teleop Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const teleopBackstage = NumericalTotal("TeleopScoredBackstage", quantitativeReports);
+          const mosaics = NumericalTotal("Mosaics", quantitativeReports);
+          const setLines = NumericalTotal("SetLinesReached", quantitativeReports);
+
+          return Round(teleopBackstage + mosaics + setLines) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Endgame Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const landingZone = NumericalTotal("LandingZoneReached", quantitativeReports);
+
+          return Round(landingZone) / quantitativeReports.length;
+        }
+      }
+    ],
+    robotCapabilities: [
+      {
+        label: "Has Team Prop",
+        key: "HasTeamProp"
+      },
+      {
+        label: "Has Drone",
+        key: "HasDrone"
+      }
+    ],
     graphStat: {
-      label: "Avg Notes Scored",
-      get: (pitReport: Pitreport<Crescendo.PitData> | undefined, quantitativeReports: Report<Crescendo.QuantitativeData>[] | undefined) => {
-        return 0;
+      label: "Avg Props",
+      get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+        if (!quantitativeReports) return 0;
+
+        return quantitativeReports.reduce(
+          (acc, report) => acc + report.data.HasTeamProp + report.data.HasDrone, 0)
+          / quantitativeReports.length;
       }
     }
   }
 
-  export const game = new Game("Test", 2024, League.FTC, Crescendo.QuantitativeData, Crescendo.PitData, 
-    pitReportLayout, quantitativeReportLayout, statsLayout, pitStatsLayout, "Crescendo", 
-    "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png", getBaseBadges, () => 0);
+  function getBadges(pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) {
+    const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+    if (pitReport?.data?.HasDrone)
+      badges.push({ text: "Has Drone", color: "primary" });
+    if (pitReport?.data?.HasTeamProp)
+      badges.push({ text: "Has Team Prop", color: "info" });
+
+    return badges;
+  }
+
+  /** NOT ACCURATE, just for demo */
+  function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+    console.log("Getting avg points");
+
+    if (!reports) return 0;
+
+    const autoBackstage = NumericalTotal("AutoScoredBackstage", reports);
+    const autoBackdrop = NumericalTotal("AutoScoredBackdrop", reports);
+    const teleopBackstage = NumericalTotal("TeleopScoredBackstage", reports);
+    const mosaics = NumericalTotal("Mosaics", reports);
+    const setLines = NumericalTotal("SetLinesReached", reports);
+    const landingZone = NumericalTotal("LandingZoneReached", reports);
+
+    console.log(`Reports: ${reports.length}`);
+    console.log(`Auto Backstage: ${autoBackstage}, Auto Backdrop: ${autoBackdrop}, Teleop Backstage: ${teleopBackstage}, Mosaics: ${mosaics}, Set Lines: ${setLines}, Landing Zone: ${landingZone}`);
+    return Round(autoBackstage + autoBackdrop + teleopBackstage + mosaics + setLines + landingZone) / Math.max(reports.length, 1);
+  }
+
+  export const game = new Game("Center Stage", 2024, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
+    pitStatsLayout, "CenterStage", "https://www.firstinspires.org/sites/default/files/uploads/resource_library/ftc/centerstage/centerstage.png",
+    getBadges, getAvgPoints);
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
   [GameId.Crescendo]: Crescendo.game,
-  [GameId.TestGame]: TestGame.game
+  [GameId.CenterStage]: CenterStage.game
 });

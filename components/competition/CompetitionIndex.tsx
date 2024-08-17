@@ -123,7 +123,7 @@ export default function CompetitionIndex(props: {
 
   const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
 
-  const [teamToAdd, setTeamToAdd] = useState<number | undefined>();
+  const [teamToAdd, setTeamToAdd] = useState<number>(0);
 
   const [newCompName, setNewCompName] = useState(comp?.name);
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
@@ -366,7 +366,7 @@ export default function CompetitionIndex(props: {
 
     // Load picklists
     if (comp?._id)
-      api.getPicklist(comp?._id).then(setPicklists);
+      api.getPicklist(comp?._id).then(setPicklists).catch(console.error);
 
     // Resync pit reports if none are present
     if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
@@ -518,29 +518,10 @@ export default function CompetitionIndex(props: {
 
   function addTeam() {
     console.log("Adding pit report for team", teamToAdd);
-    if (!teamToAdd || !comp?._id) return;
+    if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
 
     api.createPitReportForTeam(teamToAdd, comp?._id)
-    .catch((e) => {
-      console.error(e);
-
-      // Save pit report to local storage
-      if (!comp._id)
-        return;
-
-      console.log("Adding pit report to local storage");
-      updateCompInLocalStorage(comp?._id, (comp) => {
-        const pitreport = {
-          ...new Pitreport(teamToAdd, games[comp.comp.gameId].createPitReportData()),
-          _id: new BSON.ObjectId().toHexString()
-        };
-        comp.pitReports[teamToAdd] = pitreport;
-        comp.comp.pitReports.push(pitreport._id!);
-      });
-    })
-    .finally(() => {
-      location.reload();
-    });
+      .then(location.reload);
   }
 
   async function saveCompChanges() {
