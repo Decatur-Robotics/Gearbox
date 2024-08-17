@@ -114,14 +114,14 @@ export default function Stats(props: StatsPageProps) {
         </a>
         <a
           role="tab"
-          className={`tab tab-disabled tab-md ${
+          className={`tab tab-md ${
             page === 2 ? "tab-active" : ""
           }`}
           onClick={() => {
             setPage(2);
           }}
         >
-          Prediction (Coming Soon!)
+          Prediction (Beta)
         </a>
         {/* <a role="tab" className={`tab tab-md `} onClick={resync}>
           Resync {" "}
