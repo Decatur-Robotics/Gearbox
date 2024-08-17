@@ -521,7 +521,7 @@ export default function CompetitionIndex(props: {
     if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
 
     api.createPitReportForTeam(teamToAdd, comp?._id)
-      .then(location.reload);
+      .finally(location.reload);
   }
 
   async function saveCompChanges() {
