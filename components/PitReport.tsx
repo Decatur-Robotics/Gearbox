@@ -75,16 +75,17 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     const key = element.key as string;
 
     if (element.type === "image")
-      return <ImageUpload report={pitreport} callback={setCallback} />
+      return <ImageUpload key={key} report={pitreport} callback={setCallback} />
 
     if (element.type === "boolean")
-      return <Checkbox label={element.label ?? element.key as string} dataKey={key} data={pitreport} callback={setCallback} 
+      return <Checkbox key={key} label={element.label ?? element.key as string} dataKey={key} data={pitreport} callback={setCallback} 
         divider={!isLastInHeader} />
 
     if (element.type === "number")
       return (<>
-        <h1 className="font-semibold text-lg">{element.label}</h1>
+        <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
         <input
+          key={key + "i"}
           value={pitreport.data?.[key]}
           onChange={(e) => setCallback(key, e.target.value)}
           type="number"
@@ -96,6 +97,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     if (element.type === "string")
       return (
         <textarea
+          key={key}
           value={pitreport.data?.comments}
           className="textarea textarea-primary w-[90%]"
           placeholder="Say Something Important..."
@@ -110,8 +112,9 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
 
       return (
         <>
-          <span>{entry[0]}</span>
+          <span key={key + index + "s"}>{entry[0]}</span>
           <input
+            key={key + index + "i"}
             type="radio"
             className={`radio radio-${color}`}
             onChange={() =>
@@ -124,8 +127,8 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     });
 
     return (<>
-      <h1 className="font-semibold text-lg">{element.label}</h1>
-      <div className="grid grid-cols-2 translate-x-6 space-y-1">{entries}</div>
+      <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
+      <div key={key + "d"} className="grid grid-cols-2 translate-x-6 space-y-1">{entries}</div>
     </>);
   }
 

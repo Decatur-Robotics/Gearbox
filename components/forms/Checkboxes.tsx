@@ -13,7 +13,9 @@ export type RadioProps = {
 };
 
 export default function Checkbox(props: CheckboxProps) {
-  const checked = props.data instanceof Pitreport ? props.data.data?.[props.dataKey] : props.data?.[props.dataKey];
+  console.log("Props:", props);
+  const checked = "data" in props.data ? props.data.data?.[props.dataKey] : props.data?.[props.dataKey];
+  console.log(`Loaded checkbox ${props.dataKey} with value ${checked} (PitReport: ${props.data instanceof Pitreport})`);
 
   return (
     <label className={`w-5/6 label cursor-pointer flex flex-row space-x-8 ${props.divider && "border-b-2 border-slate-600"}`}>

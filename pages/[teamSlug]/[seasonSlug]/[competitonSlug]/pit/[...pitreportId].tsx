@@ -23,7 +23,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
   return (
     <Container requireAuthentication={false} hideMenu={!hide} title={`${props.pitreport.teamNumber} | Pit Scouting`}>
       <PitReportForm pitReport={props.pitreport} layout={props.layout} usersteamNumber={props.teamNumber} 
-        compName={props.compName} username={session.user?.name} />
+        compName={props.compName} username={session?.user?.name} />
     </Container>
   );
 }
