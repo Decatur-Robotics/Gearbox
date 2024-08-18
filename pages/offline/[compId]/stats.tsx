@@ -13,7 +13,7 @@ export default function OfflineStats() {
       reports={Object.values(savedComp.quantReports).filter((r) => r.submitted)}
       pitReports={Object.values(savedComp.pitReports)}
       subjectiveReports={Object.values(savedComp.subjectiveReports)}
-      picklists={savedComp.picklists ?? { _id: "", picklists: {} }}
+      picklists={savedComp.picklists ?? { _id: "", picklists: {}, ownerTeam: "", ownerComp: "" }}
     />
   );
 }

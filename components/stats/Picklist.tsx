@@ -184,7 +184,9 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
       return acc;
     }, {
       _id: props.picklist._id,
-      picklists: {}
+      picklists: {},
+      ownerTeam: props.picklist.ownerTeam,
+      ownerComp: props.picklist.ownerComp
     });
 
     updateCompInLocalStorage(props.compId, (comp) => comp.picklists = picklistDict);

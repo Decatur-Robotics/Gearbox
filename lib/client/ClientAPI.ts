@@ -58,7 +58,7 @@ export default class ClientAPI {
       body: JSON.stringify(body),
     });
     
-    return await rawResponse.json();
+    return await rawResponse.json().catch(() => console.error("Failed to parse response"));
   }
   
   /**
@@ -137,6 +137,9 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated does not have security checks
+   */
   async allTeams(): Promise<Team[]> {
     return await this.request("/findAll", { collection: "Teams" });
   }

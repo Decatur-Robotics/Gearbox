@@ -32,6 +32,7 @@ import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
 import CollectionId from "./client/CollectionId";
+import { Collections } from "./Collections";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -41,6 +42,7 @@ export namespace API {
     db: MongoDBInterface;
     tba: TheBlueAlliance.Interface;
     data: TData;
+    user: User | undefined;
   };
 
 
@@ -92,7 +94,7 @@ export namespace API {
       this.db = getDatabase();
       this.tba = new TheBlueAlliance.Interface();
       this.basePath = base;
-      this.slackClient = new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES);
+      this.slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
     }
 
     async handleRequest(req: NextApiRequest, res: NextApiResponse) {
@@ -118,12 +120,20 @@ export namespace API {
         : routeRaw;
 
       if (route in this.routes) {
-        this.routes[route](req, res, {
-          slackClient: this.slackClient,
-          db: await this.db,
-          tba: this.tba,
-          data: req.body,
-        });
+        const session = getServerSession(req, res, AuthenticationOptions);
+
+        try {
+          this.routes[route](req, res, {
+            slackClient: this.slackClient,
+            db: await this.db,
+            tba: this.tba,
+            data: req.body,
+            user: (await session)?.user as User | undefined,
+          });
+        } catch (e) {
+          console.log("Error executing route:", e);
+          res.status(500).send({ error: e });
+        }
       } else {
         new NotFoundError(res, route);
         return;
@@ -146,8 +156,8 @@ export namespace API {
   }
 
   async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string, gameId: GameId, 
-      ownerTeam: string): Promise<string[]> {
-    var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
+      ownerTeam: string, ownerComp: string): Promise<string[]> {
+    var pitreports = await tba.getCompetitionPitreports(tbaId, gameId, ownerTeam, ownerComp);
     pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.Pitreports, { ...report, ownerTeam  }))._id)
 
     return pitreports.map((pit) => String(pit._id));
@@ -203,34 +213,52 @@ export namespace API {
       res.status(200).send(await db.deleteObjectById(collection, id));
     },
 
-    find: async (req, res, { db, data }) => {
+    find: async (req, res, { db, data, user }) => {
       // {
       //     collection,
       //     query
       // }
-      const collection = data.collection;
+
+      const collectionId = data.collection as CollectionId;
+      const collection = Collections[collectionId];
       var query = data.query;
 
       if (query._id) {
-        query._id = new ObjectId(query._id);
+        if (query._id.length !== 24)
+          return res.status(400).send({ error: "Invalid _id" });
+        query._id = new ObjectId(query._id as string);
       }
-
-      let obj = await db.findObject(collection, query);
+      
+      let obj = await db.findObject(collectionId, query);
       if (!obj) {
         obj = {};
+
+        res.status(200).send(obj);
       }
 
+      if (!(await collection.canRead(user?._id?.toString() ?? "", obj, db))) {
+        // If we ``, lines breaks and tabs are preserved in the string
+        console.error(`Unauthorized read to object:
+          User: ${user?.name} (${user?._id})
+          Query: ${JSON.stringify(query)}
+          Collection: ${collectionId}`);
+        return res.status(403).send({ error: "Unauthorized", query, collectionId });
+      }
       res.status(200).send(obj);
     },
 
+    /**
+     * @deprecated did not have security checks and was never used. Use find instead
+     */
     findAll: async (req, res, { db, data }) => {
       // {
       //     collection,
 
       // }
-      const collection = data.collection;
+      // const collection = data.collection;
 
-      res.status(200).send(await db.findObjects(collection, {}));
+      // res.status(200).send(await db.findObjects(collection, {}));
+      res.status(200).send({ error: "Deprecated" });
     },
 
     // modification
@@ -365,7 +393,7 @@ export namespace API {
       );
 
       if (process.env.FILL_TEAMS === "true") {
-        fillTeamWithFakeUsers(20, team._id);
+        fillTeamWithFakeUsers(20, team._id!.toString());
       }
 
       return res.status(200).send(team);
@@ -419,7 +447,7 @@ export namespace API {
           (await db.addObject<Match>(CollectionId.Matches, match))._id
       );
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId, (await comp).ownerTeam);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId, (await comp).ownerTeam, (await comp)._id!.toString());
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -450,8 +478,10 @@ export namespace API {
           (await db.addObject<Match>(CollectionId.Matches, match))._id,
       );
       
+      const compId = new ObjectId();
+
       const season = await seasonPromise;
-      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId, season.ownerTeam);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId, season.ownerTeam, compId.toString());
 
       const picklist = await db.addObject<DbPicklist>(CollectionId.Picklists, {
         _id: new ObjectId(),
@@ -460,19 +490,22 @@ export namespace API {
 
       var comp = await db.addObject<Competition>(
         CollectionId.Competitions,
-        new Competition(
-          data.name,
-          await GenerateSlug(CollectionId.Competitions, data.name),
-          data.tbaId,
-          data.start,
-          data.end,
-          season._id ?? "",
-          pitReports,
-          matches.map((match) => String(match._id)),
-          picklist._id.toString(),
-          data.publicData,
-          season?.gameId
-        )
+        {
+          ...new Competition(
+            data.name,
+            await GenerateSlug(CollectionId.Competitions, data.name),
+            data.tbaId,
+            data.start,
+            data.end,
+            season.ownerTeam ?? "",
+            pitReports,
+            matches.map((match) => String(match._id)),
+            picklist._id.toString(),
+            data.publicData,
+            season?.gameId
+          ),
+          _id: compId,
+        }
       );
 
       season.competitions = [...season.competitions, String(comp._id)];
@@ -495,7 +528,7 @@ export namespace API {
     regeneratePitReports: async (req, res, { db, data, tba }) => {
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, data.ownerTeam);
+      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, data.ownerTeam, comp._id!.toString());
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -1011,7 +1044,7 @@ export namespace API {
 
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId));
 
-      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam, comp._id!);
+      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam, comp._id.toString());
       const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
 
       if (!pitReportId)

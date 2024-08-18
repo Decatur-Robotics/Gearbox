@@ -11,17 +11,19 @@ export default function useIsOnline() {
   async function updateOnlineStatus() {
     // Don't check if we just checked, even if it was in another useIsOnline hook
     const lastIsOnlineCheck = localStorage.getItem("lastIsOnlineCheckTime");
-    if (lastIsOnlineCheck && Date.now() - parseInt(lastIsOnlineCheck) < 5000) {
+    if (lastIsOnlineCheck && Date.now() - parseInt(lastIsOnlineCheck) < 5000 || localStorage.getItem("lastIsOnlineCheckInProgress") == "true") {
       return localStorage.getItem("lastIsOnlineCheckResult") == "true";
     }
 
     let online = false;
+    localStorage.setItem("lastIsOnlineCheckTime", Date.now().toString());
+    localStorage.setItem("lastIsOnlineCheckInProgress", "true");
     await api.ping()
       .then(() => online = true)
-      .catch(() => {});
+      .catch(() => {})
+    localStorage.setItem("lastIsOnlineCheckInProgress", "false");
 
     setIsOnline(online);
-    localStorage.setItem("lastIsOnlineCheckTime", Date.now().toString());
     localStorage.setItem("lastIsOnlineCheckResult", Date.now().toString());
   }
 

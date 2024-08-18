@@ -1,6 +1,5 @@
 import { ObjectId } from "bson"
 import CollectionId from "./client/CollectionId"
-import { getDatabase } from "./MongoDB"
 import { Account, Competition, DbPicklist, Match, OwnedByComp, OwnedByTeam, Pitreport, Report, Season, Session, SubjectiveReport, Team, User } from "./Types"
 import DbInterface from "./client/DbInterface"
 
@@ -24,7 +23,12 @@ namespace AccessLevels {
         ? db.findObjectById<Team>(CollectionId.Teams, new ObjectId(document.ownerTeam))
         : Promise.resolve(document as Team);
 
-      return (await team)?.users.includes(userId);
+      if (!("ownerTeam" in document) && !("users" in document)) {
+        // console.error("Used ifOnOwnerTeam access level for a document that doesn't have an ownerTeam or users field!");
+        return true;
+      }
+
+      return (await team)?.users?.includes(userId);
     }
 
     export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: string, document: TDocument, 

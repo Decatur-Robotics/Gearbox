@@ -8,6 +8,7 @@ import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
 import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
 import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
+import { ObjectId } from "bson";
 
 /**
  * Standard Account Type
@@ -26,7 +27,11 @@ export interface Session extends NextAuthSession {
 }
 
 export class HasId {
-  _id: string | undefined;
+  _id: ObjectId;
+
+  constructor(_id: ObjectId | undefined = undefined) {
+    this._id = _id ?? new ObjectId();
+  }
 }
 
 export class OwnedByTeam extends HasId {
@@ -565,7 +570,7 @@ export interface EventData {
 }
 
 export type DbPicklist = {
-  _id: string;
+  _id: ObjectId;
 
   ownerTeam: string;
   ownerComp: string;

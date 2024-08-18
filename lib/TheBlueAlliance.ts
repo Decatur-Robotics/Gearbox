@@ -12,6 +12,7 @@ import {
 import { NotLinkedToTba } from "./client/ClientUtils";
 import { GameId, defaultGameId } from "./client/GameId";
 import { games } from "./games";
+import { ObjectId } from "bson";
 
 export namespace TheBlueAlliance {
   export interface SimpleTeam {
@@ -281,13 +282,16 @@ export namespace TheBlueAlliance {
       return matches;
     }
 
-    async getCompetitionPitreports(tbaId: string, gameId: GameId): Promise<Pitreport[]> {
+    async getCompetitionPitreports(tbaId: string, gameId: GameId, ownerTeam: string, ownerComp: string): Promise<Pitreport[]> {
       if (tbaId === NotLinkedToTba)
         return [];
 
       const competitionTeams = await this.req.getCompetitionTeams(tbaId);
       return competitionTeams.map(
-        ({ team_number }) => new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData(), "", "")
+        ({ team_number }) => ({
+          ...new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData(), ownerTeam, ownerComp),
+          _id: new ObjectId()
+        })
       );
     }
 
