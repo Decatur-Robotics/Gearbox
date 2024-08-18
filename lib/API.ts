@@ -185,20 +185,29 @@ export namespace API {
       res.status(200).send(await db.addObject(collection, object));
     },
 
-    update: async (req, res, { db, data }) => {
+    update: async (req, res, { db, data, user }: RouteContents<{ collection: CollectionId, id: string, newValues: object }>) => {
       // {
       //     collection,
       //      id,
       //     newValues,
       // }
-      const collection = data.collection;
+      const collectionId = data.collection;
       const id = data.id;
       const newValues = data.newValues;
+
+      const current = await db.findObjectById(collectionId, new ObjectId(id));
+      if (!current) {
+        return res.status(404).send({ error: "Not found" });
+      }
+
+      if (!(await Collections[collectionId].canWrite(user?._id?.toString() ?? "", current, newValues, db))) {
+        return res.status(403).send({ error: "Unauthorized" });
+      }
 
       res
         .status(200)
         .send(
-          await db.updateObjectById(collection, new ObjectId(id), newValues)
+          await db.updateObjectById(collectionId, new ObjectId(id), newValues)
         );
     },
 

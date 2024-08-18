@@ -307,7 +307,7 @@ export default class ClientAPI {
       });
     } catch(e) {
       if (fallback) {
-        updateCompInLocalStorage(fallback.comp._id ?? "", assignScoutersOffline);
+        updateCompInLocalStorage(fallback.comp._id.toString() ?? "", assignScoutersOffline);
         return fallback;
       }
     }
@@ -444,7 +444,7 @@ export default class ClientAPI {
 
   async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
     updateCompInLocalStorage(compId, (comp) => {
-      const report = Object.values(comp.quantReports).find(r => r._id === reportId);
+      const report = Object.values(comp.quantReports).find(r => r._id.toString() === reportId);
       if (report) {
         report.user = scouterId;
       }
@@ -499,7 +499,7 @@ export default class ClientAPI {
 
   async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined, compId: string) {
     updateCompInLocalStorage(compId, (comp) => {
-      const match = Object.values(comp.matches).find(m => m._id === matchId);
+      const match = Object.values(comp.matches).find(m => m._id.toString() === matchId);
       if (match) {
         match.subjectiveScouter = userId;
       }
@@ -511,10 +511,10 @@ export default class ClientAPI {
   async createPitReportForTeam(teamNumber: number, compId: string, ownerTeam: string) {
     updateCompInLocalStorage(compId, (comp) => {
       const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData(), ownerTeam, compId);
-      pitReport._id = new ObjectId().toString();
+      pitReport._id = new ObjectId();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;
-      comp.comp.pitReports.push(pitReport._id);
+      comp.comp.pitReports.push(pitReport._id.toString());
     });
 
     return await this.request("/createPitReportForTeam", { teamNumber, compId });
