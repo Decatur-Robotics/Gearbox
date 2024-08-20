@@ -43,6 +43,7 @@ app.prepare().then(() => {
       const { pathname } = parsedUrl;
 
       if (pathname && (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname))) {
+        console.log("Service worker request received: " + parsedUrl.pathname);
         const filePath = join(__dirname, 'public', pathname);
         const file = fs.readFileSync(filePath, 'utf8');
 
