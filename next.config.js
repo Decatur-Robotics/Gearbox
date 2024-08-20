@@ -1,5 +1,6 @@
 const withPwa = require("next-pwa")({
   dest: "public",
+  cacheOnFrontEndNav: true,
 });
 
 /** @type {import('next').NextConfig} */
