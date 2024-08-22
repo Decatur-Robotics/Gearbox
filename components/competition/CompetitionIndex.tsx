@@ -1218,15 +1218,15 @@ export default function CompetitionIndex(props: {
             loadMatches={loadMatches}
           /> 
         }
-        { (team && comp) &&
-          <DownloadModal 
-            open={downloadModalOpen} 
-            close={() => setDownloadModalOpen(false)} 
-            team={team} 
-            comp={comp} 
-            getSavedComp={getSavedCompetition}
-            setSavedComp={setSavedCompetition}
-          />
+        { (team && comp && downloadModalOpen) &&
+            <DownloadModal 
+              open={downloadModalOpen} 
+              close={() => setDownloadModalOpen(false)} 
+              team={team} 
+              comp={comp} 
+              getSavedComp={getSavedCompetition}
+              setSavedComp={setSavedCompetition}
+            />
         }
       </div>
     </>

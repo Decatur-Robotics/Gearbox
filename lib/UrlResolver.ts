@@ -33,6 +33,12 @@ export function SerializeDatabaseObject(object: any): any {
   if (object?._id) {
     object._id = object?._id.toString();
   }
+  if (object?.ownerTeam) {
+    object.ownerTeam = object.ownerTeam.toString();
+  }
+  if (object?.ownerComp) {
+    object.ownerComp = object.ownerComp.toString();
+  }
 
   return object;
 }
