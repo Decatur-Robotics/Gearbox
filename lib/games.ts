@@ -280,7 +280,7 @@ export namespace Crescendo {
     return Round(speakerAuto + speakerTeleop + ampAuto + ampTeleop + trap) / reports.length;
   }
 
-  function getBadges(pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) {
+  function getBadges(pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined, card: boolean) {
     const pitData = pitReport?.data;
     const badges = getBaseBadges(pitReport, quantitativeReports);
 
