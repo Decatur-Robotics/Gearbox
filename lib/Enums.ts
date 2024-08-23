@@ -31,3 +31,24 @@ export enum SwerveLevel {
   L2 = "L2",
   L3 = "L3",
 }
+
+export namespace CenterStageEnums {
+  export enum CenterStageParkingLocation {
+    Corner = "Corner",
+    Center = "Center",
+    FarSide = "Far Side",
+    NotApplicable = "N/A",
+  }
+
+  export enum AutoAdjustable {
+    NoNeed = "No Need",
+    Yes = "Yes",
+    No = "No",
+  }
+
+  export enum AutoSidePreference {
+    Backstage = "Backstage",
+    Audience = "Audience",
+    NoPreference = "No Preference",
+  }
+}

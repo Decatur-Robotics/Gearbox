@@ -12,6 +12,7 @@ import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/
 import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "./QrCode";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -101,19 +102,40 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
           key={key}
           value={pitreport.data?.comments}
           className="textarea textarea-primary w-[90%]"
-          placeholder="Say Something Important..."
+          placeholder={element.label}
           onChange={(e) => {
             setCallback("comments", e.target.value);
           }}
         />
       );
 
+    if (Object.keys(element.type!).length > 3) {
+      // Dropdown
+      const options = Object.entries(element.type!).map((entry) => {
+        return <option key={entry[0]} value={entry[1]}>{camelCaseToTitleCase(entry[0])}</option>;
+      });
+
+      return (
+        <Fragment key={index}>
+          <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
+          <select
+            key={key + "s"}
+            className="select select-bordered"
+            onChange={(e) => setCallback(key, e.target.value)}
+            value={pitreport.data?.[key]}
+          >
+            {options}
+          </select>
+        </Fragment>
+      );
+    }
+
     const entries = Object.entries(element.type!).map((entry, index) => {
       const color = ["primary", "accent", "secondary"][index % 3];
 
       return (
         <Fragment key={index}>
-          <span key={key + index + "s"}>{entry[0]}</span>
+          <span key={key + index + "s"}>{camelCaseToTitleCase(entry[0])}</span>
           <input
             key={key + index + "i"}
             type="radio"

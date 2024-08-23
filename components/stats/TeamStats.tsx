@@ -18,7 +18,7 @@ export default function TeamStats(props: {
   selectedReports: Report[];
   pitReport: Pitreport | null;
   subjectiveReports: SubjectiveReport[];
-  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[]) => Badge[];
+  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[], card: boolean) => Badge[];
   layout: StatsLayout<PitReportData, QuantData>;
 }) {
   const [comments, setComments] = useState<{matchNum: number, content: { order: number, jsx: ReactNode}[] }[] | null>(null);
@@ -95,7 +95,7 @@ export default function TeamStats(props: {
   }
 
   const pitReport = props.pitReport;  
-  const badges = props.getBadges(pitReport ?? undefined, props.selectedReports);
+  const badges = props.getBadges(pitReport ?? undefined, props.selectedReports, false);
 
   function getSections(header: string, stats: (Stat<PitReportData, QuantData> | StatPair<PitReportData, QuantData>)[]) {
     const statElements = stats.map((stat, index) => {

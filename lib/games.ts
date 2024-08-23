@@ -1,4 +1,4 @@
-import { Defense, Drivetrain, IntakeTypes } from "./Enums";
+import { CenterStageEnums, Defense, Drivetrain, IntakeTypes } from './Enums';
 import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
 import { Report, Game, League, PitReportData, QuantData, Pitreport } from "./Types";
 import { GameId } from "./client/GameId";
@@ -344,8 +344,31 @@ export namespace CenterStage {
   }
 
   export class PitData extends PitReportData {
-    HasTeamProp: boolean = false;
-    HasDrone: boolean = false;
+    AutoBackstageSideExists: boolean = false;
+    AutoBackstageParkingLocation: CenterStageEnums.CenterStageParkingLocation = CenterStageEnums.CenterStageParkingLocation.NotApplicable;
+    AutoBackstageCanPlacePurplePixel: boolean = false;
+    AutoBackstageCanPlaceYellowPixelOnBackboard: boolean = false;
+    AutoBackstageCanPark: boolean = false;
+    AutoBackstageWhitePixels: number = 0;
+    AutoBackstageAdjustableToFitOurs: CenterStageEnums.AutoAdjustable = CenterStageEnums.AutoAdjustable.NoNeed;
+
+    AutoAudienceSideExists: boolean = false;
+    AutoAudienceParkingLocation: CenterStageEnums.CenterStageParkingLocation = CenterStageEnums.CenterStageParkingLocation.NotApplicable;
+    AutoAudienceCanPlacePurplePixel: boolean = false;
+    AutoAudienceCanPlaceYellowPixelOnBackboard: boolean = false;
+    AutoAudienceCanPark: boolean = false;
+    AutoAudienceWhitePixels: number = 0;
+    AutoAudienceAdjustableToFitOurs: CenterStageEnums.AutoAdjustable = CenterStageEnums.AutoAdjustable.NoNeed;
+    
+    AutoSidePreference: CenterStageEnums.AutoSidePreference = CenterStageEnums.AutoSidePreference.NoPreference;
+
+    CanPlaceOnBackboard: boolean = false;
+    CanPickUpFromStack: boolean = false;
+    PixelsMovedAtOnce: number = 0;
+
+    EndgameCanLaunchDrone: boolean = false;
+    EndgameCanHang: boolean = false;
+    EndgameCanPark: boolean = false;
   }
 
   const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
@@ -369,7 +392,35 @@ export namespace CenterStage {
   }
 
   const pitReportLayout: FormLayoutProps<PitData> = {
-    "Props": ["HasTeamProp", "HasDrone"]
+    "Backstage Auto": [
+      { key: "AutoBackstageSideExists", label: "Has Auto?" },
+      { key: "AutoBackstageParkingLocation", label: "Parking Location" },
+      { key: "AutoBackstageCanPlacePurplePixel", label: "Can Place Purple Pixel?" },
+      { key: "AutoBackstageCanPlaceYellowPixelOnBackboard", label: "Can Place Yellow Pixel on Backboard?" },
+      { key: "AutoBackstageCanPark", label: "Can Park?" },
+      { key: "AutoBackstageWhitePixels", label: "White Pixels Place" },
+      { key: "AutoBackstageAdjustableToFitOurs", label: "Adjustable to Fit Our Auto?" }
+    ],
+    "Audience Auto": [
+      { key: "AutoAudienceSideExists", label: "Has Auto?" },
+      { key: "AutoAudienceParkingLocation", label: "Parking Location" },
+      { key: "AutoAudienceCanPlacePurplePixel", label: "Can Place Purple Pixel?" },
+      { key: "AutoAudienceCanPlaceYellowPixelOnBackboard", label: "Can Place Yellow Pixel on Backboard?" },
+      { key: "AutoAudienceCanPark", label: "Can Park?" },
+      { key: "AutoAudienceWhitePixels", label: "White Pixels Place" },
+      { key: "AutoAudienceAdjustableToFitOurs", label: "Adjustable to Fit Our Auto?" }
+    ],
+    "Auto": ["AutoSidePreference"],
+    "Teleop": [
+      "CanPlaceOnBackboard",
+      "CanPickUpFromStack",
+      "PixelsMovedAtOnce"
+    ],
+    "Endgame": [
+      { key: "EndgameCanLaunchDrone", label: "Can Launch Drone?" },
+      { key: "EndgameCanHang", label: "Can Hang?" },
+      { key: "EndgameCanPark", label: "Can Park?" }
+    ]
   }
 
   const statsLayout: StatsLayout<PitData, QuantitativeData> = {
@@ -470,13 +521,39 @@ export namespace CenterStage {
     }
   }
 
-  function getBadges(pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) {
+  function getBadges(pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined, card: boolean) {
     const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
 
     if (pitReport?.data?.HasDrone)
       badges.push({ text: "Has Drone", color: "primary" });
     if (pitReport?.data?.HasTeamProp)
       badges.push({ text: "Has Team Prop", color: "info" });
+    if (pitReport?.data?.AutoBackstageSideExists)
+      badges.push({ text: "Has Auto Backstage", color: "success" });
+    if (pitReport?.data?.AutoAudienceSideExists)
+      badges.push({ text: "Has Auto Audience", color: "success" });
+    if (pitReport?.data?.AutoBackstageCanPlacePurplePixel)
+      badges.push({ text: card ? "Purple Pixel Backstage Auto" : "Can Place Purple Pixel In Backstage Auto", color: "accent" });
+    if (pitReport?.data?.AutoBackstageCanPlaceYellowPixelOnBackboard)
+      badges.push({ text: card ? "Yellow Pixel Backstage Auto" : "Can Place Yellow Pixel On Backboard In Backstage Auto", color: "accent" });
+    if (pitReport?.data?.AutoAudienceCanPlacePurplePixel)
+      badges.push({ text: card ? "Purple Pixel Audience Auto" : "Can Place Purple Pixel In Audience Auto", color: "secondary" });
+    if (pitReport?.data?.AutoAudienceCanPlaceYellowPixelOnBackboard)
+      badges.push({ text: card ? "Yellow Pixel Audience Auto" : "Can Place Yellow Pixel On Backboard In Audience Auto", color: "secondary" });
+    if (pitReport?.data?.AutoBackstageCanPark)
+      badges.push({ text: "Can Park In Backstage Auto", color: "accent" });
+    if (pitReport?.data?.AutoAudienceCanPark)
+      badges.push({ text: "Can Park In Audience Auto", color: "secondary" });
+    if (pitReport?.data?.CanPlaceOnBackboard)
+      badges.push({ text: "Can Place On Backboard", color: "primary" });
+    if (pitReport?.data?.CanPickUpFromStack)
+      badges.push({ text: "Can Pick Up From Stack", color: "info" });
+    if (pitReport?.data?.EndgameCanLaunchDrone)
+      badges.push({ text: "Can Launch Drone", color: "success" });
+    if (pitReport?.data?.EndgameCanHang)
+      badges.push({ text: "Can Hang", color: "accent" });
+    if (pitReport?.data?.EndgameCanPark)
+      badges.push({ text: "Can Park", color: "primary" });
 
     return badges;
   }
