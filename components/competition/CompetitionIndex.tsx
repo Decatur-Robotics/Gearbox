@@ -531,11 +531,8 @@ export default function CompetitionIndex(props: {
 
     let tbaId = newCompTbaId;
     const autoFillData = await api.getCompetitionAutofillData(tbaId ?? "");
-    if (!autoFillData.name) {
-      if(!confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
+    if (!autoFillData.name && !confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
         return;
-      tbaId = NotLinkedToTba;
-    }
 
     await api.updateCompNameAndTbaId(comp?._id, newCompName ?? "Unnamed", tbaId ?? NotLinkedToTba);
     location.reload();
