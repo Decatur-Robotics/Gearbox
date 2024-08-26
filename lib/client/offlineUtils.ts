@@ -1,3 +1,4 @@
+import { ObjectId } from "bson";
 import { Competition, Match, Pitreport, Report, SavedCompetition } from "../Types";
 import { removeDuplicates, rotateArray } from "./ClientUtils";
 
@@ -17,7 +18,9 @@ export function getAllCompsFromLocalStorage(): SavedCompetition[] {
     .filter(c => c !== undefined) as SavedCompetition[];
 }
 
-export function updateCompInLocalStorage(compId: string, update: (comp: SavedCompetition) => void) {
+export function updateCompInLocalStorage(compId: string | ObjectId, update: (comp: SavedCompetition) => void) {
+  if (typeof compId === "object") compId = compId.toString();
+
   const comp = getCompFromLocalStorage(compId);
   if (comp) {
     update(comp);
@@ -143,7 +146,7 @@ export function assignScoutersOffline(save: SavedCompetition) {
       rotateArray(subjectiveScouters);
     }
     
-    const reports = match.reports.map(r => quantReports[r]);
+    const reports = match.reports.map(r => quantReports[r.toString()]);
     const scoutersForMatch = scouters.filter(id => !subjectiveScouters.includes(id)).slice(0, reports.length);
     for (let i = 0; i < reports.length; i++) {
       reports[i].user = scoutersForMatch[i];

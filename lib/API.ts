@@ -32,7 +32,7 @@ import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
 import CollectionId from "./client/CollectionId";
-import { Collections } from "./Collections";
+import { Collections } from "./client/Collections";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";

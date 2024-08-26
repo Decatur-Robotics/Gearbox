@@ -19,7 +19,7 @@ import {
 } from "../Types";
 import { GameId } from "./GameId";
 import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
-import { ObjectId } from 'bson';
+import { BSON, ObjectId } from 'bson';
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -64,7 +64,7 @@ export default class ClientAPI {
   /**
    * @param fallback only use if you are just a fetching a single user. Using fallback for many users will take a long time.
    */
-  async findUserById(id: string | undefined, fallback: User | undefined = undefined): Promise<User> {
+  async findUserById(id: ObjectId | undefined, fallback: User | undefined = undefined): Promise<User> {
     try {
       return await this.request("/find", {
         collection: "users",
@@ -130,7 +130,7 @@ export default class ClientAPI {
     });
   }
 
-  async findPitreportById(id: string): Promise<Pitreport> {
+  async findPitreportById(id: ObjectId): Promise<Pitreport> {
     return await this.request("/find", {
       collection: "Pitreports",
       query: { _id: id },
@@ -208,13 +208,13 @@ export default class ClientAPI {
   }
 
   async createMatch(
-    compId: string | undefined,
+    compId: ObjectId,
     number: number,
     type: MatchType,
     blueAlliance: number[],
     redAlliance: number[],
-    ownerTeam: string,
-    ownerComp: string
+    ownerTeam: ObjectId,
+    ownerComp: ObjectId
   ) {
     return await this.request("/createMatch", {
       number,
@@ -246,8 +246,8 @@ export default class ClientAPI {
   }
 
   async reloadCompetition(
-    compId: string | undefined,
-    tbaId: string | undefined
+    compId: ObjectId,
+    tbaId: string
   ) {
     return await this.request("/reloadCompetition", {
       compId: compId,
@@ -294,8 +294,8 @@ export default class ClientAPI {
   }
 
   async assignScouters(
-    teamId: string | undefined,
-    compId: string | undefined,
+    teamId: ObjectId,
+    compId: ObjectId,
     shuffle: boolean = false,
     fallback: SavedCompetition | undefined = undefined
   ) {
@@ -336,7 +336,7 @@ export default class ClientAPI {
     });
   }
 
-  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false, 
+  async competitionReports(compId: ObjectId, submitted: boolean, usePublicData: boolean = false, 
       fallback: Report[] | undefined = undefined) {
     try {
       return await this.request("/competitionReports", {
@@ -351,7 +351,7 @@ export default class ClientAPI {
     }
   }
 
-  async allCompetitionMatches(compId: string | undefined, fallback: Match[] | undefined = undefined) {
+  async allCompetitionMatches(compId: ObjectId, fallback: Match[] | undefined = undefined) {
     try {
       return await this.request("/allCompetitionMatches", { compId: compId });
     } catch(e) {
@@ -380,7 +380,7 @@ export default class ClientAPI {
   async remindSlack(
     slackId: string,
     senderSlackId: string,
-    teamId: string
+    teamId: ObjectId
   ) {
     return await this.request("/remindSlack", { slackId, senderSlackId, teamId });
   }
@@ -426,11 +426,11 @@ export default class ClientAPI {
     return await this.request("/getMainPageCounterData", {});
   }
 
-  async exportCompAsCsv(compId: string | undefined) {
+  async exportCompAsCsv(compId: ObjectId | undefined) {
     return await this.request("/exportCompAsCsv", { compId });
   }
 
-  async regeneratePitReports(tbaId: string, compId: string, ownerTeam: string) {
+  async regeneratePitReports(tbaId: string, compId: ObjectId, ownerTeam: ObjectId) {
     return await this.request("/regeneratePitReports", { tbaId, compId, ownerTeam });
   }
 
@@ -442,9 +442,9 @@ export default class ClientAPI {
     return await this.request("/getPitReports", { reportIds });
   }
 
-  async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
+  async changeScouterForReport(reportId: ObjectId, scouterId: ObjectId, compId: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
-      const report = Object.values(comp.quantReports).find(r => r._id.toString() === reportId);
+      const report = Object.values(comp.quantReports).find(r => r._id === reportId);
       if (report) {
         report.user = scouterId;
       }
@@ -467,7 +467,7 @@ export default class ClientAPI {
     return await this.request("/findScouterManagementData", { compId, scouterIds });
   }
 
-  async getPicklist(id: string): Promise<DbPicklist> {
+  async getPicklist(id: ObjectId): Promise<DbPicklist> {
     return await this.request("/getPicklist", { id });
   }
 
@@ -475,7 +475,7 @@ export default class ClientAPI {
     return await this.request("/updatePicklist", { picklist });
   }
 
-  async setCompPublicData(compId: string, publicData: boolean) {
+  async setCompPublicData(compId: ObjectId, publicData: boolean) {
     updateCompInLocalStorage(compId, (comp) => comp.comp.publicData = publicData);
 
     return await this.request("/setCompPublicData", { compId, publicData });
@@ -497,9 +497,9 @@ export default class ClientAPI {
     return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 
-  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined, compId: string) {
+  async setSubjectiveScouterForMatch(matchId: ObjectId, userId: ObjectId | undefined, compId: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
-      const match = Object.values(comp.matches).find(m => m._id.toString() === matchId);
+      const match = Object.values(comp.matches).find(m => m._id === matchId);
       if (match) {
         match.subjectiveScouter = userId;
       }
@@ -508,19 +508,19 @@ export default class ClientAPI {
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
-  async createPitReportForTeam(teamNumber: number, compId: string, ownerTeam: string) {
+  async createPitReportForTeam(teamNumber: number, compId: ObjectId, ownerTeam: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
       const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData(), ownerTeam, compId);
       pitReport._id = new ObjectId();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;
-      comp.comp.pitReports.push(pitReport._id.toString());
+      comp.comp.pitReports.push(pitReport._id);
     });
 
     return await this.request("/createPitReportForTeam", { teamNumber, compId });
   }
 
-  async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
+  async updateCompNameAndTbaId(compId: ObjectId, name: string, tbaId: string) {
     updateCompInLocalStorage(compId, (comp) => {
       comp.comp.name = name;
       comp.comp.tbaId = tbaId;

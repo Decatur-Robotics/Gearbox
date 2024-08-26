@@ -35,9 +35,9 @@ export class HasId {
 }
 
 export class OwnedByTeam extends HasId {
-  ownerTeam: string;
+  ownerTeam: ObjectId;
 
-  constructor(ownerTeam: string) {
+  constructor(ownerTeam: ObjectId) {
     super();
 
     this.ownerTeam = ownerTeam;
@@ -45,9 +45,9 @@ export class OwnedByTeam extends HasId {
 }
 
 export class OwnedByComp extends OwnedByTeam {
-  ownerComp: string;
+  ownerComp: ObjectId;
 
-  constructor(ownerTeam: string, ownerComp: string) {
+  constructor(ownerTeam: ObjectId, ownerComp: ObjectId) {
     super(ownerTeam);
 
     this.ownerComp = ownerComp;
@@ -101,13 +101,13 @@ export class Team extends HasId {
   number: number;
   league: League = League.FRC;
 
-  owners: string[];
-  users: string[];
-  scouters: string[];
-  subjectiveScouters: string[];
-  requests: string[];
+  owners: ObjectId[];
+  users: ObjectId[];
+  scouters: ObjectId[];
+  subjectiveScouters: ObjectId[];
+  requests: ObjectId[];
 
-  seasons: string[];
+  seasons: ObjectId[];
 
   slackChannel: string | undefined;
 
@@ -117,12 +117,12 @@ export class Team extends HasId {
     tbaId: string | undefined,
     number: number,
     league: League = League.FRC,
-    owners: string[] = [],
-    users: string[] = [],
-    scouters: string[] = [],
-    subjectiveScouters: string[] = [],
-    requests: string[] = [],
-    seasons: string[] = [],
+    owners: ObjectId[] = [],
+    users: ObjectId[] = [],
+    scouters: ObjectId[] = [],
+    subjectiveScouters: ObjectId[] = [],
+    requests: ObjectId[] = [],
+    seasons: ObjectId[] = [],
     slackChannel: string | undefined = undefined
   ) {
     super();
@@ -314,7 +314,7 @@ export class Season extends OwnedByTeam {
     slug: string | undefined,
     year: number,
     gameId: GameId = GameId.Crescendo,
-    ownerTeam: string,
+    ownerTeam: ObjectId,
     competitions: string[] = []
   ) {
     super(ownerTeam);
@@ -345,7 +345,7 @@ export class Pitreport<TFormData extends PitReportData = PitReportData> extends 
 
   data: TFormData | undefined;
 
-  constructor(teamNumber: number, data: TFormData, ownerTeam: string, ownerComp: string) {
+  constructor(teamNumber: number, data: TFormData, ownerTeam: ObjectId, ownerComp: ObjectId) {
     super(ownerTeam, ownerComp);
 
     this.teamNumber = teamNumber;
@@ -365,10 +365,10 @@ export class Competition extends OwnedByTeam {
   start: number;
   end: number;
 
-  pitReports: string[];
-  matches: string[];
+  pitReports: ObjectId[];
+  matches: ObjectId[];
 
-  picklist: string;
+  picklist: ObjectId;
 
   constructor(
     name: string,
@@ -376,10 +376,10 @@ export class Competition extends OwnedByTeam {
     tbaId: string | undefined,
     start: number,
     end: number,
-    ownerTeam: string,
-    pitReports: string[] = [],
-    matches: string[] = [],
-    picklist: string = "",
+    ownerTeam: ObjectId,
+    pitReports: ObjectId[] = [],
+    matches: ObjectId[] = [],
+    picklist: ObjectId = new ObjectId(),
     publicData = false,
     gameId: GameId | undefined = undefined
   ) {
@@ -464,10 +464,10 @@ export class Match extends OwnedByComp {
   redAlliance: Alliance;
 
   time: number; // time the match begins
-  reports: string[];
+  reports: ObjectId[];
 
-  subjectiveScouter: string | undefined;
-  subjectiveReports: string[] = [];
+  subjectiveScouter: ObjectId | undefined;
+  subjectiveReports: ObjectId[] = [];
   subjectiveReportsCheckInTimestamps: { [userId: string]: string } = {};
   assignedSubjectiveScouterHasSubmitted: boolean = false;
 
@@ -479,9 +479,9 @@ export class Match extends OwnedByComp {
     type: MatchType,
     blueAlliance: Alliance,
     redAlliance: Alliance,
-    ownerTeam: string,
-    ownerComp: string,
-    reports: string[] = [],
+    ownerTeam: ObjectId,
+    ownerComp: ObjectId,
+    reports: ObjectId[] = [],
   ) {
     super(ownerTeam, ownerComp);
 
@@ -498,12 +498,12 @@ export class Match extends OwnedByComp {
 
 export class Report<TFormData extends QuantData = QuantData> extends OwnedByComp {
   timestamp: number | undefined; // time it was initially submitted
-  user: string | undefined; // id of user assigned to report
-  submitter: string | undefined; // id of user who submitted the report
+  user: ObjectId | undefined; // id of user assigned to report
+  submitter: ObjectId | undefined; // id of user who submitted the report
 
   color: AllianceColor;
   robotNumber: number; // number of robot to be reported
-  match: string; // id of match
+  match: ObjectId; // id of match
 
   submitted: boolean = false;
   data: TFormData;
@@ -511,13 +511,13 @@ export class Report<TFormData extends QuantData = QuantData> extends OwnedByComp
   checkInTimestamp: string | undefined;
 
   constructor(
-    user: string | undefined,
+    user: ObjectId | undefined,
     data: TFormData,
     robotNumber: number,
     color: AllianceColor,
-    match: string,
-    ownerTeam: string,
-    ownerComp: string,
+    match: ObjectId,
+    ownerTeam: ObjectId,
+    ownerComp: ObjectId,
     timestamp: number = 0,
     checkInTimestamp: string | undefined = undefined
   ) {
@@ -541,16 +541,16 @@ export enum SubjectiveReportSubmissionType {
 }
 
 export class SubjectiveReport extends OwnedByComp {
-  submitter: string | undefined;
+  submitter: ObjectId | undefined;
   submitted: SubjectiveReportSubmissionType = SubjectiveReportSubmissionType.NotSubmitted;
 
-  match: string; // id of match
+  match: ObjectId; // id of match
   matchNumber: number;
 
   wholeMatchComment: string = "";
   robotComments: { [key: number]: string } = {};
 
-  constructor(match: string, matchNumber: number, ownerTeam: string, ownerComp: string) {
+  constructor(match: ObjectId, matchNumber: number, ownerTeam: ObjectId, ownerComp: ObjectId) {
     super(ownerTeam, ownerComp);
 
     this.match = match;
@@ -572,8 +572,8 @@ export interface EventData {
 export type DbPicklist = {
   _id: ObjectId;
 
-  ownerTeam: string;
-  ownerComp: string;
+  ownerTeam: ObjectId;
+  ownerComp: ObjectId;
 
   picklists: {
     [name: string]: number[];
