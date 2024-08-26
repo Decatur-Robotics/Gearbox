@@ -24,8 +24,11 @@ type EventParams = UaEventOptions & {
   targetName?: string;
 }
 
-if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
+if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "") {
+  console.log("Initializing Google Analytics...");
   ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
+  console.log("Google Analytics initialized.");
+}
 
 function triggerEvent(params: EventParams) {
   if (!ReactGA._hasLoadedGA)
