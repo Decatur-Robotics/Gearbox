@@ -18,6 +18,7 @@ import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
+import { ObjectId } from "bson";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -53,8 +54,13 @@ export default function Profile(props: { teamList: Team[] }) {
   }, [session?.user]);
 
   const requestTeam = async (teamId: string, teamNumber: number) => {
+    if (!user) {
+      console.error("User not found");
+      return;
+    }
+
     setLoadingRequest(true);
-    await api.requestToJoinTeam(user?._id, teamId);
+    await api.requestToJoinTeam(user._id, new ObjectId(teamId));
     setLoadingRequest(false);
     setSentRequest(true);
 
@@ -112,7 +118,7 @@ export default function Profile(props: { teamList: Team[] }) {
                   <Link
                     href={"/" + team.slug}
                     className="w-full"
-                    key={team._id}
+                    key={team._id.toString()}
                   >
                     <TeamCard team={team} />
                   </Link>
@@ -152,7 +158,7 @@ export default function Profile(props: { teamList: Team[] }) {
                               onClick={() => {
                                 requestTeam(String(team._id), team.number);
                               }}
-                              key={team._id}
+                              key={team._id.toString()}
                             >
                               <h1 className="max-sm:text-sm h-10">
                                 {team.tbaId ? "FRC" : "FTC"}{" "}

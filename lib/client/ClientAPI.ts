@@ -102,28 +102,28 @@ export default class ClientAPI {
     });
   }
 
-  async findSeasonById(id: string): Promise<Season> {
+  async findSeasonById(id: ObjectId): Promise<Season> {
     return await this.request("/find", {
       collection: "Seasons",
       query: { _id: id },
     });
   }
 
-  async findCompetitionById(id: string | undefined): Promise<Competition> {
+  async findCompetitionById(id: ObjectId): Promise<Competition> {
     return await this.request("/find", {
       collection: "Competitions",
       query: { _id: id },
     });
   }
 
-  async findMatchById(id: string): Promise<Match> {
+  async findMatchById(id: ObjectId): Promise<Match> {
     return await this.request("/find", {
       collection: "Matches",
       query: { _id: id },
     });
   }
 
-  async findReportById(id: string): Promise<Report> {
+  async findReportById(id: ObjectId): Promise<Report> {
     return await this.request("/find", {
       collection: "Reports",
       query: { _id: id },
@@ -160,14 +160,14 @@ export default class ClientAPI {
     return await this.request("/matchAutofill", { tbaId: tbaId });
   }
 
-  async requestToJoinTeam(userId: string | undefined, teamId: string | undefined) {
+  async requestToJoinTeam(userId: ObjectId, teamId: ObjectId) {
     return await this.request("/requestToJoinTeam", {
       userId: userId,
       teamId: teamId,
     });
   }
 
-  async handleRequest(accept: boolean, userId: string, teamId: string) {
+  async handleRequest(accept: boolean, userId: ObjectId, teamId: ObjectId) {
     return await this.request("/handleRequest", {
       accept: accept,
       userId: userId,
@@ -178,7 +178,7 @@ export default class ClientAPI {
   async createTeam(
     name: string,
     number: number,
-    creator: string | undefined,
+    creator: ObjectId,
     tbaId: undefined | string,
     league: League
   ): Promise<Team> {
@@ -191,7 +191,7 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, gameId: GameId, teamId: string): Promise<Season> {
+  async createSeason(name: string, year: number, gameId: GameId, teamId: ObjectId): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
@@ -232,7 +232,7 @@ export default class ClientAPI {
     tbaId: string | undefined,
     start: number,
     end: number,
-    seasonId: string | undefined,
+    seasonId: ObjectId | undefined,
     publicData: boolean
   ): Promise<Competition> {
     return await this.request("/createCompetiton", {
@@ -269,7 +269,7 @@ export default class ClientAPI {
     });
   }
 
-  async updateTeam(newValues: object, teamId: string | undefined) {
+  async updateTeam(newValues: object, teamId: ObjectId) {
     return await this.request("/update", {
       collection: "Teams",
       newValues: newValues,
@@ -285,7 +285,7 @@ export default class ClientAPI {
     });
   }
 
-  async updateReport(newValues: Partial<Report>, reportId: string | undefined) {
+  async updateReport(newValues: Partial<Report>, reportId: ObjectId) {
     return await this.request("/update", {
       collection: "Reports",
       newValues: newValues,
@@ -313,10 +313,13 @@ export default class ClientAPI {
     }
   }
 
+  /**
+   * @deprecated Server should find userId, not client
+   */
   async submitForm(
-    reportId: string | undefined,
+    reportId: ObjectId,
     formData: QuantData | undefined,
-    userId: string | undefined
+    userId: ObjectId
   ) {
     return await this.request("/submitForm", {
       reportId: reportId,
@@ -326,7 +329,7 @@ export default class ClientAPI {
   }
 
   async updatePitreport(
-    pitreportId: string | undefined,
+    pitreportId: ObjectId,
     data: object | undefined
   ) {
     return await this.request("/update", {
@@ -361,19 +364,19 @@ export default class ClientAPI {
     }
   }
 
-  async matchReports(matchId: string | undefined) {
+  async matchReports(matchId: ObjectId) {
     return await this.request("/matchReports", { matchId: matchId });
   }
 
-  async checkInForReport(reportId: string | undefined) {
+  async checkInForReport(reportId: ObjectId) {
     return await this.request("/checkInForReport", { reportId });
   }
 
-  async updateCheckOut(reportId: string | undefined) {
+  async updateCheckOut(reportId: ObjectId) {
     return await this.request("/updateCheckOut", { reportId });
   }
 
-  async checkInForSubjectiveReport(matchId: string) {
+  async checkInForSubjectiveReport(matchId: ObjectId) {
     return await this.request("/checkInForSubjectiveReport", { matchId });
   }
 
@@ -438,7 +441,7 @@ export default class ClientAPI {
     return await this.request("/teamCompRanking", { tbaId, team });
   }
 
-  async getPitReports(reportIds: string[]) {
+  async getPitReports(reportIds: ObjectId[]) {
     return await this.request("/getPitReports", { reportIds });
   }
 
@@ -457,7 +460,7 @@ export default class ClientAPI {
     return await this.request("/getCompReports", { compId });
   }
 
-  async findScouterManagementData(compId: string, scouterIds: string[]): Promise<{
+  async findScouterManagementData(compId: ObjectId, scouterIds: ObjectId[]): Promise<{
     scouters: User[],
     matches: Match[],
     quantitativeReports: Report[],
@@ -481,19 +484,19 @@ export default class ClientAPI {
     return await this.request("/setCompPublicData", { compId, publicData });
   }
 
-  async setOnboardingCompleted(userId: string) {
+  async setOnboardingCompleted(userId: ObjectId) {
     return await this.request("/setOnboardingCompleted", { userId });
   }
 
-  async submitSubjectiveReport(report: SubjectiveReport, userId: string, teamId: string) {
-    return await this.request("/submitSubjectiveReport", { report, userId, teamId });
+  async submitSubjectiveReport(report: SubjectiveReport, userId: ObjectId, teamSlug: string) {
+    return await this.request("/submitSubjectiveReport", { report, userId, teamSlug });
   }
 
-  async getSubjectiveReportsForComp(compId: string): Promise<SubjectiveReport[]> {
+  async getSubjectiveReportsForComp(compId: ObjectId): Promise<SubjectiveReport[]> {
     return await this.request("/getSubjectiveReportsForComp", { compId });
   }
 
-  async updateSubjectiveReport(reportId: string, report: Partial<SubjectiveReport>) {
+  async updateSubjectiveReport(reportId: ObjectId, report: Partial<SubjectiveReport>) {
     return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 

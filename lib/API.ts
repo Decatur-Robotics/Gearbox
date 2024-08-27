@@ -16,7 +16,7 @@ import {
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { removeDuplicates } from "./client/ClientUtils";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
@@ -156,11 +156,11 @@ export namespace API {
   }
 
   async function generatePitReports(tba: TheBlueAlliance.Interface, db: MongoDBInterface, tbaId: string, gameId: GameId, 
-      ownerTeam: string, ownerComp: string): Promise<string[]> {
+      ownerTeam: ObjectId, ownerComp: ObjectId): Promise<ObjectId[]> {
     var pitreports = await tba.getCompetitionPitreports(tbaId, gameId, ownerTeam, ownerComp);
     pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.Pitreports, { ...report, ownerTeam  }))._id)
 
-    return pitreports.map((pit) => String(pit._id));
+    return pitreports.map((report) => report._id);
   }
 
   export const Routes: RouteCollection = {
@@ -200,7 +200,7 @@ export namespace API {
         return res.status(404).send({ error: "Not found" });
       }
 
-      if (!(await Collections[collectionId].canWrite(user?._id?.toString() ?? "", current, newValues, db))) {
+      if (!(await Collections[collectionId].canWrite(user?._id, current, newValues, db))) {
         return res.status(403).send({ error: "Unauthorized" });
       }
 
@@ -245,7 +245,7 @@ export namespace API {
         res.status(200).send(obj);
       }
 
-      if (!(await collection.canRead(user?._id?.toString() ?? "", obj, db))) {
+      if (!(await collection.canRead(user?._id, obj, db))) {
         // If we ``, lines breaks and tabs are preserved in the string
         console.error(`Unauthorized read to object:
           User: ${user?.name} (${user?._id})
@@ -409,7 +409,7 @@ export namespace API {
     },
 
     // NEEDS TO BE ADDED TO TEAM DUMBASS
-    createSeason: async (req, res, { db, data }: RouteContents<{ year: number, gameId: GameId, teamId: string, name: string }>) => {
+    createSeason: async (req, res, { db, data }: RouteContents<{ year: number, gameId: GameId, teamId: ObjectId, name: string }>) => {
       // {
       //     year
       //     name
@@ -429,7 +429,7 @@ export namespace API {
         CollectionId.Teams,
         new ObjectId(data.teamId)
       );
-      team.seasons = [...team.seasons, String(season._id)];
+      team.seasons = [...team.seasons, season._id];
 
       await db.updateObjectById(
         CollectionId.Teams,
@@ -456,7 +456,7 @@ export namespace API {
           (await db.addObject<Match>(CollectionId.Matches, match))._id
       );
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId, (await comp).ownerTeam, (await comp)._id!.toString());
+      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId, (await comp).ownerTeam, (await comp)._id);
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -490,7 +490,7 @@ export namespace API {
       const compId = new ObjectId();
 
       const season = await seasonPromise;
-      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId, season.ownerTeam, compId.toString());
+      const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId, season.ownerTeam, compId);
 
       const picklist = await db.addObject<DbPicklist>(CollectionId.Picklists, {
         _id: new ObjectId(),
@@ -508,8 +508,8 @@ export namespace API {
             data.end,
             season.ownerTeam ?? "",
             pitReports,
-            matches.map((match) => String(match._id)),
-            picklist._id.toString(),
+            matches.map((match) => match._id),
+            picklist._id,
             data.publicData,
             season?.gameId
           ),
@@ -537,7 +537,7 @@ export namespace API {
     regeneratePitReports: async (req, res, { db, data, tba }) => {
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, data.ownerTeam, comp._id!.toString());
+      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, data.ownerTeam, comp._id);
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -574,7 +574,7 @@ export namespace API {
         CollectionId.Competitions,
         new ObjectId(data.compId)
       );
-      comp.matches.push(match._id ? String(match._id) : "");
+      comp.matches.push(match._id);
 
       const reportPromise = generateReportsForMatch(match, comp.gameId);
 
@@ -985,7 +985,7 @@ export namespace API {
 
       const matchPromise = db.findObjectById<Match>(CollectionId.Matches, new ObjectId(rawReport.match));
       const teamPromise = db.findObject<Team>(CollectionId.Teams, {
-        slug: data.teamId
+        slug: data.teamSlug
       });
 
       const [match, team] = await Promise.all([matchPromise, teamPromise]);
@@ -1002,7 +1002,7 @@ export namespace API {
       };
 
       const update: Partial<Match> = {
-        subjectiveReports: [...match.subjectiveReports ?? [], report._id!.toString()],
+        subjectiveReports: [...match.subjectiveReports ?? [], report._id],
       };
 
       if (match.subjectiveScouter === data.userId)
@@ -1053,8 +1053,8 @@ export namespace API {
 
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId));
 
-      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam, comp._id.toString());
-      const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
+      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam, comp._id);
+      const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id;
 
       if (!pitReportId)
         return res.status(500).send({ error: "Failed to create pit report" });

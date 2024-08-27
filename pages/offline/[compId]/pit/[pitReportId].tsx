@@ -9,7 +9,7 @@ export default function OfflinePitReport() {
     <Container requireAuthentication={false} title={`${pitReport?.teamNumber} | Pit Scouting`}>
       { savedComp && pitReport
           ? <PitReportForm pitReport={pitReport} layout={savedComp.game.pitReportLayout} compId={savedComp.comp._id} 
-              usersteamNumber={savedComp.team.number} compName={savedComp.comp.name} />
+              usersTeamNumber={savedComp.team.number} compName={savedComp.comp.name} />
           : <div>Loading...</div>
       }
     </Container>

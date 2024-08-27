@@ -239,7 +239,7 @@ export namespace TheBlueAlliance {
         competitonData.key,
         ConvertDate(competitonData.start_date),
         ConvertDate(competitonData.end_date),
-        ""
+        new ObjectId()
       );
 
       // maybe give automatic matches later, once scouting is more stabilized
@@ -256,8 +256,8 @@ export namespace TheBlueAlliance {
         competitionLevelToMatchType(data.comp_level),
         tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
         tbaIdsToTeamNumbers(data.alliances.red.team_keys),
-        "",
-        ""
+        new ObjectId(),
+        new ObjectId()
       );
     }
 
@@ -275,14 +275,14 @@ export namespace TheBlueAlliance {
             competitionLevelToMatchType(data.comp_level),
             tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
             tbaIdsToTeamNumbers(data.alliances.red.team_keys),
-            "",
-            ""
+            new ObjectId(),
+            new ObjectId()
           )
       ) ?? [];
       return matches;
     }
 
-    async getCompetitionPitreports(tbaId: string, gameId: GameId, ownerTeam: string, ownerComp: string): Promise<Pitreport[]> {
+    async getCompetitionPitreports(tbaId: string, gameId: GameId, ownerTeam: ObjectId, ownerComp: ObjectId): Promise<Pitreport[]> {
       if (tbaId === NotLinkedToTba)
         return [];
 

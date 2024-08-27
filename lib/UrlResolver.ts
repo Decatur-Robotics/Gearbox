@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from "next";
 import { getDatabase } from "./MongoDB";
 import { Competition, Season, Team, Report } from "./Types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import CollectionId from "./client/CollectionId";
 
 // fetches the database
@@ -32,12 +32,10 @@ export function SerializeDatabaseObject(object: any): any {
     return null;
   }
   
-  if (object?._id) {
-    object._id = object?._id.toString();
-  }
-
-  if (object?.ownerTeam) {
-    object.ownerTeam = object?.ownerTeam.toString();
+  for (const key of Object.keys(object)) {
+    if (ObjectId.prototype.isPrototypeOf(object[key])) {
+      object[key] = object[key].toString();
+    }
   }
 
   return object;

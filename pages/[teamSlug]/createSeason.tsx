@@ -25,13 +25,18 @@ export default function CreateSeason(props: CreateSeasonProps) {
   const team = props.team;
 
   const createSeason = async (gameId: GameId) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
     const game = games[gameId];
 
     const s = await api.createSeason(
       game.name,
       game.year,
       gameId,
-      team?._id as string
+      team._id
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;

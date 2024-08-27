@@ -103,7 +103,7 @@ export default function DownloadModal(props: {
           return;
         }
 
-        comp.quantReports[qrData.quantReport._id] = qrData.quantReport;
+        comp.quantReports[qrData.quantReport._id.toString()] = qrData.quantReport;
       }
       
       if (qrData.pitReport) {
@@ -112,7 +112,7 @@ export default function DownloadModal(props: {
           return;
         }
 
-        comp.pitReports[qrData.pitReport._id] = qrData.pitReport;
+        comp.pitReports[qrData.pitReport._id.toString()] = qrData.pitReport;
       }
 
       if (qrData.subjectiveReport) {
@@ -121,8 +121,8 @@ export default function DownloadModal(props: {
           return;
         }
 
-        comp.subjectiveReports[qrData.subjectiveReport._id] = qrData.subjectiveReport;
-        comp.matches[qrData.subjectiveReport.match].subjectiveReports.push(qrData.subjectiveReport._id);
+        comp.subjectiveReports[qrData.subjectiveReport._id.toString()] = qrData.subjectiveReport;
+        comp.matches[qrData.subjectiveReport.match.toString()].subjectiveReports.push(qrData.subjectiveReport._id);
       }
     })
   }

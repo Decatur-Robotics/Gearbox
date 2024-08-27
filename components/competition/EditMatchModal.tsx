@@ -1,5 +1,6 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Competition, Match, Report, User } from "@/lib/Types";
+import { ObjectId } from "bson";
 import { ChangeEvent } from "react";
 
 const api = new ClientAPI("gearboxiscool")
@@ -19,27 +20,33 @@ export default function EditMatchModal(props: {
 
   const teams = props.match.blueAlliance.concat(props.match.redAlliance);
 
-  const reports = props.match.reports.map(reportId => reportsById[reportId]);
+  const reports = props.match.reports.map(reportId => reportsById[reportId.toString()]);
   if (!reports) return (<></>);
 
   function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
     e.preventDefault();
 
     const userId = e.target.value;
-    if (!userId || !report || !report._id) return;
+    if (!userId || !report || !report._id || !comp) {
+      console.error("Invalid user, report, or competition");
+      return;
+    }
 
     console.log(`Changing scouter for report ${report._id} to ${userId}`);
-    api.changeScouterForReport(report._id, userId, comp?._id ?? "").then(loadReports);
+    api.changeScouterForReport(report._id, new ObjectId(userId), comp._id).then(loadReports);
   }
 
   function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
     e.preventDefault();
 
     const userId = e.target.value;
-    if (!userId || !props.match?._id) return;
+    if (!userId || !props.match?._id || !comp) {
+      console.error("Invalid user, report, or competition");
+      return;
+    }
 
     console.log(`Changing subjective scouter for match ${props.match?._id} to ${userId}`);
-    api.setSubjectiveScouterForMatch(props.match?._id, userId, comp?._id ?? "").then(loadMatches);
+    api.setSubjectiveScouterForMatch(props.match?._id, new ObjectId(userId), comp._id).then(loadMatches);
   }
 
   return (
@@ -64,14 +71,14 @@ export default function EditMatchModal(props: {
                   <td>
                     <select onChange={(e) => changeScouter(e, reports[index])}>
                       {
-                        reports[index]?.user && usersById[reports[index].user ?? ""]
-                          ? <option value={reports[index].user}>
-                              {usersById[reports[index].user ?? ""]?.name}</option>
+                        reports[index]?.user && usersById[reports[index]?.user?.toString() ?? ""]
+                          ? <option value={reports[index]?.user?.toString() ?? ""}>
+                              {usersById[reports[index]?.user?.toString() ?? ""]?.name}</option>
                           : <></>
                       }
                       <option value={undefined}>None</option>
                       {
-                        Object.keys(usersById).filter(id => id !== reports[index]?.user).map(userId => 
+                        Object.keys(usersById).filter(id => id !== reports[index]?.user?.toString() ?? "").map(userId => 
                           <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
                         )
                       }
@@ -86,14 +93,14 @@ export default function EditMatchModal(props: {
           <label>Subjective Scouter:</label>
           <select onChange={changeSubjectiveScouter}>
             {
-              props.match?.subjectiveScouter && usersById[props.match.subjectiveScouter]
-                ? <option value={props.match.subjectiveScouter}>
-                    {usersById[props.match.subjectiveScouter].name}</option>
+              props.match?.subjectiveScouter && usersById[props.match.subjectiveScouter.toString()]
+                ? <option value={props.match.subjectiveScouter.toString()}>
+                    {usersById[props.match.subjectiveScouter.toString()].name}</option>
                 : <></>
             }
             <option value={undefined}>None</option>
             {
-              Object.keys(usersById).filter(id => id !== props.match?.subjectiveScouter).map(userId => 
+              Object.keys(usersById).filter(id => id !== props.match?.subjectiveScouter?.toString()).map(userId => 
                 <option key={userId} value={userId}>{usersById[userId]?.name ?? "Unknown"}</option>
               )
             }

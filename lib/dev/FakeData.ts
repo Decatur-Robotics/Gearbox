@@ -2,7 +2,7 @@ import { Team, User } from "../Types";
 import { getDatabase } from "../MongoDB";
 import { GenerateSlug } from "../Utils";
 import { randomArrayValue } from "../client/ClientUtils";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import CollectionId from "../client/CollectionId";
 
 const firstNameMaleURL = "https://www.randomlists.com/data/names-male.json";

@@ -317,7 +317,7 @@ export default function Container(props: ContainerProps) {
                         "w-16 h-16 btn btn-ghost " +
                         (selected ? "border-2 border-accent" : "border-2")
                       }
-                      key={team._id}
+                      key={team._id.toString()}
                       onClick={() => {
                         setSelectedTeamIndex(index);
                       }}
@@ -356,7 +356,7 @@ export default function Container(props: ContainerProps) {
                     <Link
                       className="btn btn-ghost w-7/8 bg-base-200 normal-case mb-2"
                       href={`/${selectedTeam?.slug}/${season?.slug}`}
-                      key={season._id}
+                      key={season._id?.toString()}
                     >
                       <h1 className="text-sm">
                         {season.name} - {season.year}

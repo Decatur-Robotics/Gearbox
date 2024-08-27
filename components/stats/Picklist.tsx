@@ -6,6 +6,7 @@ import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
 import ClientAPI from "@/lib/client/ClientAPI";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
+import { ObjectId } from "bson";
 
 type CardData = { 
   number: number;
@@ -165,7 +166,7 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklist: DbPicklist, compId: string }) {
+export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklist: DbPicklist, compId: ObjectId }) {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
 
   enum LoadState {

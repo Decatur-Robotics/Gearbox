@@ -6,6 +6,7 @@ import { Analytics } from "@/lib/client/Analytics";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useInterval from "@/lib/client/useInterval";
+import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import React from "react";
@@ -23,7 +24,7 @@ export default function Subjective(props: ResolvedUrlData) {
     if (match)
       return;
 
-    api.findMatchById(matchId as string).then(setMatch);
+    api.findMatchById(new ObjectId(matchId as string)).then(setMatch);
   }, [match]);
 
   if (!match)

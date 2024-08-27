@@ -1,5 +1,5 @@
 import { AckFn, RespondArguments, RespondFn, SlashCommand } from "@slack/bolt";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { getDatabase } from "./MongoDB";
 import { Team, User } from "./Types";
 import CollectionId from "./client/CollectionId";
@@ -41,7 +41,7 @@ const SlackCommands: SlackCommandDict = {
       return;
     }
 
-    if (!team.owners.includes(user._id!.toString())) {
+    if (!team.owners.includes(user._id)) {
       await respond(`You are not an owner of team ${teamNumber}.`);
       return;
     }

@@ -1,6 +1,6 @@
 import { getDatabase } from "@/lib/MongoDB";
 import { PitReportData, Pitreport } from "@/lib/Types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
@@ -23,7 +23,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
 
   return (
     <Container requireAuthentication={false} hideMenu={!hide} title={`${props.pitreport.teamNumber} | Pit Scouting`}>
-      <PitReportForm pitReport={props.pitreport} layout={props.layout} usersteamNumber={props.teamNumber} 
+      <PitReportForm pitReport={props.pitreport} layout={props.layout} usersTeamNumber={props.teamNumber} 
         compName={props.compName} username={session.user?.name} />
     </Container>
   );

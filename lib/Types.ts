@@ -341,7 +341,7 @@ export class Pitreport<TFormData extends PitReportData = PitReportData> extends 
   teamNumber: number;
 
   submitted: boolean = false;
-  submitter: string | undefined;
+  submitter: ObjectId | undefined;
 
   data: TFormData | undefined;
 

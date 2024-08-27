@@ -4,12 +4,12 @@ import { Account, Competition, DbPicklist, Match, OwnedByComp, OwnedByTeam, Pitr
 import DbInterface from "./DbInterface"
 
 class Collection<TDocument> {
-  canRead: (userId: ObjectId, document: TDocument, db: DbInterface) => Promise<boolean>
-  canWrite: (userId: ObjectId, document: TDocument, update: Partial<TDocument>, db: DbInterface) => Promise<boolean>
+  canRead: (userId: ObjectId | undefined, document: TDocument, db: DbInterface) => Promise<boolean>
+  canWrite: (userId: ObjectId | undefined, document: TDocument, update: Partial<TDocument>, db: DbInterface) => Promise<boolean>
 
   constructor(
-      canRead: (userId: ObjectId, document: TDocument, db: DbInterface) => Promise<boolean>, 
-      canWrite: (userId: ObjectId, document: TDocument, update: Partial<TDocument>, db: DbInterface) => Promise<boolean>
+      canRead: (userId: ObjectId | undefined, document: TDocument, db: DbInterface) => Promise<boolean>, 
+      canWrite: (userId: ObjectId | undefined, document: TDocument, update: Partial<TDocument>, db: DbInterface) => Promise<boolean>
     ) {
     this.canRead = canRead;
     this.canWrite = canWrite;
@@ -18,7 +18,9 @@ class Collection<TDocument> {
 
 namespace AccessLevels {
   export namespace Read {
-    export async function ifOnOwnerTeam<TDocument extends OwnedByTeam | Team>(userId: ObjectId, document: TDocument, db: DbInterface) {
+    export async function ifOnOwnerTeam<TDocument extends OwnedByTeam | Team>(userId: ObjectId | undefined, document: TDocument, db: DbInterface) {
+      if (!userId) return false;
+     
       const team = "ownerTeam" in document
         ? db.findObjectById<Team>(CollectionId.Teams, new ObjectId(document.ownerTeam))
         : Promise.resolve(document as Team);
@@ -31,7 +33,7 @@ namespace AccessLevels {
       return (await team)?.users?.includes(userId);
     }
 
-    export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: ObjectId, document: TDocument, 
+    export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: ObjectId | undefined, document: TDocument, 
         db: DbInterface) {
       const comp = "ownerComp" in document 
         ? db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(document.ownerComp))
@@ -51,18 +53,18 @@ namespace AccessLevels {
   }
 
   export namespace Write {
-    export async function ifOnOwnerTeam<TDocument extends OwnedByTeam>(userId: ObjectId, document: TDocument, update: Partial<TDocument>, 
+    export async function ifOnOwnerTeam<TDocument extends OwnedByTeam>(userId: ObjectId | undefined, document: TDocument, update: Partial<TDocument>, 
         db: DbInterface) {
       return Read.ifOnOwnerTeam(userId, document, db);
     }
     
-    export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: ObjectId, document: TDocument, 
+    export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: ObjectId | undefined, document: TDocument, 
         update: Partial<TDocument>, db: DbInterface) {
       return Read.ifOnOwnerTeamOrCompIsPublic(userId, document, db);
     }
 
     export async function ifOnOwnerTeamOrQueryIsLimitedToKeys<TDocument extends OwnedByTeam | Team>(
-        userId: ObjectId, document: TDocument, query: any, db: DbInterface, allowedKeys: (keyof TDocument)[]) {
+        userId: ObjectId | undefined, document: TDocument, query: any, db: DbInterface, allowedKeys: (keyof TDocument)[]) {
       const isOnTeam = Read.ifOnOwnerTeam(userId, document, query);
 
       return isOnTeam || Object.keys(query).every(key => allowedKeys.includes(key as keyof TDocument));

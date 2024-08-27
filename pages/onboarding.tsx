@@ -58,7 +58,7 @@ export default function Onboarding() {
         if (num !== number) return;
 
         setTeam(team);
-        setJoinRequestStatus(team.requests?.includes(session?.user?._id ?? "") ?? false 
+        setJoinRequestStatus(session.user && (team.requests?.includes(session.user._id) ?? false) 
           ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
       });
     }
@@ -66,10 +66,13 @@ export default function Onboarding() {
   }
 
   async function requestToJoinTeam() {
-    if (!session?.user?._id || !teamNumber) return;
+    if (!session?.user?._id || !teamNumber || !team) {
+      console.error("Invalid request to join team");
+      return;
+    }
 
     setJoinRequestStatus(JoinRequestStatus.Requested);
-    await api.requestToJoinTeam(session?.user?._id, team?._id);
+    await api.requestToJoinTeam(session.user._id, team._id);
   }
 
   async function updateTeamRequestStatus() {

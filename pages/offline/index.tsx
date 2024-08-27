@@ -43,7 +43,7 @@ export default function SelectCompetitionPage() {
             <div className="card-actions flex flex-col w-[40%]">
               {
                 allSavedComps.map(comp => (
-                  <Link key={comp.comp._id} href={`offline/${comp.comp._id}`} className="btn btn-primary w-full">
+                  <Link key={comp.comp._id.toString()} href={`offline/${comp.comp._id}`} className="btn btn-primary w-full">
                     {formatCompName(comp)}
                   </Link>
                 ))

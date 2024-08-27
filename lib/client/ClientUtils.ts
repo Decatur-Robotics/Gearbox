@@ -6,7 +6,7 @@ export function getIdsInProgressFromTimestamps(timestamps: { [id: string]: strin
   return Object.keys(timestamps).filter((id) => {
     const timestamp = timestamps[id];
     return ((now - new Date(timestamp).getTime()) / 1000) < 10;
-  });
+  }).map((id) => new ObjectId(id));
 }
 
 export const NotLinkedToTba = "not-linked";

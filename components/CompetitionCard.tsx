@@ -18,7 +18,7 @@ export default function CompetitionCard(props: {
   return (
     <Card
       title={comp?.name}
-      key={comp?._id}
+      key={comp?._id.toString()}
       className="w-full bg-base-300 border-4 border-base-300 transition ease-in hover:border-primary"
     >
       {passed ? <div className="badge badge-neutral">Event Passed</div> : <></>}

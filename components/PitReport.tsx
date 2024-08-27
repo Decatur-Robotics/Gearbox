@@ -11,11 +11,12 @@ import Card from "./Card";
 import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
+import { ObjectId } from "bson";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PitReportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, compId?: string, 
-    usersteamNumber?: number, compName?: string, username?: string }) {
+export default function PitReportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, compId?: ObjectId, 
+    usersTeamNumber?: number, compName?: string, username?: string }) {
   const { session } = useCurrentSession();
 
   const [pitreport, setPitreport] = useState(props.pitReport);
@@ -37,7 +38,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     const { _id, ...report } = pitreport;
 
     console.log("Submitting pitreport", report);
-    api.updatePitreport(props.pitReport?._id, {
+    api.updatePitreport(props.pitReport._id, {
       ...report,
       submitted: true,
       submitter: session?.user?._id
@@ -55,7 +56,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
 
         console.log("Updating pitreport in local storage");
 
-        comp.pitReports[pitreport._id] = {
+        comp.pitReports[pitreport._id.toString()] = {
           ...pitreport,
           submitted: true,
           submitter: session?.user?._id
@@ -63,7 +64,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
       });
     })
     .then(() => {
-      Analytics.pitReportSubmitted(pitreport.teamNumber, props.usersteamNumber ?? -1, props.compName ?? "Unknown", props.username ?? "Unknown");
+      Analytics.pitReportSubmitted(pitreport.teamNumber, props.usersTeamNumber ?? -1, props.compName ?? "Unknown", props.username ?? "Unknown");
     })
     .finally(() => {
       location.href = location.href.substring(0, location.href.lastIndexOf("/pit"));

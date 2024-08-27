@@ -7,7 +7,7 @@ import {
   AllianceColor,
   QuantData,
 } from "./Types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { rotateArray, shuffleArray } from "./client/ClientUtils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
@@ -49,9 +49,9 @@ export async function AssignScoutersToCompetitionMatches(
 }
 
 export async function AssignScoutersToMatch(
-  matchId: string,
-  scouterArray: string[],
-  subjectiveScouterArray: string[],
+  matchId: ObjectId,
+  scouterArray: ObjectId[],
+  subjectiveScouterArray: ObjectId[],
   gameId: GameId
 ): Promise<any> {
   const subjectiveScouter = subjectiveScouterArray.length > 0 ? subjectiveScouterArray[0] : undefined;
@@ -68,13 +68,13 @@ export async function AssignScoutersToMatch(
   return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
 }
 
-export async function generateReportsForMatch(match: string | Match, gameId: GameId, scouters?: string[]) {
+export async function generateReportsForMatch(matchId: ObjectId | Match, gameId: GameId, scouters?: ObjectId[]) {
   const db = await getDatabase();
-  if (typeof match === "string") {
-    match = await db.findObjectById<Match>(
-      CollectionId.Matches,
-      new ObjectId(match),
-    );
+  let match: Match;
+  if (ObjectId.prototype.isPrototypeOf(matchId)) {
+    match = await db.findObjectById<Match>(CollectionId.Matches, matchId as ObjectId);
+  } else {
+    match = matchId as Match;
   }
 
   const existingReportPromises = match.reports.map((r) =>
@@ -100,15 +100,13 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
         games[gameId].createQuantitativeFormData(),
         teamNumber,
         color,
-        String(match._id),
+        match._id,
         match.ownerTeam,
         match.ownerComp,
         0
       );
 
-      reports.push(
-        String((await db.addObject<Report>(CollectionId.Reports, newReport))._id),
-      );
+      reports.push((await db.addObject<Report>(CollectionId.Reports, newReport))._id);
     }
     else {
       // Update existing report
@@ -123,7 +121,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
     }
   }
 
-  match.reports = reports.filter((r) => r !== undefined) as string[];
+  match.reports = reports.filter((r) => r !== undefined);
   await db.updateObjectById<Match>(
     CollectionId.Matches,
     new ObjectId(match._id),
