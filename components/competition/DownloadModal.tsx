@@ -1,8 +1,8 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { download } from "@/lib/client/ClientUtils";
 import { mergeSavedComps, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import useIsOnline from "@/lib/client/useIsOnline";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import useIsOnline from "@/lib/client/hooks/useIsOnline";
 import { SavedCompetition, League, Team, Competition, Report, Pitreport, SubjectiveReport } from "@/lib/Types";
 import { useState, ChangeEvent } from "react";
 import Loading from "../Loading";

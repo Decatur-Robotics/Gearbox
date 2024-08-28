@@ -1,7 +1,7 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import useInterval from "@/lib/client/useInterval";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import useInterval from "@/lib/client/hooks/useInterval";
 import { Match, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
 import { BSON, ObjectId } from "bson";
 import { useRouter } from "next/router";

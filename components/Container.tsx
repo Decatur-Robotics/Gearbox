@@ -1,5 +1,5 @@
 import { CompetitonNameIdPair, Season, Team } from "@/lib/Types";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { BiMenu, BiPlus, BiHome, BiSolidPhone } from "react-icons/bi";
@@ -8,13 +8,13 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
-import useCheckMobile from "@/lib/client/useCheckMobile";
+import useCheckMobile from "@/lib/client/hooks/useCheckMobile";
 import { MdInfo, MdOfflineBolt, MdOfflinePin, MdOfflineShare, MdWarning } from "react-icons/md";
 import { RiWifiOffLine } from "react-icons/ri";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
 import { stat } from "fs";
-import useIsOnline from "@/lib/client/useIsOnline";
+import useIsOnline from "@/lib/client/hooks/useIsOnline";
 import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
 

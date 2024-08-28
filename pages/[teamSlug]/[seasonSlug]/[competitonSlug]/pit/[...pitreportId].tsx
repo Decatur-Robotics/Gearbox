@@ -5,7 +5,7 @@ import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
 
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
 import { makeObjSerializeable } from "@/lib/client/ClientUtils";

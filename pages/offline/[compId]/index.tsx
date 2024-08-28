@@ -1,6 +1,6 @@
 import CompetitionIndex from "@/components/competition/CompetitionIndex";
 import Container from "@/components/Container";
-import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
+import useOfflineCompFromRouter from "@/lib/client/hooks/useOfflineCompFromRouter";
 
 export default function OfflineCompetitionPage() {
   const { savedComp, status } = useOfflineCompFromRouter();

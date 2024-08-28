@@ -1,5 +1,5 @@
 import StatsPage from "@/components/StatsPage";
-import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
+import useOfflineCompFromRouter from "@/lib/client/hooks/useOfflineCompFromRouter";
 import { ObjectId } from "bson";
 
 export default function OfflineStats() {

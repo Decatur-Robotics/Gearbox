@@ -1,5 +1,5 @@
 import ClientAPI from "@/lib/client/ClientAPI";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { FormLayout, FormElement, BlockElement } from "@/lib/Layout";
 import { Pitreport, PitReportData } from "@/lib/Types";
 import { useState, useCallback } from "react";

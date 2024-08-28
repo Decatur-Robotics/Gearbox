@@ -17,7 +17,7 @@ import {
 } from "@/lib/Types";
 
 import Link from "next/link";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 import {
   MdAutoGraph,
@@ -31,7 +31,7 @@ import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
-import useInterval from "@/lib/client/useInterval";
+import useInterval from "@/lib/client/hooks/useInterval";
 import { NotLinkedToTba, download, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
@@ -41,7 +41,7 @@ import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
 import { BSON, ObjectId } from "bson";
-import useIsOnline from "@/lib/client/useIsOnline";
+import useIsOnline from "@/lib/client/hooks/useIsOnline";
 
 const api = new ClientAPI("gearboxiscool");
 

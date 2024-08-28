@@ -10,7 +10,7 @@ import Card from "@/components/Card";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import { Analytics } from "@/lib/client/Analytics";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 const api = new ClientAPI("gearboxiscool");
 

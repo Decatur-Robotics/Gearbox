@@ -1,7 +1,7 @@
 import { AllianceColor, Report, QuantData } from "@/lib/Types";
 import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";

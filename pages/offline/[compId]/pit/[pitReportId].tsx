@@ -1,6 +1,6 @@
 import Container from "@/components/Container";
 import PitReportForm from "@/components/PitReport";
-import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
+import useOfflineCompFromRouter from "@/lib/client/hooks/useOfflineCompFromRouter";
 
 export default function OfflinePitReport() {
   const { savedComp, pitReport } = useOfflineCompFromRouter();

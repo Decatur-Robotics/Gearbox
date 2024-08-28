@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Competition, League, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";

@@ -1,6 +1,6 @@
 import Container from "@/components/Container";
 import Form from "@/components/forms/Form";
-import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
+import useOfflineCompFromRouter from "@/lib/client/hooks/useOfflineCompFromRouter";
 
 export default function OfflineQuantReport() {
   const { savedComp, quantReport } = useOfflineCompFromRouter();

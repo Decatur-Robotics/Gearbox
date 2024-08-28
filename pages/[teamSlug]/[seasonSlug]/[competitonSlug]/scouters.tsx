@@ -4,7 +4,7 @@ import { Competition, Match, Team, User, Report } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Collections from "@/lib/client/CollectionId";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";

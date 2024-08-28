@@ -1,4 +1,4 @@
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";

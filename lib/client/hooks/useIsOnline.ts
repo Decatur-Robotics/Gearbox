@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import ClientAPI from "./ClientAPI";
+import ClientAPI from "../ClientAPI";
 import useInterval from "./useInterval";
-import { forceOfflineMode } from "./ClientUtils";
+import { forceOfflineMode } from "../ClientUtils";
 
 const api = new ClientAPI("gearboxiscool");
 

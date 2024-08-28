@@ -4,7 +4,7 @@ import { GetServerSideProps } from "next";
 import { Competition, Season, Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { getDatabase } from "@/lib/MongoDB";
