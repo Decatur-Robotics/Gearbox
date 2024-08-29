@@ -87,7 +87,7 @@ export class MongoDBInterface implements DbInterface {
     id: ObjectId,
     newValues: Partial<Type>
   ): Promise<void> {
-    var query = { _id: id };
+    const query = { _id: id };
     var updated = { $set: newValues };
     this?.db
       ?.collection(collection)

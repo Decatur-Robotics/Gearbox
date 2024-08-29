@@ -93,7 +93,7 @@ export default class MiniMongoInterface implements DbInterface {
 
     if (foundCollection)
     {
-      foundCollection.upsert({ _id: id.toHexString(), ...newValues });
+      foundCollection.upsert({ _id: id, ...newValues });
       this.saveCollection(foundCollection);
       return Promise.resolve();
     }
@@ -151,13 +151,14 @@ export default class MiniMongoInterface implements DbInterface {
   }  
 }
 
-export function useLocalDb(): MiniMongoInterface | undefined
-{
+export function useLocalDb() {
   const [db, setDb] = useState<MiniMongoInterface>();
 
   useEffect(() => {
-    const db = new MiniMongoInterface();
-    db.init().then(() => setDb(db));
+    const newDb = new MiniMongoInterface();
+    newDb.init(); // Remember to init!
+    
+    setDb(newDb);
   }, []);
 
   return db;

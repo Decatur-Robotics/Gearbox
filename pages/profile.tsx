@@ -19,16 +19,28 @@ import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
 import { ObjectId } from "bson";
+import useDocumentArrayFromDb from "@/lib/client/hooks/useDocumentArrayFromDb";
+import { useDbWriter } from "@/lib/client/DualDbWriter";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function Profile(props: { teamList: Team[] }) {
+  const dbWriter = useDbWriter();
   const { session, status } = useCurrentSession();
   const user = session?.user;
   const teamList = props.teamList;
 
   const owner = user?.owner ? user?.owner?.length > 0 : false;
   const member = user?.teams ? user.teams?.length > 0 : false;
+
+  const [searchedTeamNumber, setSearchedTeamNumber] = useState(undefined);
+  const searchedTeams = useDocumentArrayFromDb<Team>({
+    collection: Collections.Teams,
+    query: { number: searchedTeamNumber },
+    onFetch: (teams) => {
+      console.log("Searched teams", teams);
+    }
+  });
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);
@@ -60,7 +72,12 @@ export default function Profile(props: { teamList: Team[] }) {
     }
 
     setLoadingRequest(true);
-    await api.requestToJoinTeam(user._id, new ObjectId(teamId));
+    // await api.requestToJoinTeam(user._id, new ObjectId(teamId));
+
+    dbWriter?.updateObjectById(Collections.Teams, new ObjectId(teamId), {
+      $push: { requests: user._id },
+    });
+
     setLoadingRequest(false);
     setSentRequest(true);
 

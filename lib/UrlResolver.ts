@@ -33,7 +33,7 @@ export function SerializeDatabaseObject(object: any): any {
   }
   
   for (const key of Object.keys(object)) {
-    if (ObjectId.isValid(object[key]))
+    if (ObjectId.isValid(object[key]) || object[key] instanceof ObjectId)
       object[key] = object[key].toString();
 
     if (typeof key !== "string" && Array.isArray(object[key]))

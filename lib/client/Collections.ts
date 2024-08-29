@@ -30,7 +30,8 @@ namespace AccessLevels {
         return true;
       }
 
-      return (await team)?.users?.includes(userId);
+      // Using both == and .equals is for backwards compatibility with IDs stored as strings
+      return (await team)?.users?.some((id) => id == userId || (typeof id.equals === "function" && id.equals(userId)));
     }
 
     export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: ObjectId | undefined, document: TDocument, 
@@ -66,6 +67,28 @@ namespace AccessLevels {
     export async function ifOnOwnerTeamOrQueryIsLimitedToKeys<TDocument extends OwnedByTeam | Team>(
         userId: ObjectId | undefined, document: TDocument, query: any, db: DbInterface, allowedKeys: (keyof TDocument)[]) {
       const isOnTeam = Read.ifOnOwnerTeam(userId, document, query);
+
+      const compositeKeys = Object.keys(query);
+      const objKeys = Object.keys(document).filter(key => typeof document[key as keyof TDocument] === "object");
+      while (objKeys.length > 0) {
+        const key = objKeys.pop();
+        if (!key) continue;
+
+        const path = key.split(".");
+
+        const lastKey = path.pop();
+        if (!lastKey) continue;
+
+        compositeKeys.push(key);
+
+        // Find the object in the document
+        let obj = document;
+        for (const key of path) {
+          obj = obj[key];
+        }
+
+        
+      }
 
       return isOnTeam || Object.keys(query).every(key => allowedKeys.includes(key as keyof TDocument));
     }

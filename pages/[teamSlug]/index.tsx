@@ -114,7 +114,7 @@ function Roster(props: TeamPageProps) {
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [requests, setRequests] = useState<User[]>([]);
 
-  const owner = session.user && team?.owners.includes(session.user._id);
+  const owner = session?.user && team?.owners.includes(session?.user._id);
 
   useEffect(() => {
     const loadRequests = async () => {
@@ -151,7 +151,7 @@ function Roster(props: TeamPageProps) {
     }
 
     Analytics.teamJoinRequestHandled(team?.number ?? -1, team?.league ?? League.FRC, 
-      user.name ?? "Unknown User", session.user?.name ?? "Unknown User", accept);
+      user.name ?? "Unknown User", session?.user?.name ?? "Unknown User", accept);
   };
 
   const updateScouter = async (userId: ObjectId) => {
@@ -441,7 +441,7 @@ export default function TeamIndex(props: TeamPageProps) {
 
   const [page, setPage] = useState(0);
 
-  const isManager = session.user && team?.owners.includes(session?.user?._id);
+  const isManager = session?.user && team?.owners.includes(session?.user?._id);
 
   return (
     <Container requireAuthentication={true} hideMenu={false} title={team ? `${team.number} - ${team.name}` : "Team Loading..."}>
@@ -484,7 +484,7 @@ export default function TeamIndex(props: TeamPageProps) {
                 ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
                 : <div>
                     Not linked to Slack.
-                    { (session.user && team?.owners.includes(session.user._id)) && 
+                    { (session?.user && team?.owners.includes(session?.user._id)) && 
                       <>
                         {" "}<AddToSlack />
                         , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
@@ -580,8 +580,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
-      team: resolved.team,
-      users: users,
+      team: SerializeDatabaseObject(resolved.team),
+      users: SerializeDatabaseObjects(users),
       currentCompetition: SerializeDatabaseObject(comp),
       currentSeason: SerializeDatabaseObject(currentSeason),
       pastSeasons: SerializeDatabaseObjects(seasons),

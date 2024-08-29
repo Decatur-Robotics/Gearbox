@@ -48,7 +48,7 @@ export default function Home(props: SeasonPageProps) {
           ) : (
             <></>
           )}
-          {comp.map((comp) => (
+          {comp?.map((comp) => (
             <Link
               key={comp._id.toString()}
               href={`/${team.slug}/${season.slug}/${comp.slug}`}
@@ -80,7 +80,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const season = resolved.season;
 
   const comp = await db.findObjects(Collections.Competitions, {
-    _id: { $in: season?.competitions.map((id) => new ObjectId(id)) },
+    _id: { $in: season?.competitions?.map((id) => new ObjectId(id)) },
   });
 
   return {

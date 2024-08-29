@@ -185,7 +185,7 @@ export namespace API {
       res.status(200).send(await db.addObject(collection, object));
     },
 
-    update: async (req, res, { db, data, user }: RouteContents<{ collection: CollectionId, id: string, newValues: object }>) => {
+    update: async (req, res, { db, data, user }: RouteContents<{ collection: CollectionId, id: string, newValues: { [key: string]: any } }>) => {
       // {
       //     collection,
       //      id,
@@ -204,10 +204,28 @@ export namespace API {
         return res.status(403).send({ error: "Unauthorized" });
       }
 
+      console.log("Updating", collectionId, id, newValues);
+
+      const set = Object.keys(newValues).reduce<{ [key: string]: any }>((acc, key) => {
+        if (key === "_id" || key.startsWith("$")) return acc;
+        acc[key] = newValues[key];
+        return acc;
+      }, {});
+
+      const otherUpdates = Object.keys(newValues).reduce<{ [key: string]: any }>((acc, key) => {
+        if (key.startsWith("$")) {
+          acc[key] = newValues[key];
+        }
+        return acc;
+      }, {});
+
       res
         .status(200)
         .send(
-          await db.updateObjectById(collectionId, new ObjectId(id), newValues)
+          await db.db?.collection(collectionId).updateOne(
+            { _id: new ObjectId(id) },
+            { $set: set, ...otherUpdates }
+          )
         );
     },
 

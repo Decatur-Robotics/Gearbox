@@ -1,4 +1,3 @@
-import { useLocalDb } from "@/lib/client/MiniMongoInterface";
 import { FaDiscord } from "react-icons/fa";
 
 export default function Banner(props: { children: React.ReactNode }) {

@@ -20,6 +20,7 @@ import {
 import { GameId } from "./GameId";
 import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
 import { BSON, ObjectId } from 'bson';
+import CollectionId from "./CollectionId";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -63,6 +64,8 @@ export default class ClientAPI {
   
   /**
    * @param fallback only use if you are just a fetching a single user. Using fallback for many users will take a long time.
+   * @deprecated use find instead
+   * @see find
    */
   async findUserById(id: ObjectId | undefined, fallback: User | undefined = undefined): Promise<User> {
     try {
@@ -78,6 +81,10 @@ export default class ClientAPI {
     }
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findTeamById(id: string): Promise<Team> {
     return await this.request("/find", {
       collection: "Teams",
@@ -85,6 +92,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findTeamByNumberAndLeague(n: number, league: League): Promise<Team> {
     const query = league === League.FRC 
       ? { 
@@ -102,6 +113,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findSeasonById(id: ObjectId): Promise<Season> {
     return await this.request("/find", {
       collection: "Seasons",
@@ -109,6 +124,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findCompetitionById(id: ObjectId): Promise<Competition> {
     return await this.request("/find", {
       collection: "Competitions",
@@ -116,6 +135,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findMatchById(id: ObjectId): Promise<Match> {
     return await this.request("/find", {
       collection: "Matches",
@@ -123,6 +146,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findReportById(id: ObjectId): Promise<Report> {
     return await this.request("/find", {
       collection: "Reports",
@@ -130,10 +157,21 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see find
+   */
   async findPitreportById(id: ObjectId): Promise<Pitreport> {
     return await this.request("/find", {
       collection: "Pitreports",
       query: { _id: id },
+    });
+  }
+
+  async find<T>(collection: CollectionId, query: object): Promise<T> {
+    return await this.request("/find", {
+      collection: collection,
+      query: query,
     });
   }
 
@@ -261,6 +299,10 @@ export default class ClientAPI {
     return await this.request("/searchCompetitionByName", { name: name });
   }
 
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
   async updateUser(newValues: object, userId: string) {
     return await this.request("/update", {
       collection: "users",
@@ -269,6 +311,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
   async updateTeam(newValues: object, teamId: ObjectId) {
     return await this.request("/update", {
       collection: "Teams",
@@ -277,6 +323,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
   async updateSeason(newValues: object, seasonId: string | undefined) {
     return await this.request("/update", {
       collection: "Seasons",
@@ -285,11 +335,23 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
   async updateReport(newValues: Partial<Report>, reportId: ObjectId) {
     return await this.request("/update", {
       collection: "Reports",
       newValues: newValues,
       id: reportId,
+    });
+  }
+
+  async update(collection: CollectionId, id: ObjectId, newValues: object, ) {
+    return await this.request("/update", {
+      collection: collection,
+      newValues: newValues,
+      id: id,
     });
   }
 
