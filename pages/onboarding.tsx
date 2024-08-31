@@ -9,6 +9,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { defaultGameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -90,13 +91,12 @@ export default function Onboarding() {
   useEffect(() => { setInterval(updateTeamRequestStatus, 5000); }, []);
 
   async function createTeam() {
-    console.log("Creating team", team?.name, teamNumber, session?.user?._id, team?.tbaId, league);
-    if (!session?.user?._id || !teamNumber || !team?.name || !team.tbaId || !league) {
+    if (!session?.user?._id || !teamNumber || !team?.name || !league) {
       console.error("Missing required fields to create team");
       return;
     }
 
-    setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId, league));
+    setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId ?? NotLinkedToTba, league));
     setJoinRequestStatus(JoinRequestStatus.CreatedTeam);
   }
 
