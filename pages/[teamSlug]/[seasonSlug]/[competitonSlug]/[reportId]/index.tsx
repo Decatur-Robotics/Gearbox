@@ -37,12 +37,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const resolver = await UrlResolver(context);
   const season = resolver.season;
 
-  // Logs
-  console.log(season?.gameId);
-  console.log(games);
-  console.log(season?.gameId, season?.gameId ?? defaultGameId, games[season?.gameId ?? defaultGameId]?.name);
-  console.log(games[season?.gameId ?? defaultGameId]);
-  console.log(games[season?.gameId ?? defaultGameId].quantitativeReportLayout);
+  console.log("Raw Game ID:", season?.gameId);
+  console.log("Game ID:", games[season?.gameId ?? defaultGameId]);
+  console.log("Game Name:", games[season?.gameId ?? defaultGameId].name);
 
   return {
     props: {
