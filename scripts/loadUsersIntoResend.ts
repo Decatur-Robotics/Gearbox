@@ -14,8 +14,11 @@ async function loadUsersIntoResend() {
   console.log(`Saving ${users.length} users to Resend...`);
   
   for (const user of users) {
-    if (user.email == "totallyrealemail@gmail.com")
+    console.log("Processing", user.email);
+    if (user.email == "totallyrealemail@gmail.com") {
+      console.log("Skipping test user");
       return;
+    }
 
     await ResendUtils.createContact(user);
     await new Promise(resolve => setTimeout(resolve, 500)); // Rate limit is 2/sec
