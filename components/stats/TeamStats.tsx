@@ -83,6 +83,7 @@ export default function TeamStats(props: {
       match.number, 0, `Quantitative: ${report.data?.comments}`
     )));
 
+    console.log("Promises:", promises);
     Promise.all(promises).then(() => setComments(newComments));
   }, [props.selectedTeam, props.selectedReports, props.subjectiveReports, props.pitReport]);
 
