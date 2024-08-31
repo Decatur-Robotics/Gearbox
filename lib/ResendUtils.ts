@@ -10,6 +10,9 @@ namespace ResendUtils {
   export async function createContact(rawUser: NextAuthUser) {
     const user = rawUser as User;
 
+    if (user.resendContactId)
+      return;
+
     if (!user.email || !user.name) {
       console.error("User is missing email or name", user);
       return;
