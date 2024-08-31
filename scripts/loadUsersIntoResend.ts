@@ -15,8 +15,9 @@ async function loadUsersIntoResend() {
   users.forEach(async user => {
     if (user.email == "totallyrealemail@gmail.com")
       return;
-    
-    ResendUtils.createContact(user);
+
+    await ResendUtils.createContact(user);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Rate limit is 2/sec
   });
 
   console.log("Done!");
