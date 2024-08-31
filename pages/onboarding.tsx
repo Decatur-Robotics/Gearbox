@@ -90,7 +90,11 @@ export default function Onboarding() {
   useEffect(() => { setInterval(updateTeamRequestStatus, 5000); }, []);
 
   async function createTeam() {
-    if (!session?.user?._id || !teamNumber || !team?.name || !team.tbaId || !league) return;
+    console.log("Creating team", team?.name, teamNumber, session?.user?._id, team?.tbaId, league);
+    if (!session?.user?._id || !teamNumber || !team?.name || !team.tbaId || !league) {
+      console.error("Missing required fields to create team");
+      return;
+    }
 
     setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId, league));
     setJoinRequestStatus(JoinRequestStatus.CreatedTeam);
