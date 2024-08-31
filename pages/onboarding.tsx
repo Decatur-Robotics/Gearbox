@@ -31,11 +31,14 @@ export default function Onboarding() {
   const [joinRequestStatus, setJoinRequestStatus] = useState<JoinRequestStatus>(JoinRequestStatus.NotRequested);
   const [season, setSeason] = useState<Season>();
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
+
+  const [checkedIfShouldSkipOnBoarding, setCheckedIfShouldSkipOnBoarding] = useState<boolean>(false);
   
   const game = games[league === League.FTC ? GameId.CenterStage : defaultGameId];
 
-  if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
+  if (!checkedIfShouldSkipOnBoarding && ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false))
     router.push("/profile");
+  else setCheckedIfShouldSkipOnBoarding(true);
 
   async function completeOnboarding(redirect: string = "/profile") {
     if (!session?.user?._id) return;
@@ -198,7 +201,7 @@ export default function Onboarding() {
                                             <div>
                                               Season created! Now, we just need to create a competition, then you&apos;re done!.<br/>
                                               <br/>
-                                              If you have any further questions, don&apos;t hesitate to reach out on 
+                                              If you have any further questions, don&apos;t hesitate to reach out on{" "}
                                                 <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">Discord</a>.
                                             </div>
                                             <button className="btn btn-primary mt-2" 
