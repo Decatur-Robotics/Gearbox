@@ -77,7 +77,7 @@ export default function TeamStats(props: {
     }
 
     const commentList = props.selectedReports?.filter((report) => report.data?.comments.length > 0) ?? [];
-    if (commentList.length === 0) return setComments([]);
+    if (commentList.length === 0) return setComments(newComments);
     
     const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
       match.number, 0, `Quantitative: ${report.data?.comments}`
