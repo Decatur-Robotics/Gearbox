@@ -32,7 +32,8 @@ export default function Onboarding() {
   const [season, setSeason] = useState<Season>();
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
   
-  const game = games[league === League.FTC ? GameId.CenterStage : defaultGameId];
+  const gameId = league === League.FTC ? GameId.CenterStage : defaultGameId;
+  const game = games[gameId];
 
   if (session?.user?.onboardingComplete)
     router.push("/profile");
@@ -108,7 +109,7 @@ export default function Onboarding() {
   async function createSeason() {
     if (!session?.user?._id || !team?._id) return;
 
-    setSeason(await api.createSeason(game.name, game.year, defaultGameId, team?._id));
+    setSeason(await api.createSeason(game.name, game.year, gameId, team?._id));
     setSeasonCreated(true);
   }
 
