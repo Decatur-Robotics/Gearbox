@@ -30,12 +30,13 @@ export default function TeamStats(props: {
     const newComments: typeof comments = [];
 
     function addComment(match: number, order: number, jsx: ReactNode) {
-      console.log(match, order, jsx);
+      console.log("Adding comment...", match, order, jsx);
       if (!newComments!.some((comment) => comment.matchNum === match)) newComments!.push({ matchNum: match, content: [{
           order,
           jsx
         }] });
       else newComments!.find((comment) => comment.matchNum === match)!.content.push({ order, jsx });
+      console.log("New comments:", newComments);
     }
 
     addComment( 
