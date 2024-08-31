@@ -40,6 +40,12 @@ declare global {
 
       NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: string;
 
+      SMTP_HOST: string;
+      SMTP_PORT: string;
+      SMTP_USER: string;
+      SMTP_PASSWORD: string;
+      SMTP_FROM: string;
+
       NEXT_PUBLIC_FORCE_OFFLINE_MODE: string;
 
       NEXT_PUBLIC_BUILD_TIME: string;
