@@ -32,7 +32,7 @@ export default function Onboarding() {
   const [season, setSeason] = useState<Season>();
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
   
-  const game = games[ league === League.FTC ? GameId.CenterStage : defaultGameId ];
+  const game = games[league === League.FTC ? GameId.CenterStage : defaultGameId];
 
   if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
     router.push("/profile");
