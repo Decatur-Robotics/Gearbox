@@ -46,6 +46,7 @@
     "react-icons": "^4.8.0",
     "react-p5": "^1.4.1",
     "react-qr-code": "^2.0.15",
+    "resend": "^4.0.0",
     "slack": "^11.0.2",
     "socket.io": "^4.7.4",
     "socket.io-client": "^4.7.2",

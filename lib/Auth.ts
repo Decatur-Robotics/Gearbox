@@ -9,6 +9,7 @@ import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
 import Email from "next-auth/providers/email";
+import ResendUtils from "./ResendUtils";
 
 var db = getDatabase();
 
@@ -92,6 +93,7 @@ export const AuthenticationOptions: AuthOptions = {
 
     async signIn({ user }) {
       Analytics.signIn(user.name ?? "Unknown User");
+      ResendUtils.createContact(user);
 
       return true;
     }
