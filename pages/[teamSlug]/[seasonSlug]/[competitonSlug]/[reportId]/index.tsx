@@ -40,6 +40,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // Logs
   console.log(season?.gameId);
   console.log(games);
+  console.log(season?.gameId, season?.gameId ?? defaultGameId, games[season?.gameId ?? defaultGameId]?.name);
   console.log(games[season?.gameId ?? defaultGameId]);
   console.log(games[season?.gameId ?? defaultGameId].quantitativeReportLayout);
 
