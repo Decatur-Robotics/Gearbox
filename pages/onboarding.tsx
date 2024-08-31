@@ -6,7 +6,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
-import { defaultGameId } from "@/lib/client/GameId";
+import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
@@ -32,7 +32,7 @@ export default function Onboarding() {
   const [season, setSeason] = useState<Season>();
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
   
-  const game = games[defaultGameId];
+  const game = games[ league === League.FTC ? GameId.CenterStage : defaultGameId ];
 
   if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
     router.push("/profile");
