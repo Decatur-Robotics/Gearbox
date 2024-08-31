@@ -20,22 +20,18 @@ export default function QrPamphlet() {
         </p>
         <div className="flex flex-row w-full">
           <div className="flex flex-col w-1/2">
-            <ul className="text-3xl list-disc pl-5">
+            <ul className="text-3xl list-disc pl-5 space-y-1">
               <li>Easy scouting for FTC & FRC</li>
               <li>Pre-made scouting forms</li>
               <li>Set up in under 5 minutes</li>
-              <li>Built-in picklists</li>
               <li>Powerful data analytics</li>
-              <li>Export your data to CSV</li>
-              <li>Automatic scouter check-in</li>
               <li>Works on any device</li>
-              <li>Pit and match scouting</li>
               <li>Optionally share your data</li>
             </ul>
           </div>
-          <div className="flex flex-col justify-center w-1/2">
+          <div className="flex flex-col justify-center w-3/5">
             <QrCode value="https://4026.org" />
-            <div className="ml-8 btn btn-primary w-2/3 text-2xl">
+            <div className="ml-5 btn btn-primary w-2/3 text-3xl">
               Live at 4026.org
             </div>
           </div>
