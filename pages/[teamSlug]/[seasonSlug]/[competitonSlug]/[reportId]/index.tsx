@@ -37,6 +37,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const resolver = await UrlResolver(context);
   const season = resolver.season;
 
+  // Logs
   console.log(season?.gameId);
   console.log(games[season?.gameId ?? defaultGameId].quantitativeReportLayout);
 
