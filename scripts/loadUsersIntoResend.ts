@@ -17,7 +17,7 @@ async function loadUsersIntoResend() {
     console.log("Processing", user.email);
     if (user.email == "totallyrealemail@gmail.com") {
       console.log("Skipping test user");
-      return;
+      continue;
     }
 
     await ResendUtils.createContact(user);
