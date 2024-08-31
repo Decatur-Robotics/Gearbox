@@ -40,7 +40,7 @@ export default function Onboarding() {
   useEffect(() => {
     if (session?.user?.teams.length ?? 0 > 0)
       router.push(`/profile`);
-  }, [session?.user?.teams]);
+  }, [session?.user?.email]);
 
   async function completeOnboarding(redirect: string = "/profile") {
     if (!session?.user?._id) return;
