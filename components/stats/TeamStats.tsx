@@ -30,24 +30,15 @@ export default function TeamStats(props: {
     const newComments: typeof comments = [];
 
     function addComment(match: number, order: number, jsx: ReactNode) {
-      console.log("Adding comment...", match, order, jsx);
       if (!newComments!.some((comment) => comment.matchNum === match)) newComments!.push({ matchNum: match, content: [{
           order,
           jsx
         }] });
       else newComments!.find((comment) => comment.matchNum === match)!.content.push({ order, jsx });
-      console.log("New comments:", newComments);
     }
 
-    addComment( 
-      0,
-      0,
-      pitReport 
-        ? pitReport.data?.comments.length ?? 0 > 0 
-          ? `Pit Report: ${pitReport.data?.comments}` 
-          : "No pit report comments."
-        : <Loading size={24} />
-    );
+    if (pitReport)
+      addComment(0, 0, pitReport.data?.comments.length ?? 0 > 0 ? `Pit Report: ${pitReport.data?.comments}` : "No pit report comments.");
 
     if (!props.subjectiveReports) addComment(0, 0.1, <Loading size={24} />);
     else if (props.subjectiveReports.length === 0) addComment(0, 0.1, "No subjective reports.");
@@ -83,7 +74,6 @@ export default function TeamStats(props: {
       match.number, 0, `Quantitative: ${report.data?.comments}`
     )));
 
-    console.log("Promises:", promises);
     Promise.all(promises).then(() => setComments(newComments));
   }, [props.selectedTeam, props.selectedReports, props.subjectiveReports, props.pitReport]);
 
@@ -160,8 +150,6 @@ export default function TeamStats(props: {
   }
 
   const sections = Object.entries(props.layout).map(([header, stats]) => getSections(header, stats));
-
-  console.log(comments);
 
   return (
     <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">
