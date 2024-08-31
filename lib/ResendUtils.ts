@@ -32,6 +32,7 @@ namespace ResendUtils {
 
     if (!res.data?.id) {
       console.error("Failed to create contact for", user.email);
+      console.error(res);
       return;
     }
 
