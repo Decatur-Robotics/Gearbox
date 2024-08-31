@@ -31,14 +31,16 @@ export default function Onboarding() {
   const [joinRequestStatus, setJoinRequestStatus] = useState<JoinRequestStatus>(JoinRequestStatus.NotRequested);
   const [season, setSeason] = useState<Season>();
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
-
-  const [checkedIfShouldSkipOnBoarding, setCheckedIfShouldSkipOnBoarding] = useState<boolean>(false);
   
   const game = games[league === League.FTC ? GameId.CenterStage : defaultGameId];
 
-  if (!checkedIfShouldSkipOnBoarding && ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false))
+  if (session?.user?.onboardingComplete)
     router.push("/profile");
-  else setCheckedIfShouldSkipOnBoarding(true);
+
+  useEffect(() => {
+    if (session.user?.teams.length ?? 0 > 0)
+      router.push(`/profile`);
+  }, []);
 
   async function completeOnboarding(redirect: string = "/profile") {
     if (!session?.user?._id) return;
