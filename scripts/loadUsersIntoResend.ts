@@ -12,13 +12,14 @@ async function loadUsersIntoResend() {
   const users = await db.findObjects<User>(Collections.Users, {});
 
   console.log(`Saving ${users.length} users to Resend...`);
-  users.forEach(async user => {
+  
+  for (const user of users) {
     if (user.email == "totallyrealemail@gmail.com")
       return;
 
     await ResendUtils.createContact(user);
     await new Promise(resolve => setTimeout(resolve, 500)); // Rate limit is 2/sec
-  });
+  }
 
   console.log("Done!");
 }
