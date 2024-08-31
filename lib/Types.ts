@@ -39,6 +39,7 @@ export class User implements NextAuthUser {
   xp: number = 10;
   level: number = 1;
   onboardingComplete: boolean = false;
+  resendContactId: string | undefined = undefined;
 
   constructor(
     name: string | undefined,
