@@ -2,8 +2,8 @@ import Container from "@/components/Container";
 import Loading from "@/components/Loading";
 import { League, Season, Team } from "@/lib/Types";
 import ClientAPI from "@/lib/client/ClientAPI";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import useDynamicState from "@/lib/client/useDynamicState";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import useDynamicState from "@/lib/client/hooks/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { defaultGameId, GameId } from "@/lib/client/GameId";
@@ -65,7 +65,7 @@ export default function Onboarding() {
         if (num !== number) return;
 
         setTeam(team);
-        setJoinRequestStatus(team.requests?.includes(session?.user?._id ?? "") ?? false 
+        setJoinRequestStatus(session.user && (team.requests?.includes(session.user._id) ?? false) 
           ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
       });
     }
@@ -73,10 +73,13 @@ export default function Onboarding() {
   }
 
   async function requestToJoinTeam() {
-    if (!session?.user?._id || !teamNumber) return;
+    if (!session?.user?._id || !teamNumber || !team) {
+      console.error("Invalid request to join team");
+      return;
+    }
 
     setJoinRequestStatus(JoinRequestStatus.Requested);
-    await api.requestToJoinTeam(session?.user?._id, team?._id);
+    await api.requestToJoinTeam(session.user._id, team._id);
   }
 
   async function updateTeamRequestStatus() {

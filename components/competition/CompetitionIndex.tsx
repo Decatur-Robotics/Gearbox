@@ -17,7 +17,7 @@ import {
 } from "@/lib/Types";
 
 import Link from "next/link";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 import {
   MdAutoGraph,
@@ -31,7 +31,7 @@ import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
 import { Round } from "@/lib/client/StatsMath";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
-import useInterval from "@/lib/client/useInterval";
+import useInterval from "@/lib/client/hooks/useInterval";
 import { NotLinkedToTba, download, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
@@ -40,12 +40,12 @@ import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
-import { BSON } from "bson";
 import useIsOnline from "@/lib/client/useIsOnline";
 import CompHeaderCard from "./CompHeaderCard";
 import InsightsAndSettingsCard from "./InsightsAndSettingsCard";
 import MatchScheduleCard from "./MatchScheduleCard";
 import PitScoutingCard from "./PitScoutingCard";
+import { BSON, ObjectId } from "bson";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -125,7 +125,7 @@ export default function CompetitionIndex(props: {
     max: number;
   } | null>(null);
 
-  const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
+  const [matchBeingEdited, setMatchBeingEdited] = useState<ObjectId | undefined>();
 
   const [teamToAdd, setTeamToAdd] = useState<number>(0);
 
@@ -168,17 +168,20 @@ export default function CompetitionIndex(props: {
   }, [props.fallbackData?.comp._id]);
 
   const regeneratePitReports = async () => {
+    if (!comp?.tbaId || !comp?._id || !team?._id) {
+      console.error("Invalid competition or team");
+      return;
+    }
+
     console.log("Regenerating pit reports...");
     api
-      .regeneratePitReports(comp?.tbaId, comp?._id)
-      .then(({ pitReports }: { pitReports: string[] }) => {
+      .regeneratePitReports(comp.tbaId, comp._id, team._id)
+      .then(({ pitReports }: { pitReports: ObjectId[] }) => {
         setAttemptedRegeneratingPitReports(true);
         setLoadingPitreports(true);
 
         // Fetch pit reports
-        const pitReportPromises = pitReports.map(
-          api.findPitreportById
-        );
+        const pitReportPromises = pitReports.map(api.findPitreportById);
 
         Promise.all(pitReportPromises).then((reports) => {
           console.log("Got all pit reports");
@@ -205,11 +208,16 @@ export default function CompetitionIndex(props: {
   }, [reports]);
 
   const loadMatches = async (silent: boolean = false) => {
+    if (!comp?._id) {
+      console.error("No competition ID provided");
+      return;
+    }
+
     if (!silent)
       setLoadingMatches(true);
     
     window.location.hash = "";
-    let matches: Match[] = await api.allCompetitionMatches(comp?._id, fallbackData?.matches) ?? fallbackData?.matches;
+    let matches: Match[] = await api.allCompetitionMatches(comp._id, fallbackData?.matches) ?? fallbackData?.matches;
     if (matches.length === 0)
       matches = fallbackData?.matches ?? [];
 
@@ -234,7 +242,7 @@ export default function CompetitionIndex(props: {
         if (!report._id) {
           return;
         }
-        newReportIds[report._id] = report;
+        newReportIds[report._id.toString()] = report;
       });
       setSubjectiveReportsById(newReportIds);
     });
@@ -262,8 +270,14 @@ export default function CompetitionIndex(props: {
     if (!silent)
       setLoadingReports(true);
 
+    if (!comp?._id) {
+      console.error("No competition ID provided");
+      setLoadingReports(false);
+      return;
+    }
+
     let newReports: Report[] = await api.competitionReports(
-      comp?._id,
+      comp._id,
       false,
       false,
       fallbackData?.quantReports
@@ -279,7 +293,7 @@ export default function CompetitionIndex(props: {
       if (!report._id) {
         return;
       }
-      newReportsById[report._id] = report;
+      newReportsById[report._id.toString()] = report;
     });
     setReportsById(newReportsById);
 
@@ -307,15 +321,15 @@ export default function CompetitionIndex(props: {
       const newUsersById: { [key: string]: User } = {};
       const promises: Promise<any>[] = [];
       for (const userId of team.users) {
-        promises.push(api.findUserById(userId, fallbackData?.users[userId])
+        promises.push(api.findUserById(userId, fallbackData?.users[userId.toString()])
           .then((user) => {
             if (user) {
-              newUsersById[userId] = user;
+              newUsersById[userId.toString()] = user;
             }
           })
           .catch((e) => {
-            if (fallbackData?.users[userId])
-              newUsersById[userId] = fallbackData.users[userId];
+            if (fallbackData?.users[userId.toString()])
+              newUsersById[userId.toString()] = fallbackData.users[userId.toString()];
           })
         );
       }
@@ -379,8 +393,13 @@ export default function CompetitionIndex(props: {
   }, [assigningMatches]);
 
   const assignScouters = async () => {
+    if (!comp?._id || !team?._id) {
+      console.error("No competition or team ID provided");
+      return;
+    }
+
     setAssigningMatches(true);
-    const res = await api.assignScouters(team?._id, comp?._id, true, props.fallbackData);
+    const res = await api.assignScouters(team._id, comp._id, true, props.fallbackData);
 
     if (props.fallbackData && res === props.fallbackData) {
       location.reload();
@@ -395,6 +414,11 @@ export default function CompetitionIndex(props: {
   };
 
   const reloadCompetition = async () => {
+    if (!comp?._id || !comp?.tbaId) {
+      console.error("No competition or TBA ID provided");
+      return;
+    }
+
     const num = Math.floor(Math.random() * 1000000);
     if(prompt(`Are you sure you want to reload the competition? This will overwrite ALL your data. We CANNOT recover your data. If you are sure, type '${num}'`) !== String(num)) {
       alert("Cancelled");
@@ -404,7 +428,7 @@ export default function CompetitionIndex(props: {
     alert("Reloading competition...");
 
     setUpdatingComp("Checking for Updates...");
-    const res = await api.reloadCompetition(comp?._id, comp?.tbaId);
+    const res = await api.reloadCompetition(comp._id, comp.tbaId);
     if (res.result === "success") {
       window.location.reload();
     } else {
@@ -413,13 +437,20 @@ export default function CompetitionIndex(props: {
   };
 
   const createMatch = async () => {
+    if (!comp?._id || !team?._id || !matchNumber || !blueAlliance || !redAlliance) {
+      console.error("Invalid competition, team, or match number");
+      return;
+    }
+
     try {
       await api.createMatch(
-        comp?._id,
+        comp._id,
         Number(matchNumber),
         MatchType.Qualifying,
         blueAlliance as number[],
-        redAlliance as number[]
+        redAlliance as number[],
+        team._id,
+        comp._id
       );
     } catch (e) {
       console.error(e);
@@ -429,10 +460,10 @@ export default function CompetitionIndex(props: {
       if (!savedComp) return;
 
       const match = new Match(Number(matchNumber), "", "", Date.now(), MatchType.Qualifying, 
-        blueAlliance as number[], redAlliance as number[]);
-      match._id = new BSON.ObjectId().toHexString();
+        blueAlliance as number[], redAlliance as number[], team?._id!, savedComp.comp?._id!);
+      match._id = new BSON.ObjectId();
 
-      savedComp.matches[match._id] = match;
+      savedComp.matches[match._id.toString()] = match;
       savedComp?.comp.matches.push(match._id);
 
       saveCompToLocalStorage(savedComp);
@@ -512,7 +543,7 @@ export default function CompetitionIndex(props: {
 
   function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
     if (!comp?._id) return;
-    api.setCompPublicData(comp?._id, e.target.checked);
+    api.setCompPublicData(comp._id, e.target.checked);
   }
     
   function remindUserOnSlack(slackId: string) {
@@ -538,7 +569,7 @@ export default function CompetitionIndex(props: {
     if (!autoFillData.name && !confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
         return;
 
-    await api.updateCompNameAndTbaId(comp?._id, newCompName ?? "Unnamed", tbaId ?? NotLinkedToTba);
+    await api.updateCompNameAndTbaId(comp._id, newCompName ?? "Unnamed", tbaId ?? NotLinkedToTba);
     location.reload();
   }
 

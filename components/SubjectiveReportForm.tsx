@@ -1,9 +1,9 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import useInterval from "@/lib/client/useInterval";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import useInterval from "@/lib/client/hooks/useInterval";
 import { Match, SubjectiveReport, SubjectiveReportSubmissionType } from "@/lib/Types";
-import { BSON } from "bson";
+import { BSON, ObjectId } from "bson";
 import { useRouter } from "next/router";
 import React, { createRef, FormEvent, useState } from "react";
 import Loading from "./Loading";
@@ -14,7 +14,7 @@ import QrCode from "./QrCode";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function SubjectiveReportForm(props: { match: Match, compId?: string, teamNumber?: number, compName?: string }) {
+export default function SubjectiveReportForm(props: { match: Match, compId?: ObjectId, teamNumber?: number, compName?: string }) {
   const router = useRouter();
   const { teamSlug, seasonSlug, competitonSlug } = router.query;
   
@@ -30,8 +30,10 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
 
   function getReportFromForm(e: FormEvent<HTMLFormElement>): SubjectiveReport {
     return {
-      _id: undefined,
-      match: match._id as string,
+      _id: new ObjectId(), // This is a temporary ID that will be replaced later
+      ownerTeam: match.ownerTeam,
+      ownerComp: match.ownerComp,
+      match: match._id,
       matchNumber: match?.number ?? 0,
       wholeMatchComment: (e.target as any)[0].value,
       robotComments: Object.fromEntries(
@@ -79,11 +81,11 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
         updateCompInLocalStorage(props.compId, (comp) => {
           const subjectiveReport: SubjectiveReport = { 
             ...getReportFromForm(e),
-            _id: new BSON.ObjectId().toHexString()
+            _id: new BSON.ObjectId()
           };
 
-          comp.subjectiveReports[subjectiveReport._id!] = subjectiveReport;
-          comp.matches[match._id as string].subjectiveReports.push(subjectiveReport._id!);
+          comp.subjectiveReports[subjectiveReport._id.toString()] = subjectiveReport;
+          comp.matches[match._id.toString()].subjectiveReports.push(subjectiveReport._id!);
         });
       })
       .then(() => {
@@ -103,7 +105,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
   }
 
   // We have to use router as a dependency because it is only populated after the first render (during hydration)
-  useInterval(() => api.checkInForSubjectiveReport(match._id as string), 5000, [router]);
+  useInterval(() => api.checkInForSubjectiveReport(match._id), 5000, [router]);
   
   return (   
     <div className="flex flex-col items-center p-12 space-y-6">

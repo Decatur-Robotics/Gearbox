@@ -4,14 +4,15 @@ import { GetServerSideProps } from "next";
 import { Competition, Season, Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
+import Collections from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -26,7 +27,7 @@ export default function Home(props: SeasonPageProps) {
   const team = props.team;
   const season = props.season;
   const comp = props.competitions;
-  const owner = team?.owners.includes(session?.user?._id as string);
+  const owner = session?.user && team?.owners.includes(session.user._id);
 
   return (
     <Container requireAuthentication={true} hideMenu={false} title={season.name}>
@@ -47,9 +48,9 @@ export default function Home(props: SeasonPageProps) {
           ) : (
             <></>
           )}
-          {comp.map((comp) => (
+          {comp?.map((comp) => (
             <Link
-              key={comp._id}
+              key={comp._id.toString()}
               href={`/${team.slug}/${season.slug}/${comp.slug}`}
             >
               <CompetitionCard comp={comp}></CompetitionCard>
@@ -79,7 +80,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const season = resolved.season;
 
   const comp = await db.findObjects(Collections.Competitions, {
-    _id: { $in: season?.competitions.map((id) => new ObjectId(id)) },
+    _id: { $in: season?.competitions?.map((id) => new ObjectId(id)) },
   });
 
   return {

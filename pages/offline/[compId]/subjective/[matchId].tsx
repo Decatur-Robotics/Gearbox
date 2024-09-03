@@ -1,6 +1,6 @@
 import Container from "@/components/Container";
 import SubjectiveReportForm from "@/components/SubjectiveReportForm";
-import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
+import useOfflineCompFromRouter from "@/lib/client/hooks/useOfflineCompFromRouter";
 
 export default function OfflineSubjectiveReport() {
   const { savedComp, match } = useOfflineCompFromRouter();

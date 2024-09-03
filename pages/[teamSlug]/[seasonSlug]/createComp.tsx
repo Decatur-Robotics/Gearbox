@@ -10,7 +10,7 @@ import Card from "@/components/Card";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import { Analytics } from "@/lib/client/Analytics";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -46,6 +46,11 @@ export default function CreateComp(props: ResolvedUrlData) {
   };
 
   const createComp = async () => {
+    if (!season) {
+      console.error("Season not found");
+      return;
+    }
+
     setCreatingComp(true);
 
     // Can't just do selection ? because 0 is a valid selection, but will evaluate to false
@@ -61,7 +66,7 @@ export default function CreateComp(props: ResolvedUrlData) {
       autofill?.tbaId ?? NotLinkedToTba,
       autofill?.start ?? now,
       autofill?.end ?? now,
-      season?._id,
+      season._id,
       usePublicData,
     );
     var win: Window = window;

@@ -1,5 +1,5 @@
 import { CompetitonNameIdPair, Season, Team } from "@/lib/Types";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { BiMenu, BiPlus, BiHome, BiSolidPhone } from "react-icons/bi";
@@ -8,13 +8,13 @@ import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
-import useCheckMobile from "@/lib/client/useCheckMobile";
+import useCheckMobile from "@/lib/client/hooks/useCheckMobile";
 import { MdInfo, MdOfflineBolt, MdOfflinePin, MdOfflineShare, MdWarning } from "react-icons/md";
 import { RiWifiOffLine } from "react-icons/ri";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
 import { stat } from "fs";
-import useIsOnline from "@/lib/client/useIsOnline";
+import useIsOnline from "@/lib/client/hooks/useIsOnline";
 import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
 
@@ -317,7 +317,7 @@ export default function Container(props: ContainerProps) {
                         "w-16 h-16 btn btn-ghost " +
                         (selected ? "border-2 border-accent" : "border-2")
                       }
-                      key={team._id}
+                      key={team._id.toString()}
                       onClick={() => {
                         setSelectedTeamIndex(index);
                       }}
@@ -356,7 +356,7 @@ export default function Container(props: ContainerProps) {
                     <Link
                       className="btn btn-ghost w-7/8 bg-base-200 normal-case mb-2"
                       href={`/${selectedTeam?.slug}/${season?.slug}`}
-                      key={season._id}
+                      key={season._id?.toString()}
                     >
                       <h1 className="text-sm">
                         {season.name} - {season.year}

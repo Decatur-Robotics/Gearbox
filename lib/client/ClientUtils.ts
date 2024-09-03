@@ -1,9 +1,12 @@
+import { ObjectId } from "bson";
+import { HasId } from "../Types";
+
 export function getIdsInProgressFromTimestamps(timestamps: { [id: string]: string }) {
   const now = Date.now();
   return Object.keys(timestamps).filter((id) => {
     const timestamp = timestamps[id];
     return ((now - new Date(timestamp).getTime()) / 1000) < 10;
-  });
+  }).map((id) => new ObjectId(id));
 }
 
 export const NotLinkedToTba = "not-linked";
@@ -28,12 +31,12 @@ export function forceOfflineMode() {
  * @param arr an array of objects with an _id field
  * @returns a dictionary of the array with the _id as the key
  */
-export function toDict<TElement extends { _id: string | undefined }>(arr: TElement[]) {
+export function toDict<TElement extends HasId>(arr: TElement[]) {
   const dict: { [_id: string]: TElement } = {};
 
   arr.forEach((item) => {
     if (item._id) {
-      dict[item._id] = item;
+      dict[item._id.toString()] = item;
     }
   });
 

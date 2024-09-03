@@ -1,4 +1,4 @@
-import { getDatabase, Collections } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import {
   Competition,
   Match,
@@ -7,10 +7,11 @@ import {
   AllianceColor,
   QuantData,
 } from "./Types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { rotateArray, shuffleArray } from "./client/ClientUtils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
+import CollectionId from "./client/CollectionId";
 
 export async function AssignScoutersToCompetitionMatches(
   teamId: string,
@@ -19,17 +20,17 @@ export async function AssignScoutersToCompetitionMatches(
 ) {
   const db = await getDatabase();
   const comp = await db.findObjectById<Competition>(
-    Collections.Competitions,
+    CollectionId.Competitions,
     new ObjectId(competitionId),
   );
 
   const team = await db.findObject<Team>(
-    Collections.Teams,
+    CollectionId.Teams,
     new ObjectId(teamId),
   );
   const matchIds = comp.matches;
-  let scouters = team.scouters;
-  let subjectiveScouters = team.subjectiveScouters;
+  let scouters = team?.scouters ?? [];
+  let subjectiveScouters = team?.subjectiveScouters ?? [];
 
   scouters = shuffle ? shuffleArray(scouters) : scouters;
   subjectiveScouters = shuffle ? shuffleArray(subjectiveScouters) : subjectiveScouters;
@@ -48,9 +49,9 @@ export async function AssignScoutersToCompetitionMatches(
 }
 
 export async function AssignScoutersToMatch(
-  matchId: string,
-  scouterArray: string[],
-  subjectiveScouterArray: string[],
+  matchId: ObjectId,
+  scouterArray: ObjectId[],
+  subjectiveScouterArray: ObjectId[],
   gameId: GameId
 ): Promise<any> {
   const subjectiveScouter = subjectiveScouterArray.length > 0 ? subjectiveScouterArray[0] : undefined;
@@ -59,7 +60,7 @@ export async function AssignScoutersToMatch(
 
   const assignSubjectiveScouterPromise = getDatabase().then((db) =>
     db.updateObjectById<Match>(
-      Collections.Matches,
+      CollectionId.Matches,
       new ObjectId(matchId),
       { subjectiveScouter }
     ));
@@ -67,17 +68,17 @@ export async function AssignScoutersToMatch(
   return Promise.all([generateReportsPromise, assignSubjectiveScouterPromise]);
 }
 
-export async function generateReportsForMatch(match: string | Match, gameId: GameId, scouters?: string[]) {
+export async function generateReportsForMatch(matchId: ObjectId | Match, gameId: GameId, scouters?: ObjectId[]) {
   const db = await getDatabase();
-  if (typeof match === "string") {
-    match = await db.findObjectById<Match>(
-      Collections.Matches,
-      new ObjectId(match),
-    );
+  let match: Match;
+  if (ObjectId.prototype.isPrototypeOf(matchId)) {
+    match = await db.findObjectById<Match>(CollectionId.Matches, matchId as ObjectId);
+  } else {
+    match = matchId as Match;
   }
 
   const existingReportPromises = match.reports.map((r) =>
-    db.findObjectById<Report>(Collections.Reports, new ObjectId(r)));
+    db.findObjectById<Report>(CollectionId.Reports, new ObjectId(r)));
   const existingReports = await Promise.all(existingReportPromises);
     
   const bots = match.blueAlliance.concat(match.redAlliance);
@@ -99,20 +100,20 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
         games[gameId].createQuantitativeFormData(),
         teamNumber,
         color,
-        String(match._id),
+        match._id,
+        match.ownerTeam,
+        match.ownerComp,
         0
       );
 
-      reports.push(
-        String((await db.addObject<Report>(Collections.Reports, newReport))._id),
-      );
+      reports.push((await db.addObject<Report>(CollectionId.Reports, newReport))._id);
     }
     else {
       // Update existing report
       oldReport.user = scouter;
 
       await db.updateObjectById<Report>(
-        Collections.Reports,
+        CollectionId.Reports,
         new ObjectId(oldReport._id),
         oldReport,
       );
@@ -120,9 +121,9 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
     }
   }
 
-  match.reports = reports.filter((r) => r !== undefined) as string[];
+  match.reports = reports.filter((r) => r !== undefined);
   await db.updateObjectById<Match>(
-    Collections.Matches,
+    CollectionId.Matches,
     new ObjectId(match._id),
     match,
   );

@@ -1,7 +1,8 @@
 import { AckFn, RespondArguments, RespondFn, SlashCommand } from "@slack/bolt";
-import { Db, ObjectId } from "mongodb";
-import { Collections, getDatabase } from "./MongoDB";
+import { ObjectId } from "bson";
+import { getDatabase } from "./MongoDB";
 import { Team, User } from "./Types";
+import CollectionId from "./client/CollectionId";
 
 type SlackCommandDict = { 
   [command: string]: 
@@ -22,8 +23,8 @@ const SlackCommands: SlackCommandDict = {
 
     const db = await getDatabase();
 
-    const userPromise = db.findObject<User>(Collections.Users, { slackId: userId });
-    const teamPromise = db.findObject<Team>(Collections.Teams, { number: teamNumber });
+    const userPromise = db.findObject<User>(CollectionId.Users, { slackId: userId });
+    const teamPromise = db.findObject<Team>(CollectionId.Teams, { number: teamNumber });
 
     const user = await userPromise;
     const team = await teamPromise;
@@ -40,12 +41,12 @@ const SlackCommands: SlackCommandDict = {
       return;
     }
 
-    if (!team.owners.includes(user._id!.toString())) {
+    if (!team.owners.includes(user._id)) {
       await respond(`You are not an owner of team ${teamNumber}.`);
       return;
     }
 
-    await db.updateObjectById<Team>(Collections.Teams, new ObjectId(team._id!), {
+    await db.updateObjectById<Team>(CollectionId.Teams, new ObjectId(team._id!), {
       slackChannel: command.channel_id
     });
   
