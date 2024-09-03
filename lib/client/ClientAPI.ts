@@ -19,6 +19,7 @@ import {
 } from "../Types";
 import { GameId } from "./GameId";
 import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
+import { games } from "../games";
 import { BSON, ObjectId } from 'bson';
 import CollectionId from "./CollectionId";
 
@@ -575,7 +576,8 @@ export default class ClientAPI {
 
   async createPitReportForTeam(teamNumber: number, compId: ObjectId, ownerTeam: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
-      const pitReport = new Pitreport(teamNumber, comp.game.createPitReportData(), ownerTeam, compId);
+      // Can't use comp.game because JSON doesn't save methods
+      const pitReport = new Pitreport(teamNumber, games[comp.comp.gameId].createPitReportData(), ownerTeam, compId);
       pitReport._id = new ObjectId();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;

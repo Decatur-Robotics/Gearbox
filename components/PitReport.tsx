@@ -2,7 +2,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { FormLayout, FormElement, BlockElement } from "@/lib/Layout";
 import { Pitreport, PitReportData } from "@/lib/Types";
-import { useState, useCallback } from "react";
+import { useState, useCallback, Fragment } from "react";
 import { FaRobot } from "react-icons/fa";
 import Flex from "./Flex";
 import Checkbox from "./forms/Checkboxes";
@@ -11,6 +11,8 @@ import Card from "./Card";
 import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
+import QrCode from "./QrCode";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 import { ObjectId } from "bson";
 
 const api = new ClientAPI("gearboxiscool");
@@ -71,47 +73,72 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     });
   }
 
-  function getComponent(element: FormElement<PitReportData>, isLastInHeader: boolean) {
+  function getComponent(element: FormElement<PitReportData>, isLastInHeader: boolean, index: number) {
     const key = element.key as string;
 
     if (element.type === "image")
-      return <ImageUpload report={pitreport} callback={setCallback} />
+      return <ImageUpload key={index} report={pitreport} callback={setCallback} />
 
     if (element.type === "boolean")
-      return <Checkbox label={element.label ?? element.key as string} dataKey={key} data={pitreport} callback={setCallback} 
+      return <Checkbox key={index} label={element.label ?? element.key as string} dataKey={key} data={pitreport} callback={setCallback} 
         divider={!isLastInHeader} />
 
     if (element.type === "number")
-      return (<>
-        <h1 className="font-semibold text-lg">{element.label}</h1>
+      // <Fragement> lets us the key attribute on a <> element
+      return (<Fragment key={index}>
+        <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
         <input
+          key={key + "i"}
           value={pitreport.data?.[key]}
           onChange={(e) => setCallback(key, e.target.value)}
           type="number"
           className="input input-bordered"
           placeholder={element.label}
         />
-      </>);
+      </Fragment>);
 
     if (element.type === "string")
       return (
         <textarea
+          key={key}
           value={pitreport.data?.comments}
           className="textarea textarea-primary w-[90%]"
-          placeholder="Say Something Important..."
+          placeholder={element.label}
           onChange={(e) => {
             setCallback("comments", e.target.value);
           }}
         />
       );
 
+    if (Object.keys(element.type!).length > 3) {
+      // Dropdown
+      const options = Object.entries(element.type!).map((entry) => {
+        return <option key={entry[0]} value={entry[1]}>{camelCaseToTitleCase(entry[0])}</option>;
+      });
+
+      return (
+        <Fragment key={index}>
+          <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
+          <select
+            key={key + "s"}
+            className="select select-bordered"
+            onChange={(e) => setCallback(key, e.target.value)}
+            value={pitreport.data?.[key]}
+          >
+            {options}
+          </select>
+        </Fragment>
+      );
+    }
+
     const entries = Object.entries(element.type!).map((entry, index) => {
       const color = ["primary", "accent", "secondary"][index % 3];
 
       return (
-        <>
-          <span>{entry[0]}</span>
+        <Fragment key={index}>
+          <span key={key + index + "s"}>{camelCaseToTitleCase(entry[0])}</span>
           <input
+            key={key + index + "i"}
             type="radio"
             className={`radio radio-${color}`}
             onChange={() =>
@@ -119,33 +146,33 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
             }
             checked={pitreport.data?.[element.key as string] === entry[1]}
           />
-        </>
+        </Fragment>
       );
     });
 
-    return (<>
-      <h1 className="font-semibold text-lg">{element.label}</h1>
-      <div className="grid grid-cols-2 translate-x-6 space-y-1">{entries}</div>
-    </>);
+    return (<Fragment key={index}>
+      <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
+      <div key={key + "d"} className="grid grid-cols-2 translate-x-6 space-y-1">{entries}</div>
+    </Fragment>);
   }
 
   const components = Object.entries(props.layout).map(([header, elements]) => {
     const inputs = elements.map((element, index) => {
       if (!Array.isArray(element))
-        return getComponent(element as FormElement<PitReportData>, index === elements.length - 1);
+        return getComponent(element as FormElement<PitReportData>, index === elements.length - 1, index);
 
       const block = element as BlockElement<PitReportData>;
       return block?.map((row) =>
         row.map((element, elementIndex) =>
-          getComponent(element, elementIndex === row.length - 1)
+          getComponent(element, elementIndex === row.length - 1, index)
         )
       );
     });
 
     return (
       <div key={header}>
-        <h1 className="font-semibold text-lg">{header}</h1>
-        <div className="translate-x-10">
+        <h1 key={header + "h"} className="font-semibold text-lg">{header}</h1>
+        <div key={header + "d"} className="translate-x-10">
           {inputs}
         </div>
       </div>
@@ -172,7 +199,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
       </Card>
       <Card title="Share while offline">
         <div className="w-full flex justify-center">
-          <QRCode value={JSON.stringify({
+          <QrCode value={JSON.stringify({
             pitReport: {
               ...pitreport,
               submitted: true,

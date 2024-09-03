@@ -18,7 +18,7 @@ export default function TeamStats(props: {
   selectedReports: Report[];
   pitReport: Pitreport | null;
   subjectiveReports: SubjectiveReport[];
-  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[]) => Badge[];
+  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[], card: boolean) => Badge[];
   layout: StatsLayout<PitReportData, QuantData>;
 }) {
   const [comments, setComments] = useState<{matchNum: number, content: { order: number, jsx: ReactNode}[] }[] | null>(null);
@@ -37,15 +37,8 @@ export default function TeamStats(props: {
       else newComments!.find((comment) => comment.matchNum === match)!.content.push({ order, jsx });
     }
 
-    addComment( 
-      0,
-      0,
-      pitReport 
-        ? pitReport.data?.comments.length ?? 0 > 0 
-          ? `Pit Report: ${pitReport.data?.comments}` 
-          : "No pit report comments."
-        : <Loading size={24} />
-    );
+    if (pitReport)
+      addComment(0, 0, pitReport.data?.comments.length ?? 0 > 0 ? `Pit Report: ${pitReport.data?.comments}` : "No pit report comments.");
 
     if (!props.subjectiveReports) addComment(0, 0.1, <Loading size={24} />);
     else if (props.subjectiveReports.length === 0) addComment(0, 0.1, "No subjective reports.");
@@ -75,7 +68,7 @@ export default function TeamStats(props: {
     }
 
     const commentList = props.selectedReports?.filter((report) => report.data?.comments.length > 0) ?? [];
-    if (commentList.length === 0) return setComments([]);
+    if (commentList.length === 0) return setComments(newComments);
     
     const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
       match.number, 0, `Quantitative: ${report.data?.comments}`
@@ -95,7 +88,7 @@ export default function TeamStats(props: {
   }
 
   const pitReport = props.pitReport;  
-  const badges = props.getBadges(pitReport ?? undefined, props.selectedReports);
+  const badges = props.getBadges(pitReport ?? undefined, props.selectedReports, false);
 
   function getSections(header: string, stats: (Stat<PitReportData, QuantData> | StatPair<PitReportData, QuantData>)[]) {
     const statElements = stats.map((stat, index) => {

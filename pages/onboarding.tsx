@@ -6,9 +6,10 @@ import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import useDynamicState from "@/lib/client/hooks/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
-import { defaultGameId } from "@/lib/client/GameId";
+import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -31,10 +32,16 @@ export default function Onboarding() {
   const [season, setSeason] = useState<Season>();
   const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
   
-  const game = games[defaultGameId];
+  const gameId = league === League.FTC ? GameId.CenterStage : defaultGameId;
+  const game = games[gameId];
 
-  if ((session?.user?.onboardingComplete || Number(session?.user?.teams?.length) > 0) ?? false)
+  if (session?.user?.onboardingComplete)
     router.push("/profile");
+
+  useEffect(() => {
+    if (session?.user?.teams.length ?? 0 > 0)
+      router.push(`/profile`);
+  }, [session?.user?.email]);
 
   async function completeOnboarding(redirect: string = "/profile") {
     if (!session?.user?._id) return;
@@ -76,9 +83,14 @@ export default function Onboarding() {
   }
 
   async function updateTeamRequestStatus() {
-    if (!session?.user?._id || !teamNumber || !league) return;
+    if (!session?.user?._id || !teamNumber || !league) {
+      console.error("Missing required fields to update team request status:", session?.user?._id, teamNumber, league);
+      return;
+    }
 
-    let team = await api.findTeamByNumberAndLeague(teamNumber, league);
+    console.log("Checking team request status for", teamNumber, league);
+
+    const team = await api.findTeamByNumberAndLeague(teamNumber, league);
 
     const requestPending = team.requests?.includes(session?.user?._id ?? "") ?? false;
     if (joinRequestStatus === JoinRequestStatus.Requested && (team?.users?.includes(session?.user?._id ?? "") ?? false))
@@ -90,19 +102,25 @@ export default function Onboarding() {
       setJoinRequestStatus(JoinRequestStatus.Rejected);
   }
 
-  useEffect(() => { setInterval(updateTeamRequestStatus, 5000); }, []);
+  useEffect(() => { 
+    const id = setInterval(updateTeamRequestStatus, 5000);
+    return () => clearInterval(id);
+   }, [session?.user?._id, teamNumber, league, joinRequestStatus]);
 
   async function createTeam() {
-    if (!session?.user?._id || !teamNumber || !team?.name || !team.tbaId || !league) return;
+    if (!session?.user?._id || !teamNumber || !team?.name || !league) {
+      console.error("Missing required fields to create team");
+      return;
+    }
 
-    setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId, league));
+    setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId ?? NotLinkedToTba, league));
     setJoinRequestStatus(JoinRequestStatus.CreatedTeam);
   }
 
   async function createSeason() {
     if (!session?.user?._id || !team?._id) return;
 
-    setSeason(await api.createSeason(game.name, game.year, defaultGameId, team?._id));
+    setSeason(await api.createSeason(game.name, game.year, gameId, team?._id));
     setSeasonCreated(true);
   }
 
@@ -197,7 +215,7 @@ export default function Onboarding() {
                                             <div>
                                               Season created! Now, we just need to create a competition, then you&apos;re done!.<br/>
                                               <br/>
-                                              If you have any further questions, don&apos;t hesitate to reach out on 
+                                              If you have any further questions, don&apos;t hesitate to reach out on{" "}
                                                 <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">Discord</a>.
                                             </div>
                                             <button className="btn btn-primary mt-2" 

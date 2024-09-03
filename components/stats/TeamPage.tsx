@@ -1,4 +1,4 @@
-import { PitReportData, Pitreport, QuantData, Report, SubjectiveReport } from "@/lib/Types";
+import { Game, PitReportData, Pitreport, QuantData, Report, SubjectiveReport } from "@/lib/Types";
 import { useEffect, useState } from "react";
 import { Badge } from "@/lib/Layout";
 
@@ -29,14 +29,15 @@ function TeamCard(props: {
   selected: boolean;
   compAvgPoints: number;
   compPointsStDev: number;
-  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[]) => Badge[];
+  getBadges: (pitData: Pitreport<PitReportData> | undefined, quantitativeData: Report<QuantData>[], card: boolean) => Badge[];
+  getAvgPoints: (reports: Report[]) => number;
 }) {
   const pitReport = props.pitReport;
   const data = pitReport?.data as PitReportData;
 
-  const avgPoints = AveragePoints(props.reports);
+  const avgPoints = props.getAvgPoints(props.reports);
 
-  const badges = props.getBadges(pitReport, props.reports);
+  const badges = props.getBadges(pitReport, props.reports, true);
 
   const pointsDiffFromAvg = Round(avgPoints - props.compAvgPoints);
   const pointsDiffFromAvgFormatted = pointsDiffFromAvg > 0 ? `+${pointsDiffFromAvg}` : pointsDiffFromAvg;
@@ -200,6 +201,7 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
             compAvgPoints={avgPoints}
             compPointsStDev={stDev}
             getBadges={game.getBadges}
+            getAvgPoints={game.getAvgPoints}
           />
         ))}
       </div>

@@ -230,8 +230,9 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
   useEffect(() => {
     if (loadingPicklists !== LoadState.NotLoaded) return;
 
+    console.log(props);
     setLoadingPicklists(LoadState.Loading);
-    api.getPicklist(props.picklist._id).then(loadDbPicklist);
+    api.getPicklist(props.picklist?._id).then(loadDbPicklist);
     loadDbPicklist(props.picklist);
 
     setLoadingPicklists(LoadState.Loaded);

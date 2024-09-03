@@ -34,7 +34,7 @@ function TeamSlide(props: {
   ranking: TheBlueAlliance.SimpleRank | undefined;
   maxRanking: number;
   layout: PitStatsLayout<PitReportData, QuantData>;
-  getBadges: (pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantData>[] | undefined) => Badge[];
+  getBadges: (pitReport: Pitreport<PitReportData> | undefined, quantitativeReports: Report<QuantData>[] | undefined, card: boolean) => Badge[];
   stats: { label: string, value: number, mean: number, stDev: number, rank: number, maxRanking: number }[];
 }) {
   const [visible, setVisible] = useState(false);
@@ -147,7 +147,7 @@ function TeamSlide(props: {
           {props.ranking?.record.ties}
         </h2>
 
-        {props.getBadges(props.pitReport, props.matchReports).map((badge, index) => (
+        {props.getBadges(props.pitReport, props.matchReports, false).map((badge, index) => (
           <div key={index} className={`badge badge-${badge.color} mt-2`}>{badge.text}</div>
         ))}
 

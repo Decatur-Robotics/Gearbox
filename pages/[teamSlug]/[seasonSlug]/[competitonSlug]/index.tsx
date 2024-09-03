@@ -2,6 +2,7 @@ import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import CompetitionIndex from "@/components/competition/CompetitionIndex";
 import Container from "@/components/Container";
+import { makeObjSerializeable } from "@/lib/client/ClientUtils";
 
 export default function CompetitionPage(props: ResolvedUrlData) {
   return (
@@ -14,6 +15,10 @@ export default function CompetitionPage(props: ResolvedUrlData) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   var ctx = await UrlResolver(context);
   return {
-    props: ctx,
+    props: {
+      competition: ctx.competition ? makeObjSerializeable(ctx.competition) : null,
+      team: ctx.team ? makeObjSerializeable(ctx.team) : null,
+      season: ctx.season ? makeObjSerializeable(ctx.season) : null,
+    },
   };
 };

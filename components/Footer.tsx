@@ -12,9 +12,36 @@ import { TbUfo } from "react-icons/tb";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
 import { HiStatusOnline } from "react-icons/hi";
-import { VERSION } from "./UpdateModal";
+import { useEffect, useState } from "react";
 
 export default function Footer() {
+  const [swStatus, setSwStatus] = useState("Finding service worker...");
+
+  useEffect(() => {
+    navigator.serviceWorker.getRegistration("/sw.js").then((registration) => {
+      setSwStatus(registration ? `SW Status: ${registration.active?.state}` : "Service worker not found");
+      console.log("Service worker registration: ", registration);
+      if (registration) {
+        registration.addEventListener("updatefound", () => {
+          setSwStatus("Service worker update found");
+          console.log("Service worker update found");
+          registration.installing?.addEventListener("statechange", () => {
+            console.log("Service worker state change: ", registration.installing?.state);
+          });
+        });
+
+        registration.active?.addEventListener("statechange", () => {
+          setSwStatus(`SW Status: ${registration.active?.state}`);
+          console.log("Service worker state change: ", registration.active?.state);
+        });
+
+        registration.update().then(() => {
+          console.log("Service worker update initiated");
+        });
+      }
+    });
+  }, []);
+
   return (
     <footer className="footer sm:p-10 bg-base-100 text-base-content border-t-8 border-base-300 max-sm:pt-4 max-sm:pb-8">
       <aside className="max-sm:pl-8 flex flex-col -space-x-4">
@@ -76,7 +103,13 @@ export default function Footer() {
         >
           <FaList className="inline mr-1" size={16}/>About Us
         </Link>
-        <div>Version {new Date(+process.env.NEXT_PUBLIC_BUILD_TIME).toISOString()}</div>
+        <div>
+          Version {(() => {
+            const timestamp = new Date(+process.env.NEXT_PUBLIC_BUILD_TIME);
+            return timestamp.toDateString() + " " + timestamp.toTimeString();
+          })()}
+        </div>
+        <div>{swStatus}</div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <Link

@@ -43,8 +43,12 @@ app.prepare().then(() => {
       const { pathname } = parsedUrl;
 
       if (pathname && (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname))) {
-        const filePath = join(__dirname, '.next', pathname);
-        (app as any).serveStatic(req, res, filePath);
+        console.log("Service worker request received: " + parsedUrl.pathname);
+        const filePath = join(__dirname, 'public', pathname);
+        const file = fs.readFileSync(filePath, 'utf8');
+
+        res.writeHead(200, { 'Content-Type': 'application/javascript' });
+        res.write(file, (err) => console.log(err ? "Service worker write error: " + err : "Service worker written"));
       } else if (pathname && pathname.startsWith("/slack")) {
         console.log("Slack event received: " + parsedUrl.pathname);
         

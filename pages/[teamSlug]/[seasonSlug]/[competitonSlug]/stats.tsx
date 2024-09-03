@@ -4,6 +4,7 @@ import UrlResolver, { SerializeDatabaseObject, SerializeDatabaseObjects } from "
 import { getDatabase } from "@/lib/MongoDB";
 import { DbPicklist, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import StatsPage, { StatsPageProps } from "@/components/StatsPage";
+import { ObjectId } from "mongodb";
 import Collections from "@/lib/client/CollectionId";
 
 export default function Stats(props: StatsPageProps) {
@@ -26,9 +27,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     match: { $in: url.competition?.matches },
   });
 
-  const picklists = await db.findObject<DbPicklist>(Collections.Picklists, {
-    _id: url.competition?.picklist,
-  });
+  const picklists = await db.findObjectById<DbPicklist>(Collections.Picklists, new ObjectId(url.competition?.picklist));
+  console.log("Found picklists:", url.competition?.picklist, picklists);
 
   return {
     props: {

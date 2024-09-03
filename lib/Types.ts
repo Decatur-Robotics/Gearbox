@@ -67,6 +67,7 @@ export class User extends HasId implements NextAuthUser {
   xp: number = 10;
   level: number = 1;
   onboardingComplete: boolean = false;
+  resendContactId: string | undefined = undefined;
 
   constructor(
     name: string | undefined,
@@ -181,7 +182,7 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
   fieldImagePrefix: string;
   coverImage: string
 
-  getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => Badge[];
+  getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined, card: boolean) => Badge[];
   getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number;
 
   /**
@@ -198,7 +199,7 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
       statsLayout: StatsLayout<TPitData, TQuantData>,
       pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, fieldImagePrefix: string, 
       coverImage: string,
-      getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined) => Badge[],
+      getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined, card: boolean) => Badge[],
       getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number) {
     this.name = name;
     this.year = year;
@@ -208,7 +209,7 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
     this.quantDataType = quantDataType;
     this.pitDataType = pitDataType;
 
-    this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout, new pitDataType());
+    this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout, new pitDataType(), league);
     this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout, new quantDataType());
     this.statsLayout = Game.mergeStatsLayoutWithBaseLayout(statsLayout);
     this.pitStatsLayout = Game.mergePitStatsLayoutWithBaseLayout(pitStatsLayout);
@@ -220,11 +221,14 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
     this.getAvgPoints = getAvgPoints;
   }
 
-  private static mergePitLayoutWithBaseLayout<TData extends PitReportData>(layout: FormLayoutProps<TData>, exampleData: TData) {
+  private static mergePitLayoutWithBaseLayout<TData extends PitReportData>(layout: FormLayoutProps<TData>, exampleData: TData, league: League) {
     const finalLayout: typeof layout = {
       "Image": [{ key: "image", type: "image" }],
-      "Drivetrain": ["drivetrain", "motorType", "swerveLevel"]
+      "Drivetrain": ["drivetrain"]
     }
+
+    if (league === League.FRC)
+      finalLayout["Drivetrain"].push("motorType", "swerveLevel");
 
     for (const [header, keys] of Object.entries(layout)) {
       finalLayout[header] = keys;

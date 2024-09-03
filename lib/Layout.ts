@@ -1,5 +1,5 @@
 import { camelCaseToTitleCase } from "./client/ClientUtils";
-import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
+import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report } from "./Types";
 
 type StringKeyedObject = { [key: string]: any };
@@ -71,7 +71,11 @@ export function getType(key: string, exampleData: StringKeyedObject): ElementTyp
   if (type !== "string")
     return type as ElementType;
 
-  const enums = [IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel];
+  const enums = [
+    IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, 
+    CenterStageEnums.CenterStageParkingLocation, CenterStageEnums.AutoAdjustable, CenterStageEnums.AutoSidePreference
+  ];
+
   if (key === "Defense")
     return Defense;
   if (key === "swerveLevel")

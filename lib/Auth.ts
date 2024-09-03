@@ -8,6 +8,8 @@ import { Admin, ObjectId } from "mongodb";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
+import Email from "next-auth/providers/email";
+import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 
 var db = getDatabase();
@@ -65,6 +67,17 @@ export const AuthenticationOptions: AuthOptions = {
         return user;
       }
     }),
+    Email({
+      server: {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      },
+      from: process.env.SMTP_FROM
+    })
   ],
   callbacks: {
     async session({ session, user }) {
@@ -81,6 +94,7 @@ export const AuthenticationOptions: AuthOptions = {
 
     async signIn({ user }) {
       Analytics.signIn(user.name ?? "Unknown User");
+      ResendUtils.createContact(user);
 
       return true;
     }
