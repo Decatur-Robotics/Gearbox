@@ -6,7 +6,7 @@ import { FaSync, FaCheck } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
-import { AdvancedSession } from "@/lib/client/useCurrentSession";
+import { AdvancedSession } from "@/lib/client/hooks/useCurrentSession";
 
 export default function MatchScheduleCard(props: {
   team: Team | undefined;
@@ -121,7 +121,8 @@ export default function MatchScheduleCard(props: {
                 >
                   {qualificationMatches.map((match, index) => (
                     <div
-                      className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-[34px]"                            key={match._id}
+                      className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-[34px]" 
+                      key={match._id.toString()}
                     >
                       <div
                         id={`//match${index}`}
@@ -136,7 +137,7 @@ export default function MatchScheduleCard(props: {
                       <div className="flex flex-col items-center space-y-4">
                         <div className="w-full flex flex-row items-center space-x-2">
                           {match.reports.map((reportId) => {
-                            const report = reportsById[reportId];
+                            const report = reportsById[reportId.toString()];
 
                             if (!report) return (
                               <MdErrorOutline size={24} />
@@ -160,7 +161,7 @@ export default function MatchScheduleCard(props: {
                                   ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`
                                   : `/offline/${comp?._id}/quant/${reportId}`
                                 }
-                                key={reportId}
+                                key={reportId.toString()}
                                 className={`${color} ${mine && !submitted ? "border-4": "border-2"} 
                                   ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
                                   rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`
@@ -174,7 +175,7 @@ export default function MatchScheduleCard(props: {
 
                         <div className="w-full flex flex-row items-center space-x-2">
                           {match.reports.map((reportId) => {
-                            const report = reportsById[reportId];
+                            const report = reportsById[reportId.toString()];
                             //@ts-ignore
                             const user = usersById[report?.user];
 
@@ -182,7 +183,7 @@ export default function MatchScheduleCard(props: {
                               <div
                                 className="tooltip tooltip-bottom "
                                 data-tip={user?.name}
-                                key={reportId}
+                                key={reportId.toString()}
                               >
                                 { user ?
                                   <Avatar
@@ -202,7 +203,7 @@ export default function MatchScheduleCard(props: {
                       </div>
                       <div>
                         {
-                          match.subjectiveScouter && usersById[match.subjectiveScouter]
+                          match.subjectiveScouter && usersById[match.subjectiveScouter.toString()]
                             ?
                               <div className="flex flex-row items-center space-x-1">
                                 { match.assignedSubjectiveScouterHasSubmitted
@@ -210,18 +211,18 @@ export default function MatchScheduleCard(props: {
                                   : (match.subjectiveReportsCheckInTimestamps && getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps)
                                     .includes(match.subjectiveScouter)) &&
                                     <div className="tooltip" data-tip="Scouting in progress"><Loading size={24}/></div>}
-                                { isManager && usersById[match.subjectiveScouter ?? ""]?.slackId
+                                { isManager && usersById[match.subjectiveScouter.toString() ?? ""]?.slackId
                                   ? <button className="text-primary hover:underline mb-1" 
-                                        onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
-                                      Subjective Scouter: {usersById[match.subjectiveScouter].name}
+                                        onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter?.toString() ?? ""]?.slackId)}>
+                                      Subjective Scouter: {usersById[match.subjectiveScouter.toString()].name}
                                     </button>
-                                  : <div>Subjective Scouter: {usersById[match.subjectiveScouter ?? ""].name}</div>
+                                  : <div>Subjective Scouter: {usersById[match.subjectiveScouter.toString() ?? ""].name}</div>
                                 }
                               </div>
                             : <div>No subjective scouter assigned</div>
                         }
                         </div>
-                      <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`} 
+                      <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter.toString()]?.slackId && "-translate-y-1"}`} 
                         href={isOnline 
                                 ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`
                                 : `/offline/${comp?._id}/subjective/${match._id}`

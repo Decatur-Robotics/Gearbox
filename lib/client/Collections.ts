@@ -68,29 +68,20 @@ namespace AccessLevels {
         userId: ObjectId | undefined, document: TDocument, query: any, db: DbInterface, allowedKeys: (keyof TDocument)[]) {
       const isOnTeam = Read.ifOnOwnerTeam(userId, document, query);
 
-      const compositeKeys = Object.keys(query);
-      const objKeys = Object.keys(document).filter(key => typeof document[key as keyof TDocument] === "object");
-      while (objKeys.length > 0) {
-        const key = objKeys.pop();
-        if (!key) continue;
+      const keys = Object.keys(query);
 
-        const path = key.split(".");
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
 
-        const lastKey = path.pop();
-        if (!lastKey) continue;
-
-        compositeKeys.push(key);
-
-        // Find the object in the document
-        let obj = document;
-        for (const key of path) {
-          obj = obj[key];
+        // If the key is a mongo update operator, add the keys it contains to the list of keys to check and remove the operator
+        if (["$currentDate", "$inc", "$min", "$max", "$mul", "$rename", "$set", "$setOnInsert", "$unset"].includes(key)) {
+          keys.splice(i, 1);
+          keys.push(...Object.keys(query[key]));
+          i--;
         }
-
-        
       }
 
-      return isOnTeam || Object.keys(query).every(key => allowedKeys.includes(key as keyof TDocument));
+      return isOnTeam || keys.every(key => allowedKeys.includes(key as keyof TDocument));
     }
 
     export async function always() {

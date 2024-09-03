@@ -16,7 +16,6 @@ import {
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
-import { removeDuplicates } from "./client/ClientUtils";
 import { ObjectId } from "bson";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
@@ -678,7 +677,7 @@ export namespace API {
       );
 
       const usedComps = data.usePublicData && comp.tbaId !== NotLinkedToTba 
-        ? await db.findObjects<Competition>(Collections.Competitions, { publicData: true, tbaId: comp.tbaId, gameId: comp.gameId })
+        ? await db.findObjects<Competition>(CollectionId.Competitions, { publicData: true, tbaId: comp.tbaId, gameId: comp.gameId })
         : [comp];
 
       if (data.usePublicData && !comp.publicData)

@@ -40,7 +40,7 @@ import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
 import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
-import useIsOnline from "@/lib/client/useIsOnline";
+import useIsOnline from "@/lib/client/hooks/useIsOnline";
 import CompHeaderCard from "./CompHeaderCard";
 import InsightsAndSettingsCard from "./InsightsAndSettingsCard";
 import MatchScheduleCard from "./MatchScheduleCard";
@@ -555,7 +555,7 @@ export default function CompetitionIndex(props: {
     console.log("Adding pit report for team", teamToAdd);
     if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
 
-    api.createPitReportForTeam(teamToAdd, comp?._id)
+    api.createPitReportForTeam(teamToAdd, comp?._id, comp?.ownerTeam)
       // We can't just pass location.reload, it will throw "illegal invocation." I don't know why. -Renato
       .finally(() => location.reload());
   }

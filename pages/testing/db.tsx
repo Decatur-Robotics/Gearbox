@@ -1,11 +1,11 @@
 import Container from "@/components/Container";
 import CollectionId from "@/lib/client/CollectionId";
-import useLocalDb from "@/lib/client/hooks/useLocalDb";
+import { useLocalDb } from "@/lib/client/MiniMongoInterface";
 import { ObjectId } from "bson";
 import React from "react";
 import { useEffect, useState } from "react";
 
-export default function db() {
+export default function Db() {
   const dbInterface = useLocalDb();
   const db = dbInterface?.db;
 
