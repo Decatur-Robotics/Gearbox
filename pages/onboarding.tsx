@@ -80,9 +80,14 @@ export default function Onboarding() {
   }
 
   async function updateTeamRequestStatus() {
-    if (!session?.user?._id || !teamNumber || !league) return;
+    if (!session?.user?._id || !teamNumber || !league) {
+      console.error("Missing required fields to update team request status:", session?.user?._id, teamNumber, league);
+      return;
+    }
 
-    let team = await api.findTeamByNumberAndLeague(teamNumber, league);
+    console.log("Checking team request status for", teamNumber, league);
+
+    const team = await api.findTeamByNumberAndLeague(teamNumber, league);
 
     const requestPending = team.requests?.includes(session?.user?._id ?? "") ?? false;
     if (joinRequestStatus === JoinRequestStatus.Requested && (team?.users?.includes(session?.user?._id ?? "") ?? false))
@@ -94,7 +99,10 @@ export default function Onboarding() {
       setJoinRequestStatus(JoinRequestStatus.Rejected);
   }
 
-  useEffect(() => { setInterval(updateTeamRequestStatus, 5000); }, []);
+  useEffect(() => { 
+    const id = setInterval(updateTeamRequestStatus, 5000);
+    return () => clearInterval(id);
+   }, [session?.user?._id, teamNumber, league, joinRequestStatus]);
 
   async function createTeam() {
     if (!session?.user?._id || !teamNumber || !team?.name || !league) {
