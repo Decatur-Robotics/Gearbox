@@ -21,7 +21,8 @@ type UpdateFunction<T extends HasId | HasId[]> = (interfaces: Interfaces, origin
 export type UseDocumentInstanceOptions<T extends HasId | HasId[]> = {
   collection: CollectionId,
   query: object | ObjectId,
-  onFetch?: (document: T | null | undefined) => void
+  onFetch?: (document: T | null | undefined) => void,
+  dontLoadIf?: () => boolean
 }
 
 export type UseDocumentHookOptions<T extends HasId | HasId[]> = {
@@ -36,7 +37,10 @@ export type UseDocumentResult<T extends HasId | HasId[]> = {
   fetchLatestCopy: (preserveChanges: boolean) => void;
 }
 
-function getChanges<T>(current: T, original: T): Changes<T>[] | Changes<T> {
+function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
+  if (typeof current !== typeof original)
+    return current;
+
   if (Array.isArray(current) && Array.isArray(original)) {
     const changes: Changes<any>[] = [];
 
@@ -46,13 +50,15 @@ function getChanges<T>(current: T, original: T): Changes<T>[] | Changes<T> {
       }
 
       if (typeof current[i] === "object") {
-        changes[i] = getChanges(current[i], original[i]);
+        changes[i] = getChanges(original[i], current[i]);
       }
 
       if (current[i] !== original[i]) {
         changes[i] = current[i];
       }
     }
+
+    return changes;
   }
 
   const changes: Changes<T> = {};
@@ -63,7 +69,7 @@ function getChanges<T>(current: T, original: T): Changes<T>[] | Changes<T> {
     }
 
     if (typeof current[key] === "object") {
-      changes[key] = getChanges(current[key], original[key]);
+      changes[key] = getChanges(original[key], current[key]);
     }
 
     if (current[key] !== original[key]) {
@@ -75,6 +81,13 @@ function getChanges<T>(current: T, original: T): Changes<T>[] | Changes<T> {
 }
 
 function applyChanges<T>(original: T, changes: Changes<T>): T {
+  if (Array.isArray(original)) {
+    if (!Array.isArray(changes))
+      throw new Error("Changes must be an array if the original is an array");
+
+    return (original as any[]).map((item, i) => applyChanges(item, changes[i])) as T;
+  }
+
   const newObject = { ...original };
 
   for (const key in changes) {
@@ -120,6 +133,9 @@ export default function useDocument<T extends HasId | HasId[]>(
 
   async function fetchLatestCopy(preserveChanges: boolean = true) {
     if (!localDb)
+      return;
+
+    if (instanceOptions.dontLoadIf?.() ?? true)
       return;
     
     if (instanceOptions.query instanceof ObjectId) {

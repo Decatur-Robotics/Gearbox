@@ -5,7 +5,7 @@ export default function useDocumentArrayFromDb<T extends HasId>(options: UseDocu
   return useDocument<T[]>(options, {
     fetchFunctions: [
       ({ localDb }) => localDb?.findObjects<T>(options.collection, options.query),
-      ({ api }) => api.find<T[]>(options.collection, options.query)
+      ({ api }) => api.findMultiple<T>(options.collection, options.query)
     ],
     updateFunctions: [
       ({ localDb }, doc, changes) => {

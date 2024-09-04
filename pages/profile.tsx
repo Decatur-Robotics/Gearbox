@@ -2,7 +2,7 @@ import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { useEffect, useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
-import { Team } from "@/lib/Types";
+import { League, Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
 import Flex from "@/components/Flex";
@@ -33,13 +33,11 @@ export default function Profile(props: { teamList: Team[] }) {
   const owner = user?.owner ? user?.owner?.length > 0 : false;
   const member = user?.teams ? user.teams?.length > 0 : false;
 
-  const [searchedTeamNumber, setSearchedTeamNumber] = useState(undefined);
+  const [searchedTeamNumber, setSearchedTeamNumber] = useState<number>();
   const searchedTeams = useDocumentArrayFromDb<Team>({
     collection: Collections.Teams,
     query: { number: searchedTeamNumber },
-    onFetch: (teams) => {
-      console.log("Searched teams", teams);
-    }
+    dontLoadIf: () => !searchedTeamNumber,
   });
 
   const [teams, setTeams] = useState<Team[]>([]);
@@ -93,7 +91,7 @@ export default function Profile(props: { teamList: Team[] }) {
             mode="row"
             className="space-x-4 max-sm:flex-col max-sm:items-center"
           >
-            <Avatar></Avatar>
+            <Avatar />
             <div className="">
               <h1 className="italic text-lg max-sm:text-sm">
                 Known as: {user?.slug}
@@ -124,84 +122,32 @@ export default function Profile(props: { teamList: Team[] }) {
         </Card>
 
         <Card title="Your Teams">
-          <p>Select your current team:</p>
-          <div className="divider mt-2" />
+          <p>Find your team:</p>
           <div className="w-full h-full">
-            {loadingTeams ? (
-              <Loading></Loading>
-            ) : (
-              <Flex mode="col" center={true} className="space-y-2">
-                {teams.map((team) => (
-                  <Link
-                    href={"/" + team.slug}
-                    className="w-full"
-                    key={team._id.toString()}
-                  >
-                    <TeamCard team={team} />
-                  </Link>
-                ))}
-              </Flex>
-            )}
-
-            <Flex center={true} className="mt-8">
-              {!addTeam ? (
-                <button
-                  className="btn btn-circle bg-primary"
-                  onClick={() => {
-                    setAddTeam(true);
-                  }}
-                >
-                  <FaPlus className="text-white"></FaPlus>
-                </button>
-              ) : (
-                <Card title="Add Team" className="bg-base-300 w-full">
-                  <div className="divider"></div>
-                  <Flex mode="row" className="max-sm:flex-col">
-                    <div className="w-1/2 max-sm:w-full">
-                      <h1 className="font-semibold text-xl">Join a Team</h1>
-                      <p className="mb-2">Select your Team</p>
-                      <div className="w-full h-48 max-sm:h-fit py-2 bg-base-100 rounded-xl md:overflow-y-scroll max-sm:overflow-x-scroll flex flex-col max-sm:flex-row items-center">
-                        {sentRequest ? (
-                          <div className="alert alert-success w-full h-full text-white flex flex-col text-xl justify-center">
-                            <IoCheckmarkCircle size={48}></IoCheckmarkCircle>
-                            Team Request Sent
-                          </div>
-                        ) : loadingRequest ? (
-                          <Loading></Loading>
-                        ) : (
-                          teamList.map((team) => (
-                            <div
-                              className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
-                              onClick={() => {
-                                requestTeam(String(team._id), team.number);
-                              }}
-                              key={team._id.toString()}
-                            >
-                              <h1 className="max-sm:text-sm h-10">
-                                {team.tbaId ? "FRC" : "FTC"}{" "}
-                                <span className="text-primary">
-                                  {team.number}
-                                </span>
-                              </h1>
-                            </div>
-                          ))
+            <input type="number" placeholder="Enter your team number" className="w-full input input-bordered" 
+              onChange={(e) => setSearchedTeamNumber(+e.target.value)} />
+            { !searchedTeamNumber 
+                ? <></>
+                : (
+                    <>
+                      <div className="flex flex-row pt-4 space-x-4">
+                        {Object.keys(League).map((league) => 
+                          teamList.find((team) => team.league === league) ? (
+                            <TeamCard
+                              key={league}
+                              team={teamList.find((team) => team.league === league)}
+                            />
+                          ) : (
+                            <Card key={league} title={`${league} ${searchedTeamNumber} not found`}>
+                              <p>Team not found</p>
+                              <Link href="/createTeam" className="btn btn-primary">Create Team</Link>
+                            </Card>
+                          )
                         )}
                       </div>
-                    </div>
-                    <div className="divider md:divider-horizontal max-sm:divider-vertical"></div>
-                    <Flex mode="col" className="w-1/2 items-center space-y-4">
-                      <img src="/art/4026.svg" className="w-1/2 h-auto"></img>
-                      <Link
-                        href={"/createTeam"}
-                        className="btn btn-primary md:btn-wide text-white"
-                      >
-                        Create a Team
-                      </Link>
-                    </Flex>
-                  </Flex>
-                </Card>
-              )}
-            </Flex>
+                    </>
+                  )
+              }
           </div>
         </Card>
       </Flex>

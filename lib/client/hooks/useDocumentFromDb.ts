@@ -5,7 +5,7 @@ export default function useDocumentFromDb<T extends HasId>(options: UseDocumentI
   return useDocument<T>(options, {
     fetchFunctions: [
       ({ localDb }) => localDb?.findObject<T>(options.collection, options.query),
-      ({ api }) => api.find<T>(options.collection, options.query)
+      ({ api }) => api.findOne<T>(options.collection, options.query)
     ],
     updateFunctions: [
       ({ localDb }, doc, changes) => localDb?.updateObjectById(options.collection, doc._id, changes),

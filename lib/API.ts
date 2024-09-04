@@ -13,6 +13,8 @@ import {
   SubjectiveReport,
   SubjectiveReportSubmissionType,
   SavedCompetition,
+  QuantData,
+  League
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
@@ -21,18 +23,18 @@ import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
-import Auth, { AuthenticationOptions } from "./Auth";
+import { AuthenticationOptions } from "./Auth";
 
 import { Statbotics } from "./Statbotics";
-import { SerializeDatabaseObject } from "./UrlResolver";
 
-import { QuantData, League } from './Types';
 import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
 import CollectionId from "./client/CollectionId";
 import { Collections } from "./client/Collections";
+import DbInterface from "./client/DbInterface";
+import { Document } from "mongodb";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -163,6 +165,41 @@ export namespace API {
     return pitreports.map((report) => report._id);
   }
 
+  type FindRouteContents = RouteContents<{ collection: CollectionId, query: { _id?: ObjectId | string } }>;
+
+  async function findInDb(req: NextApiRequest, res: NextApiResponse, contents: FindRouteContents,
+    find: (db: DbInterface, collectionId: CollectionId, query: object) => Promise<Document | Document[] | null | undefined>
+  ) {
+    const { user, data, db } = contents;
+
+    const collectionId = data.collection as CollectionId;
+      const collection = Collections[collectionId];
+      var query = data.query;
+
+      if (query._id) {
+        if (query._id.toString().length !== 24)
+          return res.status(400).send({ error: "Invalid _id" });
+        query._id = new ObjectId(query._id as string);
+      }
+      
+      let obj = await find(db, collectionId, query);
+      if (!obj) {
+        obj = {};
+
+        res.status(200).send(obj);
+      }
+
+      if (!(await collection.canRead(user?._id, obj, db))) {
+        // If we ``, lines breaks and tabs are preserved in the string
+        console.error(`Unauthorized read to object:
+          User: ${user?.name} (${user?._id})
+          Query: ${JSON.stringify(query)}
+          Collection: ${collectionId}`);
+        return res.status(403).send({ error: "Unauthorized", query, collectionId });
+      }
+      res.status(200).send(obj);
+  }
+
   export const Routes: RouteCollection = {
     hello: async (req, res, { db, data }) => {
       res.status(200).send({
@@ -240,38 +277,13 @@ export namespace API {
       res.status(200).send(await db.deleteObjectById(collection, id));
     },
 
-    find: async (req, res, { db, data, user }) => {
-      // {
-      //     collection,
-      //     query
-      // }
+    findOne: async (req, res, contents: FindRouteContents) => {
+      findInDb(req, res, contents, (db, collectionId, query) => db.findObject(collectionId, query));
+    },
 
-      const collectionId = data.collection as CollectionId;
-      const collection = Collections[collectionId];
-      var query = data.query;
-
-      if (query._id) {
-        if (query._id.length !== 24)
-          return res.status(400).send({ error: "Invalid _id" });
-        query._id = new ObjectId(query._id as string);
-      }
-      
-      let obj = await db.findObject(collectionId, query);
-      if (!obj) {
-        obj = {};
-
-        res.status(200).send(obj);
-      }
-
-      if (!(await collection.canRead(user?._id, obj, db))) {
-        // If we ``, lines breaks and tabs are preserved in the string
-        console.error(`Unauthorized read to object:
-          User: ${user?.name} (${user?._id})
-          Query: ${JSON.stringify(query)}
-          Collection: ${collectionId}`);
-        return res.status(403).send({ error: "Unauthorized", query, collectionId });
-      }
-      res.status(200).send(obj);
+    findMultiple: async (req, res, contents: FindRouteContents) => {
+      console.log("findMultiple", contents.data);
+      findInDb(req, res, contents, (db, collectionId, query) => db.findObjects(collectionId, query));
     },
 
     /**
