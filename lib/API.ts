@@ -165,7 +165,7 @@ export namespace API {
     return pitreports.map((report) => report._id);
   }
 
-  type FindRouteContents = RouteContents<{ collection: CollectionId, query: { _id?: ObjectId | string } }>;
+  type FindRouteContents = RouteContents<{ collection: CollectionId, query: any }>;
 
   async function findInDb(req: NextApiRequest, res: NextApiResponse, contents: FindRouteContents,
     find: (db: DbInterface, collectionId: CollectionId, query: object) => Promise<Document | Document[] | null | undefined>
@@ -177,9 +177,18 @@ export namespace API {
       var query = data.query;
 
       if (query._id) {
-        if (query._id.toString().length !== 24)
-          return res.status(400).send({ error: "Invalid _id" });
-        query._id = new ObjectId(query._id as string);
+        if (typeof query._id === "string") {
+          if (query._id.toString().length !== 24)
+            return res.status(400).send({ error: "Invalid _id" });
+          query._id = new ObjectId(query._id as string);
+        } else if (query._id?.$in) {
+          const ids = query._id.$in as string[];
+          try {
+            query._id.$in = ids.map((id: string) => new ObjectId(id as string));
+          } catch (e) {
+            return res.status(400).send({ error: "Invalid _id" });
+          }
+        }
       }
       
       let obj = await find(db, collectionId, query);
@@ -282,7 +291,6 @@ export namespace API {
     },
 
     findMultiple: async (req, res, contents: FindRouteContents) => {
-      console.log("findMultiple", contents.data);
       findInDb(req, res, contents, (db, collectionId, query) => db.findObjects(collectionId, query));
     },
 

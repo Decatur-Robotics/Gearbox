@@ -317,7 +317,7 @@ export default function Container(props: ContainerProps) {
                         "w-16 h-16 btn btn-ghost " +
                         (selected ? "border-2 border-accent" : "border-2")
                       }
-                      key={team._id.toString()}
+                      key={team._id?.toString()}
                       onClick={() => {
                         setSelectedTeamIndex(index);
                       }}
