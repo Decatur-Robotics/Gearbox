@@ -19,7 +19,15 @@ export default function Onboarding() {
 
   const [league, setLeague] = useState<League>();
   const [teamNumber, setTeamNumber, getTeamNumber] = useDynamicState<number | undefined>();
-  const [team, setTeam] = useState<Team>();
+  const [team, setTeam] = useState<{ 
+    _id?: string, 
+    name: string, 
+    number: number, 
+    slug?: string,
+    tbaId?: string, 
+    users?: string[],
+    requests?: string[]
+  }>();
   const [teamConfirmed, setTeamConfirmed] = useState<boolean>(false);
 
   enum JoinRequestStatus {
@@ -59,17 +67,19 @@ export default function Onboarding() {
 
     if (number && !isNaN(number) && league) {
       const team = await api.findTeamByNumberAndLeague(number, league)
-                            .then(team => team.name ? team : api.getTeamAutofillData(number, league));
+                            .then(team => team.name ? team : api.getTeamAutofillData(number, league).catch(() => ({
+                              number,
+                              name: "",
+                            })));
 
       getTeamNumber((num) => {
         if (num !== number) return;
 
         setTeam(team);
-        setJoinRequestStatus(team.requests?.includes(session?.user?._id ?? "") ?? false 
+        setJoinRequestStatus("requests" in team && (team.requests?.includes(session?.user?._id ?? "") ?? false) 
           ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
       });
-    }
-    else setTeam(undefined);
+    } else setTeam(undefined);
   }
 
   async function requestToJoinTeam() {
@@ -156,22 +166,13 @@ export default function Onboarding() {
                           onChange={teamNumberChanged} />
                         { team &&
                             <div>
-                              {
-                                team.name 
-                                  ? <div>
-                                      <div className="text-lg mt-2">
-                                        Team <span className="text-accent">{team.number}</span> 
-                                        {" "}- <span className="text-secondary">{team.name}</span>. Is that right?
-                                      </div>
-                                      <button className="btn btn-primary mt-2" onClick={() => setTeamConfirmed(true)}>
-                                        Yes, that is the correct team.
-                                      </button>
-                                    </div>
-                                  : <div className="text-lg mt-2">
-                                      Hmmm. We couldn&apos;t find team <span className="text-accent">{team.number}</span>. Are you sure that&apos;s 
-                                      the correct number?
-                                    </div>
-                              }
+                              <div className="text-lg mt-2">
+                                Team <span className="text-accent">{team.number}</span> 
+                                {" "}- <input className="input input-secondary input-md" placeholder="Enter team name..." value={team.name} onChange={(e) => setTeam({ ...team, name: e.target.value })} />. Is that right?
+                              </div>
+                              <button className="btn btn-primary mt-2" onClick={() => setTeamConfirmed(true)}>
+                                Yes, that is the correct team.
+                              </button>
                             </div>
                         }
                         <br />
@@ -180,7 +181,7 @@ export default function Onboarding() {
                         </button>
                       </div>
                     : <div>
-                        { team?.users?.length > 0 ?? false
+                        { (team?.users?.length ?? 0) > 0 ?? false
                           ? <div>
                               { joinRequestStatus === JoinRequestStatus.NotRequested
                                   ? <div>

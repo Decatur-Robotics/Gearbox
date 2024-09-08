@@ -337,6 +337,7 @@ export namespace API {
       //     name,
       //     creator
       // }
+
       const newTeamObj = new Team(
         data.name,
         await GenerateSlug(Collections.Teams, data.name),
