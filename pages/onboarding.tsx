@@ -173,7 +173,7 @@ export default function Onboarding() {
                                 {" "}- {" "}
                                 {team.name 
                                   ? <span className="text-accent">{team.name}</span> 
-                                  : <><span className="text-secondary">Unknown Team</span> (you'll enter your team name on the next screen)</>
+                                  : <><span className="text-secondary">Unknown Team</span> (you&apos;ll enter your team name on the next screen)</>
                                 }. Is that right?
                               </div>
                               <button className="btn btn-primary mt-2" onClick={() => setTeamConfirmed(true)}>
