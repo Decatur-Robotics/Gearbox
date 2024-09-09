@@ -414,6 +414,7 @@ export namespace API {
       //     name,
       //     creator
       // }
+
       const newTeamObj = new Team(
         data.name,
         await GenerateSlug(CollectionId.Teams, data.name),

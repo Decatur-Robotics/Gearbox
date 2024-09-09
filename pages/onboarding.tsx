@@ -19,7 +19,15 @@ export default function Onboarding() {
 
   const [league, setLeague] = useState<League>();
   const [teamNumber, setTeamNumber, getTeamNumber] = useDynamicState<number | undefined>();
-  const [team, setTeam] = useState<Team>();
+  const [team, setTeam] = useState<{ 
+    _id?: string, 
+    name: string, 
+    number: number, 
+    slug?: string,
+    tbaId?: string, 
+    users?: string[],
+    requests?: string[]
+  }>();
   const [teamConfirmed, setTeamConfirmed] = useState<boolean>(false);
 
   enum JoinRequestStatus {
@@ -30,7 +38,8 @@ export default function Onboarding() {
   }
   const [joinRequestStatus, setJoinRequestStatus] = useState<JoinRequestStatus>(JoinRequestStatus.NotRequested);
   const [season, setSeason] = useState<Season>();
-  const [seasonCreated, setSeasonCreated] = useState<boolean>(false); 
+  const [seasonCreated, setSeasonCreated] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string>();
   
   const gameId = league === League.FTC ? GameId.CenterStage : defaultGameId;
   const game = games[gameId];
@@ -57,19 +66,17 @@ export default function Onboarding() {
     console.log("Changed team # to", number);
     setTeamNumber(number);
 
-    if (number && !isNaN(number) && league) {
-      const team = await api.findTeamByNumberAndLeague(number, league)
-                            .then(team => team.name ? team : api.getTeamAutofillData(number, league));
+    if (!number || isNaN(number)) setTeam(undefined);
 
-      getTeamNumber((num) => {
-        if (num !== number) return;
+    const team = await api.findTeamByNumberAndLeague(number, league ?? League.FRC)
+                          .then(team => team.name ? team : api.getTeamAutofillData(number, league).catch(() => ({
+                            number,
+                            name: "",
+                          })));
 
-        setTeam(team);
-        setJoinRequestStatus(session.user && (team.requests?.includes(session.user._id) ?? false) 
-          ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
-      });
-    }
-    else setTeam(undefined);
+    setTeam(team);
+    setJoinRequestStatus("requests" in team && (team.requests?.includes(session?.user?._id ?? "") ?? false) 
+      ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
   }
 
   async function requestToJoinTeam() {
@@ -108,7 +115,12 @@ export default function Onboarding() {
    }, [session?.user?._id, teamNumber, league, joinRequestStatus]);
 
   async function createTeam() {
-    if (!session?.user?._id || !teamNumber || !team?.name || !league) {
+    if (!team?.name) {
+      setErrorMsg("Team name cannot be empty");
+      return;
+    }
+
+    if (!session?.user?._id || !teamNumber || !league) {
       console.error("Missing required fields to create team");
       return;
     }
@@ -159,22 +171,17 @@ export default function Onboarding() {
                           onChange={teamNumberChanged} />
                         { team &&
                             <div>
-                              {
-                                team.name 
-                                  ? <div>
-                                      <div className="text-lg mt-2">
-                                        Team <span className="text-accent">{team.number}</span> 
-                                        {" "}- <span className="text-secondary">{team.name}</span>. Is that right?
-                                      </div>
-                                      <button className="btn btn-primary mt-2" onClick={() => setTeamConfirmed(true)}>
-                                        Yes, that is the correct team.
-                                      </button>
-                                    </div>
-                                  : <div className="text-lg mt-2">
-                                      Hmmm. We couldn&apos;t find team <span className="text-accent">{team.number}</span>. Are you sure that&apos;s 
-                                      the correct number?
-                                    </div>
-                              }
+                              <div className="text-lg mt-2">
+                                Team <span className="text-accent">{teamNumber}</span> 
+                                {" "}- {" "}
+                                {team.name 
+                                  ? <span className="text-accent">{team.name}</span> 
+                                  : <><span className="text-secondary">Unknown Team</span> (you&apos;ll enter your team name on the next screen)</>
+                                }. Is that right?
+                              </div>
+                              <button className="btn btn-primary mt-2" onClick={() => setTeamConfirmed(true)}>
+                                Yes, that is the correct team.
+                              </button>
                             </div>
                         }
                         <br />
@@ -183,7 +190,7 @@ export default function Onboarding() {
                         </button>
                       </div>
                     : <div>
-                        { team?.users?.length > 0 ?? false
+                        { (team?.users?.length ?? 0) > 0 ?? false
                           ? <div>
                               { joinRequestStatus === JoinRequestStatus.NotRequested
                                   ? <div>
@@ -232,11 +239,12 @@ export default function Onboarding() {
                             </div>
                           : <div>
                               <div>
-                                You&apos;re the first one here from team {team.number}, {team.name}.
+                                You&apos;re the first one here from team {teamNumber}, <input className="input input-secondary input-md" placeholder="Enter team name..." value={team.name} onChange={(e) => setTeam({ ...team, name: e.target.value })} />.
                               </div>
                               <button className="btn btn-primary mt-2" onClick={createTeam}>
-                                Create team {team.number}, {team.name}
+                                Create team {teamNumber}, {team.name}
                               </button>
+                              { errorMsg && <div className="text-error">{errorMsg}</div> }
                             </div>
                         }
                         { joinRequestStatus !== JoinRequestStatus.CreatedTeam &&

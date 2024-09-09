@@ -17,76 +17,59 @@ const api = new ClientAPI("gearboxiscool");
 export default function CreateTeam() {
   const { session, status } = useCurrentSession();
 
-  const [teamNumber, setTeamNumber] = useState<string>();
-  const [autoData, setAutoData] = useState<Team>();
-  const [ftcAutoData, setFtcAutoData] = useState<Team>();
-  const [loading, setLoading] = useState(false);
+  const [team, setTeam] = useState<Partial<Team>>({});
   const [error, setError] = useState("");
 
-  const searchTeam = async () => {
-    if (!teamNumber) {
+  const createTeam = async () => {
+    if (!session?.user) {
       return;
     }
 
-    setLoading(true);
-
-    setAutoData(undefined);
-    setFtcAutoData(undefined);
-
-    api.getTeamAutofillData(Number(teamNumber)).then((data) => {
-      if (data?.name) {
-        setAutoData(data);
-      }
-    });
-
-    api.getFtcTeamAutofillData(Number(teamNumber)).then((data) => {
-      console.log(data);
-      if (data?.name) {
-        setFtcAutoData(data);
-      }
-    });
-
-    setLoading(false);
-  };
-
-  const createTeam = async (league: League) => {
-    if (!autoData || !session?.user) {
+    if (!team?.league) {
+      setError("Must select a league");
       return;
     }
 
-    if (
-      await api.findTeamByNumberAndLeague(Number(teamNumber), league)
-    ) {
+    if (!team?.number) {
+      setError("Must enter a team number");
+      return;
+    }
+
+    if (!team?.name) {
+      setError("Must enter a team name");
+      return;
+    }
+
+    const findResult = await api.findTeamByNumberAndLeague(Number(team?.number), team.league);
+    console.log(findResult);
+    if (findResult._id) {
       setError("This Team Already Exists");
       return;
     }
 
-    const data = league === League.FRC ? autoData : ftcAutoData;
-
-    if (!data) {
-      setError("No Team Found");
-      return;
-    }
-    
     const newTeam = await api.createTeam(
-      data.name,
-      data.number,
+      team.name,
+      team.number,
       session.user._id,
-      data.tbaId,
-      league
+      team.number.toString(),
+      team.league
     );
 
-    Analytics.teamCreated(data.number, data.league, session?.user?.name ?? "Unknown User");
+    Analytics.teamCreated(team.number, team.league, session?.user?.name ?? "Unknown User");
 
     const win: Window = window;
     win.location = `/${newTeam.slug}`;
   };
 
   useEffect(() => {
-    searchTeam();
-  }, [teamNumber]);
-
-  ///*** query and prevent dups! */
+    api.getTeamAutofillData(team.number, team.league ?? League.FRC)
+      .catch(() => null)
+      .then((data) => {
+        if (data)
+          setTeam({ ...team, name: data.name });
+        setError("");
+      });
+  }, [team.number, team.league]);
 
   return (
     <Container requireAuthentication={true} hideMenu={false} title="Create Team">
@@ -94,42 +77,27 @@ export default function CreateTeam() {
         mode="col"
         className="md:h-full items-center md:justify-center max-sm:py-10"
       >
-        <Card title="Create a Team" className="">
-          <h1 className="font-semibold text-accent md:ml-4">
-            Search our database with your teams number
-          </h1>
-          <h1 className="text-error">{error}</h1>
-          <div className="divider"></div>
-          <input
-            className="input input-bordered md:w-1/2"
-            placeholder="Team Number"
-            maxLength={5}
-            minLength={1}
-            value={teamNumber}
-            onChange={(e) => {
-              setTeamNumber(e.target.value);
-            }}
-          ></input>
-          {teamNumber && (
-            <div className="md:w-1/2 h-48 mt-10">
-              {loading ? (
-                <Loading />
-              ) : (
-                <div className="flex flex-row space-x-2">
-                  { autoData?.name &&
-                    <div onClick={() => createTeam(League.FRC)}>
-                      <TeamCard team={autoData} />
-                    </div>
-                  }
-                  { ftcAutoData?.name &&
-                    <div onClick={() => createTeam(League.FTC)}>
-                      <TeamCard team={ftcAutoData} />
-                    </div>
-                  }
-                </div>
-              )}
-            </div>
-          )}
+        <Card title="Create a Team">
+          <div className="flex flex-row space-x-4 flex-g">
+            {
+              Object.values(League).map((league) => (
+                <button
+                  key={league}
+                  className={`w-1/2 btn bg-base-300 border-accent ${team.league === league && " border-4"}`}
+                  onClick={() => setTeam({ ...team, league })}
+                >
+                  {league}
+                </button>
+              ))
+            }
+          </div>
+          {/* Use value={team.number ?? ""} to start the input as controlled while still showing the placeholder -Renato */}
+          <input type="number" placeholder="Team Number" className="input w-full" value={team.number ?? ""} 
+            onChange={(e) => setTeam({...team, number: +e.target.value > 0 ? +e.target.value : undefined})} />
+          <input type="text" placeholder="Team Name" className="input w-full" value={team.name ?? ""} 
+            onChange={(e) => setTeam({...team, name: e.target.value})} />
+          <button className="btn btn-primary w-full" onClick={createTeam}>Create Team</button>
+          {error && <p className="text-red-500">{error}</p>}
         </Card>
       </Flex>
     </Container>
