@@ -105,7 +105,8 @@ function applyChanges<T>(original: T, changes: Changes<T>): T {
 const api = new ClientAPI("gearboxiscool");
 
 /**
- * Do NOT use this hook outside of another hook. It's meant to create a modular way to update database resources.
+ * Do NOT use this hook outside of another hook. It's meant to create a modular way to perform CRUD on database resources.
+ * You should create a hook that returns this hook, and use that hook instead.
  * 
  * @param instanceOptions Options for a specific usage of a hook. This parameter should be exposed by child hooks.
  * @param hookOptions Options for a specific child hook. This parameter should not be exposed by parent hooks.
@@ -135,7 +136,7 @@ export default function useDocument<T extends HasId | HasId[]>(
     if (!localDb)
       return;
 
-    if (instanceOptions.dontLoadIf?.() ?? true)
+    if (instanceOptions.dontLoadIf?.() ?? false)
       return;
     
     if (instanceOptions.query instanceof ObjectId) {
@@ -144,7 +145,7 @@ export default function useDocument<T extends HasId | HasId[]>(
     
     hookOptions.fetchFunctions.forEach(async (fetchFunction) => {
       fetchFunction({ api, localDb })
-      ?.then((newDocument) => {
+        ?.then((newDocument) => {
           if (newDocument)
             onFetch(newDocument, preserveChanges);
 
@@ -155,7 +156,6 @@ export default function useDocument<T extends HasId | HasId[]>(
   }
 
   useEffect(() => {
-    console.log("Fetching latest copy");
     fetchLatestCopy();
   }, [localDb, JSON.stringify(instanceOptions.query)]); // We use JSON.stringify because the object reference changes every render
 

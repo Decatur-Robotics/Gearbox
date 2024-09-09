@@ -206,6 +206,7 @@ export namespace API {
           Collection: ${collectionId}`);
         return res.status(403).send({ error: "Unauthorized", query, collectionId });
       }
+
       res.status(200).send(obj);
   }
 

@@ -36,6 +36,10 @@ import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
+import useDocumentFromDb from "@/lib/client/hooks/useDocumentFromDb";
+import CollectionId from "@/lib/client/CollectionId";
+import { useRouter } from "next/router";
+import useDocumentArrayFromDb from "@/lib/client/hooks/useDocumentArrayFromDb";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -433,15 +437,51 @@ function Settings(props: TeamPageProps) {
   );
 }
 
-export default function TeamIndex(props: TeamPageProps) {
+export default function TeamIndex() {
   const { session, status } = useCurrentSession();
-  const team = props.team;
+
+  const router = useRouter();
+
+  const teamDocument = useDocumentFromDb<Team>({
+    collection: CollectionId.Teams,
+    query: { slug: router.query.teamSlug as string },
+  });
+  const team = teamDocument?.value;
+
+  const seasons = useDocumentArrayFromDb<Season>({
+    collection: CollectionId.Seasons,
+    query: { ownerTeam: team?._id }
+  });
+
+  const competitions = useDocumentArrayFromDb<Competition>({
+    collection: CollectionId.Competitions,
+    query: { ownerTeam: team?._id }
+  });
+
+  const users = useDocumentArrayFromDb<User>({
+    collection: CollectionId.Users,
+    query: { _id: { $in: team?.users ?? [] } }
+  });
 
   const isFrc = team?.tbaId || team?.league === League.FRC;
 
   const [page, setPage] = useState(0);
 
-  const isManager = session?.user && team?.owners.includes(session?.user?._id);
+  console.log("Team:", team);
+  console.log("User ID:", session?.user?._id);
+  console.log("Team Owners:", team?.owners);
+  
+  // includes is by reference, so we need to use .find and .equals
+  const isManager = session?.user && team?.owners?.find((owner) => owner.equals?.(session?.user?._id)) !== undefined;
+
+  const componentProps: TeamPageProps = {
+    team: team,
+    currentSeason: seasons.value?.[(seasons.value?.length ?? 0) - 1],
+    pastSeasons: seasons.value,
+    currentCompetition: competitions.value?.[(competitions.value?.length ?? 0) - 1],
+    users: users.value,
+    isManager: isManager ?? false,
+  };
 
   return (
     <Container requireAuthentication={true} hideMenu={false} title={team ? `${team.number} - ${team.name}` : "Team Loading..."}>
@@ -458,7 +498,7 @@ export default function TeamIndex(props: TeamPageProps) {
                 className="inline-block mr-2"
                 size={30}
               ></FaUserFriends>
-              <span className="text-accent">{team?.users.length}</span> Active
+              <span className="text-accent">{team?.users?.length}</span> Active
               Members
             </h1>
           </Flex>
@@ -484,7 +524,7 @@ export default function TeamIndex(props: TeamPageProps) {
                 ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
                 : <div>
                     Not linked to Slack.
-                    { (session?.user && team?.owners.includes(session?.user._id)) && 
+                    { (session?.user && team?.owners?.includes(session?.user._id)) && 
                       <>
                         {" "}<AddToSlack />
                         , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
@@ -536,55 +576,13 @@ export default function TeamIndex(props: TeamPageProps) {
           </div>
         </div>
 
-        {page === 0 ? <Overview {...props} isManager={isManager ?? false}></Overview> : <></>}
-        {page === 1 ? <Roster {...props}></Roster> : <></>}
-        {page === 2 ? <Settings {...props}></Settings> : <></>}
+        { team && <>
+            {page === 0 && <Overview {...componentProps} isManager={isManager ?? false} />}
+            {page === 1 && <Roster {...componentProps} />}
+            {page === 2 && <Settings {...componentProps} />}
+          </>
+        }
       </Flex>
     </Container>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await getDatabase();
-  const resolved = await UrlResolver(context);
-
-  const seasonIds = resolved.team?.seasons.map(
-    (seasonId) => new ObjectId(seasonId)
-  );
-  const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
-  const seasons = await db.findObjects<Season>(Collections.Seasons, {
-    _id: { $in: seasonIds },
-  });
-
-  var users = await db.findObjects<User>(Collections.Users, {
-    _id: { $in: userIds },
-  });
-
-  users = users.map((user) => {
-    var c = structuredClone(user);
-    c._id = user?._id;
-    c.teams = user.teams.map((id) => String(id));
-    return c;
-  });
-
-  const currentSeason = seasons[seasons.length - 1];
-  var comp = undefined;
-  if (currentSeason) {
-    comp = await db.findObjectById<Competition>(
-      Collections.Competitions,
-      new ObjectId(
-        currentSeason.competitions[currentSeason.competitions.length - 1]
-      )
-    );
-  }
-
-  return {
-    props: {
-      team: SerializeDatabaseObject(resolved.team),
-      users: SerializeDatabaseObjects(users),
-      currentCompetition: SerializeDatabaseObject(comp),
-      currentSeason: SerializeDatabaseObject(currentSeason),
-      pastSeasons: SerializeDatabaseObjects(seasons),
-    },
-  };
-};

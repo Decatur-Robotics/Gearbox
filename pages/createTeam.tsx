@@ -11,13 +11,28 @@ import Loading from "@/components/Loading";
 import TeamCard from "@/components/TeamCard";
 import { TheOrangeAlliance } from "@/lib/TheOrangeAlliance";
 import { Analytics } from "@/lib/client/Analytics";
+import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
+import { search } from "slack";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function CreateTeam() {
+  const router = useRouter();
+
   const { session, status } = useCurrentSession();
 
-  const [team, setTeam] = useState<Partial<Team>>({});
+  const [team, setTeam] = useState<Partial<Team>>({
+  });
+
+  useEffect(() => {
+    setTeam({ 
+      ...team, 
+      league: router.query.league ? router.query.league as League : undefined, 
+      number: router.query.number ? +router.query.number : undefined 
+    });
+  }, [router.query]);
+
   const [error, setError] = useState("");
 
   const createTeam = async () => {

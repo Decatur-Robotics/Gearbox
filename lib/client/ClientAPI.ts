@@ -20,7 +20,7 @@ import {
 import { GameId } from "./GameId";
 import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
 import { games } from "../games";
-import { BSON, ObjectId } from 'bson';
+import { BSON, EJSON, ObjectId } from 'bson';
 import CollectionId from "./CollectionId";
 
 export enum ClientRequestMethod {
@@ -45,7 +45,46 @@ export default class ClientAPI {
     this.authenticationKey = authKey;
   }
 
-  async request(
+  parseObjectId(obj: { [index: number]: string }) {
+    const idStr = Object.values(obj).join("");
+    try {
+      return new ObjectId(idStr);
+    } catch (e) {
+      return obj;
+    }
+  }
+
+  isBrokenObjectId(obj: { [index: number]: string }) {
+    return obj && Object.values(obj).join("").length === 24;
+  }
+
+  fixBrokenObjectIds(obj: object): object | object[] {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.fixBrokenObjectIds(item));
+    }
+
+    if (typeof obj !== "object") {
+      return obj;
+    }
+
+    const newObj: { [key: string]: any} = {};
+
+    for (const entry in Object.entries(obj)) {
+      const [key, value] = entry;
+      
+      if (this.isBrokenObjectId(value)) {
+        newObj[key] = this.parseObjectId(value);
+      } else if (typeof value === "object") {
+        newObj[key] = this.fixBrokenObjectIds(value);
+      } else {
+        newObj[key] = value;
+      }
+    }
+
+    return newObj;
+  }
+
+  async request<T>(
     subUrl: string,
     body: any,
     method: ClientRequestMethod = ClientRequestMethod.POST
@@ -57,10 +96,13 @@ export default class ClientAPI {
         "Content-Type": "application/json",
         "gearbox-auth": this.authenticationKey,
       },
-      body: JSON.stringify(body),
+      body: EJSON.stringify(BSON.deserialize(BSON.serialize(body))),
     });
-    
-    return await rawResponse.json().catch(() => console.error("Failed to parse response"));
+
+    // const resObj = await rawResponse.text().then((json) => EJSON.parse(json)).catch(() => console.error("Failed to parse response"));
+    // return this.fixBrokenObjectIds(resObj) as T;
+
+    return await rawResponse.json();
   }
   
   /**
@@ -70,10 +112,10 @@ export default class ClientAPI {
    */
   async findUserById(id: ObjectId | undefined, fallback: User | undefined = undefined): Promise<User> {
     try {
-      return await this.request("/find", {
+      return await this.request<User>("/find", {
         collection: "users",
         query: { _id: id },
-      }).catch(() => fallback);
+      }).catch(() => fallback!);
     }
     catch(e) {
       if (fallback)
@@ -180,6 +222,21 @@ export default class ClientAPI {
     return await this.request("/findMultiple", {
       collection: collection,
       query: query,
+    });
+  }
+
+  /**
+   * Shortcut for findMultiple when you just have an array of IDs (as strings or ObjectIds)
+   * @see findMultiple
+   */
+  async findMultipleByIds<T>(collection: CollectionId, ids: (string | ObjectId)[]): Promise<T[]> {
+    return await this.request("/findMultiple", {
+      collection: collection,
+      query: {
+        _id: {
+          $in: ids.map(id => id instanceof ObjectId ? id : new ObjectId(id))
+        }
+      }
     });
   }
 
@@ -355,8 +412,8 @@ export default class ClientAPI {
     });
   }
 
-  async update(collection: CollectionId, id: ObjectId, newValues: object, ) {
-    return await this.request("/update", {
+  async update<T>(collection: CollectionId, id: ObjectId, newValues: object, ) {
+    return await this.request<T>("/update", {
       collection: collection,
       newValues: newValues,
       id: id,

@@ -17,6 +17,8 @@ import { stat } from "fs";
 import useIsOnline from "@/lib/client/hooks/useIsOnline";
 import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
+import CollectionId from "@/lib/client/CollectionId";
+import { ObjectId } from 'bson';
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -81,15 +83,7 @@ export default function Container(props: ContainerProps) {
       }
 
       setLoadingTeams(true);
-      let newTeams: Team[] = [];
-      for (const team of user.teams) {
-        const foundTeam = await api.findTeamById(team).catch(() => undefined);
-        if (!foundTeam)
-          continue;
-        newTeams.push(foundTeam);
-      }
-      setTeams(newTeams);
-
+      setTeams(await api.findMultipleByIds<Team>(CollectionId.Teams, user.teams));
       setLoadingTeams(false);
     };
 
@@ -103,18 +97,12 @@ export default function Container(props: ContainerProps) {
       }
       setLoadingSeasons(true);
 
-      let newSeasons: Season[] = [];
-
       if (!selectedTeam?.seasons) {
         setLoadingSeasons(false);
         return;
       }
-      
-      for (const season of selectedTeam?.seasons) {
-        newSeasons.push(await api.findSeasonById(season));
-      }
 
-      setSelectedTeamSeasons(newSeasons);
+      setSelectedTeamSeasons(await api.findMultipleByIds(CollectionId.Seasons, selectedTeam.seasons));
       setLoadingSeasons(false);
     };
 
@@ -306,7 +294,7 @@ export default function Container(props: ContainerProps) {
                   <></>
                 )}
 
-                {teams.map((team, index) => {
+                {teams.map?.((team, index) => {
                   var initials = team.name
                     ?.split(" ")
                     ?.map((section) => section.charAt(0)) ?? "?";

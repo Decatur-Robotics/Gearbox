@@ -11,7 +11,7 @@ export default class MiniMongoInterface implements DbInterface {
   {
     this.db = new LocalStorageDb(
       {}, 
-      () => console.log("MiniMongo DB created"), 
+      () => {},
       (err: unknown) => console.error("MiniMongo DB failed to initialize:", err)
     );
 
@@ -21,7 +21,6 @@ export default class MiniMongoInterface implements DbInterface {
       this.loadCollectionFromLocalStorage(collectionName as CollectionId);
     }
 
-    console.log("MiniMongo DB loaded from local storage");
     return Promise.resolve();
   }
 
@@ -42,8 +41,6 @@ export default class MiniMongoInterface implements DbInterface {
       {
         collection.upsert(obj);
       }
-
-      console.log(`Loaded ${parsedObjects.length} documents from local storage for collection: ${collection.name}`);
     }
   }
 
