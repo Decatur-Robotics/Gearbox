@@ -1,5 +1,5 @@
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { FaDatabase, FaUserGroup } from "react-icons/fa6";
@@ -7,7 +7,7 @@ import { FaDiscord, FaUser, FaWifi } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { IoPhonePortrait, IoPhonePortraitOutline } from "react-icons/io5";
-import useIsVisible from "@/lib/client/useIsVisible";
+import useIsVisible from "@/lib/client/hooks/useIsVisible";
 import SignIn from "./signin";
 
 const api = new ClientAPI("gearboxiscool");

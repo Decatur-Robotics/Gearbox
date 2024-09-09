@@ -42,7 +42,7 @@ export default function PitScoutingCard(props: {
                   <Link
                     className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
                     href={window.location.href + `/pit/${report._id}`}
-                    key={report._id}
+                    key={report._id.toString()}
                   >
                     <div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
                       {report.teamNumber}

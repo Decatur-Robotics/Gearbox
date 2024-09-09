@@ -1,7 +1,8 @@
 import { GetServerSidePropsContext } from "next";
-import { Collections, getDatabase } from "./MongoDB";
-import { Competition, Match, Season, Team, Report } from "./Types";
-import { ObjectId } from "mongodb";
+import { getDatabase } from "./MongoDB";
+import { Competition, Season, Team, Report } from "./Types";
+import { ObjectId } from "bson";
+import CollectionId from "./client/CollectionId";
 
 // fetches the database
 const gdb = getDatabase();
@@ -30,15 +31,17 @@ export function SerializeDatabaseObject(object: any): any {
   if (!object) {
     return null;
   }
-  if (object?._id) {
-    object._id = object?._id.toString();
-  }
-  if (object?.ownerTeam) {
-    object.ownerTeam = object.ownerTeam.toString();
-  }
-  if (object?.ownerComp) {
-    object.ownerComp = object.ownerComp.toString();
-  }
+  
+  for (const key of Object.keys(object)) {
+    if (ObjectId.isValid(object[key]) || object[key] instanceof ObjectId)
+      object[key] = object[key].toString();
+
+    if (typeof key !== "string" && Array.isArray(object[key]))
+      object[key] = object[key].map((item: ArrayLike<any>) => SerializeDatabaseObject(item));
+
+    if (typeof object[key] === "object")
+      object[key] = SerializeDatabaseObject(object[key]);
+  } 
 
   return object;
 }
@@ -80,25 +83,25 @@ export default async function UrlResolver(
     // if they dont exist, simply return nothing
     var data: ResolvedUrlData = {
       team: SerializeDatabaseObject(
-        await db.findObject<Team>(Collections.Teams, { slug: teamSlug })
+        await db.findObject<Team>(CollectionId.Teams, { slug: teamSlug })
       ),
       season: seasonSlug
         ? SerializeDatabaseObject(
-            await db.findObject<Season>(Collections.Seasons, {
+            await db.findObject<Season>(CollectionId.Seasons, {
               slug: seasonSlug,
             })
           )
         : null,
       competition: competitionSlug
         ? SerializeDatabaseObject(
-            await db.findObject<Competition>(Collections.Competitions, {
+            await db.findObject<Competition>(CollectionId.Competitions, {
               slug: competitionSlug,
             })
           )
         : null,
       report: reportId
         ? SerializeDatabaseObject(
-            await db.findObject<Report>(Collections.Reports, {
+            await db.findObject<Report>(CollectionId.Reports, {
               _id: new ObjectId(reportId),
             })
           )

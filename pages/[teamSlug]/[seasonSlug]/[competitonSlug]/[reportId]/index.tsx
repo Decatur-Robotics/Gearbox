@@ -1,5 +1,5 @@
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Form, { FormProps } from "@/components/forms/Form";
 import { GetServerSideProps } from "next";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";

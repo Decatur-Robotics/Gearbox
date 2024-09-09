@@ -1,8 +1,8 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { download } from "@/lib/client/ClientUtils";
 import { mergeSavedComps, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import useIsOnline from "@/lib/client/useIsOnline";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import useIsOnline from "@/lib/client/hooks/useIsOnline";
 import { SavedCompetition, League, Team, Competition, Report, Pitreport, SubjectiveReport } from "@/lib/Types";
 import { useState, ChangeEvent } from "react";
 import Loading from "../Loading";
@@ -109,7 +109,7 @@ export default function DownloadModal(props: {
           return;
         }
 
-        comp.quantReports[qrData.quantReport._id] = qrData.quantReport;
+        comp.quantReports[qrData.quantReport._id.toString()] = qrData.quantReport;
       }
       
       if (qrData.pitReport) {
@@ -118,7 +118,7 @@ export default function DownloadModal(props: {
           return;
         }
 
-        comp.pitReports[qrData.pitReport._id] = qrData.pitReport;
+        comp.pitReports[qrData.pitReport._id.toString()] = qrData.pitReport;
       }
 
       if (qrData.subjectiveReport) {
@@ -127,8 +127,8 @@ export default function DownloadModal(props: {
           return;
         }
 
-        comp.subjectiveReports[qrData.subjectiveReport._id] = qrData.subjectiveReport;
-        comp.matches[qrData.subjectiveReport.match].subjectiveReports.push(qrData.subjectiveReport._id);
+        comp.subjectiveReports[qrData.subjectiveReport._id.toString()] = qrData.subjectiveReport;
+        comp.matches[qrData.subjectiveReport.match.toString()].subjectiveReports.push(qrData.subjectiveReport._id);
       }
     })
   }

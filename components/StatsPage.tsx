@@ -49,7 +49,7 @@ export default function Stats(props: StatsPageProps) {
         api.getPitReports(props.competition.pitReports).then((data) => {
             setPitReports(data);
           }),
-      api.getSubjectiveReportsForComp(props.competition._id!).then(setSubjectiveReports),
+      api.getSubjectiveReportsForComp(props.competition._id).then(setSubjectiveReports),
     ].flat();
 
     await Promise.all(promises);
@@ -141,7 +141,7 @@ export default function Stats(props: StatsPageProps) {
       {page === 1 
         && <PicklistScreen 
           teams={Array.from(teams)} reports={reports} expectedTeamCount={props.competition.pitReports.length} 
-          picklist={props.picklists} compId={props.competition._id ?? ""} />
+          picklist={props.picklists} compId={props.competition._id} />
       }
       {
         page === 2 && <PredictionScreen reports={reports} teams={Array.from(teams)} game={games[props.competition.gameId]} />

@@ -1,8 +1,9 @@
 import { Team, User } from "../Types";
-import { getDatabase, Collections } from "../MongoDB";
+import { getDatabase } from "../MongoDB";
 import { GenerateSlug } from "../Utils";
 import { randomArrayValue } from "../client/ClientUtils";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
+import CollectionId from "../client/CollectionId";
 
 const firstNameMaleURL = "https://www.randomlists.com/data/names-male.json";
 const firstNameFemaleURL = "https://www.randomlists.com/data/names-female.json";
@@ -42,13 +43,13 @@ export async function fakeUser(teamId: string | undefined): Promise<User> {
     "totallyrealemail@gmail.com",
     "https://media.npr.org/assets/img/2015/06/15/gettyimages-1445210_custom-9cff1c641fe4451adaf1bcd3750bf4a11fb5d4e9.jpg",
     false,
-    await GenerateSlug(Collections.Users, name),
+    await GenerateSlug(CollectionId.Users, name),
     teamId ? [teamId] : [],
     [],
     "",
     10,
   );
-  return await db.addObject<User>(Collections.Users, user);
+  return await db.addObject<User>(CollectionId.Users, user);
 }
 
 export async function fillTeamWithFakeUsers(
@@ -63,12 +64,12 @@ export async function fillTeamWithFakeUsers(
   }
 
   const team = await db.findObjectById<Team>(
-    Collections.Teams,
+    CollectionId.Teams,
     new ObjectId(teamId),
   );
   team.users = team.users.concat(users);
   team.scouters = team.scouters.concat(users);
 
-  await db.updateObjectById(Collections.Teams, new ObjectId(team._id), team);
+  await db.updateObjectById(CollectionId.Teams, new ObjectId(team._id), team);
   return team;
 }

@@ -1,9 +1,11 @@
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import { Competition, Match, Team, User, Report } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import Collections from "@/lib/client/CollectionId";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
@@ -18,14 +20,14 @@ export default function Scouters(props: { team: Team | null, competition: Compet
     ? team?.owners.includes(session.user?._id)
     : false;
 
-  type Scouter = User & { missedReports: string[], reports: string[], coveredReports: string[], missedSubjectiveReports: string[] };
+  type Scouter = User & { missedReports: ObjectId[], reports: ObjectId[], coveredReports: ObjectId[], missedSubjectiveReports: ObjectId[] };
   type Comment = {
     text: string,
-    user: string | undefined,
+    user: ObjectId | undefined,
     robot: number,
     formType: string,
     matchNumber: number,
-    dbId: string,
+    dbId: ObjectId,
     flag: "None" | "Minor" | "Major",
     remove: () => void
   }
@@ -41,146 +43,148 @@ export default function Scouters(props: { team: Team | null, competition: Compet
   const [comments, setComments] = useState<Comment[] | undefined>();
 
   useEffect(() => {
-    if (scouters && matches && reports || loading) return;
+    if (scouters && matches && reports || loading || !comp) return;
 
-      setLoading(true);
+    setLoading(true);
 
-      console.log("Loading scouter data...");
-      api.findScouterManagementData(comp?._id ?? "", team?.scouters ?? []).then((data) => {
-        console.log("Loaded scouter data");
+    console.log("Loading scouter data...");
+    api.findScouterManagementData(comp._id, team?.scouters ?? []).then((data) => {
+      console.log("Loaded scouter data");
 
-        // Load scouters
-        const scouterDict: { [id: string]: Scouter } = {};
-        for (const s of data.scouters) {
-          scouterDict[s._id ?? ""] = {
-            ...s,
-            missedReports: [],
-            reports: [],
-            coveredReports: [],
-            missedSubjectiveReports: []
-          };
-        }
+      // Load scouters
+      const scouterDict: { [id: string]: Scouter } = {};
+      for (const s of data.scouters) {
+        scouterDict[s._id.toString() ?? ""] = {
+          ...s,
+          missedReports: [],
+          reports: [],
+          coveredReports: [],
+          missedSubjectiveReports: []
+        };
+      }
 
-        setScouters(scouterDict);
+      setScouters(scouterDict);
 
-        // Load matches
-        const matchDict: { [id: string]: Match } = {};
-        for (const m of data.matches) {
-          matchDict[m._id ?? ""] = m;
-        }
-        setMatches(matchDict);
+      // Load matches
+      const matchDict: { [id: string]: Match } = {};
+      for (const m of data.matches) {
+        matchDict[m._id.toString() ?? ""] = m;
+      }
+      setMatches(matchDict);
 
-        function getCommentFlag(text: string, allowZeroLength: boolean = false) {
-          let flag: "None" | "Minor" | "Major" = "None";
-          if (!allowZeroLength && text.length === 0) flag = "Minor";
+      function getCommentFlag(text: string, allowZeroLength: boolean = false) {
+        let flag: "None" | "Minor" | "Major" = "None";
+        if (!allowZeroLength && text.length === 0) flag = "Minor";
 
-          // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
-          // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
-          // if ("aこんにちは".match(regex) === null) flag = "Minor";
+        // Regex fails to filter out Japanese characters. Don't know why, so I'm just going to disable it for now.
+        // const regex = /^[~`!@#$%^&*()_+=[\]\\{}|;':",.\/<>?a-zA-Z0-9-]+$/;
+        // if ("aこんにちは".match(regex) === null) flag = "Minor";
 
-          return flag;
-        }
+        return flag;
+      }
 
-        async function removeComment(commentId: string | undefined, func: (c: Comment) => Promise<void>): Promise<void> {
-          // Hacky way of getting the latest state when the function is being called from lambdas
-          setComments((comments) => {
-            const comment = comments?.find((c) => c.dbId === commentId);
-            if (!comment) return;
-      
-            if (!confirm(`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters?.[comment.user ?? ""]?.name ?? "Unknown"}`)) 
-              return comments;
-      
-            func(comment).then(() =>
-              setComments((prev) => [...(prev || []).filter((c) => c !== comment), 
-                { ...comment, text: "", flag: getCommentFlag(comment.text, false) }])
-            );
-      
+      async function removeComment(commentId: string | ObjectId, func: (c: Comment) => Promise<void>): Promise<void> {
+        commentId = new ObjectId(commentId);
+
+        // Hacky way of getting the latest state when the function is being called from lambdas
+        setComments((comments) => {
+          const comment = comments?.find((c) => c.dbId === commentId);
+          if (!comment) return;
+    
+          if (!confirm(`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters?.[comment.user?.toString() ?? ""]?.name ?? "Unknown"}`)) 
             return comments;
-          });
-        }
+    
+          func(comment).then(() =>
+            setComments((prev) => [...(prev || []).filter((c) => c !== comment), 
+              { ...comment, text: "", flag: getCommentFlag(comment.text, false) }])
+          );
+    
+          return comments;
+        });
+      }
+    
+      function removeQuantitativeComment(comment: Comment) {
+        let promise: Promise<void> | undefined;
+
+        setReports((reports) => {
+          if (!reports) return reports;
       
-        function removeQuantitativeComment(comment: Comment) {
-          let promise: Promise<void> | undefined;
+          const { _id, ...updated } = reports[comment.dbId.toString()];
+          promise = api.updateReport({ data: { ...updated.data, comments: "" } }, comment.dbId);
 
-          setReports((reports) => {
-            if (!reports) return reports;
-        
-            const { _id, ...updated } = reports[comment.dbId];
-            promise = api.updateReport({ data: { ...updated.data, comments: "" } }, comment.dbId);
+          return reports;
+        });
 
-            return reports;
-          });
+        return promise ?? Promise.resolve();
+      }
+    
+      function removePitComment(comment: Comment) {
+        return api.updatePitreport(comment.dbId, { comments: "" });
+      }
 
-          return promise ?? Promise.resolve();
-        }
-      
-        function removePitComment(comment: Comment) {
-          return api.updatePitreport(comment.dbId, { comments: "" });
-        }
+      function removeSubjectiveComment(comment: Comment) {
+        return api.updateSubjectiveReport(comment.dbId, { wholeMatchComment: "", robotComments: {} });
+      }
 
-        function removeSubjectiveComment(comment: Comment) {
-          return api.updateSubjectiveReport(comment.dbId, { wholeMatchComment: "", robotComments: {} });
-        }
+      // Load reports and comments
+      const comments: Comment[] = [];
 
-        // Load reports and comments
-        const comments: Comment[] = [];
-
-        const reportDict: { [id: string]: Report } = {};
-        for (const r of data.quantitativeReports) {
-          if (r.submitted) {
-            comments.push({
-              text: r.data.comments,
-              user: r.submitter ?? r.user,
-              robot: r.robotNumber,
-              formType: "Quantitative Report",
-              matchNumber: matchDict[r.match]?.number ?? 0,
-              dbId: r._id ?? "",
-              flag: getCommentFlag(r.data.comments),
-              remove: () => removeComment(r._id, removeQuantitativeComment)
-            });
-          }
-
-          reportDict[r._id ?? ""] = r;
-        }
-        setReports(reportDict);
-
-        for (const report of data.pitReports) {
+      const reportDict: { [id: string]: Report } = {};
+      for (const r of data.quantitativeReports) {
+        if (r.submitted) {
           comments.push({
-            text: report.data?.comments ?? "",
-            user: report.submitter,
-            robot: report.teamNumber,
-            formType: "Pit Report",
-            matchNumber: 0,
-            dbId: report._id ?? "",
-            flag: getCommentFlag(report.data?.comments ?? ""),
-            remove: () => removeComment(report._id, removePitComment)
+            text: r.data.comments,
+            user: r.submitter ?? r.user,
+            robot: r.robotNumber,
+            formType: "Quantitative Report",
+            matchNumber: matchDict[r.match.toString()]?.number ?? 0,
+            dbId: r._id ?? "",
+            flag: getCommentFlag(r.data.comments),
+            remove: () => removeComment(r._id, removeQuantitativeComment)
           });
         }
 
-        for (const report of data.subjectiveReports) {
-          const text = [
-            (report.wholeMatchComment.length > 0 ? `Whole Match: ${report.wholeMatchComment}` : ""),
-            ...Object.entries(report.robotComments)
-              .map(([key, value]) => value.length > 0 && `Robot ${key}: ${value}`)]
-              .filter((c) => c)
-              .join(" \\ ");
+        reportDict[r._id.toString() ?? ""] = r;
+      }
+      setReports(reportDict);
 
-          comments.push({
-            text: text,
-            user: report.submitter,
-            robot: 0,
-            formType: "Subjective Report",
-            matchNumber: matchDict[report.match]?.number ?? 0,
-            dbId: report._id ?? "",
-            flag: getCommentFlag(text),
-            remove: () => removeComment(report._id, (c) => removeSubjectiveComment(c))
-          });
-        }
+      for (const report of data.pitReports) {
+        comments.push({
+          text: report.data?.comments ?? "",
+          user: report.submitter,
+          robot: report.teamNumber,
+          formType: "Pit Report",
+          matchNumber: 0,
+          dbId: report._id ?? "",
+          flag: getCommentFlag(report.data?.comments ?? ""),
+          remove: () => removeComment(report._id, removePitComment)
+        });
+      }
 
-        setComments(comments);
+      for (const report of data.subjectiveReports) {
+        const text = [
+          (report.wholeMatchComment.length > 0 ? `Whole Match: ${report.wholeMatchComment}` : ""),
+          ...Object.entries(report.robotComments)
+            .map(([key, value]) => value.length > 0 && `Robot ${key}: ${value}`)]
+            .filter((c) => c)
+            .join(" \\ ");
 
-        setShouldRegenerateScouterData(true);
-        setLoading(false);
+        comments.push({
+          text: text,
+          user: report.submitter,
+          robot: 0,
+          formType: "Subjective Report",
+          matchNumber: matchDict[report.match.toString()]?.number ?? 0,
+          dbId: report._id ?? "",
+          flag: getCommentFlag(text),
+          remove: () => removeComment(report._id, (c) => removeSubjectiveComment(c))
+        });
+      }
+
+      setComments(comments);
+
+      setShouldRegenerateScouterData(true);
+      setLoading(false);
     });
   });
 
@@ -190,7 +194,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
 
       const newScouters = Object.values(scouters).map((scouter) => {
         const scouterReports = Object.values(reports).filter((report) => {
-          return matches[report.match].number <= lastCountedMatch && report.user === scouter._id;
+          return matches[report.match.toString()].number <= lastCountedMatch && report.user === scouter._id;
         });
 
         const missedReports = scouterReports.filter((report) => {
@@ -214,7 +218,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
 
       const scouterDict: { [id: string]: Scouter } = {};
       for (const scouter of newScouters) {
-        scouterDict[scouter._id ?? ""] = scouter;
+        scouterDict[scouter._id.toString() ?? ""] = scouter;
       }
 
       setScouters(scouterDict);
@@ -260,15 +264,16 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                     .map((scouter, index) => <li key={index}>
                       <span className={scouter.missedReports.length > 0 ? "text-warning" : ""}>{scouter.name}</span>
                       <ul className="text-sm ml-2 mb-1">
-                        <li>Missed Reports: {scouter.missedReports.length} ({reports && scouter.missedReports.map((report) => reports[report]).filter((report) => !report.submitter).length} not covered)
+                        <li>Missed Reports: {scouter.missedReports.length} ({reports && scouter.missedReports.map((report) => reports[report.toString()]).filter((report) => !report.submitter).length} not covered)
                           {
                             matches && reports && scouter.missedReports.length > 0 && 
                               <ul className="ml-2">
-                                {scouter.missedReports.map((report) => reports[report]).map((report) => ({
+                                {scouter.missedReports.map((report) => reports[report.toString()]).map((report) => ({
                                   report: report,
-                                  match: matches[report.match]
+                                  match: matches[report.match.toString()]
                                 })).sort((a, b) => a.match.number - b.match.number).map((entry, index) => {
-                                  return <li key={index}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter && <>(Covered by {scouters[entry.report.submitter]?.name ?? "Unknown"})</>}</li>
+                                  return <li key={index}>{entry.match.number}: {entry.report.robotNumber} {entry.report.submitter 
+                                    && <>(Covered by {scouters[entry.report.submitter.toString()]?.name ?? "Unknown"})</>}</li>
                                 })}
                               </ul>
                           }
@@ -276,7 +281,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                         {
                           matches && scouter.missedSubjectiveReports.length > 0 &&
                             <li>Missed Subjective Reports:{" "}
-                              {[...new Set(scouter.missedSubjectiveReports.map((id) => matches[id].number).sort((a, b) => a - b))].join(", ")}
+                              {[...new Set(scouter.missedSubjectiveReports.map((id) => matches[id.toString()].number).sort((a, b) => a - b))].join(", ")}
                             </li>
                         }
                         {
@@ -307,7 +312,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
                         <ul className="text-xs ml-2">
                           <li>{comment.formType}</li>
                           <li>Robot: {comment.robot}</li>
-                          <li>Submitter: {comment.user ? scouters[comment.user]?.name ?? "Unknown" : "Unknown"}</li>
+                          <li>Submitter: {comment.user ? scouters[comment.user.toString()]?.name ?? "Unknown" : "Unknown"}</li>
                         </ul>
                       </li>)
                   }

@@ -8,12 +8,13 @@ import { useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Competition, League, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { Collections, getDatabase } from "@/lib/MongoDB";
-import { ObjectId } from "mongodb";
+import { getDatabase } from "@/lib/MongoDB";
+import Collections from "@/lib/client/CollectionId";
+import { ObjectId } from "bson";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import {
@@ -77,7 +78,7 @@ function Overview(props: TeamPageProps) {
                 <h1 className="text-md font-semibold">Past Seasons:</h1>
                 <ul className="list-disc ml-8">
                   {props.pastSeasons?.map((season) => (
-                    <li key={season._id}>
+                    <li key={season._id.toString()}>
                       <Link
                         href={`/${props.team?.slug}/${season.slug}`}
                         className="text-accent"
@@ -113,7 +114,7 @@ function Roster(props: TeamPageProps) {
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [requests, setRequests] = useState<User[]>([]);
 
-  const owner = team?.owners.includes(session.user?._id as string);
+  const owner = session?.user && team?.owners.includes(session?.user._id);
 
   useEffect(() => {
     const loadRequests = async () => {
@@ -129,8 +130,15 @@ function Roster(props: TeamPageProps) {
     loadRequests();
   }, []);
 
-  const handleTeamRequest = async (userId: string, accept: boolean) => {
-    await api.handleRequest(accept, userId as string, team?._id as string);
+  const handleTeamRequest = async (userIdRaw: string, accept: boolean) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
+    const userId = new ObjectId(userIdRaw);
+
+    await api.handleRequest(accept, userId, team._id);
 
     const reqClone = structuredClone(requests);
     const userIndex = reqClone.findIndex((user) => userId === user._id);
@@ -143,10 +151,15 @@ function Roster(props: TeamPageProps) {
     }
 
     Analytics.teamJoinRequestHandled(team?.number ?? -1, team?.league ?? League.FRC, 
-      user.name ?? "Unknown User", session.user?.name ?? "Unknown User", accept);
+      user.name ?? "Unknown User", session?.user?.name ?? "Unknown User", accept);
   };
 
-  const updateScouter = async (userId: string) => {
+  const updateScouter = async (userId: ObjectId) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
     var teamClone = structuredClone(team);
     var scouters = teamClone?.scouters;
     if (scouters?.includes(userId)) {
@@ -155,11 +168,16 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ scouters }, team?._id);
+    await api.updateTeam({ scouters }, team._id);
     setTeam(teamClone);
   };
 
-  const updateSubjectiveScouter = async (userId: string) => {
+  const updateSubjectiveScouter = async (userId: ObjectId) => {
+    if (!team) {
+      console.error("Team not found");
+      return
+    }
+
     var teamClone = structuredClone(team);
     if (!teamClone) return;
 
@@ -171,11 +189,16 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ subjectiveScouters: scouters }, team?._id);
+    await api.updateTeam({ subjectiveScouters: scouters }, team._id);
     setTeam(teamClone);
   };
 
-  const updateOwner = async (userId: string) => {
+  const updateOwner = async (userId: ObjectId) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
     var teamClone = structuredClone(team);
     var owners = teamClone?.owners;
     if (owners?.includes(userId)) {
@@ -184,11 +207,16 @@ function Roster(props: TeamPageProps) {
       owners?.push(userId);
     }
 
-    await api.updateTeam({ owners }, team?._id);
+    await api.updateTeam({ owners }, team._id);
     setTeam(teamClone);
   };
 
-  const removeUser = async (userId: string) => {
+  const removeUser = async (userId: ObjectId) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
     const confirmed = ConfirmModal(
       "Are you sure you want to remove this user?"
     );
@@ -244,7 +272,7 @@ function Roster(props: TeamPageProps) {
             ) : (
               <div className="w-full grid grid-cols-2 grid-rows-1">
                 {requests.map((user) => (
-                  <Card className="" key={user._id}>
+                  <Card className="" key={user._id.toString()}>
                     <Flex mode="col" className="space-x-2">
                       <div className="flex flex-row space-x-4 items-center">
                         <img
@@ -301,7 +329,7 @@ function Roster(props: TeamPageProps) {
           <tbody className="">
             {users.map((user, index) => (
               <tr
-                key={user._id}
+                key={user._id.toString()}
                 className="p-0 h-20 even:bg-base-100 odd:bg-base-200 max-sm:text-xs"
               >
                 <th className="w-10">{index + 1}</th>
@@ -313,20 +341,20 @@ function Roster(props: TeamPageProps) {
                   <input
                     type="checkbox"
                     className="toggle toggle-secondary"
-                    checked={team?.scouters.includes(user._id as string)}
+                    checked={team?.scouters.includes(user._id)}
                     disabled={!owner}
                     onChange={() => {
-                      updateScouter(user._id as string);
+                      updateScouter(user._id);
                     }}
                   />
                 </td><td>
                   <input
                     type="checkbox"
                     className="toggle toggle-accent"
-                    checked={team?.subjectiveScouters?.includes(user._id as string)}
+                    checked={team?.subjectiveScouters?.includes(user._id)}
                     disabled={!owner}
                     onChange={() => {
-                      updateSubjectiveScouter(user._id as string);
+                      updateSubjectiveScouter(user._id);
                     }}
                   />
                 </td>
@@ -334,10 +362,10 @@ function Roster(props: TeamPageProps) {
                   <input
                     type="checkbox"
                     className="toggle toggle-primary"
-                    checked={team?.owners.includes(user._id as string)}
+                    checked={team?.owners.includes(user._id)}
                     disabled={!owner}
                     onChange={() => {
-                      updateOwner(user._id as string);
+                      updateOwner(user._id);
                     }}
                   />
                 </td>
@@ -346,7 +374,7 @@ function Roster(props: TeamPageProps) {
                     className="btn btn-outline btn-error"
                     disabled={!owner}
                     onClick={() => {
-                      removeUser(user._id as string);
+                      removeUser(user._id);
                     }}
                   >
                     <MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
@@ -366,13 +394,18 @@ function Settings(props: TeamPageProps) {
   const [error, setError] = useState("");
 
   const updateTeam = async () => {
+    if (!props.team) {
+      console.error("Team not found");
+      return;
+    }
+
     setError("");
     if (!validName(teamName)) {
       setError("Invalid Team Name");
       return;
     }
 
-    await api.updateTeam({ name: teamName }, props.team?._id);
+    await api.updateTeam({ name: teamName }, props.team._id);
     location.reload();
   };
 
@@ -408,7 +441,7 @@ export default function TeamIndex(props: TeamPageProps) {
 
   const [page, setPage] = useState(0);
 
-  const isManager = team?.owners.includes(session?.user?._id as string);
+  const isManager = session?.user && team?.owners.includes(session?.user?._id);
 
   return (
     <Container requireAuthentication={true} hideMenu={false} title={team ? `${team.number} - ${team.name}` : "Team Loading..."}>
@@ -451,7 +484,7 @@ export default function TeamIndex(props: TeamPageProps) {
                 ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
                 : <div>
                     Not linked to Slack.
-                    { team?.owners.includes(session?.user?._id ?? "") && 
+                    { (session?.user && team?.owners.includes(session?.user._id)) && 
                       <>
                         {" "}<AddToSlack />
                         , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
@@ -529,7 +562,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   users = users.map((user) => {
     var c = structuredClone(user);
-    c._id = user?._id?.toString();
+    c._id = user?._id;
     c.teams = user.teams.map((id) => String(id));
     return c;
   });
@@ -547,8 +580,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
-      team: resolved.team,
-      users: users,
+      team: SerializeDatabaseObject(resolved.team),
+      users: SerializeDatabaseObjects(users),
       currentCompetition: SerializeDatabaseObject(comp),
       currentSeason: SerializeDatabaseObject(currentSeason),
       pastSeasons: SerializeDatabaseObjects(seasons),

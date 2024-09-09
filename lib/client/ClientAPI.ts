@@ -19,8 +19,9 @@ import {
 } from "../Types";
 import { GameId } from "./GameId";
 import { assignScoutersOffline, updateCompInLocalStorage } from "./offlineUtils";
-import { ObjectId } from 'bson';
 import { games } from "../games";
+import { BSON, ObjectId } from 'bson';
+import CollectionId from "./CollectionId";
 
 export enum ClientRequestMethod {
   POST = "POST",
@@ -59,13 +60,15 @@ export default class ClientAPI {
       body: JSON.stringify(body),
     });
     
-    return await rawResponse.json();
+    return await rawResponse.json().catch(() => console.error("Failed to parse response"));
   }
   
   /**
    * @param fallback only use if you are just a fetching a single user. Using fallback for many users will take a long time.
+   * @deprecated use find instead
+   * @see findOne
    */
-  async findUserById(id: string | undefined, fallback: User | undefined = undefined): Promise<User> {
+  async findUserById(id: ObjectId | undefined, fallback: User | undefined = undefined): Promise<User> {
     try {
       return await this.request("/find", {
         collection: "users",
@@ -79,6 +82,10 @@ export default class ClientAPI {
     }
   }
 
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
   async findTeamById(id: string): Promise<Team> {
     return await this.request("/find", {
       collection: "Teams",
@@ -86,6 +93,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
   async findTeamByNumberAndLeague(n: number, league: League): Promise<Team> {
     const query = league === League.FRC 
       ? { 
@@ -103,41 +114,78 @@ export default class ClientAPI {
     });
   }
 
-  async findSeasonById(id: string): Promise<Season> {
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
+  async findSeasonById(id: ObjectId): Promise<Season> {
     return await this.request("/find", {
       collection: "Seasons",
       query: { _id: id },
     });
   }
 
-  async findCompetitionById(id: string | undefined): Promise<Competition> {
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
+  async findCompetitionById(id: ObjectId): Promise<Competition> {
     return await this.request("/find", {
       collection: "Competitions",
       query: { _id: id },
     });
   }
 
-  async findMatchById(id: string): Promise<Match> {
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
+  async findMatchById(id: ObjectId): Promise<Match> {
     return await this.request("/find", {
       collection: "Matches",
       query: { _id: id },
     });
   }
 
-  async findReportById(id: string): Promise<Report> {
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
+  async findReportById(id: ObjectId): Promise<Report> {
     return await this.request("/find", {
       collection: "Reports",
       query: { _id: id },
     });
   }
 
-  async findPitreportById(id: string): Promise<Pitreport> {
+  /**
+   * @deprecated use find instead
+   * @see findOne
+   */
+  async findPitreportById(id: ObjectId): Promise<Pitreport> {
     return await this.request("/find", {
       collection: "Pitreports",
       query: { _id: id },
     });
   }
 
+  async findOne<T>(collection: CollectionId, query: object): Promise<T> {
+    return await this.request("/findOne", {
+      collection: collection,
+      query: query,
+    });
+  }
+
+  async findMultiple<T>(collection: CollectionId, query: object): Promise<T[]> {
+    return await this.request("/findMultiple", {
+      collection: collection,
+      query: query,
+    });
+  }
+
+  /**
+   * @deprecated does not have security checks
+   */
   async allTeams(): Promise<Team[]> {
     return await this.request("/findAll", { collection: "Teams" });
   }
@@ -158,14 +206,14 @@ export default class ClientAPI {
     return await this.request("/matchAutofill", { tbaId: tbaId });
   }
 
-  async requestToJoinTeam(userId: string | undefined, teamId: string | undefined) {
+  async requestToJoinTeam(userId: ObjectId, teamId: ObjectId) {
     return await this.request("/requestToJoinTeam", {
       userId: userId,
       teamId: teamId,
     });
   }
 
-  async handleRequest(accept: boolean, userId: string, teamId: string) {
+  async handleRequest(accept: boolean, userId: ObjectId, teamId: ObjectId) {
     return await this.request("/handleRequest", {
       accept: accept,
       userId: userId,
@@ -176,7 +224,7 @@ export default class ClientAPI {
   async createTeam(
     name: string,
     number: number,
-    creator: string | undefined,
+    creator: ObjectId,
     tbaId: undefined | string,
     league: League
   ): Promise<Team> {
@@ -189,7 +237,7 @@ export default class ClientAPI {
     });
   }
 
-  async createSeason(name: string, year: number, gameId: GameId, teamId: string): Promise<Season> {
+  async createSeason(name: string, year: number, gameId: GameId, teamId: ObjectId): Promise<Season> {
     return await this.request("/createSeason", {
       name: name,
       year: year,
@@ -206,18 +254,22 @@ export default class ClientAPI {
   }
 
   async createMatch(
-    compId: string | undefined,
+    compId: ObjectId,
     number: number,
     type: MatchType,
     blueAlliance: number[],
-    redAlliance: number[]
+    redAlliance: number[],
+    ownerTeam: ObjectId,
+    ownerComp: ObjectId
   ) {
     return await this.request("/createMatch", {
-      number: number,
-      type: type,
-      blueAlliance: blueAlliance,
-      redAlliance: redAlliance,
-      compId: compId,
+      number,
+      type,
+      blueAlliance,
+      redAlliance,
+      compId,
+      ownerTeam,
+      ownerComp,
     });
   }
 
@@ -226,7 +278,7 @@ export default class ClientAPI {
     tbaId: string | undefined,
     start: number,
     end: number,
-    seasonId: string | undefined,
+    seasonId: ObjectId | undefined,
     publicData: boolean
   ): Promise<Competition> {
     return await this.request("/createCompetiton", {
@@ -240,8 +292,8 @@ export default class ClientAPI {
   }
 
   async reloadCompetition(
-    compId: string | undefined,
-    tbaId: string | undefined
+    compId: ObjectId,
+    tbaId: string
   ) {
     return await this.request("/reloadCompetition", {
       compId: compId,
@@ -255,6 +307,10 @@ export default class ClientAPI {
     return await this.request("/searchCompetitionByName", { name: name });
   }
 
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
   async updateUser(newValues: object, userId: string) {
     return await this.request("/update", {
       collection: "users",
@@ -263,7 +319,11 @@ export default class ClientAPI {
     });
   }
 
-  async updateTeam(newValues: object, teamId: string | undefined) {
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
+  async updateTeam(newValues: object, teamId: ObjectId) {
     return await this.request("/update", {
       collection: "Teams",
       newValues: newValues,
@@ -271,6 +331,10 @@ export default class ClientAPI {
     });
   }
 
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
   async updateSeason(newValues: object, seasonId: string | undefined) {
     return await this.request("/update", {
       collection: "Seasons",
@@ -279,7 +343,11 @@ export default class ClientAPI {
     });
   }
 
-  async updateReport(newValues: Partial<Report>, reportId: string | undefined) {
+  /**
+   * @deprecated use update instead
+   * @see update
+   */
+  async updateReport(newValues: Partial<Report>, reportId: ObjectId) {
     return await this.request("/update", {
       collection: "Reports",
       newValues: newValues,
@@ -287,9 +355,17 @@ export default class ClientAPI {
     });
   }
 
+  async update(collection: CollectionId, id: ObjectId, newValues: object, ) {
+    return await this.request("/update", {
+      collection: collection,
+      newValues: newValues,
+      id: id,
+    });
+  }
+
   async assignScouters(
-    teamId: string | undefined,
-    compId: string | undefined,
+    teamId: ObjectId,
+    compId: ObjectId,
     shuffle: boolean = false,
     fallback: SavedCompetition | undefined = undefined
   ) {
@@ -301,16 +377,19 @@ export default class ClientAPI {
       });
     } catch(e) {
       if (fallback) {
-        updateCompInLocalStorage(fallback.comp._id ?? "", assignScoutersOffline);
+        updateCompInLocalStorage(fallback.comp._id.toString() ?? "", assignScoutersOffline);
         return fallback;
       }
     }
   }
 
+  /**
+   * @deprecated Server should find userId, not client
+   */
   async submitForm(
-    reportId: string | undefined,
+    reportId: ObjectId,
     formData: QuantData | undefined,
-    userId: string | undefined
+    userId: ObjectId
   ) {
     return await this.request("/submitForm", {
       reportId: reportId,
@@ -320,7 +399,7 @@ export default class ClientAPI {
   }
 
   async updatePitreport(
-    pitreportId: string | undefined,
+    pitreportId: ObjectId,
     data: object | undefined
   ) {
     return await this.request("/update", {
@@ -330,7 +409,7 @@ export default class ClientAPI {
     });
   }
 
-  async competitionReports(compId: string | undefined, submitted: boolean, usePublicData: boolean = false, 
+  async competitionReports(compId: ObjectId, submitted: boolean, usePublicData: boolean = false, 
       fallback: Report[] | undefined = undefined) {
     try {
       return await this.request("/competitionReports", {
@@ -345,7 +424,7 @@ export default class ClientAPI {
     }
   }
 
-  async allCompetitionMatches(compId: string | undefined, fallback: Match[] | undefined = undefined) {
+  async allCompetitionMatches(compId: ObjectId, fallback: Match[] | undefined = undefined) {
     try {
       return await this.request("/allCompetitionMatches", { compId: compId });
     } catch(e) {
@@ -355,26 +434,26 @@ export default class ClientAPI {
     }
   }
 
-  async matchReports(matchId: string | undefined) {
+  async matchReports(matchId: ObjectId) {
     return await this.request("/matchReports", { matchId: matchId });
   }
 
-  async checkInForReport(reportId: string | undefined) {
+  async checkInForReport(reportId: ObjectId) {
     return await this.request("/checkInForReport", { reportId });
   }
 
-  async updateCheckOut(reportId: string | undefined) {
+  async updateCheckOut(reportId: ObjectId) {
     return await this.request("/updateCheckOut", { reportId });
   }
 
-  async checkInForSubjectiveReport(matchId: string) {
+  async checkInForSubjectiveReport(matchId: ObjectId) {
     return await this.request("/checkInForSubjectiveReport", { matchId });
   }
 
   async remindSlack(
     slackId: string,
     senderSlackId: string,
-    teamId: string
+    teamId: ObjectId
   ) {
     return await this.request("/remindSlack", { slackId, senderSlackId, teamId });
   }
@@ -420,23 +499,23 @@ export default class ClientAPI {
     return await this.request("/getMainPageCounterData", {});
   }
 
-  async exportCompAsCsv(compId: string | undefined) {
+  async exportCompAsCsv(compId: ObjectId | undefined) {
     return await this.request("/exportCompAsCsv", { compId });
   }
 
-  async regeneratePitReports(tbaId: string | undefined, compId: string | undefined) {
-    return await this.request("/regeneratePitReports", { tbaId, compId });
+  async regeneratePitReports(tbaId: string, compId: ObjectId, ownerTeam: ObjectId) {
+    return await this.request("/regeneratePitReports", { tbaId, compId, ownerTeam });
   }
 
   async teamCompRanking(tbaId: string, team: number): Promise<{ place: number | string, max: number }> {
     return await this.request("/teamCompRanking", { tbaId, team });
   }
 
-  async getPitReports(reportIds: string[]) {
+  async getPitReports(reportIds: ObjectId[]) {
     return await this.request("/getPitReports", { reportIds });
   }
 
-  async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
+  async changeScouterForReport(reportId: ObjectId, scouterId: ObjectId, compId: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
       const report = Object.values(comp.quantReports).find(r => r._id === reportId);
       if (report) {
@@ -451,7 +530,7 @@ export default class ClientAPI {
     return await this.request("/getCompReports", { compId });
   }
 
-  async findScouterManagementData(compId: string, scouterIds: string[]): Promise<{
+  async findScouterManagementData(compId: ObjectId, scouterIds: ObjectId[]): Promise<{
     scouters: User[],
     matches: Match[],
     quantitativeReports: Report[],
@@ -461,7 +540,7 @@ export default class ClientAPI {
     return await this.request("/findScouterManagementData", { compId, scouterIds });
   }
 
-  async getPicklist(id: string): Promise<DbPicklist> {
+  async getPicklist(id: ObjectId): Promise<DbPicklist> {
     return await this.request("/getPicklist", { id });
   }
 
@@ -469,29 +548,29 @@ export default class ClientAPI {
     return await this.request("/updatePicklist", { picklist });
   }
 
-  async setCompPublicData(compId: string, publicData: boolean) {
+  async setCompPublicData(compId: ObjectId, publicData: boolean) {
     updateCompInLocalStorage(compId, (comp) => comp.comp.publicData = publicData);
 
     return await this.request("/setCompPublicData", { compId, publicData });
   }
 
-  async setOnboardingCompleted(userId: string) {
+  async setOnboardingCompleted(userId: ObjectId) {
     return await this.request("/setOnboardingCompleted", { userId });
   }
 
-  async submitSubjectiveReport(report: SubjectiveReport, userId: string, teamId: string) {
-    return await this.request("/submitSubjectiveReport", { report, userId, teamId });
+  async submitSubjectiveReport(report: SubjectiveReport, userId: ObjectId, teamSlug: string) {
+    return await this.request("/submitSubjectiveReport", { report, userId, teamSlug });
   }
 
-  async getSubjectiveReportsForComp(compId: string): Promise<SubjectiveReport[]> {
+  async getSubjectiveReportsForComp(compId: ObjectId): Promise<SubjectiveReport[]> {
     return await this.request("/getSubjectiveReportsForComp", { compId });
   }
 
-  async updateSubjectiveReport(reportId: string, report: Partial<SubjectiveReport>) {
+  async updateSubjectiveReport(reportId: ObjectId, report: Partial<SubjectiveReport>) {
     return await this.request("/updateSubjectiveReport", { reportId, report });
   }
 
-  async setSubjectiveScouterForMatch(matchId: string, userId: string | undefined, compId: string) {
+  async setSubjectiveScouterForMatch(matchId: ObjectId, userId: ObjectId | undefined, compId: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
       const match = Object.values(comp.matches).find(m => m._id === matchId);
       if (match) {
@@ -502,11 +581,11 @@ export default class ClientAPI {
     return await this.request("/setSubjectiveScouterForMatch", { matchId, userId });
   }
 
-  async createPitReportForTeam(teamNumber: number, compId: string) {
+  async createPitReportForTeam(teamNumber: number, compId: ObjectId, ownerTeam: ObjectId) {
     updateCompInLocalStorage(compId, (comp) => {
       // Can't use comp.game because JSON doesn't save methods
-      const pitReport = new Pitreport(teamNumber, games[comp.comp.gameId].createPitReportData());
-      pitReport._id = new ObjectId().toString();
+      const pitReport = new Pitreport(teamNumber, games[comp.comp.gameId].createPitReportData(), ownerTeam, compId);
+      pitReport._id = new ObjectId();
 
       comp.pitReports[pitReport.teamNumber] = pitReport;
       comp.comp.pitReports.push(pitReport._id);
@@ -515,7 +594,7 @@ export default class ClientAPI {
     return await this.request("/createPitReportForTeam", { teamNumber, compId });
   }
 
-  async updateCompNameAndTbaId(compId: string, name: string, tbaId: string) {
+  async updateCompNameAndTbaId(compId: ObjectId, name: string, tbaId: string) {
     updateCompInLocalStorage(compId, (comp) => {
       comp.comp.name = name;
       comp.comp.tbaId = tbaId;

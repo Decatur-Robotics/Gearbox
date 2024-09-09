@@ -12,6 +12,7 @@ import {
 import { NotLinkedToTba } from "./client/ClientUtils";
 import { GameId, defaultGameId } from "./client/GameId";
 import { games } from "./games";
+import { ObjectId } from "bson";
 
 export namespace TheBlueAlliance {
   export interface SimpleTeam {
@@ -237,7 +238,8 @@ export namespace TheBlueAlliance {
         undefined,
         competitonData.key,
         ConvertDate(competitonData.start_date),
-        ConvertDate(competitonData.end_date)
+        ConvertDate(competitonData.end_date),
+        new ObjectId()
       );
 
       // maybe give automatic matches later, once scouting is more stabilized
@@ -253,7 +255,9 @@ export namespace TheBlueAlliance {
         data.time,
         competitionLevelToMatchType(data.comp_level),
         tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-        tbaIdsToTeamNumbers(data.alliances.red.team_keys)
+        tbaIdsToTeamNumbers(data.alliances.red.team_keys),
+        new ObjectId(),
+        new ObjectId()
       );
     }
 
@@ -270,19 +274,24 @@ export namespace TheBlueAlliance {
             data.time,
             competitionLevelToMatchType(data.comp_level),
             tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-            tbaIdsToTeamNumbers(data.alliances.red.team_keys)
+            tbaIdsToTeamNumbers(data.alliances.red.team_keys),
+            new ObjectId(),
+            new ObjectId()
           )
       ) ?? [];
       return matches;
     }
 
-    async getCompetitionPitreports(tbaId: string, gameId: GameId): Promise<Pitreport[]> {
+    async getCompetitionPitreports(tbaId: string, gameId: GameId, ownerTeam: ObjectId, ownerComp: ObjectId): Promise<Pitreport[]> {
       if (tbaId === NotLinkedToTba)
         return [];
 
       const competitionTeams = await this.req.getCompetitionTeams(tbaId);
       return competitionTeams.map(
-        ({ team_number }) => new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData())
+        ({ team_number }) => ({
+          ...new Pitreport(team_number, games[gameId ?? defaultGameId].createPitReportData(), ownerTeam, ownerComp),
+          _id: new ObjectId()
+        })
       );
     }
 

@@ -1,6 +1,6 @@
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { EventData } from "@/lib/Types";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Container from "@/components/Container";
 import { DateString } from "@/lib/client/FormatTime";
 import { Statbotics } from "@/lib/Statbotics";

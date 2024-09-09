@@ -6,7 +6,7 @@ export default function SeasonCard(props: { season: Season | undefined }) {
   return (
     <Card
       title={season?.name}
-      key={season?._id}
+      key={season?._id.toString()}
       className="w-full bg-base-300 border-4 border-base-300 transition ease-in hover:border-primary"
     >
       <h1 className="font-semibold">

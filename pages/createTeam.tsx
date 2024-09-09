@@ -1,7 +1,7 @@
 import { League, Team } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import Container from "@/components/Container";

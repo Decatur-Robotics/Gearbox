@@ -1,21 +1,11 @@
-import Container from "@/components/Container";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObject, SerializeDatabaseObjects } from "@/lib/UrlResolver";
 
-import { getDatabase, Collections } from "@/lib/MongoDB";
-import { useEffect, useRef, useState } from "react";
-import { Competition, DbPicklist, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
-import TeamPage from "@/components/stats/TeamPage";
-import PicklistScreen from "@/components/stats/Picklist";
-import { FaSync } from "react-icons/fa";
-import { TimeString } from "@/lib/client/FormatTime";
-
-import ClientAPI from "@/lib/client/ClientAPI";
-import { team } from "slack";
-import { NotLinkedToTba } from "@/lib/client/ClientUtils";
-import { defaultGameId } from "@/lib/client/GameId";
+import { getDatabase } from "@/lib/MongoDB";
+import { DbPicklist, Pitreport, Report, SubjectiveReport } from "@/lib/Types";
 import StatsPage, { StatsPageProps } from "@/components/StatsPage";
 import { ObjectId } from "mongodb";
+import Collections from "@/lib/client/CollectionId";
 
 export default function Stats(props: StatsPageProps) {
   return <StatsPage {...props} />;
