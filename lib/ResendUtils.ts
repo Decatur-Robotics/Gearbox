@@ -49,7 +49,7 @@ namespace ResendUtils {
 
     resend.emails.send({
       from: "Gearbox Server <server-no-reply@4026.org>",
-      to: JSON.parse(process.env.DEVELOPER_EMAILS),
+      to: JSON.parse(process.env.DEVELOPER_EMAILS), // Environment variables are always strings, so we need to parse it
       subject,
       text: message,
     })
