@@ -31,6 +31,7 @@ import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
+import ResendUtils from "./ResendUtils";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -362,6 +363,9 @@ export namespace API {
         new ObjectId(user._id),
         user
       );
+
+      ResendUtils.emailDevelopers(`New team created: ${team.name}`, 
+        `A new team has been created by ${user.name}: ${team.league} ${team.number}, ${team.name}.`);
 
       if (process.env.FILL_TEAMS === "true") {
         fillTeamWithFakeUsers(20, team._id);

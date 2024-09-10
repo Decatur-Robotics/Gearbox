@@ -1,5 +1,5 @@
 import { User as NextAuthUser } from "next-auth";
-import { Resend } from 'resend';
+import { CreateEmailOptions, Resend } from 'resend';
 import { getDatabase, Collections } from './MongoDB';
 import { ObjectId } from "mongodb";
 import { User } from "./Types";
@@ -39,6 +39,20 @@ namespace ResendUtils {
     const db = await getDatabase();
     // Going around our own interface is a red flag, but it's 11 PM and I'm tired -Renato
     db.db?.collection(Collections.Users).updateOne({ email: user.email}, { $set: { resendContactId: res.data.id } });
+  }
+
+  export async function emailDevelopers(subject: string, message: string) {
+    if (!process.env.DEVELOPER_EMAILS) {
+      console.error("No developer emails found");
+      return;
+    }
+
+    resend.emails.send({
+      from: "Gearbox Server <server-no-reply@4026.org>",
+      to: JSON.parse(process.env.DEVELOPER_EMAILS),
+      subject,
+      text: message,
+    })
   }
 }
 
