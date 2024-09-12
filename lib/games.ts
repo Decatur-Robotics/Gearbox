@@ -571,8 +571,6 @@ export namespace CenterStage {
     const setLines = NumericalTotal("SetLinesReached", reports);
     const landingZone = NumericalTotal("LandingZoneReached", reports);
 
-    console.log(`Reports: ${reports.length}`);
-    console.log(`Auto Backstage: ${autoBackstage}, Auto Backdrop: ${autoBackdrop}, Teleop Backstage: ${teleopBackstage}, Mosaics: ${mosaics}, Set Lines: ${setLines}, Landing Zone: ${landingZone}`);
     return Round(autoBackstage + autoBackdrop + teleopBackstage + mosaics + setLines + landingZone) / Math.max(reports.length, 1);
   }
 
@@ -580,6 +578,12 @@ export namespace CenterStage {
     pitStatsLayout, "CenterStage", "https://www.firstinspires.org/sites/default/files/uploads/resource_library/ftc/centerstage/centerstage.png",
     getBadges, getAvgPoints);
 }
+
+// namespace IntoTheDeep {
+//   export const game = new Game("Into the Deep", 2025, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
+//     pitStatsLayout, "IntoTheDeep", "https://www.firstinspires.org/sites/default/files/uploads/resource_library/ftc/intothedeep/intothedeep.png",
+//   );
+// }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
   [GameId.Crescendo]: Crescendo.game,
