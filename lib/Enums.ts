@@ -4,6 +4,14 @@ export enum Defense {
   Full = "Full",
 }
 
+export enum FTCEndgame {
+  None = "None",
+  Parked = "Parked",
+  TouchingTheLowerBar = "Touching the Lower Bar",
+  LowClimb = "Low Climb",
+  HighClimb = "High Climb",
+}
+
 export enum IntakeTypes {
   None = "None",
   Human = "Human",

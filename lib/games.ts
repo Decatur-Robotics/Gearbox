@@ -579,13 +579,32 @@ export namespace CenterStage {
     getBadges, getAvgPoints);
 }
 
-// namespace IntoTheDeep {
-//   export const game = new Game("Into the Deep", 2025, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
-//     pitStatsLayout, "IntoTheDeep", "https://www.firstinspires.org/sites/default/files/uploads/resource_library/ftc/intothedeep/intothedeep.png",
-//   );
-// }
+namespace IntoTheDeep {
+  export class QuantitativeData extends QuantData {
+    StartedWith: "None" | "Sample" | "Specimen" = "None";
+
+    AutoScoredNetZone: number = 0;
+    AutoScoredLowNet: number = 0;
+    AutoScoredHighNet: number = 0;
+    AutoScoredLowRung: number = 0;
+    AutoScoredHighRung: number = 0;
+
+    TeleopScoredNetZone: number = 0;
+    TeleopScoredLowNet: number = 0;
+    TeleopScoredHighNet: number = 0;
+    TeleopScoredLowRung: number = 0;
+    TeleopScoredHighRung: number = 0;
+
+    EndgameLevelClimbed: "None" | "Parked" | "Touched the Rung" | "Low Level Climb" | "High Level Climb" = "None";
+  }
+
+  export const game = new Game("Into the Deep", 2025, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
+    pitStatsLayout, "IntoTheDeep", "https://info.firstinspires.org/hubfs/Dive/into-the-deep.svg",
+  );
+}
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
+  [GameId.IntoTheDeep]: IntoTheDeep.game,
   [GameId.Crescendo]: Crescendo.game,
   [GameId.CenterStage]: CenterStage.game
 });
