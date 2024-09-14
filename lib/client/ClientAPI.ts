@@ -45,45 +45,6 @@ export default class ClientAPI {
     this.authenticationKey = authKey;
   }
 
-  parseObjectId(obj: { [index: number]: string }) {
-    const idStr = Object.values(obj).join("");
-    try {
-      return new ObjectId(idStr);
-    } catch (e) {
-      return obj;
-    }
-  }
-
-  isBrokenObjectId(obj: { [index: number]: string }) {
-    return obj && Object.values(obj).join("").length === 24;
-  }
-
-  fixBrokenObjectIds(obj: object): object | object[] {
-    if (Array.isArray(obj)) {
-      return obj.map((item) => this.fixBrokenObjectIds(item));
-    }
-
-    if (typeof obj !== "object") {
-      return obj;
-    }
-
-    const newObj: { [key: string]: any} = {};
-
-    for (const entry in Object.entries(obj)) {
-      const [key, value] = entry;
-      
-      if (this.isBrokenObjectId(value)) {
-        newObj[key] = this.parseObjectId(value);
-      } else if (typeof value === "object") {
-        newObj[key] = this.fixBrokenObjectIds(value);
-      } else {
-        newObj[key] = value;
-      }
-    }
-
-    return newObj;
-  }
-
   async request<T>(
     subUrl: string,
     body: any,
@@ -99,10 +60,7 @@ export default class ClientAPI {
       body: EJSON.stringify(BSON.deserialize(BSON.serialize(body))),
     });
 
-    // const resObj = await rawResponse.text().then((json) => EJSON.parse(json)).catch(() => console.error("Failed to parse response"));
-    // return this.fixBrokenObjectIds(resObj) as T;
-
-    return await rawResponse.json();
+    return EJSON.parse(await rawResponse.text(), { relaxed: true });
   }
   
   /**
@@ -681,6 +639,10 @@ export default class ClientAPI {
 
   async uploadSavedComp(save: SavedCompetition): Promise<void> {
     return await this.request("/uploadSavedComp", { save });
+  }
+
+  async getObjectId(): Promise<{ _id: ObjectId }> {
+    return await this.request("/getObjectId", {});
   }
 
 }

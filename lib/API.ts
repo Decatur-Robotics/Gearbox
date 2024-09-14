@@ -18,7 +18,7 @@ import {
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
-import { ObjectId } from "bson";
+import { BSON, EJSON, ObjectId } from "bson";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
 import { WebClient } from "@slack/web-api";
@@ -47,10 +47,9 @@ export namespace API {
     user: User | undefined;
   };
 
-
   type Route = (
     req: NextApiRequest,
-    res: NextApiResponse,
+    res: NextApiResponseWrapper,
     contents: RouteContents
   ) => Promise<void>;
   type RouteCollection = { [routeName: string]: Route };
@@ -80,6 +79,23 @@ export namespace API {
   class UnauthorizedError extends Error {
     constructor(res: NextApiResponse) {
       super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key");
+    }
+  }
+
+  class NextApiResponseWrapper {
+    res: NextApiResponse;
+
+    constructor(res: NextApiResponse) {
+      this.res = res;
+    }
+
+    status(code: number) {
+      this.res.status(code);
+      return this;
+    }
+
+    send(data: any) {
+      return this.res.send(EJSON.stringify(data));
     }
   }
 
@@ -125,13 +141,15 @@ export namespace API {
         const session = getServerSession(req, res, AuthenticationOptions);
 
         try {
-          this.routes[route](req, res, {
+          const contents: RouteContents = {
             slackClient: this.slackClient,
             db: await this.db,
             tba: this.tba,
             data: req.body,
             user: (await session)?.user as User | undefined,
-          });
+          };
+
+          this.routes[route](req, new NextApiResponseWrapper(res), contents);
         } catch (e) {
           console.log("Error executing route:", e);
           res.status(500).send({ error: e });
@@ -167,7 +185,7 @@ export namespace API {
 
   type FindRouteContents = RouteContents<{ collection: CollectionId, query: any }>;
 
-  async function findInDb(req: NextApiRequest, res: NextApiResponse, contents: FindRouteContents,
+  async function findInDb(req: NextApiRequest, res: NextApiResponseWrapper, contents: FindRouteContents,
     find: (db: DbInterface, collectionId: CollectionId, query: object) => Promise<Document | Document[] | null | undefined>
   ) {
     const { user, data, db } = contents;
@@ -764,7 +782,7 @@ export namespace API {
       // {
       //     matchId
       // }
-      const user = (await getServerSession(req, res, AuthenticationOptions))?.user as User;
+      const user = (await getServerSession(req, res.res, AuthenticationOptions))?.user as User;
 
       const update: { [key: string]: any } = {};
       update[`subjectiveReportsCheckInTimestamps.${user._id?.toString()}`] = new Date().toISOString();
@@ -1165,6 +1183,10 @@ export namespace API {
       
     addSlackBot: async (req, res, { db, data }) => {
       return res.status(200).send({ result: "success" });
+    },
+
+    getObjectId: async (req, res, { db, data }) => {
+      return res.status(200).send({ _id: new ObjectId() });
     }
   }; 
 }
