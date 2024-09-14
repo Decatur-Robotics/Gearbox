@@ -4,8 +4,8 @@ git pull
 git stash apply
 NPM=$(which npm)
 echo "Version details:"
-echo "  Default Node: $(node -v)"
-echo "  NPM Version: $($NPM -v)"
+echo "  Node Version: $(node -v)"
+echo "  NPM Version: v$($NPM -v)"
 $NPM ci
 $NPM run build
 pid=$(sudo lsof -t -i:443)
