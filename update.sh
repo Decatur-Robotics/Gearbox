@@ -1,3 +1,4 @@
+echo "Path: $PWD"
 git stash
 git pull
 git stash apply
