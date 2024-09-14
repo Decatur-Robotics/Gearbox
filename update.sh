@@ -1,4 +1,4 @@
-echo "Path: $PWD"
+cd Gearbox
 git stash
 git pull
 git stash apply
