@@ -1,4 +1,4 @@
-import { ObjectId, Document } from "bson";
+import { ObjectId, Document, EJSON } from "bson";
 import { LocalStorageDb, MinimongoCollection, MinimongoDb } from "minimongo";
 import DbInterface from "./DbInterface";
 import CollectionId from "./CollectionId";
@@ -32,7 +32,7 @@ export default class MiniMongoInterface implements DbInterface {
     const objects = localStorage.getItem("db-" + collection.name);
     if (objects)
     {
-      const parsedObjects = JSON.parse(objects) as unknown;
+      const parsedObjects = EJSON.parse(objects) as unknown;
 
       if (!Array.isArray(parsedObjects))
         return;
@@ -53,7 +53,7 @@ export default class MiniMongoInterface implements DbInterface {
       return Promise.reject("Collection not found");
 
     const objects = await collection.find({}).fetch();
-    localStorage.setItem("db-" + collection.name, JSON.stringify(objects));
+    localStorage.setItem("db-" + collection.name, EJSON.stringify(objects));
   }
 
   addObject<Type>(collection: CollectionId, object: any): Promise<Type>

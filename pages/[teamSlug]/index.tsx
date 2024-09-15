@@ -393,7 +393,7 @@ function Roster(props: TeamPageProps) {
   );
 }
 
-function Settings(props: TeamPageProps) {
+function Settings(props: TeamPageProps & { updateTeam: (team: Team) => void }) {
   const [teamName, setTeamName] = useState(props.team?.name as string);
   const [error, setError] = useState("");
 
@@ -409,7 +409,7 @@ function Settings(props: TeamPageProps) {
       return;
     }
 
-    await api.updateTeam({ name: teamName }, props.team._id);
+    props.updateTeam({ ...props.team, name: teamName });
     location.reload();
   };
 
@@ -466,10 +466,6 @@ export default function TeamIndex() {
   const isFrc = team?.tbaId || team?.league === League.FRC;
 
   const [page, setPage] = useState(0);
-
-  console.log("Team:", team);
-  console.log("User ID:", session?.user?._id);
-  console.log("Team Owners:", team?.owners);
   
   // includes is by reference, so we need to use .find and .equals
   const isManager = session?.user && team?.owners?.find((owner) => owner.equals?.(session?.user?._id)) !== undefined;
@@ -579,7 +575,10 @@ export default function TeamIndex() {
         { team && <>
             {page === 0 && <Overview {...componentProps} isManager={isManager ?? false} />}
             {page === 1 && <Roster {...componentProps} />}
-            {page === 2 && <Settings {...componentProps} />}
+            {page === 2 && <Settings {...componentProps} updateTeam={(team) => {
+              teamDocument.set(team);
+              teamDocument.saveChanges();
+            }} />}
           </>
         }
       </Flex>

@@ -21,7 +21,7 @@ type UpdateFunction<T extends HasId | HasId[]> = (interfaces: Interfaces, origin
 export type UseDocumentInstanceOptions<T extends HasId | HasId[]> = {
   collection: CollectionId,
   query: object | ObjectId,
-  onFetch?: (document: T | null | undefined) => void,
+  onFetch?: (document: T | null | undefined, sourceIndex: number) => void,
   dontLoadIf?: () => boolean
 }
 
@@ -38,6 +38,15 @@ export type UseDocumentResult<T extends HasId | HasId[]> = {
 }
 
 function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
+  function addChangesInObject<S>(changes: Changes<S>, originalObj: S, currentObj: S, key: keyof S) {
+    // We can't break apart ObjectIds without them ceasing to be ObjectIds
+    if (currentObj[key] instanceof ObjectId) {
+      if (!(originalObj[key] instanceof ObjectId) || !currentObj[key].equals(originalObj[key])) {
+        changes[key] = currentObj[key];
+      }
+    } else changes[key] = getChanges(originalObj[key], currentObj[key]);
+  }
+
   if (typeof current !== typeof original)
     return current;
 
@@ -50,7 +59,7 @@ function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
       }
 
       if (typeof current[i] === "object") {
-        changes[i] = getChanges(original[i], current[i]);
+        addChangesInObject(changes, original, current, i);
       }
 
       if (current[i] !== original[i]) {
@@ -61,6 +70,14 @@ function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
     return changes;
   }
 
+  if (original instanceof ObjectId) {
+    if (current instanceof ObjectId) {
+      return current.equals(original) ? {} : current;
+    }
+
+    return current; 
+  }
+
   const changes: Changes<T> = {};
 
   for (const key in current) {
@@ -69,7 +86,7 @@ function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
     }
 
     if (typeof current[key] === "object") {
-      changes[key] = getChanges(original[key], current[key]);
+      addChangesInObject(changes, original, current, key);
     }
 
     if (current[key] !== original[key]) {
@@ -88,11 +105,18 @@ function applyChanges<T>(original: T, changes: Changes<T>): T {
     return (original as any[]).map((item, i) => applyChanges(item, changes[i])) as T;
   }
 
+  // If the original is an ObjectId, we can't break it apart
+  if (original instanceof ObjectId) {
+    return changes as any;
+  }
+
   const newObject = { ...original };
 
   for (const key in changes) {
     if (typeof changes[key] === "object") {
-      newObject[key] = applyChanges(original[key], changes[key]);
+      if (changes[key] instanceof ObjectId) {
+        newObject[key] = changes[key] as any;
+      } else newObject[key] = applyChanges(original[key], changes[key]);
     } else {
       // I don't like disabling the type check here, but I don't know how to fix it
       newObject[key] = changes[key] as any;
@@ -143,13 +167,13 @@ export default function useDocument<T extends HasId | HasId[]>(
       instanceOptions.query = { _id: instanceOptions.query };
     }
     
-    hookOptions.fetchFunctions.forEach(async (fetchFunction) => {
+    hookOptions.fetchFunctions.forEach(async (fetchFunction, index) => {
       fetchFunction({ api, localDb })
         ?.then((newDocument) => {
           if (newDocument)
             onFetch(newDocument, preserveChanges);
 
-          instanceOptions.onFetch?.(newDocument);
+          instanceOptions.onFetch?.(newDocument, index);
         })
         .catch(console.error);
     });

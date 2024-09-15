@@ -432,13 +432,12 @@ export namespace API {
     },
 
     // creation
-    createTeam: async (req, res, { db, data }) => {
-      // {
-      //     number
-      //     tbaId?
-      //     name,
-      //     creator
-      // }
+    createTeam: async (req, res, { db, data, user }: RouteContents<{ number: number, tbaId: string, name: string, league: League }>) => {
+      const creator = user?._id;
+
+      if (!creator) {
+        return res.status(403).send({ error: "Unauthorized" });
+      }
 
       const newTeamObj = new Team(
         data.name,
@@ -446,16 +445,12 @@ export namespace API {
         data?.tbaId,
         data.number,
         data.league,
-        [data.creator],
-        [data.creator],
-        [data.creator]
+        [creator],
+        [creator],
+        [creator]
       );
       const team = await db.addObject<Team>(CollectionId.Teams, newTeamObj);
 
-      var user = await db.findObjectById<User>(
-        CollectionId.Users,
-        new ObjectId(data.creator)
-      );
       user.teams = removeDuplicates(...user.teams, team._id!.toString());
       user.owner = removeDuplicates(...user.owner, team._id!.toString());
 

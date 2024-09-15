@@ -26,7 +26,7 @@ export default function ObjectIdTesting() {
   return (
     <Container title="ObjectId Testing" requireAuthentication={false}>
       <div>
-        {id ? <p>Generated ObjectId: {id.toString()}</p> : <Loading /> }
+        {id ? <p>Generated ObjectId: {id.toString()}, Is ObjectId: {id instanceof ObjectId ? "true" : "false"}</p> : <Loading /> }
       </div>
     </Container>
   )
