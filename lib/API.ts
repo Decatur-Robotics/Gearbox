@@ -82,6 +82,9 @@ export namespace API {
     }
   }
 
+  /**
+   * Provides send() with EJSON support. Also provides status().
+   */
   class NextApiResponseWrapper {
     res: NextApiResponse;
 
