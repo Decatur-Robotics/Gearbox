@@ -8,6 +8,9 @@ import { useEffect, useState } from "react";
 
 const api = new ClientAPI("gearboxiscolol");
 
+/**
+ * REMOVE THIS BEFORE MERGING
+ */
 export default function UdTest() {
   const season = useDocumentFromDb<Season>({
     collection: CollectionId.Seasons,

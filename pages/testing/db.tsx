@@ -5,6 +5,9 @@ import { ObjectId } from "bson";
 import React from "react";
 import { useEffect, useState } from "react";
 
+/**
+ * REMOVE THIS BEFORE MERGING
+ */
 export default function Db() {
   const dbInterface = useLocalDb();
   const db = dbInterface?.db;

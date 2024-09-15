@@ -57,7 +57,7 @@ export default class ClientAPI {
         "Content-Type": "application/json",
         "gearbox-auth": this.authenticationKey,
       },
-      body: EJSON.stringify(BSON.deserialize(BSON.serialize(body))),
+      body: EJSON.stringify(body),
     });
 
     return EJSON.parse(await rawResponse.text(), { relaxed: true });
@@ -641,8 +641,13 @@ export default class ClientAPI {
     return await this.request("/uploadSavedComp", { save });
   }
 
+  /**
+   * REMOVE THIS BEFORE MERGING
+   */
   async getObjectId(): Promise<{ _id: ObjectId }> {
-    return await this.request("/getObjectId", {});
+    return await this.request("/getObjectId", {
+      _id: new ObjectId(),
+    });
   }
 
 }

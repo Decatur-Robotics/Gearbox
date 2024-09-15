@@ -140,6 +140,9 @@ export namespace API {
       if (route in this.routes) {
         const session = getServerSession(req, res, AuthenticationOptions);
 
+        // Stringify and parse the body to convert EJSON to objects
+        req.body = EJSON.parse(EJSON.stringify(req.body));
+
         try {
           const contents: RouteContents = {
             slackClient: this.slackClient,
@@ -1185,7 +1188,12 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
 
-    getObjectId: async (req, res, { db, data }) => {
+    /**
+     * REMOVE THIS BEFORE MERGING
+     */
+    getObjectId: async (req, res, { db, data }: RouteContents<{ _id: ObjectId }>) => {
+      console.log("_id:", data._id);
+      console.log("_id is ObjectId:", data._id instanceof ObjectId);
       return res.status(200).send({ _id: new ObjectId() });
     }
   }; 
