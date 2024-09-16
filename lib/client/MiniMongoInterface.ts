@@ -26,21 +26,20 @@ export default class MiniMongoInterface implements DbInterface {
 
   private loadCollectionFromLocalStorage(collectionId: CollectionId) {
     const collection = this.db?.collections[collectionId];    
-    if (!collection)
+    if (!collection) {
+      console.error("Collection not found during load: " + collectionId);
+      return;
+    }
+
+    const objects = localStorage.getItem("db-" + collection.name) ?? "[]";
+    const parsedObjects = EJSON.parse(objects) as unknown;
+
+    if (!Array.isArray(parsedObjects))
       return;
 
-    const objects = localStorage.getItem("db-" + collection.name);
-    if (objects)
+    for (const obj of parsedObjects)
     {
-      const parsedObjects = EJSON.parse(objects) as unknown;
-
-      if (!Array.isArray(parsedObjects))
-        return;
-
-      for (const obj of parsedObjects)
-      {
-        collection.upsert(obj);
-      }
+      collection.upsert(obj);
     }
   }
 
@@ -50,101 +49,57 @@ export default class MiniMongoInterface implements DbInterface {
    */
   private async saveCollection(collection: MinimongoCollection): Promise<void> {
     if (!collection)
-      return Promise.reject("Collection not found");
+      return Promise.reject("Collection not found during save");
 
     const objects = await collection.find({}).fetch();
     localStorage.setItem("db-" + collection.name, EJSON.stringify(objects));
   }
 
-  addObject<Type>(collection: CollectionId, object: any): Promise<Type>
+  private async performOperationOnCollection<Type>(operationName: string, collection: CollectionId, operation: (collection: MinimongoCollection) => Promise<Type>): Promise<Type>
   {
     const foundCollection = this.db?.collections[collection];
 
-    if (foundCollection)
-    {
-      foundCollection.upsert(object);
-      this.saveCollection(foundCollection);
-      return Promise.resolve(object as Type);
-    }
+    if (!foundCollection)
+      return Promise.resolve(undefined as Type);
 
-    return Promise.reject("Collection not found: " + collection);
+    const operationReturn = operation(foundCollection);
+    this.saveCollection(foundCollection);
+    return Promise.resolve(operationReturn);
+  }
+
+  addObject<Type>(collection: CollectionId, object: any): Promise<Type>
+  {
+    return this.performOperationOnCollection("add", collection, (collection) => collection.upsert(object));
   }
 
   deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>
   {
-    const foundCollection = this.db?.collections[collection];
-
-    if (foundCollection)
-    {
-      foundCollection.remove(id.toHexString());
-      this.saveCollection(foundCollection);
-      return Promise.resolve();
-    }
-
-    return Promise.reject("Collection not found: " + collection);
+    return this.performOperationOnCollection("delete", collection, (collection) => collection.remove(id.toHexString()));
   }
 
   updateObjectById<Type>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>
   {
-    const foundCollection = this.db?.collections[collection];
-
-    if (foundCollection)
-    {
-      foundCollection.upsert({ _id: id, ...newValues });
-      this.saveCollection(foundCollection);
-      return Promise.resolve();
-    }
-
-    return Promise.reject("Collection not found: " + collection);
+    return this.performOperationOnCollection("update", collection, (collection) => collection.upsert(id.toHexString(), newValues));
   }
 
-  findObjectById<Type>(collection: CollectionId, id: ObjectId): Promise<Type>
+  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined | null>
   {
-    const foundCollection = this.db?.collections[collection];
-
-    if (foundCollection)
-    {
-      return Promise.resolve(foundCollection.findOne(id.toHexString()) as Type);
-    }
-
-    return Promise.reject("Collection not found: " + collection);
+    return this.findObject(collection, { _id: id });
   }
 
   findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
   {
-    const foundCollection = this.db?.collections[collection];
-
-    if (foundCollection)
-    {
-      const foundObj = foundCollection.findOne(query);
-      return Promise.resolve(foundObj);
-    }
-
-    return Promise.reject("Collection not found: " + collection);
+    return this.performOperationOnCollection("find one", collection, (collection) => collection.findOne(query));
   }
   
   findObjects<Type>(collection: CollectionId, query: object): Promise<Type[]>
   {
-    const foundCollection = this.db?.collections[collection];
-
-    if (foundCollection)
-    {
-      return foundCollection.find(query).fetch();
-    }
-
-    return Promise.reject("Collection not found: " + collection);
+    return this.performOperationOnCollection("find multiple", collection, (collection) => collection.find(query).fetch());
   }
 
   countObjects(collection: CollectionId, query: object): Promise<number | undefined>
   {
-    const foundCollection = this.db?.collections[collection];
-
-    if (foundCollection)
-    {
-      return Promise.resolve(foundCollection.find(query).fetch().then((objs) => objs.length));
-    }
-
-    return Promise.reject("Collection not found: " + collection);
+    return this.performOperationOnCollection("count", collection, (collection) => collection.find(query).fetch().then((objects) => objects.length));
   }  
 }
 

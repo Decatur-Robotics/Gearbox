@@ -2,7 +2,7 @@ export const ValidRegex = /^[0-9a-z]+$/;
 export const MinimumNameLength = 3;
 
 export function validName(name: string): boolean {
-  if (!name.match(/^[a-z ,.'-]+$/i)) {
+  if (!name.match(/^[a-z0-9 ,.'-]+$/i)) {
     return false;
   }
 

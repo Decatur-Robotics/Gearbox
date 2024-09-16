@@ -71,7 +71,7 @@ export class MongoDBInterface implements DbInterface {
     }
   }
 
-  async addObject<Type>(collection: CollectionId, object: any): Promise<Type> {
+  async addObject<Type extends Document>(collection: CollectionId, object: any): Promise<Type> {
     const ack = await this?.db?.collection(collection).insertOne(object);
     object._id = ack?.insertedId;
     return object as Type;
@@ -82,7 +82,7 @@ export class MongoDBInterface implements DbInterface {
     await this?.db?.collection(collection).deleteOne(query);
   }
 
-  async updateObjectById<Type>(
+  async updateObjectById<Type extends Document>(
     collection: CollectionId,
     id: ObjectId,
     newValues: Partial<Type>
@@ -94,12 +94,12 @@ export class MongoDBInterface implements DbInterface {
       .updateOne(query, updated);
   }
 
-  async findObjectById<Type>(
+  async findObjectById<Type extends Document>(
     collection: CollectionId,
     id: ObjectId
-  ): Promise<Type> {
+  ): Promise<Type | undefined | null> {
     var query = { _id: id };
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
+    return (await this?.db?.collection(collection).findOne(query)) as Type | undefined | null;
   }
 
   async findObject<Type extends Document>(

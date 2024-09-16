@@ -468,7 +468,7 @@ export default function TeamIndex() {
   const [page, setPage] = useState(0);
   
   // includes is by reference, so we need to use .find and .equals
-  const isManager = session?.user && team?.owners?.find((owner) => owner.equals?.(session?.user?._id)) !== undefined;
+  const isManager = session?.user && team?.owners?.find((owner) => owner.equals(session?.user?._id)) !== undefined;
 
   const componentProps: TeamPageProps = {
     team: team,

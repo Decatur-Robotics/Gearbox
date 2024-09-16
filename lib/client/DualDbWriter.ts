@@ -19,7 +19,7 @@ export default class DualDbWriter implements Partial<DbInterface> {
     this.api = new ClientAPI("gearboxiscool");
   }
 
-  updateObjectById<Type>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<any>
+  updateObjectById<Type extends Document>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<any>
   {
     this.db.updateObjectById(collection, id, newValues);
     return this.api.update(collection, id, newValues);
