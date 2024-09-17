@@ -171,7 +171,7 @@ export namespace API {
     const db = await getDatabase();
     const user = await db.findObjectById<User>(CollectionId.Users, new ObjectId(userId));
 
-    const newXp = user.xp + xp
+    const newXp = (user?.xp ?? 0) + xp
     const newLevel = xpToLevel(newXp);
 
     await db.updateObjectById<User>(
@@ -275,8 +275,6 @@ export namespace API {
         return res.status(403).send({ error: "Unauthorized" });
       }
 
-      console.log("Updating", collectionId, id, newValues);
-
       const set = Object.keys(newValues).reduce<{ [key: string]: any }>((acc, key) => {
         if (key === "_id" || key.startsWith("$")) return acc;
         acc[key] = newValues[key];
@@ -341,10 +339,14 @@ export namespace API {
       //     userId
       // }
 
-      let team = await db.findObjectById<Team>(
+      const team = await db.findObjectById<Team>(
         CollectionId.Teams,
         new ObjectId(data.teamId)
       );
+      
+      if (!team) {
+        return res.status(404).send({ error: "Team not found" });
+      }
 
       team.requests = removeDuplicates([...team.requests, data.userId]);
 
@@ -364,14 +366,18 @@ export namespace API {
       //     teamId
       // }
 
-      let team = await db.findObjectById<Team>(
+      const team = await db.findObjectById<Team>(
         CollectionId.Teams,
         new ObjectId(data.teamId)
       );
-      let user = await db.findObjectById<User>(
+      const user = await db.findObjectById<User>(
         CollectionId.Users,
         new ObjectId(data.userId)
       );
+
+      if (!team || !user) {
+        return res.status(404).send({ error: "Team or user not found" });
+      }
 
       team.requests.splice(team.requests.indexOf(data.userId), 1);
 
@@ -474,7 +480,7 @@ export namespace API {
       //     name
       //     teamId;
       // }
-      var season = await db.addObject<Season>(
+      const season = await db.addObject<Season>(
         CollectionId.Seasons,
         new Season(
           data.name,
@@ -484,10 +490,15 @@ export namespace API {
           data.teamId
         )
       );
-      var team = await db.findObjectById<Team>(
+      const team = await db.findObjectById<Team>(
         CollectionId.Teams,
         new ObjectId(data.teamId)
       );
+
+      if (!team || !season) {
+        return res.status(404).send({ error: "Team or season not found" });
+      }
+
       team.seasons = [...team.seasons, season._id];
 
       await db.updateObjectById(
@@ -502,9 +513,9 @@ export namespace API {
     reloadCompetition: async (req, res, { db, data, tba }) => {
       // {comp id, tbaId}
 
-      const comp = db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
+      const compPromise = db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
 
-      var matches = await tba.getCompetitionMatches(data.tbaId);
+      const matches = await tba.getCompetitionMatches(data.tbaId);
       if (!matches || matches.length <= 0) {
         res.status(200).send({ result: "none" });
         return;
@@ -515,7 +526,11 @@ export namespace API {
           (await db.addObject<Match>(CollectionId.Matches, match))._id
       );
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId, (await comp).ownerTeam, (await comp)._id);
+      const comp = await compPromise;
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
+
+      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, comp.ownerTeam, comp._id);
 
       await db.updateObjectById(
         CollectionId.Competitions,
@@ -549,6 +564,9 @@ export namespace API {
       const compId = new ObjectId();
 
       const season = await seasonPromise;
+      if (!season)
+        return res.status(404).send({ error: "Season not found" });
+
       const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId, season.ownerTeam, compId);
 
       const picklist = await db.addObject<DbPicklist>(CollectionId.Picklists, {
@@ -595,6 +613,8 @@ export namespace API {
 
     regeneratePitReports: async (req, res, { db, data, tba }) => {
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
 
       const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId, data.ownerTeam, comp._id);
 
@@ -633,6 +653,9 @@ export namespace API {
         CollectionId.Competitions,
         new ObjectId(data.compId)
       );
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
+
       comp.matches.push(match._id);
 
       const reportPromise = generateReportsForMatch(match, comp.gameId);
@@ -676,10 +699,13 @@ export namespace API {
       //    formData
       // }
 
-      var form = await db.findObjectById<Report>(
+      const form = await db.findObjectById<Report>(
         CollectionId.Reports,
         new ObjectId(data.reportId)
       );
+
+      if (!form)
+        return res.status(404).send({ error: "Report not found" });
       
       form.data = data.formData;
       form.submitted = true;
@@ -690,10 +716,13 @@ export namespace API {
         new ObjectId(data.reportId),
         form
       );
-      let user = await db.findObjectById<User>(
+      const user = await db.findObjectById<User>(
         CollectionId.Users,
         new ObjectId(data.userId)
       );
+
+      if (!user)
+        return res.status(404).send({ error: "User not found" });
 
       addXp(data.userId, 10);
 
@@ -716,6 +745,9 @@ export namespace API {
         CollectionId.Competitions,
         new ObjectId(data.compId)
       );
+
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
 
       const usedComps = data.usePublicData && comp.tbaId !== NotLinkedToTba 
         ? await db.findObjects<Competition>(CollectionId.Competitions, { publicData: true, tbaId: comp.tbaId, gameId: comp.gameId })
@@ -742,6 +774,10 @@ export namespace API {
         CollectionId.Competitions,
         new ObjectId(data.compId)
       );
+
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
+
       const matches = await db.findObjects<Match[]>(CollectionId.Matches, {
         _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
       });
@@ -757,6 +793,10 @@ export namespace API {
         CollectionId.Matches,
         new ObjectId(data.matchId)
       );
+
+      if (!match)
+        return res.status(404).send({ error: "Match not found" });
+
       const reports = await db.findObjects<Report[]>(CollectionId.Reports, {
         _id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
       });
@@ -874,6 +914,11 @@ export namespace API {
         CollectionId.Competitions,
         new ObjectId(data.compId)
       );
+
+      if (!comp) {
+        return res.status(404).send({ error: "Competition not found" });
+      }
+
       const matches = await db.findObjects<Match>(CollectionId.Matches, {
         _id: { $in: comp.matches },
       });
@@ -970,6 +1015,9 @@ export namespace API {
         new ObjectId(data.compId)
       );
 
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
+
       const reports = await db.findObjects<Report>(CollectionId.Reports, {
         match: { $in: comp.matches },
       });
@@ -992,12 +1040,17 @@ export namespace API {
       const subjectiveReports: SubjectiveReport[] = [];
 
       for (const scouterId of typedData.scouterIds) {
-        promises.push(db.findObjectById<User>(CollectionId.Users, new ObjectId(scouterId)).then((scouter) => scouters.push(scouter)));
+        promises.push(db.findObjectById<User>(CollectionId.Users, new ObjectId(scouterId)).then((scouter) => scouter && scouters.push(scouter)));
       }
 
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(typedData.compId));
+
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
+
       for (const matchId of comp.matches) {
-        promises.push(db.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId)).then((match) => matches.push(match)));
+        if (matchId)
+          promises.push(db.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId)).then((match) => match && matches.push(match)));
       }
 
       promises.push(db.findObjects<Report>(CollectionId.Reports, {
@@ -1049,6 +1102,9 @@ export namespace API {
 
       const [match, team] = await Promise.all([matchPromise, teamPromise]);
 
+      if (!match || !team)
+        return res.status(404).send({ error: "Match or team not found" });
+
       const report: SubjectiveReport = {
         ...data.report,
         _id: new ObjectId(),
@@ -1079,6 +1135,9 @@ export namespace API {
 
     getSubjectiveReportsForComp: async (req, res, { db, data }) => {
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(data.compId));
+
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
 
       const matchIds = comp.matches.map((matchId) => new ObjectId(matchId));
       const matches = await db.findObjects<Match>(CollectionId.Matches, {
@@ -1111,6 +1170,9 @@ export namespace API {
       const { teamNumber, compId } = data;
 
       const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId));
+
+      if (!comp)
+        return res.status(404).send({ error: "Competition not found" });
 
       const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData(), comp.ownerTeam, comp._id);
       const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id;

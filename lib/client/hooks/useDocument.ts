@@ -32,8 +32,8 @@ export type UseDocumentHookOptions<T extends HasId | HasId[]> = {
 
 export type UseDocumentResult<T extends HasId | HasId[]> = {
   value: T | undefined;
-  set: (value: T) => void;
-  saveChanges: () => void;
+  set: (value: Partial<T>) => void;
+  saveChanges: () => Promise<void>[];
   fetchLatestCopy: (preserveChanges: boolean) => void;
 }
 
@@ -142,7 +142,7 @@ export default function useDocument<T extends HasId | HasId[]>(
 ): UseDocumentResult<T> {
   const localDb = useLocalDb();
 
-  const [document, setDocument, getDocument] = useDynamicState<T>();
+  const [document, setDocument, getDocument, currentDocumentRef] = useDynamicState<T>();
   const [originalDocument, setOriginalDocument] = useState<T>();
 
   function onFetch(newDocument: T, preserveChanges: boolean) {
@@ -183,24 +183,26 @@ export default function useDocument<T extends HasId | HasId[]>(
     fetchLatestCopy();
   }, [localDb, JSON.stringify(instanceOptions.query)]); // We use JSON.stringify because the object reference changes every render
 
-  async function saveChanges() {
-    getDocument((currentDocument) => {
-      if (!currentDocument || !originalDocument)
-        return;
+  function saveChanges() {
+    const currentDocument = currentDocumentRef.current;
 
-      const changes = getChanges(currentDocument, originalDocument);
+    if (!currentDocument || !originalDocument)
+      return [];
 
-      // If there are no changes, do nothing
-      if (!changes || Object.keys(changes).length === 0)
-        return;
+    const changes = getChanges(currentDocument, originalDocument);
 
-      hookOptions.updateFunctions.forEach(async (updateFunction) => {
-        if (instanceOptions.query instanceof ObjectId)
-          instanceOptions.query = { _id: instanceOptions.query };
+    // If there are no changes, do nothing
+    if (!changes || Object.keys(changes).length === 0)
+      return [];
 
-        updateFunction({ api, localDb }, originalDocument, changes)
-          ?.catch(console.error);
-      });
+    return hookOptions.updateFunctions.map((updateFunction) => {
+      if (instanceOptions.query instanceof ObjectId)
+        instanceOptions.query = { _id: instanceOptions.query };
+
+      const promise = updateFunction({ api, localDb }, originalDocument, changes)
+        ?.catch(console.error);
+
+      return promise ?? Promise.resolve();
     });
   }
 

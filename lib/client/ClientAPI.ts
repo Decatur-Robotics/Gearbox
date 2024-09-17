@@ -371,6 +371,7 @@ export default class ClientAPI {
   }
 
   async update<T>(collection: CollectionId, id: ObjectId, newValues: object, ) {
+    console.log("update", collection, id, newValues);
     return await this.request<T>("/update", {
       collection: collection,
       newValues: newValues,

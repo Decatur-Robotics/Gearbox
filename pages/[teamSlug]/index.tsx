@@ -393,7 +393,7 @@ function Roster(props: TeamPageProps) {
   );
 }
 
-function Settings(props: TeamPageProps & { updateTeam: (team: Team) => void }) {
+function Settings(props: TeamPageProps & { updateTeam: (team: Team) => Promise<void[]> }) {
   const [teamName, setTeamName] = useState(props.team?.name as string);
   const [error, setError] = useState("");
 
@@ -409,8 +409,8 @@ function Settings(props: TeamPageProps & { updateTeam: (team: Team) => void }) {
       return;
     }
 
-    props.updateTeam({ ...props.team, name: teamName });
-    location.reload();
+    await props.updateTeam({ name: teamName });
+    // location.reload();
   };
 
   return (
@@ -468,7 +468,7 @@ export default function TeamIndex() {
   const [page, setPage] = useState(0);
   
   // includes is by reference, so we need to use .find and .equals
-  const isManager = session?.user && team?.owners?.find((owner) => owner.equals(session?.user?._id)) !== undefined;
+  const isManager = session?.user && team?.owners?.find((owner) => owner.equals?.(session?.user?._id) ?? (owner as unknown as string) === session.user?._id.toString()) !== undefined;
 
   const componentProps: TeamPageProps = {
     team: team,
@@ -577,7 +577,7 @@ export default function TeamIndex() {
             {page === 1 && <Roster {...componentProps} />}
             {page === 2 && <Settings {...componentProps} updateTeam={(team) => {
               teamDocument.set(team);
-              teamDocument.saveChanges();
+              return Promise.all(teamDocument.saveChanges());
             }} />}
           </>
         }

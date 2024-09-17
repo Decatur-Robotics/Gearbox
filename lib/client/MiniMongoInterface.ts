@@ -55,11 +55,19 @@ export default class MiniMongoInterface implements DbInterface {
     localStorage.setItem("db-" + collection.name, EJSON.stringify(objects));
   }
 
-  private async performOperationOnCollection<Type>(operationName: string, collection: CollectionId, operation: (collection: MinimongoCollection) => Promise<Type>): Promise<Type>
+  private async performOperationOnCollection<Type>(
+    operationName: string, 
+    collection: CollectionId, 
+    operation: (collection: MinimongoCollection) => Promise<Type>,
+    onlyIf: (collection: MinimongoCollection) => Promise<boolean> = () => Promise.resolve(true)
+  ): Promise<Type>
   {
     const foundCollection = this.db?.collections[collection];
 
     if (!foundCollection)
+      return Promise.resolve(undefined as Type);
+
+    if (!await onlyIf(foundCollection))
       return Promise.resolve(undefined as Type);
 
     const operationReturn = operation(foundCollection);
@@ -79,7 +87,15 @@ export default class MiniMongoInterface implements DbInterface {
 
   updateObjectById<Type>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>
   {
-    return this.performOperationOnCollection("update", collection, (collection) => collection.upsert(id.toHexString(), newValues));
+    return this.performOperationOnCollection(
+      "update", 
+      collection, 
+      (collection) => collection.upsert({
+        ...newValues,
+        _id: id
+      }),
+      async (collection) => await collection.findOne({ _id: id }) != undefined // != will catch null and undefined
+    );
   }
 
   findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined | null>
