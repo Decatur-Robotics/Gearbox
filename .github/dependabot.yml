@@ -6,9 +6,9 @@ version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/" # Location of package manifests
-    assignees: "theogillespie"
+    assignees: ["renatodellosso"]
     schedule:
-      day: "Monday"
+      day: "monday"
       interval: "weekly"
     commit-message:
-      prefix: "[npm]
+      prefix: "[npm]"
