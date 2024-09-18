@@ -8,7 +8,7 @@ updates:
     directory: "/" # Location of package manifests
     assignees: "renatodellosso"
     schedule:
-      day: "Monday"
+      day: "monday"
       interval: "weekly"
     commit-message:
       prefix: "[npm]"
