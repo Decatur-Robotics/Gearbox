@@ -165,7 +165,7 @@ export default function Form(props: FormProps) {
 
     const elements = [];
 
-    console.log(`Block: ${rowCount}x${colCount}: ${block.flat().map(e => e.key).join(", ")}`);
+    // console.log(`Block: ${rowCount}x${colCount}: ${block.flat().map(e => e.key).join(", ")}`);
     for (let r = 0; r < rowCount; r++) {
       for (let c = 0; c < colCount; c++) {
         let topRounding = "", bottomRounding = "";
@@ -190,7 +190,7 @@ export default function Form(props: FormProps) {
           }
         }
 
-        console.log(`(${r}, ${c}) - ${topRounding}, ${bottomRounding}`);
+        // console.log(`(${r}, ${c}) - ${topRounding}, ${bottomRounding}`);
 
         if (!BlockElement.isBlock(block[c][r])) {
           const element = block[c][r] as FormElement<QuantData>;

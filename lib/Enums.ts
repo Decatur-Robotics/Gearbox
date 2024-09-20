@@ -1,3 +1,5 @@
+import { StringKeyedObject, ElementType } from "./Layout";
+
 export enum Defense {
   None = "None",
   Partial = "Partial",
@@ -59,4 +61,52 @@ export namespace CenterStageEnums {
     Audience = "Audience",
     NoPreference = "No Preference",
   }
+}
+
+export namespace IntoTheDeepEnums {
+  export enum StartedWith {
+    Nothing = "Nothing",
+    Sample = "Sample",
+    Specimen = "Specimen",
+  }
+
+  export enum EndgameLevelClimbed {
+    None = "None",
+    Parked = "Parked",
+    TouchedLowRung = "Touched Low Rung",
+    LowLevelClimb = "Low Level Climb",
+    HighLevelClimb = "High Level Climb",
+  }
+}
+
+export function keyToEnum(key: string, exampleData: StringKeyedObject): ElementType {
+  if (key === "image")
+    return "image";
+
+  const type = typeof exampleData[key];
+  if (type !== "string")
+    return type as ElementType;
+
+  const enums = [
+    IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, 
+    CenterStageEnums.CenterStageParkingLocation, CenterStageEnums.AutoAdjustable, CenterStageEnums.AutoSidePreference,
+    IntoTheDeepEnums.StartedWith, IntoTheDeepEnums.EndgameLevelClimbed
+  ];
+
+  if (key === "Defense")
+    return Defense;
+  if (key === "swerveLevel")
+    return SwerveLevel;
+
+  if (key === "StartedWith")
+    return IntoTheDeepEnums.StartedWith;
+  if (key === "EndgameLevelClimbed")
+    return IntoTheDeepEnums.EndgameLevelClimbed;
+
+  for (const e of enums) {
+    if (Object.values(e).includes(exampleData[key]))
+      return e;
+  }
+
+  return "string";
 }

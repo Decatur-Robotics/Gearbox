@@ -162,14 +162,21 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
    * @param pitDataType 
    * @param pitReportLayout will auto-populate fields from PitReportData (everything not unique to the game)
    */
-  constructor(name: string, year: number, league: League, 
-      quantDataType: new() => TQuantData, pitDataType: new() => TPitData, 
-      pitReportLayout: FormLayoutProps<TPitData>, quantitativeReportLayout: FormLayoutProps<TQuantData>,
+  constructor(
+      name: string, 
+      year: number, 
+      league: League, 
+      quantDataType: new() => TQuantData, 
+      pitDataType: new() => TPitData, 
+      pitReportLayout: FormLayoutProps<TPitData>, 
+      quantitativeReportLayout: FormLayoutProps<TQuantData>,
       statsLayout: StatsLayout<TPitData, TQuantData>,
-      pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, fieldImagePrefix: string, 
+      pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, 
+      fieldImagePrefix: string, 
       coverImage: string,
       getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined, card: boolean) => Badge[],
-      getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number) {
+      getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number
+    ) {
     this.name = name;
     this.year = year;
     this.league = league;
@@ -215,7 +222,8 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
 
     // Copy over the rest of the layout
     for (const [header, keys] of Object.entries(layout)) {
-      finalLayout[header] = keys;
+      if (header === "Pre-Match") finalLayout["Pre-Match"].push(...keys);
+      else finalLayout[header] = keys;
     }
 
     const keys = Object.keys(layout);

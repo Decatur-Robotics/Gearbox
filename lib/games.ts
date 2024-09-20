@@ -1,5 +1,5 @@
-import { CenterStageEnums, Defense, Drivetrain, IntakeTypes } from './Enums';
-import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
+import { CenterStageEnums, Defense, Drivetrain, IntakeTypes, IntoTheDeepEnums } from './Enums';
+import { Badge, FormLayout, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
 import { Report, Game, League, PitReportData, QuantData, Pitreport } from "./Types";
 import { GameId } from "./client/GameId";
 import { AmpAutoPoints, AmpTeleopPoints, BooleanAverage, MostCommonValue, NumericalTotal, Round, SpeakerAutoPoints, SpeakerTeleopPoints, TrapPoints } from "./client/StatsMath";
@@ -581,7 +581,7 @@ export namespace CenterStage {
 
 namespace IntoTheDeep {
   export class QuantitativeData extends QuantData {
-    StartedWith: "None" | "Sample" | "Specimen" = "None";
+    StartedWith: IntoTheDeepEnums.StartedWith = IntoTheDeepEnums.StartedWith.Nothing;
 
     AutoScoredNetZone: number = 0;
     AutoScoredLowNet: number = 0;
@@ -595,11 +595,218 @@ namespace IntoTheDeep {
     TeleopScoredLowRung: number = 0;
     TeleopScoredHighRung: number = 0;
 
-    EndgameLevelClimbed: "None" | "Parked" | "Touched the Rung" | "Low Level Climb" | "High Level Climb" = "None";
+    EndgameLevelClimbed: IntoTheDeepEnums.EndgameLevelClimbed = IntoTheDeepEnums.EndgameLevelClimbed.None;
+  }
+
+  export class PitData extends PitReportData {
+    CanPlaceInLowerBasket: boolean = false;
+    CanPlaceInUpperBasket: boolean = false;
+    CanPlaceOnLowerRung: boolean = false;
+    CanPlaceOnUpperRung: boolean = false;
+    HighestHangLevel: IntoTheDeepEnums.EndgameLevelClimbed = IntoTheDeepEnums.EndgameLevelClimbed.None;
+    SamplesScoredInAuto: number = 0;
+    SpecimensScoredInAuto: number = 0;
+    AutonomousStrategy: string = "";
+    // TODO: Starting Auto Position
+    // TODO: Ending Auto Position
+    GameStrategy: string = "";
+  }
+
+  const pitReportLayout: FormLayoutProps<PitData> = {
+    "Capabilities": [
+      { key: "CanPlaceInLowerBasket", label: "Can Place in Lower Basket?" },
+      { key: "CanPlaceInUpperBasket", label: "Can Place in Upper Basket?" },
+      { key: "CanPlaceOnLowerRung", label: "Can Place on Lower Rung?" },
+      { key: "CanPlaceOnUpperRung", label: "Can Place on Upper Rung?" },
+      { key: "HighestHangLevel", label: "Highest Hang Level" }
+    ],
+    "Auto": [
+      { key: "SamplesScoredInAuto", label: "Samples Scored in Auto" },
+      { key: "SpecimensScoredInAuto", label: "Specimens Scored in Auto" },
+      { key: "AutonomousStrategy", label: "Autonomous Strategy" }
+    ],
+    "General": [
+      { key: "GameStrategy", label: "Game Strategy" }
+    ]
+  }
+
+  const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+    "Pre-Match": [
+      "StartedWith"
+    ],
+    "Auto": [
+      [
+        ["AutoScoredNetZone"], ["AutoScoredLowNet"], ["AutoScoredHighNet"]
+      ],
+      [
+        ["AutoScoredLowRung"], ["AutoScoredHighRung"]
+      ]
+    ],
+    "Teleop & Endgame": [
+      [
+        ["TeleopScoredNetZone"], ["TeleopScoredLowNet"], ["TeleopScoredHighNet"]
+      ],
+      [
+        ["TeleopScoredLowRung"], ["TeleopScoredHighRung"]
+      ],
+      "EndgameLevelClimbed"
+    ],
+  }
+
+  const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+    "Auto": [
+      {
+        key: "AutoScoredNetZone",
+        label: "Avg Scored Net Zone"
+      },
+      {
+        stats: [
+          { label: "Avg Scored Low Net", key: "AutoScoredLowNet" },
+          { label: "Avg Scored High Net", key: "AutoScoredHighNet" }
+        ],
+        label: "Overall Auto % in Low Net"
+      },
+      {
+        stats: [
+          { label: "Avg Scored Low Rung", key: "AutoScoredLowRung" },
+          { label: "Avg Scored High Rung", key: "AutoScoredHighRung" }
+        ],
+        label: "Overall Auto % on Low Rung"
+      }
+    ],
+    "Teleop": [
+      {
+        key: "TeleopScoredNetZone",
+        label: "Avg Scored Net Zone"
+      },
+      {
+        stats: [
+          { label: "Avg Scored Low Net", key: "TeleopScoredLowNet" },
+          { label: "Avg Scored High Net", key: "TeleopScoredHighNet" }
+        ],
+        label: "Overall Teleop % in Low Net"
+      },
+      {
+        stats: [
+          { label: "Avg Scored Low Rung", key: "TeleopScoredLowRung" },
+          { label: "Avg Scored High Rung", key: "TeleopScoredHighRung" }
+        ],
+        label: "Overall Teleop % on Low Rung"
+      }
+    ],
+    "Endgame": [
+      {
+        label: "Avg Level Climbed", key: "EndgameLevelClimbed"
+      }
+    ]
+  }
+
+  const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+    overallSlideStats: [
+      {
+        label: "Avg Samples Scored in Auto",
+        key: "SamplesScoredInAuto"
+      },
+      {
+        label: "Avg Specimens Scored in Auto",
+        key: "SpecimensScoredInAuto"
+      }
+    ],
+    individualSlideStats: [
+      {
+        label: "Avg Auto Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const netZone = NumericalTotal("AutoScoredNetZone", quantitativeReports);
+          const lowNet = NumericalTotal("AutoScoredLowNet", quantitativeReports);
+          const highNet = NumericalTotal("AutoScoredHighNet", quantitativeReports);
+          const lowRung = NumericalTotal("AutoScoredLowRung", quantitativeReports);
+          const highRung = NumericalTotal("AutoScoredHighRung", quantitativeReports);
+
+          return Round(netZone + lowNet + highNet + lowRung + highRung) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Teleop Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const netZone = NumericalTotal("TeleopScoredNetZone", quantitativeReports);
+          const lowNet = NumericalTotal("TeleopScoredLowNet", quantitativeReports);
+          const highNet = NumericalTotal("TeleopScoredHighNet", quantitativeReports);
+          const lowRung = NumericalTotal("TeleopScoredLowRung", quantitativeReports);
+          const highRung = NumericalTotal("TeleopScoredHighRung", quantitativeReports);
+
+          return Round(netZone + lowNet + highNet + lowRung + highRung) / quantitativeReports.length;
+        }
+      },
+      {
+        label: "Avg Endgame Points",
+        get: (pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined) => {
+          if (!quantitativeReports) return 0;
+
+          const climbed = NumericalTotal("EndgameLevelClimbed", quantitativeReports);
+
+          return Round(climbed) / quantitativeReports.length;
+        }
+      }
+    ],
+    robotCapabilities: [
+      {
+        label: "Can Place in Lower Basket",
+        key: "CanPlaceInLowerBasket"
+      },
+      {
+        label: "Can Place in Upper Basket",
+        key: "CanPlaceInUpperBasket"
+      },
+      {
+        label: "Can Place on Lower Rung",
+        key: "CanPlaceOnLowerRung"
+      },
+      {
+        label: "Can Place on Upper Rung",
+        key: "CanPlaceOnUpperRung"
+      }
+    ],
+    graphStat: {
+      label: "Avg Samples Scored in Auto",
+      key: "SamplesScoredInAuto"
+    }
+  }
+
+  function getBadges(pitReport: Pitreport<PitData> | undefined, quantitativeReports: Report<QuantitativeData>[] | undefined, card: boolean) {
+    const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+    if (pitReport?.data?.CanPlaceInLowerBasket)
+      badges.push({ text: "Can Place in Lower Basket", color: "primary" });
+    if (pitReport?.data?.CanPlaceInUpperBasket)
+      badges.push({ text: "Can Place in Upper Basket", color: "info" });
+    if (pitReport?.data?.CanPlaceOnLowerRung)
+      badges.push({ text: "Can Place on Lower Rung", color: "success" });
+    if (pitReport?.data?.CanPlaceOnUpperRung)
+      badges.push({ text: "Can Place on Upper Rung", color: "warning" });
+
+    return badges;
+  }
+
+  function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+    console.log("Getting avg points");
+
+    if (!reports) return 0;
+
+    const netZone = NumericalTotal("AutoScoredNetZone", reports);
+    const lowNet = NumericalTotal("AutoScoredLowNet", reports);
+    const highNet = NumericalTotal("AutoScoredHighNet", reports);
+    const lowRung = NumericalTotal("AutoScoredLowRung", reports);
+    const highRung = NumericalTotal("AutoScoredHighRung", reports);
+
+    return Round(netZone + lowNet + highNet + lowRung + highRung) / Math.max(reports.length, 1);
   }
 
   export const game = new Game("Into the Deep", 2025, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
-    pitStatsLayout, "IntoTheDeep", "https://info.firstinspires.org/hubfs/Dive/into-the-deep.svg",
+    pitStatsLayout, "IntoTheDeep", "https://info.firstinspires.org/hubfs/Dive/into-the-deep.svg", getBadges, getAvgPoints
   );
 }
 

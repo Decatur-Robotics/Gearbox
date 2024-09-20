@@ -108,9 +108,9 @@ export default function TeamStats(props: {
         return <></>;
       }
 
-      const first = pair.stats[0].get?.call(pair.stats[0], pitReport ?? undefined, props.selectedReports)
+      const first = pair.stats[0].get?.(pitReport ?? undefined, props.selectedReports)
         ?? NumericalAverage(pair.stats[0].key as string, props.selectedReports);
-      const second = pair.stats[1].get?.call(pair.stats[1], pitReport ?? undefined, props.selectedReports) 
+      const second = pair.stats[1].get?.(pitReport ?? undefined, props.selectedReports) 
         ?? NumericalAverage(pair.stats[1].key as string, props.selectedReports);
 
       return <div key={index} className="w-full h-fit flex flex-row items-center">
