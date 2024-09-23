@@ -1,5 +1,5 @@
 import { camelCaseToTitleCase } from "./client/ClientUtils";
-import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums, keyToEnum } from "./Enums";
+import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums, IntoTheDeepEnums } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report } from "./Types";
 
 export type StringKeyedObject = { [key: string]: any };
@@ -20,7 +20,7 @@ export class FormElement<TData extends StringKeyedObject> {
   constructor(key: keyof TData, dataExample: TData, label?: string, type?: ElementType) {
     this.key = key;
     this.label = label ?? camelCaseToTitleCase(key as string);
-    this.type = type ?? keyToEnum(key as string, dataExample);
+    this.type = type ?? keyToType(key as string, dataExample);
   }
 
   static fromProps<TData extends StringKeyedObject>(props: FormElementProps<TData>, dataExample: TData): FormElement<TData> {
@@ -94,4 +94,40 @@ export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends Qu
   individualSlideStats: Stat<TPitData, TQuantData>[];
   robotCapabilities: Stat<TPitData, TQuantData>[];
   graphStat: Stat<TPitData, TQuantData>;
+}
+
+export function keyToType(key: string, exampleData: StringKeyedObject): ElementType {
+  if (key === "image")
+    return "image";
+
+  const type = typeof exampleData[key];
+
+  if (type === "object" && "x" in exampleData[key] && "y" in exampleData[key] && "angle" in exampleData[key])
+    return "startingPos";
+  
+  if (type !== "string")
+    return type as ElementType;
+
+  const enums = [
+    IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, 
+    CenterStageEnums.CenterStageParkingLocation, CenterStageEnums.AutoAdjustable, CenterStageEnums.AutoSidePreference,
+    IntoTheDeepEnums.StartedWith, IntoTheDeepEnums.EndgameLevelClimbed
+  ];
+
+  if (key === "Defense")
+    return Defense;
+  if (key === "swerveLevel")
+    return SwerveLevel;
+
+  if (key === "StartedWith")
+    return IntoTheDeepEnums.StartedWith;
+  if (key === "EndgameLevelClimbed")
+    return IntoTheDeepEnums.EndgameLevelClimbed;
+
+  for (const e of enums) {
+    if (Object.values(e).includes(exampleData[key]))
+      return e;
+  }
+
+  return "string";
 }

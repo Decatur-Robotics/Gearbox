@@ -65,6 +65,14 @@ export class User implements NextAuthUser {
   }
 }
 
+export class FieldPos {
+  x: number = 0;
+  y: number = 0;
+  angle: number = 0;
+
+  static Zero = new FieldPos();
+}
+
 export class Team {
   _id: string | undefined;
   name: string;
@@ -117,9 +125,7 @@ export abstract class QuantData {
 
   Presented: boolean = true;
 
-  AutoStartX: number = 0; // pixel position of robot
-  AutoStartY: number = 0;
-  AutoStartAngle: number = 0; // stored... but probably wont ever be used
+  AutoStart: FieldPos = FieldPos.Zero;
 
   Defense: Defense = Defense.None;
 

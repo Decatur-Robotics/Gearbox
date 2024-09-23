@@ -1,6 +1,6 @@
 import { CenterStageEnums, Defense, Drivetrain, IntakeTypes, IntoTheDeepEnums } from './Enums';
 import { Badge, FormLayout, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
-import { Report, Game, League, PitReportData, QuantData, Pitreport } from "./Types";
+import { Report, Game, League, PitReportData, QuantData, Pitreport, FieldPos } from "./Types";
 import { GameId } from "./client/GameId";
 import { AmpAutoPoints, AmpTeleopPoints, BooleanAverage, MostCommonValue, NumericalTotal, Round, SpeakerAutoPoints, SpeakerTeleopPoints, TrapPoints } from "./client/StatsMath";
 
@@ -607,7 +607,7 @@ namespace IntoTheDeep {
     SamplesScoredInAuto: number = 0;
     SpecimensScoredInAuto: number = 0;
     AutonomousStrategy: string = "";
-    // TODO: Starting Auto Position
+    AutoStartPreferred: FieldPos = FieldPos.Zero;
     // TODO: Ending Auto Position
     GameStrategy: string = "";
   }
@@ -623,7 +623,8 @@ namespace IntoTheDeep {
     "Auto": [
       { key: "SamplesScoredInAuto", label: "Samples Scored in Auto" },
       { key: "SpecimensScoredInAuto", label: "Specimens Scored in Auto" },
-      { key: "AutonomousStrategy", label: "Autonomous Strategy" }
+      { key: "AutonomousStrategy", label: "Autonomous Strategy" },
+      { key: "AutoStartPreferred", label: "Preferred Auto Start Position" }
     ],
     "General": [
       { key: "GameStrategy", label: "Game Strategy" }

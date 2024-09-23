@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { AllianceColor } from "@/lib/Types";
+import { AllianceColor, FieldPos } from "@/lib/Types";
 import p5Types from "p5";
 import { useCallback, useEffect, useState } from "react";
 import { PageProps } from "./FormPages";
@@ -17,19 +17,37 @@ var my = 0;
 var ax = 0;
 var ay = 0;
 var a = 0;
-export default function StartingPosition(props: PageProps) {
+
+export default function StartingPosition(props: { 
+    alliance: AllianceColor, 
+    fieldImagePrefix: string, 
+    initialPos: FieldPos,
+    callback: (key: string, value: FieldPos) => void
+}) {
+  const [p5, setP5] = useState<p5Types>();
+
+  useEffect(() => {
+    mx = props.initialPos.x;
+    my = props.initialPos.y;
+    a = props.initialPos.angle;
+
+    if (p5)
+      draw(p5);
+  }, [p5]);
+
   const triggerCallback = useCallback(() => {
-    props.callback("AutoStartX", mx);
-    props.callback("AutoStartY", my);
-    props.callback("AutoStartAngle", a);
+    props.callback("AutoStart", { x: mx, y: my, angle: a });
   }, [mx, my, a, props.callback]);
 
   const setup = (p5: p5Types, canvasParentRef: Element) => {
+    setP5(p5);
+
     bg = p5.loadImage(
       props.alliance === AllianceColor.Blue
         ? `/fields/${props.fieldImagePrefix}Blue.png`
         : `/fields/${props.fieldImagePrefix}Red.png`,
     );
+
     const ctx = p5.createCanvas(350, 300).parent(canvasParentRef);
     ctx.mousePressed(() => {
       if (!dropped) {
@@ -45,8 +63,9 @@ export default function StartingPosition(props: PageProps) {
       }
 
       triggerCallback();
-      console.log(mx, my);
+      // console.log(mx, my);
     });
+
     p5.rectMode(p5.CENTER);
   };
 
@@ -79,7 +98,7 @@ export default function StartingPosition(props: PageProps) {
         <Sketch setup={setup} draw={draw} />
       </div>
       
-      <h1 className="font-semibold animate-pulse">Tap to set the starting position</h1>
+      <h1 className="font-semibold animate-pulse">Tap to set the position</h1>
     </div>
   );
 }

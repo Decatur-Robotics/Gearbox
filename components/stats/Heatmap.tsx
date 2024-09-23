@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import p5Types from "p5";
 import { useEffect } from "react";
 import { Report } from "@/lib/Types";
+
 const Sketch = dynamic(() => import("react-p5").then((mod) => mod.default), {
   ssr: false,
 });
@@ -40,8 +41,8 @@ export default function Heatmap(props: { selectedReports: Report[], fieldImagePr
       positions = [];
       props.selectedReports.forEach((report) =>
         positions.push({
-          x: report.data.AutoStartX,
-          y: report.data.AutoStartY,
+          x: report.data.AutoStart.x,
+          y: report.data.AutoStart.y,
         }),
       );
     }

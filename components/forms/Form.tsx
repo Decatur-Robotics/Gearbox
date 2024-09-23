@@ -81,7 +81,7 @@ export default function Form(props: FormProps) {
   };
 
   const setCallback = useCallback(
-    (key: any, value: boolean | string | number) => {
+    (key: any, value: boolean | string | number | object) => {
       setFormData((old) => {
         let copy = structuredClone(old);
         copy[key] = value;
@@ -122,7 +122,6 @@ export default function Form(props: FormProps) {
       return (
         <StartingPosition
           alliance={alliance}
-          data={formData}
           callback={setCallback}
           fieldImagePrefix={props.fieldImagePrefix}
           key={key}
