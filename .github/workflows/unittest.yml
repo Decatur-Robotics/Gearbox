@@ -10,7 +10,7 @@ on:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
-  unittest:
+  unit_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
