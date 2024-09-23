@@ -30,7 +30,6 @@ export function forceOfflineMode() {
 /**
  * @param arr an array of objects with an _id field
  * @returns a dictionary of the array with the _id as the key
- * 
  * @tested_in tests/ClientUtils.test.ts
  */
 export function toDict<TElement extends { _id: string | undefined }>(arr: TElement[]) {
@@ -59,7 +58,6 @@ export function download(filename: string, content: string, type: string = "text
  * Removes duplicate elements from an array. **Not in place.**
  * @param arr the arr to remove duplicates from. Flattens and recurses on the array.
  * @returns A new array with no duplicates.
- * 
  * @tested_in tests/ClientUtils.test.ts
  */
 export function removeDuplicates(...arr: any[]) {
@@ -93,9 +91,10 @@ export function shuffleArray(array: any[]) {
 }
 
 /**
- * Circularly rotates an array (first element goes to the end, the rest shift up by 1) in place
+ * Circularly rotates an array to the left (first element goes to the end, the rest shift up by 1) **in place**
  * @param array - The array to rotate
  * @returns - The rotated array
+ * @tested_in tests/ClientUtils.test.ts
  */
 export function rotateArray(array: any[]) {
   return array.push(array.shift());

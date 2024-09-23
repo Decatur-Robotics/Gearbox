@@ -1,4 +1,4 @@
-import { camelCaseToTitleCase, removeDuplicates, toDict } from "@/lib/client/ClientUtils";
+import { camelCaseToTitleCase, removeDuplicates, rotateArray, toDict } from "@/lib/client/ClientUtils";
 
 test("camelCaseToTitleCase", () => {
   expect(camelCaseToTitleCase("notLinkedToTba")).toBe("Not Linked To Tba");
@@ -28,4 +28,17 @@ test("removeDuplicates: 1D array", () => {
 test("removeDuplicates: 2D array", () => {
   const arr = [[1, 2], [3, 4], [1, 2], [3, 4], [5]];
   expect(removeDuplicates(arr)).toEqual([1, 2, 3, 4, 5]);
+});
+
+test("Remove Duplicates: Not In Place", () => {
+  const arr = [1, 2, 3, 4, 5, 1, 2, 3, 4];
+  const original = arr.slice();
+  removeDuplicates(arr);
+  expect(arr).toEqual(original);
+});
+
+test("rotateArray", () => {
+  const arr = [1, 2, 3, 4, 5];
+  rotateArray(arr);
+  expect(arr).toEqual([2, 3, 4, 5, 1]);
 });
