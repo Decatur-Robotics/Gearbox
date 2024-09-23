@@ -367,7 +367,7 @@ function Settings(props: TeamPageProps) {
 
   const updateTeam = async () => {
     setError("");
-    if (!validName(teamName)) {
+    if (!validName(teamName, true)) {
       setError("Invalid Team Name");
       return;
     }

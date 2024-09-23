@@ -1,12 +1,13 @@
 export const ValidRegex = /^[0-9a-z]+$/;
+export const ValidRegexWithSpaces = /^[0-9a-z ]+$/;
 export const MinimumNameLength = 3;
 
-export function validName(name: string): boolean {
-  if (!name.match(/^[a-z ,.'-]+$/i)) {
+export function validName(name: string, allowSpaces: boolean = false): boolean {
+  if (!name.match(allowSpaces ? ValidRegexWithSpaces : ValidRegex)) {
     return false;
   }
 
-  if (name.length < 3) {
+  if (name.length < MinimumNameLength) {
     return false;
   }
 
