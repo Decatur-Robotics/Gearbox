@@ -29,7 +29,3 @@ test("removeDuplicates: 2D array", () => {
   const arr = [[1, 2], [3, 4], [1, 2], [3, 4], [5]];
   expect(removeDuplicates(arr)).toEqual([1, 2, 3, 4, 5]);
 });
-
-test("Fail", () => {
-  expect(true).toBe(false);
-});
