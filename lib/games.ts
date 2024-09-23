@@ -108,43 +108,48 @@ export namespace Crescendo {
   }
 
   const statsLayout: StatsLayout<PitData, QuantitativeData> = {
-    "Auto": [
-      { 
-        stats: [
-          { label: "Avg Scored Amp Shots", key: "AutoScoredAmp" }, 
-          { label: "Avg Missed Amp Shots", key: "AutoMissedAmp" }
-        ], 
-        label: "Overall Amp Accuracy" },
-      { 
-        stats: [
-          { label: "Avg Scored Speaker Shots", key: "AutoScoredSpeaker" }, 
-          { label: "Avg Missed Speaker Shots" , key: "AutoMissedSpeaker" }
-        ],
-        label: "Overall Speaker Accuracy" }
-    ],
-    "Teleop": [
-      {
-        stats: [
-          { label: "Avg Scored Amp Shots", key: "TeleopScoredAmp" },
-          { label: "Avg Missed Amp Shots", key: "TeleopMissedAmp" }
-        ],
-        label: "Overall Amp Accuracy"
-      },
-      {
-        stats: [
-          { label: "Avg Scored Speaker Shots", key: "TeleopScoredSpeaker" },
-          { label: "Avg Missed Speaker Shots", key: "TeleopMissedSpeaker" }
-        ],
-        label: "Overall Speaker Accuracy"
-      },
-      {
-        stats: [
-          { label: "Avg Scored Trap Shots", key: "TeleopScoredTrap" },
-          { label: "Avg Missed Trap Shots", key: "TeleopMissedTrap" }
-        ],
-        label: "Overall Trap Accuracy"
-      }
-    ]
+    sections: {
+      "Auto": [
+        { 
+          stats: [
+            { label: "Avg Scored Amp Shots", key: "AutoScoredAmp" }, 
+            { label: "Avg Missed Amp Shots", key: "AutoMissedAmp" }
+          ], 
+          label: "Overall Amp Accuracy" },
+        { 
+          stats: [
+            { label: "Avg Scored Speaker Shots", key: "AutoScoredSpeaker" }, 
+            { label: "Avg Missed Speaker Shots" , key: "AutoMissedSpeaker" }
+          ],
+          label: "Overall Speaker Accuracy" }
+      ],
+      "Teleop": [
+        {
+          stats: [
+            { label: "Avg Scored Amp Shots", key: "TeleopScoredAmp" },
+            { label: "Avg Missed Amp Shots", key: "TeleopMissedAmp" }
+          ],
+          label: "Overall Amp Accuracy"
+        },
+        {
+          stats: [
+            { label: "Avg Scored Speaker Shots", key: "TeleopScoredSpeaker" },
+            { label: "Avg Missed Speaker Shots", key: "TeleopMissedSpeaker" }
+          ],
+          label: "Overall Speaker Accuracy"
+        },
+        {
+          stats: [
+            { label: "Avg Scored Trap Shots", key: "TeleopScoredTrap" },
+            { label: "Avg Missed Trap Shots", key: "TeleopMissedTrap" }
+          ],
+          label: "Overall Trap Accuracy"
+        }
+      ]
+    },
+    getGraphDots: (quantReports: Report<QuantitativeData>[], pitReport?: Pitreport<PitData>) => {
+      return [];
+    }
   }
 
   const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
@@ -424,31 +429,36 @@ export namespace CenterStage {
   }
 
   const statsLayout: StatsLayout<PitData, QuantitativeData> = {
-    "Auto": [
-      {
-        stats: [
-          { label: "Avg Scored Backstage", key: "AutoScoredBackstage" },
-          { label: "Avg Scored Backdrop", key: "AutoScoredBackdrop" }
-        ],
-        label: "Overall Auto Accuracy"
-      }
-    ],
-    "Teleop": [
-      {
-        label: "Avg Scored Backstage", key: "TeleopScoredBackstage"
-      },
-      {
-        label: "Avg Mosaics", key: "Mosaics"
-      },
-      {
-        label: "Avg Set Lines Reached", key: "SetLinesReached"
-      }
-    ],
-    "Endgame": [
-      {
-        label: "Avg Landing Zone Reached", key: "LandingZoneReached"
-      }
-    ]
+    sections: {
+      "Auto": [
+        {
+          stats: [
+            { label: "Avg Scored Backstage", key: "AutoScoredBackstage" },
+            { label: "Avg Scored Backdrop", key: "AutoScoredBackdrop" }
+          ],
+          label: "Overall Auto Accuracy"
+        }
+      ],
+      "Teleop": [
+        {
+          label: "Avg Scored Backstage", key: "TeleopScoredBackstage"
+        },
+        {
+          label: "Avg Mosaics", key: "Mosaics"
+        },
+        {
+          label: "Avg Set Lines Reached", key: "SetLinesReached"
+        }
+      ],
+      "Endgame": [
+        {
+          label: "Avg Landing Zone Reached", key: "LandingZoneReached"
+        }
+      ]
+    },
+    getGraphDots: (quantReports: Report<QuantitativeData>[], pitReport?: Pitreport<PitData>) => {
+      return [];
+    }
   }
 
   const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
@@ -608,7 +618,7 @@ namespace IntoTheDeep {
     SpecimensScoredInAuto: number = 0;
     AutonomousStrategy: string = "";
     AutoStartPreferred: FieldPos = FieldPos.Zero;
-    // TODO: Ending Auto Position
+    AutoEndPreferred: FieldPos = FieldPos.Zero;
     GameStrategy: string = "";
   }
 
@@ -624,7 +634,8 @@ namespace IntoTheDeep {
       { key: "SamplesScoredInAuto", label: "Samples Scored in Auto" },
       { key: "SpecimensScoredInAuto", label: "Specimens Scored in Auto" },
       { key: "AutonomousStrategy", label: "Autonomous Strategy" },
-      { key: "AutoStartPreferred", label: "Preferred Auto Start Position" }
+      { key: "AutoStartPreferred", label: "Preferred Auto Start Position" },
+      { key: "AutoEndPreferred", label: "Preferred Auto End Position" }
     ],
     "General": [
       { key: "GameStrategy", label: "Game Strategy" }
@@ -655,51 +666,69 @@ namespace IntoTheDeep {
   }
 
   const statsLayout: StatsLayout<PitData, QuantitativeData> = {
-    "Auto": [
-      {
-        key: "AutoScoredNetZone",
-        label: "Avg Scored Net Zone"
-      },
-      {
-        stats: [
-          { label: "Avg Scored Low Net", key: "AutoScoredLowNet" },
-          { label: "Avg Scored High Net", key: "AutoScoredHighNet" }
-        ],
-        label: "Overall Auto % in Low Net"
-      },
-      {
-        stats: [
-          { label: "Avg Scored Low Rung", key: "AutoScoredLowRung" },
-          { label: "Avg Scored High Rung", key: "AutoScoredHighRung" }
-        ],
-        label: "Overall Auto % on Low Rung"
-      }
-    ],
-    "Teleop": [
-      {
-        key: "TeleopScoredNetZone",
-        label: "Avg Scored Net Zone"
-      },
-      {
-        stats: [
-          { label: "Avg Scored Low Net", key: "TeleopScoredLowNet" },
-          { label: "Avg Scored High Net", key: "TeleopScoredHighNet" }
-        ],
-        label: "Overall Teleop % in Low Net"
-      },
-      {
-        stats: [
-          { label: "Avg Scored Low Rung", key: "TeleopScoredLowRung" },
-          { label: "Avg Scored High Rung", key: "TeleopScoredHighRung" }
-        ],
-        label: "Overall Teleop % on Low Rung"
-      }
-    ],
-    "Endgame": [
-      {
-        label: "Avg Level Climbed", key: "EndgameLevelClimbed"
-      }
-    ]
+    sections: {
+      "Auto": [
+        {
+          key: "AutoScoredNetZone",
+          label: "Avg Scored Net Zone"
+        },
+        {
+          stats: [
+            { label: "Avg Scored Low Net", key: "AutoScoredLowNet" },
+            { label: "Avg Scored High Net", key: "AutoScoredHighNet" }
+          ],
+          label: "Overall Auto % in Low Net"
+        },
+        {
+          stats: [
+            { label: "Avg Scored Low Rung", key: "AutoScoredLowRung" },
+            { label: "Avg Scored High Rung", key: "AutoScoredHighRung" }
+          ],
+          label: "Overall Auto % on Low Rung"
+        }
+      ],
+      "Teleop": [
+        {
+          key: "TeleopScoredNetZone",
+          label: "Avg Scored Net Zone"
+        },
+        {
+          stats: [
+            { label: "Avg Scored Low Net", key: "TeleopScoredLowNet" },
+            { label: "Avg Scored High Net", key: "TeleopScoredHighNet" }
+          ],
+          label: "Overall Teleop % in Low Net"
+        },
+        {
+          stats: [
+            { label: "Avg Scored Low Rung", key: "TeleopScoredLowRung" },
+            { label: "Avg Scored High Rung", key: "TeleopScoredHighRung" }
+          ],
+          label: "Overall Teleop % on Low Rung"
+        }
+      ],
+      "Endgame": [
+        {
+          label: "Avg Level Climbed", key: "EndgameLevelClimbed"
+        }
+      ]
+    },
+    getGraphDots: (quantReports: Report<QuantitativeData>[], pitReport?: Pitreport<PitData>) => {
+      return [
+        {
+          ...pitReport?.data?.AutoStartPreferred,
+          color: { r: 255, g: 0, b: 0, a: 255 },
+          size: 10,
+          label: "Red dot is preferred auto start"
+        },
+        {
+          ...pitReport?.data?.AutoEndPreferred,
+          color: { r: 0, g: 0, b: 255, a: 255 },
+          size: 10,
+          label: "Blue dot is preferred auto end"
+        }
+      ];
+    }
   }
 
   const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {

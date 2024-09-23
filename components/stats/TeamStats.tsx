@@ -149,7 +149,7 @@ export default function TeamStats(props: {
     );
   }
 
-  const sections = Object.entries(props.layout).map(([header, stats]) => getSections(header, stats));
+  const sections = Object.entries(props.layout.sections).map(([header, stats]) => getSections(header, stats));
 
   return (
     <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">

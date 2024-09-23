@@ -120,7 +120,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
               alliance={AllianceColor.Blue} 
               fieldImagePrefix={props.game.fieldImagePrefix} 
               initialPos={pitreport.data?.[key] as FieldPos}
-              callback={setCallback}         
+              callback={(_, v) => setCallback(key, v)}         
             />
           </div>
         </Fragment>

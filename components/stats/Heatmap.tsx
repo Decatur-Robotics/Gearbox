@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import p5Types from "p5";
 import { useEffect } from "react";
-import { Report } from "@/lib/Types";
+import { FieldPos, Report } from "@/lib/Types";
 
 const Sketch = dynamic(() => import("react-p5").then((mod) => mod.default), {
   ssr: false,
@@ -12,11 +12,24 @@ interface Position {
   y: number;
 }
 
+export interface Dot {
+  x?: number;
+  y?: number
+  color: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  };
+  size: number;
+  label: string;
+}
+
 var bg: p5Types.Image;
 const resolution = 25;
 var positions: Position[] = [];
 
-export default function Heatmap(props: { selectedReports: Report[], fieldImagePrefix: string }) {
+export default function Heatmap(props: { selectedReports: Report[], fieldImagePrefix: string, dots: Dot[] }) {
   const setup = (p5: p5Types, canvasParentRef: Element) => {
     bg = p5.loadImage(`/fields/${props.fieldImagePrefix}Blue.PNG`);
     p5.createCanvas(350, 300).parent(canvasParentRef);
@@ -60,6 +73,15 @@ export default function Heatmap(props: { selectedReports: Report[], fieldImagePr
         p5.rect(x, y, resolution, resolution);
       }
     }
+    
+    props.dots.forEach((dot) => {
+      if (dot && dot.x && dot.y) {
+        p5.fill(dot.color.r, dot.color.g, dot.color.b, dot.color.a);
+        p5.ellipse(dot.x, dot.y, dot.size, dot.size);
+      }
+    });
+
+    p5.fill(0, 0, 0, 0); // Reset fill so it doesn't affect the background
   };
 
   return <Sketch setup={setup} draw={draw} />;

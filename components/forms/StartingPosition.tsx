@@ -26,14 +26,15 @@ export default function StartingPosition(props: {
 }) {
   const [p5, setP5] = useState<p5Types>();
 
-  useEffect(() => {
-    mx = props.initialPos.x;
-    my = props.initialPos.y;
-    a = props.initialPos.angle;
+  // useEffect(() => {
+  //   console.log("Starting Position", props.initialPos);
+  //   mx = props.initialPos.x;
+  //   my = props.initialPos.y;
+  //   a = props.initialPos.angle;
 
-    if (p5)
-      draw(p5);
-  }, [p5]);
+  //   if (p5)
+  //     draw(p5);
+  // }, [p5]);
 
   const triggerCallback = useCallback(() => {
     props.callback("AutoStart", { x: mx, y: my, angle: a });

@@ -1,3 +1,4 @@
+import { Dot } from "@/components/stats/Heatmap";
 import { camelCaseToTitleCase } from "./client/ClientUtils";
 import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums, IntoTheDeepEnums } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report } from "./Types";
@@ -84,7 +85,8 @@ export type StatPair<TPitData extends PitReportData, TQuantData extends QuantDat
 }
 
 export type StatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[];
+  sections: { [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[] };
+  getGraphDots: (quantitativeReports: Report<TQuantData>[], pitReport?: Pitreport<TPitData>) => Dot[];
 }
 
 export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
