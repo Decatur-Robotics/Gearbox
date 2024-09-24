@@ -23,6 +23,9 @@ export class FormElement<TData extends StringKeyedObject> {
     this.type = type ?? getType(key as string, dataExample);
   }
 
+  /**
+   * @tested_by Layout.test.ts
+   */
   static fromProps<TData extends StringKeyedObject>(props: FormElementProps<TData>, dataExample: TData): FormElement<TData> {
     if (typeof props === "string")
       return new FormElement(props, dataExample);
@@ -63,6 +66,9 @@ export class FormLayout<TData extends StringKeyedObject> {
   }
 }
 
+/**
+ * @tested_by Layout.test.ts
+ */
 export function getType(key: string, exampleData: StringKeyedObject): ElementType {
   if (key === "image")
     return "image";
