@@ -4,17 +4,8 @@
  * This is a general collection of commonly used functions
  */
 
+import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import { Collections, getDatabase } from "./MongoDB";
-
-/**
- * Removes whitespace from a string
- * @param str - The string to remove whitespace from
- * @returns - A "filtered" string
- * @tested_by Utils.test.ts
- */
-export function removeWhitespace(str: string): string {
-  return str.replace(/\s/g, "").toLowerCase();
-}
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -37,7 +28,7 @@ export async function GenerateSlug(
 
   var finalName;
   if (index === 0) {
-    finalName = removeWhitespace(name);
+    finalName = removeWhitespaceAndMakeLowerCase(name);
   } else {
     finalName = name + index.toString();
   }

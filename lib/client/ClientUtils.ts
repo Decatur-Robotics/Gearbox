@@ -108,3 +108,13 @@ export function rotateArray(array: any[]) {
 export function makeObjSerializeable(obj: Object) {
   return JSON.parse(JSON.stringify(obj));
 }
+
+/**
+ * Removes whitespace from a string and makes it lower case.
+ * @param str - The string to remove whitespace from
+ * @returns - A "filtered" string
+ * @tested_by ClientUtils.test.ts
+ */
+export function removeWhitespaceAndMakeLowerCase(str: string): string {
+  return str.replace(/\s/g, "").toLowerCase();
+}
