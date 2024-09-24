@@ -6,9 +6,6 @@
 
 import { Collections, getDatabase } from "./MongoDB";
 
-// get the database for some functions that use it
-const db = getDatabase();
-
 /**
  * Removes whitespace from a string
  * @param str - The string to remove whitespace from
@@ -36,6 +33,8 @@ export async function GenerateSlug(
   name: string,
   index: number = 0,
 ): Promise<string> {
+  const db = getDatabase();
+
   var finalName;
   if (index === 0) {
     finalName = removeWhitespace(name);
