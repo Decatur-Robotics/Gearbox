@@ -13,7 +13,7 @@ import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "./QrCode";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
-import StartingPosition from "./forms/StartingPosition";
+import FieldPositionSelector from "./forms/FieldPositionSelector";
 import { GameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
@@ -116,7 +116,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
         <Fragment key={index}>
           <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
           <div className="w-full h-full flex justify-center">
-            <StartingPosition 
+            <FieldPositionSelector 
               alliance={AllianceColor.Blue} 
               fieldImagePrefix={props.game.fieldImagePrefix} 
               initialPos={pitreport.data?.[key] as FieldPos}

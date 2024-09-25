@@ -239,17 +239,17 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
   }
 
   private static mergeStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
-      (layout: StatsLayout<TPitData, TQuantData>) {
-    const finalLayout: typeof layout = {
+      (layout: StatsLayout<TPitData, TQuantData>): StatsLayout<TPitData, TQuantData> {
+    const finalSections: typeof layout.sections = {
       "Positioning": [{label: "Avg Start X", key: "AutoStartX"}, {label: "Avg Start Y", key: "AutoStartY"}, 
         {label: "Avg Start Angle (Deg)", key: "AutoStartAngle"}],
     }
 
-    for (const [header, stats] of Object.entries(layout)) {
-      finalLayout[header] = stats;
+    for (const [header, stats] of Object.entries(layout.sections)) {
+      finalSections[header] = stats;
     }
 
-    return finalLayout;
+    return { sections: finalSections, getGraphDots: layout.getGraphDots };
   }
 
   private static mergePitStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>

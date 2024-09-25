@@ -1,4 +1,4 @@
-import { AllianceColor, Report, QuantData } from "@/lib/Types";
+import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
 import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -9,7 +9,7 @@ import { TfiReload } from "react-icons/tfi";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Checkbox from "./Checkboxes";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
-import StartingPosition from "./StartingPosition";
+import FieldPositionSelector from "./FieldPositionSelector";
 import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
@@ -120,11 +120,12 @@ export default function Form(props: FormProps) {
 
     if (element.type === "startingPos") {
       return (
-        <StartingPosition
+        <FieldPositionSelector
           alliance={alliance}
           callback={setCallback}
           fieldImagePrefix={props.fieldImagePrefix}
           key={key}
+          initialPos={formData[key] as FieldPos}
         />
       );
     }
