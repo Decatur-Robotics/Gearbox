@@ -48,12 +48,8 @@ export default function Form(props: FormProps) {
     setSubmitting(true);
 
     api.submitForm(props.report?._id, formData, session?.user?._id)
-      .finally(() => {
+      .then(() => {
         console.log("Submitted form successfully!");
-        if (location.href.includes("offline"))
-          location.href = `/offline/${props.compId}`;
-        else
-          location.href = location.href.substring(0, location.href.lastIndexOf("/"));
       })
       .catch((e) => {
         console.error(e);
@@ -69,6 +65,12 @@ export default function Form(props: FormProps) {
 
           return comp;
         });
+      })
+      .finally(() => {
+        if (location.href.includes("offline"))
+          location.href = `/offline/${props.compId}`;
+        else
+          location.href = location.href.substring(0, location.href.lastIndexOf("/"));
       });
 
     Analytics.quantReportSubmitted(props.report.robotNumber, props.teamNumber, props.compName, session.user?.name ?? "Unknown User");

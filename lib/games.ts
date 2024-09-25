@@ -822,17 +822,31 @@ namespace IntoTheDeep {
   }
 
   function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
-    console.log("Getting avg points");
-
     if (!reports) return 0;
+    
+    let totalPoints = 0;
+    for (const report of reports.map(r => r.data)) {
+      switch (report.EndgameLevelClimbed) {
+        case IntoTheDeepEnums.EndgameLevelClimbed.Parked:
+        case IntoTheDeepEnums.EndgameLevelClimbed.TouchedLowRung:
+          totalPoints += 3;
+          break;
+        case IntoTheDeepEnums.EndgameLevelClimbed.LowLevelClimb:
+          totalPoints += 15;
+          break;
+        case IntoTheDeepEnums.EndgameLevelClimbed.HighLevelClimb:
+          totalPoints += 30;
+          break;
+      }
 
-    const netZone = NumericalTotal("AutoScoredNetZone", reports);
-    const lowNet = NumericalTotal("AutoScoredLowNet", reports);
-    const highNet = NumericalTotal("AutoScoredHighNet", reports);
-    const lowRung = NumericalTotal("AutoScoredLowRung", reports);
-    const highRung = NumericalTotal("AutoScoredHighRung", reports);
+      totalPoints += (report.AutoScoredNetZone + report.TeleopScoredNetZone) * 2;
+      totalPoints += (report.AutoScoredLowNet + report.TeleopScoredLowNet) * 4;
+      totalPoints += (report.AutoScoredHighNet + report.TeleopScoredHighNet) * 8;
+      totalPoints += (report.AutoScoredLowRung + report.TeleopScoredLowRung) * 6;
+      totalPoints += (report.AutoScoredHighRung + report.TeleopScoredHighRung) * 10;
+    }
 
-    return Round(netZone + lowNet + highNet + lowRung + highRung) / Math.max(reports.length, 1);
+    return totalPoints / reports.length;
   }
 
   export const game = new Game("Into the Deep", 2025, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,
