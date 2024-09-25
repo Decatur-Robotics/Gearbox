@@ -19,12 +19,12 @@ export default function FieldPositionSelector(props: {
 }) {
   const [mx, setMx, getMx] = useDynamicState(props.initialPos?.x ?? 0);
   const [my, setMy, getMy] = useDynamicState(props.initialPos?.y ?? 0);
-  const [a, setA] = useState(props.initialPos?.angle ?? 0);
+  const [a, setA, getA] = useDynamicState(props.initialPos?.angle ?? 0);
   const [ax, setAx] = useState(0);
   const [ay, setAy] = useState(0);
 
   useEffect(() => {
-    props.callback("AutoStart", { x: mx ?? 0, y: my ?? 0, angle: a });
+    props.callback("AutoStart", { x: mx ?? 0, y: my ?? 0, angle: a ?? 0 });
   }, [mx, my, a, ax, ay]);
 
   const setup = (p5: p5Types, canvasParentRef: Element) => {
@@ -63,12 +63,12 @@ export default function FieldPositionSelector(props: {
     p5.strokeWeight(1);
     p5.fill("lightgrey");
 
-    if (a == 0 || mx == 0 || my == 0)
+    if (a == 0 && mx == 0 && my == 0)
       return;
 
     p5.translate(mx ?? 0, my ?? 0);
     setA(a);
-    p5.rotate(a);
+    p5.rotate(a ?? 0);
     p5.rect(0, 0, 35, 35, 10);
     p5.fill("black");
     p5.rect(12.5, 15, 10, 5, 3);

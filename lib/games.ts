@@ -846,7 +846,8 @@ namespace IntoTheDeep {
       totalPoints += (report.AutoScoredHighRung + report.TeleopScoredHighRung) * 10;
     }
 
-    return totalPoints / reports.length;
+    // Avoid divide by 0!
+    return totalPoints / Math.max(reports.length, 1);
   }
 
   export const game = new Game("Into the Deep", 2025, League.FTC, QuantitativeData, PitData, pitReportLayout, quantitativeReportLayout, statsLayout,

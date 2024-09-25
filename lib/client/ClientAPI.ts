@@ -312,7 +312,6 @@ export default class ClientAPI {
     formData: QuantData | undefined,
     userId: string | undefined
   ) {
-    console.log("Submitting form");
     return await this.request("/submitForm", {
       reportId: reportId,
       formData: formData,
