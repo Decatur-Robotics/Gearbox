@@ -1,7 +1,7 @@
 #!/bin/bash
 REMOTE=origin
 BRANCH=main
-# cd ./../home/ubuntu/Gearbox
+cd Gearbox
 git fetch
 if [[ "$(git rev-parse $BRANCH)" != "$(git rev-parse "$REMOTE/$BRANCH")" ]]; then
   rm -rf ./cd.log
