@@ -5,7 +5,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
@@ -140,10 +140,12 @@ export default function Onboarding() {
         <div className="card bg-base-200 w-2/3">
           <div className="card-body flex flex-col justify-between">
             <div> {/* This div is the main content, it's aligned with the top */}
-              <div className="card-title gap-0">
-                Welcome to<span className="text-accent ml-1">Gearbox</span>, {session?.user?.name?.split(' ')[0]}!
-              </div>
-              <div className="pb-6">
+              <p className="card-title gap-0 flex-wrap">
+                Welcome to
+                <span className="text-accent sm:ml-1">Gearbox</span>
+                <span className="max-sm:hidden">, {session?.user?.name?.split(' ')[0]}</span>!
+              </p>
+              <div className="pb-6 max-sm:hidden">
                 Before you can start on your scouting journey, there&apos;s a bit of set up to do. It will only take a minute.
               </div>
               {
@@ -161,10 +163,10 @@ export default function Onboarding() {
                   </div>
                   : !teamConfirmed || !team
                     ? <div>
-                        <div className="text-xl">
+                        <div className="text-xl"> 
                           What {league} team are you on?
                         </div>
-                        <input type="number" defaultValue={teamNumber?.toString()} className="input input-bordered mt-2" placeholder="Team Number" 
+                        <input type="number" defaultValue={teamNumber?.toString()} className="input input-bordered mt-2 w-full" placeholder="Team Number" 
                           onChange={teamNumberChanged} />
                         { team &&
                             <div>
@@ -196,7 +198,7 @@ export default function Onboarding() {
                                         You&apos;ll need approval to join.
                                       </div> 
                                       <button className="btn btn-primary mt-2" onClick={requestToJoinTeam}>
-                                        Request to join team {team.number}, {team.name}
+                                        Request to join team {team.number}<span className="max-sm:hidden">, {team.name}</span>
                                       </button>
                                     </div>
                                   : joinRequestStatus === JoinRequestStatus.Requested
@@ -253,7 +255,10 @@ export default function Onboarding() {
               }
             </div>
             { /* This button is at the bottom*/}
-            <button className="btn btn-ghost mt-10" onClick={() => completeOnboarding()}>I know what I&apos;m doing, let me skip onboarding.</button>
+            <button className="btn btn-ghost mt-10" onClick={() => completeOnboarding()}>
+              <span className="max-sm:hidden">I know what I&apos;m doing, let me skip onboarding.</span>
+              <span className="sm:hidden">Skip onboarding</span>
+            </button>
           </div>
         </div>
       </div>
