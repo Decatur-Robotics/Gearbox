@@ -177,10 +177,12 @@ export default class ClientAPI {
   }
 
   async findMultiple<T>(collection: CollectionId, query: object): Promise<T[]> {
-    return await this.request("/findMultiple", {
+    const val = await this.request("/findMultiple", {
       collection: collection,
       query: query,
     });
+
+    return val;
   }
 
   /**
@@ -371,7 +373,6 @@ export default class ClientAPI {
   }
 
   async update<T>(collection: CollectionId, id: ObjectId, newValues: object, ) {
-    console.log("update", collection, id, newValues);
     return await this.request<T>("/update", {
       collection: collection,
       newValues: newValues,

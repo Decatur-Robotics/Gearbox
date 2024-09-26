@@ -50,6 +50,7 @@ type TeamPageProps = {
   pastSeasons: Season[] | undefined;
   users: User[] | undefined;
   isManager: boolean;
+  updateTeam: (team: Partial<Team>) => Promise<void[]>;
 };
 
 function Overview(props: TeamPageProps) {
@@ -118,7 +119,7 @@ function Roster(props: TeamPageProps) {
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [requests, setRequests] = useState<User[]>([]);
 
-  const owner = session?.user && team?.owners.includes(session?.user._id);
+  const isManager = props.isManager;
 
   useEffect(() => {
     const loadRequests = async () => {
@@ -158,62 +159,21 @@ function Roster(props: TeamPageProps) {
       user.name ?? "Unknown User", session?.user?.name ?? "Unknown User", accept);
   };
 
-  const updateScouter = async (userId: ObjectId) => {
-    if (!team) {
-      console.error("Team not found");
+  async function toggleArrayInclusion(array: ObjectId[], id: ObjectId) {
+    if (!array.find((item) => item.equals?.(id) ?? item.toString() === id.toString())) {
+      array.push(id);
+    } else {
+      array.splice(array.indexOf(id), 1);
+    }
+  }
+
+  async function togglePermissions(userId: ObjectId, permissions: "owners" | "scouters" | "subjectiveScouters") {
+    if (!team)
       return;
-    }
 
-    var teamClone = structuredClone(team);
-    var scouters = teamClone?.scouters;
-    if (scouters?.includes(userId)) {
-      scouters.splice(scouters.indexOf(userId), 1);
-    } else {
-      scouters?.push(userId);
-    }
-
-    await api.updateTeam({ scouters }, team._id);
-    setTeam(teamClone);
-  };
-
-  const updateSubjectiveScouter = async (userId: ObjectId) => {
-    if (!team) {
-      console.error("Team not found");
-      return
-    }
-
-    var teamClone = structuredClone(team);
-    if (!teamClone) return;
-
-    teamClone.subjectiveScouters ??= [];
-    var scouters = teamClone?.subjectiveScouters;
-    if (scouters?.includes(userId)) {
-      scouters.splice(scouters.indexOf(userId), 1);
-    } else {
-      scouters?.push(userId);
-    }
-
-    await api.updateTeam({ subjectiveScouters: scouters }, team._id);
-    setTeam(teamClone);
-  };
-
-  const updateOwner = async (userId: ObjectId) => {
-    if (!team) {
-      console.error("Team not found");
-      return;
-    }
-
-    var teamClone = structuredClone(team);
-    var owners = teamClone?.owners;
-    if (owners?.includes(userId)) {
-      owners.splice(owners.indexOf(userId), 1);
-    } else {
-      owners?.push(userId);
-    }
-
-    await api.updateTeam({ owners }, team._id);
-    setTeam(teamClone);
-  };
+    toggleArrayInclusion(team[permissions], userId);
+    props.updateTeam({ [permissions]: team[permissions] });
+  }
 
   const removeUser = async (userId: ObjectId) => {
     if (!team) {
@@ -230,13 +190,13 @@ function Roster(props: TeamPageProps) {
     }
 
     if (team?.owners.includes(userId)) {
-      await updateOwner(userId);
+      await togglePermissions(userId, "owners");
     }
     if (team?.scouters.includes(userId)) {
-      await updateScouter(userId);
+      await togglePermissions(userId, "scouters");
     }
     if (team?.subjectiveScouters?.includes(userId)) {
-      await updateScouter(userId);
+      await togglePermissions(userId, "subjectiveScouters");
     }
 
     var teamClone = structuredClone(team);
@@ -259,7 +219,7 @@ function Roster(props: TeamPageProps) {
         <span className="text-accent">{users?.length}</span> total members
       </h1>
 
-      {owner ? (
+      {isManager ? (
         <div className="w-full collapse collapse-arrow bg-base-300">
           <input type="checkbox" />
           <div className="collapse-title text-lg font-medium">
@@ -331,7 +291,7 @@ function Roster(props: TeamPageProps) {
             </tr>
           </thead>
           <tbody className="">
-            {users.map((user, index) => (
+            {users?.map?.((user, index) => (
               <tr
                 key={user._id.toString()}
                 className="p-0 h-20 even:bg-base-100 odd:bg-base-200 max-sm:text-xs"
@@ -346,20 +306,16 @@ function Roster(props: TeamPageProps) {
                     type="checkbox"
                     className="toggle toggle-secondary"
                     checked={team?.scouters.includes(user._id)}
-                    disabled={!owner}
-                    onChange={() => {
-                      updateScouter(user._id);
-                    }}
+                    disabled={!isManager}
+                    onChange={() => togglePermissions(user._id, "scouters")}
                   />
                 </td><td>
                   <input
                     type="checkbox"
                     className="toggle toggle-accent"
                     checked={team?.subjectiveScouters?.includes(user._id)}
-                    disabled={!owner}
-                    onChange={() => {
-                      updateSubjectiveScouter(user._id);
-                    }}
+                    disabled={!isManager}
+                    onChange={() => togglePermissions(user._id, "subjectiveScouters")}
                   />
                 </td>
                 <td>
@@ -367,16 +323,14 @@ function Roster(props: TeamPageProps) {
                     type="checkbox"
                     className="toggle toggle-primary"
                     checked={team?.owners.includes(user._id)}
-                    disabled={!owner}
-                    onChange={() => {
-                      updateOwner(user._id);
-                    }}
+                    disabled={!isManager}
+                    onChange={() => togglePermissions(user._id, "owners")}
                   />
                 </td>
                 <td>
                   <button
                     className="btn btn-outline btn-error"
-                    disabled={!owner}
+                    disabled={!isManager}
                     onClick={() => {
                       removeUser(user._id);
                     }}
@@ -393,7 +347,7 @@ function Roster(props: TeamPageProps) {
   );
 }
 
-function Settings(props: TeamPageProps & { updateTeam: (team: Team) => Promise<void[]> }) {
+function Settings(props: TeamPageProps) {
   const [teamName, setTeamName] = useState(props.team?.name as string);
   const [error, setError] = useState("");
 
@@ -477,6 +431,10 @@ export default function TeamIndex() {
     currentCompetition: competitions.value?.[(competitions.value?.length ?? 0) - 1],
     users: users.value,
     isManager: isManager ?? false,
+    updateTeam: (team) => {
+      teamDocument.set({ ...teamDocument.value, ...team });
+      return Promise.all(teamDocument.saveChanges());
+    }
   };
 
   return (
@@ -575,10 +533,7 @@ export default function TeamIndex() {
         { team && <>
             {page === 0 && <Overview {...componentProps} isManager={isManager ?? false} />}
             {page === 1 && <Roster {...componentProps} />}
-            {page === 2 && <Settings {...componentProps} updateTeam={(team) => {
-              teamDocument.set(team);
-              return Promise.all(teamDocument.saveChanges());
-            }} />}
+            {page === 2 && <Settings {...componentProps} />}
           </>
         }
       </Flex>

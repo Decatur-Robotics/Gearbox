@@ -198,23 +198,8 @@ export namespace API {
 
     const collectionId = data.collection as CollectionId;
       const collection = Collections[collectionId];
-      var query = data.query;
+      const query = data.query;
 
-      if (query._id) {
-        if (typeof query._id === "string") {
-          if (query._id.toString().length !== 24)
-            return res.status(400).send({ error: "Invalid _id" });
-          query._id = new ObjectId(query._id as string);
-        } else if (query._id?.$in) {
-          const ids = query._id.$in as string[];
-          try {
-            query._id.$in = ids.map((id: string) => new ObjectId(id as string));
-          } catch (e) {
-            return res.status(400).send({ error: "Invalid _id" });
-          }
-        }
-      }
-      
       let obj = await find(db, collectionId, query);
       if (!obj) {
         obj = {};

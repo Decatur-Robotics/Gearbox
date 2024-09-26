@@ -189,7 +189,8 @@ export default function useDocument<T extends HasId | HasId[]>(
     if (!currentDocument || !originalDocument)
       return [];
 
-    const changes = getChanges(currentDocument, originalDocument);
+    const changes = getChanges(originalDocument, currentDocument);
+    console.log("Changes:", changes);
 
     // If there are no changes, do nothing
     if (!changes || Object.keys(changes).length === 0)
@@ -208,7 +209,9 @@ export default function useDocument<T extends HasId | HasId[]>(
 
   return {
     value: document,
-    set: setDocument,
+    set: (partial) => {
+      setDocument(applyChanges(document!, partial));
+    },
     saveChanges,
     fetchLatestCopy
   };
