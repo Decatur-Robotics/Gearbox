@@ -121,7 +121,8 @@ export default function MatchScheduleCard(props: {
                 >
                   {qualificationMatches.map((match, index) => (
                     <div
-                      className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-[34px]"                            key={match._id}
+                      key={match._id}
+                      className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-[34px]"
                     >
                       <div
                         id={`//match${index}`}
@@ -139,7 +140,7 @@ export default function MatchScheduleCard(props: {
                             const report = reportsById[reportId];
 
                             if (!report) return (
-                              <MdErrorOutline size={24} />
+                              <MdErrorOutline key={reportId} size={24} />
                             );
 
                             const submitted = report.submitted;
