@@ -24,7 +24,7 @@ export default function Banner(props: { children: React.ReactNode, id: string })
           localStorage.setItem(`banner-dismissed-${props.id}`, "true");
           setDismissed(true);
         }}
-        className="btn btn-sm btn-ghost absolute right-2 top-2"
+        className="btn btn-sm btn-ghost max-sm:absolute max-sm:right-2 max-sm:top-2"
       >
         X
       </button>
