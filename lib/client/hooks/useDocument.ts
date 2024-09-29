@@ -38,7 +38,23 @@ export type UseDocumentResult<T extends HasId | HasId[]> = {
 }
 
 function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
+  function isBrokenObjectId(obj: any) {
+    return obj 
+      && typeof obj === "object" 
+      && Object.keys(obj).length === 24 
+      && Object.keys(obj).every((key, index) => key == index.toString())
+      && Object.values(obj).every((item) => typeof item === "string" && item.length === 1);
+  }
+
   function addChangesInObject<S>(changes: Changes<S>, originalObj: S, currentObj: S, key: keyof S) {
+    if (isBrokenObjectId(currentObj[key])) {
+      console.log("Broken ObjectId", currentObj[key]);
+    }
+
+    if (isBrokenObjectId(originalObj[key])) {
+      console.log("Broken ObjectId", originalObj[key]);
+    }
+
     // We can't break apart ObjectIds without them ceasing to be ObjectIds
     if (currentObj[key] instanceof ObjectId) {
       if (!(originalObj[key] instanceof ObjectId) || !currentObj[key].equals(originalObj[key])) {
@@ -81,6 +97,7 @@ function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
   const changes: Changes<T> = {};
 
   for (const key in current) {
+    console.log(key, original[key], current[key]);
     if (typeof original[key] !== typeof current[key]) {
       changes[key] = current[key];
     }
@@ -89,7 +106,7 @@ function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
       addChangesInObject(changes, original, current, key);
     }
 
-    if (current[key] !== original[key]) {
+    if ((current[key] as any).equals?.(original[key]) || current[key] !== original[key]) {
       changes[key] = current[key];
     }
   }
@@ -190,6 +207,8 @@ export default function useDocument<T extends HasId | HasId[]>(
       return [];
 
     const changes = getChanges(originalDocument, currentDocument);
+    console.log("Original:", originalDocument);
+    console.log("Current:", currentDocument);
     console.log("Changes:", changes);
 
     // If there are no changes, do nothing
