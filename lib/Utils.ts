@@ -4,6 +4,7 @@
  * This is a general collection of commoly used functions
  */
 
+import { exec } from "child_process";
 import { Collections, getDatabase } from "./MongoDB";
 
 // get the database for some functions that use it
@@ -48,4 +49,15 @@ export async function GenerateSlug(
   }
 
   return finalName;
+}
+
+export async function getGitBranchName() {
+  // Convert a callback into a promise
+  return new Promise((resolve, reject) =>{
+    exec("git rev-parse --abbrev-ref HEAD", (err, stdout, stderr) => {
+      if (err)
+        reject(err);
+      else resolve(stdout);
+    });
+  });
 }

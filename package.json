@@ -57,6 +57,7 @@
   "devDependencies": {
     "@types/formidable": "^3.4.5",
     "@types/node": "^20.11.16",
+    "@types/nodegit": "^0.28.7",
     "@types/react": "^18.2.54",
     "autoprefixer": "^10.4.20",
     "cross-env": "^7.0.3",

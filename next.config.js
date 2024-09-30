@@ -3,6 +3,8 @@ const withPwa = require("next-pwa")({
   cacheOnFrontEndNav: true,
 });
 
+const { getGitBranchName } = require("./lib/Utils");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
