@@ -37,7 +37,7 @@
     "nodemailer": "^6.9.14",
     "react": "18.2.0",
     "react-beautiful-dnd": "^13.1.1",
-    "react-bootstrap": "^2.10.0",
+    "react-bootstrap": "^2.10.5",
     "react-chartjs-2": "^5.2.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
