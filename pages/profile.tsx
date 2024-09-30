@@ -17,6 +17,7 @@ import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
+import { signOut } from "next-auth/react";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -69,7 +70,10 @@ export default function Profile(props: { teamList: Team[] }) {
             mode="row"
             className="space-x-4 max-sm:flex-col max-sm:items-center"
           >
-            <Avatar></Avatar>
+            <div className="flex flex-col">
+              <Avatar />
+              <button onClick={() => signOut()} className="btn btn-primary mt-2">Sign Out</button>
+            </div>
             <div className="">
               <h1 className="italic text-lg max-sm:text-sm">
                 Known as: {user?.slug}
