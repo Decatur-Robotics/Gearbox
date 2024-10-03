@@ -3,11 +3,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/lib/Layout";
 
 import {
-  AveragePoints,
-  MostCommonValue,
-  BooleanAverage,
   StandardDeviation,
-  TotalPoints,
   Round,
 } from "@/lib/client/StatsMath";
 
@@ -163,7 +159,7 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
     setTeamSubjectiveReports(subjectiveReports);
   }, [props.subjectiveReports]);
 
-  const pointTotals = reports.map((report) => TotalPoints([report]));
+  const pointTotals = reports.map((report) => game.getAvgPoints([report]));
   const avgPoints = game.getAvgPoints(reports);
   const stDev = StandardDeviation(pointTotals);
 

@@ -327,7 +327,7 @@ export default function Container(props: ContainerProps) {
                   );
                 })}
 
-                <Link className="w-16 h-16 btn btn-primary" href={"/profile"}>
+                <Link className="w-16 h-16 btn btn-primary" href={"/createTeam"}>
                   <BiPlus className="text-4xl"></BiPlus>
                 </Link>
               </div>
