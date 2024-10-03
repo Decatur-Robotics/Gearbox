@@ -1,22 +1,11 @@
 /**
  * Utility Functions
  * @remarks
- * This is a general collection of commoly used functions
+ * This is a general collection of commonly used functions
  */
 
+import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import { Collections, getDatabase } from "./MongoDB";
-
-// get the database for some functions that use it
-const db = getDatabase();
-
-/**
- * Cleans all usernames/slugs of non-alphabetic characters
- * @param username - The name to filter
- * @returns - A "filtered" name
- */
-export function CleanUsername(username: string): string {
-  return username.replace(/\s/g, "").toLowerCase();
-}
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -35,9 +24,11 @@ export async function GenerateSlug(
   name: string,
   index: number = 0,
 ): Promise<string> {
+  const db = getDatabase();
+
   var finalName;
   if (index === 0) {
-    finalName = CleanUsername(name);
+    finalName = removeWhitespaceAndMakeLowerCase(name);
   } else {
     finalName = name + index.toString();
   }
