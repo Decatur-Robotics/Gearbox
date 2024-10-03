@@ -1,12 +1,13 @@
+import { Dot } from "@/components/stats/Heatmap";
 import { camelCaseToTitleCase } from "./client/ClientUtils";
-import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums } from "./Enums";
+import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums, IntoTheDeepEnums } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report } from "./Types";
 
-type StringKeyedObject = { [key: string]: any };
+export type StringKeyedObject = { [key: string]: any };
 
 export type ElementType = "string" | "number" | "boolean" | "image" | "startingPos" | Object;
 
-export type FormElementProps<TData extends StringKeyedObject> = string | {
+export type FormElementProps<TData extends StringKeyedObject> = keyof TData | {
   key: keyof TData;
   label?: string;
   type?: ElementType;
@@ -20,12 +21,14 @@ export class FormElement<TData extends StringKeyedObject> {
   constructor(key: keyof TData, dataExample: TData, label?: string, type?: ElementType) {
     this.key = key;
     this.label = label ?? camelCaseToTitleCase(key as string);
-    this.type = type ?? getType(key as string, dataExample);
+    this.type = type ?? keyToType(key as string, dataExample);
   }
 
   static fromProps<TData extends StringKeyedObject>(props: FormElementProps<TData>, dataExample: TData): FormElement<TData> {
     if (typeof props === "string")
       return new FormElement(props, dataExample);
+    if (typeof props !== "object")
+      throw new Error("Invalid FormElementProps: " + props.toString());
     return new FormElement(props.key, dataExample, props.label, props.type);
   }
 }
@@ -44,7 +47,7 @@ export class BlockElement<TData extends StringKeyedObject> extends Array<Array<F
 }
 
 export type FormLayoutProps<TData extends StringKeyedObject> = 
-  { [header: string]: (FormElementProps<TData> | BlockElementProps<TData>)[]};
+  { [header: string]: (FormElementProps<TData> | BlockElementProps<TData>)[] };
 
 export class FormLayout<TData extends StringKeyedObject> {
   [header: string]: (FormElement<TData> | BlockElement<TData>)[];
@@ -63,31 +66,7 @@ export class FormLayout<TData extends StringKeyedObject> {
   }
 }
 
-export function getType(key: string, exampleData: StringKeyedObject): ElementType {
-  if (key === "image")
-    return "image";
 
-  const type = typeof exampleData[key];
-  if (type !== "string")
-    return type as ElementType;
-
-  const enums = [
-    IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, 
-    CenterStageEnums.CenterStageParkingLocation, CenterStageEnums.AutoAdjustable, CenterStageEnums.AutoSidePreference
-  ];
-
-  if (key === "Defense")
-    return Defense;
-  if (key === "swerveLevel")
-    return SwerveLevel;
-
-  for (const e of enums) {
-    if (Object.values(e).includes(exampleData[key]))
-      return e;
-  }
-
-  return "string";
-}
 
 export type Badge = {
   text: string;
@@ -101,12 +80,13 @@ export type Stat<TPitData extends PitReportData, TQuantData extends QuantData> =
 }
 
 export type StatPair<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  stats: Stat<TPitData, TQuantData>[];
+  stats: [Stat<TPitData, TQuantData>, Stat<TPitData, TQuantData>];
   label: string;
 }
 
 export type StatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
-  [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[];
+  sections: { [header: string]: (Stat<TPitData, TQuantData> | StatPair<TPitData, TQuantData>)[] };
+  getGraphDots: (quantitativeReports: Report<TQuantData>[], pitReport?: Pitreport<TPitData>) => Dot[];
 }
 
 export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends QuantData> = {
@@ -116,4 +96,40 @@ export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends Qu
   individualSlideStats: Stat<TPitData, TQuantData>[];
   robotCapabilities: Stat<TPitData, TQuantData>[];
   graphStat: Stat<TPitData, TQuantData>;
+}
+
+export function keyToType(key: string, exampleData: StringKeyedObject): ElementType {
+  if (key === "image")
+    return "image";
+
+  const type = typeof exampleData[key];
+
+  if (type === "object" && "x" in exampleData[key] && "y" in exampleData[key] && "angle" in exampleData[key])
+    return "startingPos";
+  
+  if (type !== "string")
+    return type as ElementType;
+
+  const enums = [
+    IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, 
+    CenterStageEnums.CenterStageParkingLocation, CenterStageEnums.AutoAdjustable, CenterStageEnums.AutoSidePreference,
+    IntoTheDeepEnums.StartedWith, IntoTheDeepEnums.EndgameLevelClimbed
+  ];
+
+  if (key === "Defense")
+    return Defense;
+  if (key === "swerveLevel")
+    return SwerveLevel;
+
+  if (key === "StartedWith")
+    return IntoTheDeepEnums.StartedWith;
+  if (key === "EndgameLevelClimbed")
+    return IntoTheDeepEnums.EndgameLevelClimbed;
+
+  for (const e of enums) {
+    if (Object.values(e).includes(exampleData[key]))
+      return e;
+  }
+
+  return "string";
 }

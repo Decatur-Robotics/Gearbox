@@ -1,7 +1,7 @@
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { FormLayout, FormElement, BlockElement } from "@/lib/Layout";
-import { Pitreport, PitReportData } from "@/lib/Types";
+import { AllianceColor, FieldPos, Game, Pitreport, PitReportData } from "@/lib/Types";
 import { useState, useCallback, Fragment } from "react";
 import { FaRobot } from "react-icons/fa";
 import Flex from "./Flex";
@@ -13,17 +13,19 @@ import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "./QrCode";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
+import FieldPositionSelector from "./forms/FieldPositionSelector";
+import { GameId } from "@/lib/client/GameId";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function PitReportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, compId?: string, 
-    usersteamNumber?: number, compName?: string, username?: string }) {
+    usersteamNumber?: number, compName?: string, username?: string, game: Game }) {
   const { session } = useCurrentSession();
 
   const [pitreport, setPitreport] = useState(props.pitReport);
 
   const setCallback = useCallback(
-    (key: any, value: boolean | string | number) => {
+    (key: any, value: boolean | string | number | object) => {
       setPitreport((old) => {
         let copy = structuredClone(old);
         //@ts-expect-error
@@ -107,6 +109,21 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
             setCallback("comments", e.target.value);
           }}
         />
+      );
+
+    if (element.type === "startingPos")
+      return (
+        <Fragment key={index}>
+          <h1 key={key + "h"} className="font-semibold text-lg">{element.label}</h1>
+          <div className="w-full h-full flex justify-center">
+            <FieldPositionSelector 
+              alliance={AllianceColor.Blue} 
+              fieldImagePrefix={props.game.fieldImagePrefix} 
+              initialPos={pitreport.data?.[key] as FieldPos}
+              callback={(_, v) => setCallback(key, v)}         
+            />
+          </div>
+        </Fragment>
       );
 
     if (Object.keys(element.type!).length > 3) {

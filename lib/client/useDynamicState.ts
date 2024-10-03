@@ -7,6 +7,7 @@ import { Dispatch, SetStateAction, useState } from "react";
  * @returns [ state, setState, getState ]. The first two elements are the same as useState, and the
  *  third element is a function that takes a function as a parameter. The parameter function takes the latest state as
  *  a parameter.
+ * @todo Rework this! The forced undefined return type and the forced callback makes me want to barf.
  */
 export default function<T>(initialState?: T): 
     [T | undefined, Dispatch<SetStateAction<T | undefined>>, (func: (state: T | undefined) => void) => void] {
