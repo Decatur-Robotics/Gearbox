@@ -108,9 +108,9 @@ export default function TeamStats(props: {
         return <></>;
       }
 
-      const first = pair.stats[0].get?.call(pair.stats[0], pitReport ?? undefined, props.selectedReports)
+      const first = pair.stats[0].get?.(pitReport ?? undefined, props.selectedReports)
         ?? NumericalAverage(pair.stats[0].key as string, props.selectedReports);
-      const second = pair.stats[1].get?.call(pair.stats[1], pitReport ?? undefined, props.selectedReports) 
+      const second = pair.stats[1].get?.(pitReport ?? undefined, props.selectedReports) 
         ?? NumericalAverage(pair.stats[1].key as string, props.selectedReports);
 
       return <div key={index} className="w-full h-fit flex flex-row items-center">
@@ -149,7 +149,7 @@ export default function TeamStats(props: {
     );
   }
 
-  const sections = Object.entries(props.layout).map(([header, stats]) => getSections(header, stats));
+  const sections = Object.entries(props.layout.sections).map(([header, stats]) => getSections(header, stats));
 
   return (
     <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">
