@@ -52,11 +52,13 @@ export default function Heatmap(props: { selectedReports: Report[], fieldImagePr
   useEffect(() => {
     if (props.selectedReports) {
       positions = [];
-      props.selectedReports.forEach((report) =>
-        positions.push({
-          x: report.data.AutoStart.x,
-          y: report.data.AutoStart.y,
-        }),
+      props.selectedReports.forEach((report) => {
+          if (report.data.AutoStart)
+            positions.push({
+              x: report.data.AutoStart.x,
+              y: report.data.AutoStart.y,
+            });
+        }
       );
     }
   });

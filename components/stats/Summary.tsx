@@ -16,9 +16,8 @@ export default function Summary(props: { selectedReports: Report[], dots: Dot[] 
     </code>);
   }
 
-  const avgX = NumericalAverage("AutoStartX", props.selectedReports);
-  const avgA = NumericalAverage("AutoStartAngle", props.selectedReports);
-  const intake = MostCommonValue("IntakeType", props.selectedReports);
+  const avgX = NumericalAverage((r) => r.AutoStart?.x ?? 0, props.selectedReports);
+  const avgA = NumericalAverage((r) => r.AutoStart?.y ?? 0, props.selectedReports);
   const matches = props.selectedReports.length;
   const startingSide = avgX < 350 / 2 ? "left" : "right";
   const startingAngle = avgA < 180 ? "low" : "high";

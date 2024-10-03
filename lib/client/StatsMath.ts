@@ -1,4 +1,4 @@
-import { Report } from "../Types";
+import { QuantData, Report } from "../Types";
 
 export const SpeakerAutoPoints = 5;
 export const SpeakerTeleopPoints = 2;
@@ -6,28 +6,14 @@ export const AmpAutoPoints = 2;
 export const AmpTeleopPoints = 1;
 export const TrapPoints = 5;
 
+type Selector<T extends QuantData> = ((r: T) => number) | (keyof T & string);
+
+function getSelection<T extends QuantData>(selector: Selector<T>, report: Report<T>) {
+  return typeof selector === "string" ? report.data[selector] : selector(report.data);
+}
+
 export function Round(n: number): number {
   return Math.round(n * 100) / 100;
-}
-
-export function TotalPoints(reports: Report[]) {
-  const speakerAuto =
-    NumericalTotal("AutoScoredSpeaker", reports) * SpeakerAutoPoints;
-  const speakerTeleop =
-    NumericalTotal("TeleopScoredAmp", reports) * SpeakerTeleopPoints;
-
-  const ampAuto = NumericalTotal("AutoScoredAmp", reports) * AmpAutoPoints;
-  const ampTeleop =
-    NumericalTotal("TeleopScoredAmp", reports) * AmpTeleopPoints;
-
-  const trap = NumericalTotal("TeleopScoredTrap", reports) * TrapPoints;
-
-  return Round(speakerAuto + speakerTeleop + ampAuto + ampTeleop + trap);
-}
-
-export function AveragePoints(reports: Report[]) {
-  const totalPoints = reports.map((report) => TotalPoints([report]));
-  return Round(totalPoints.reduce((a, b) => a + b, 0) / reports.length);
 }
 
 export function StandardDeviation(numbers: number[]) {
@@ -36,16 +22,19 @@ export function StandardDeviation(numbers: number[]) {
   return Math.sqrt(variance);
 }
 
-export function NumericalTotal(field: string, reports: Report[]) {
+export function NumericalTotal<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
   let sum = 0;
-  reports?.forEach((report) => (sum += report.data[field]));
+  reports?.forEach((report) => (sum += getSelection(selector, report)));
   return Round(sum);
 }
 
-export function MostCommonValue(field: string, reports: Report[]) {
+export function MostCommonValue<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
   // Get a list of all values of the specified field
   let values: string[] = [];
-  reports?.forEach((report) => values.push(report.data[field]));
+  reports?.forEach((report) => {
+    const val = getSelection(selector, report);
+    values.push((val as any).toString?.() ?? JSON.stringify(val));
+  });
 
   // Count the occurrences of each value
   const occurences: { [key: string]: number } = {};
@@ -58,23 +47,23 @@ export function MostCommonValue(field: string, reports: Report[]) {
   return mode === "undefined" ? "Unknown" : mode;
 }
 
-export function BooleanAverage(field: string, reports: Report[]) {
-  const trues = reports?.filter((report) => report.data[field] === true).length;
+export function BooleanAverage<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
+  const trues = reports?.filter((report) => getSelection(selector, report) === true).length;
 
   return trues / Math.max(reports?.length, 1) > 0.5;
 }
 
-export function NumericalAverage(field: string, reports: Report[]) {
-  return Round(NumericalTotal(field, reports) / reports?.length);
+export function NumericalAverage<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
+  return Round(NumericalTotal(selector, reports) / reports?.length);
 }
 
-export function ComparativePercent(
-  field1: string,
-  field2: string,
-  reports: Report[],
+export function ComparativePercent<T extends QuantData>(
+  selector1: Selector<T>,
+  selector2: Selector<T>,
+  reports: Report<T>[],
 ) {
-  const a = NumericalTotal(field1, reports);
-  const b = NumericalTotal(field2, reports);
+  const a = NumericalTotal(selector1, reports);
+  const b = NumericalTotal(selector2, reports);
 
   if (a === 0 && b === 0) {
     return "0%";
