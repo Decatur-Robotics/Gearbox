@@ -1,7 +1,7 @@
 import { Defense } from "@/lib/Enums";
-import { FormElement, getType } from "@/lib/Layout";
+import { FormElement, keyToType } from "@/lib/Layout";
 
-test(getType.name, () => {
+test(keyToType.name, () => {
   const exampleData = {
     "image": "image",
     "text": "string",
@@ -11,7 +11,7 @@ test(getType.name, () => {
     "Defense": Defense.Full
   };
 
-  const types = Object.keys(exampleData).map(key => getType(key, exampleData));
+  const types = Object.keys(exampleData).map(key => keyToType(key, exampleData));
 
   expect(types).toEqual([
     "image",
