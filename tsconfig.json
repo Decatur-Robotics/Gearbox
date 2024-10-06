@@ -31,7 +31,7 @@
     "pages/[teamSlug]/[seasonSlug]/index.jsx",
     "pages/[teamSlug]/[seasonSlug]/[competitonSlug]/index.jsx",
     "lib/client/getSession.js",
-    "index.ts", "pages/_error.js",
+    "index.ts", "pages/_error.js", "next.config.js",
   ],
   "exclude": ["node_modules"],
 }

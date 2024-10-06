@@ -3,20 +3,10 @@ import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
 import fs from "fs";
-import { App } from "@slack/bolt";
-import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, ServerResponse, request } from "http";
 import { startSlackApp } from "./lib/Slack";
-import { getGitBranchName } from "./lib/Utils";
 
 console.log("Starting server...");
-
-const startTime = new Date();
-getGitBranchName().then((branch) => {
-  const now = new Date();
-  console.log("Got branch in", now.getTime() - startTime.getTime(), "ms");
-  console.log("Branch: " + branch);
-});
 
 const dev = process.env.NODE_ENV !== "production";
 const port = 443;
