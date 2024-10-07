@@ -8,7 +8,6 @@ const { getGitBranchName } = require("./lib/GitUtils");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  swcMinify: false,
   images: {
     domains: [
       "lh3.googleusercontent.com",
@@ -16,9 +15,6 @@ const nextConfig = {
       "www.firstinspires.org",
       "files.slack.com",
     ],
-  },
-  publicRuntimeConfig: {
-    buildTime: Date.now(),
   },
   env: {
     NEXT_PUBLIC_BUILD_TIME: Date.now().toString(),

@@ -5,7 +5,7 @@ import {
   ObjectId,
   UpdateResult,
 } from "mongodb";
-import { getGitBranchName } from "./GitUtils";
+import { getDbName } from "./GitUtils";
 
 if (!process.env.MONGODB_URI) {
   // Necessary to allow connections from files running outside of Next
@@ -70,12 +70,7 @@ export class MongoDBInterface {
   async init() {
     this.client = await this.promise;
 
-    console.log(process.env);
-
-    let dbName = process.env.DB ?? process.env.NEXT_PUBLIC_GIT_BRANCH ?? getGitBranchName();
-    console.log("Using database:", dbName);
-
-    this.db = this.client?.db(dbName);
+    this.db = this.client?.db(getDbName());
     //@ts-ignore
 
     const collections = await this.db?.listCollections().toArray();

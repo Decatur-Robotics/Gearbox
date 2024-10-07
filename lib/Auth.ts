@@ -10,10 +10,11 @@ import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
+import { getDbName } from "./GitUtils";
 
 var db = getDatabase();
 
-const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
+const adapter = MongoDBAdapter(clientPromise, { databaseName: getDbName() });
 
 export const AuthenticationOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -75,7 +76,7 @@ export const AuthenticationOptions: AuthOptions = {
           pass: process.env.SMTP_PASSWORD,
         },
       },
-      from: process.env.SMTP_FROM
+      from: process.env.SMTP_FROM,
     })
   ],
   callbacks: {
@@ -102,6 +103,8 @@ export const AuthenticationOptions: AuthOptions = {
   adapter: {
     ...adapter,
     createUser: async (user) => {
+      console.log("Creating user", user);
+
       const createdUser = await adapter.createUser!(user);
 
       Analytics.newSignUp(user.name ?? "Unknown User");

@@ -189,7 +189,7 @@ export default function Onboarding() {
                         </button>
                       </div>
                     : <div>
-                        { (team?.users?.length ?? 0) > 0 ?? false
+                        { (team.users?.length ?? 0) > 0
                           ? <div>
                               { joinRequestStatus === JoinRequestStatus.NotRequested
                                   ? <div>
@@ -222,7 +222,7 @@ export default function Onboarding() {
                                               Season created! Now, we just need to create a competition, then you&apos;re done!.<br/>
                                               <br/>
                                               If you have any further questions, don&apos;t hesitate to reach out on{" "}
-                                                <a className="link link-hover" href="https://discord.gg/ha7AnqxFDD">Discord</a>.
+                                                <a className="link link-hover link-secondary" href="https://discord.gg/ha7AnqxFDD">Discord</a>.
                                             </div>
                                             <button className="btn btn-primary mt-2" 
                                                 onClick={() => completeOnboarding(`/${team.slug}/${season!.slug}/createComp`)}>

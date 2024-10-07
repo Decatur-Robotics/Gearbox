@@ -14,7 +14,7 @@ declare global {
       GITHUB_SECRET: string;
 
       MONGODB_URI: string;
-      DB: string;
+      DB_NAME_OVERRIDE: string;
 
       TBA_URL: string;
       TBA_KEY: string;
