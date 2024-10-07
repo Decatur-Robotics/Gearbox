@@ -2,6 +2,7 @@ import ReactGA from "react-ga4";
 import { League, User, Team } from '../Types';
 import { UaEventOptions } from "react-ga4/types/ga4";
 import { GameId } from "./GameId";
+import { PHASE_PRODUCTION_BUILD } from "next/dist/shared/lib/constants";
 
 enum EventCategory {
   User = "User",
@@ -24,7 +25,7 @@ type EventParams = UaEventOptions & {
   targetName?: string;
 }
 
-if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "") {
+if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "") {
   console.log("Initializing Google Analytics...");
   ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
   console.log("Google Analytics initialized");
