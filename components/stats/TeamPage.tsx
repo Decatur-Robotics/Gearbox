@@ -221,9 +221,6 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
             <Summary selectedReports={selectedReports} />
           </div>
 
-          <div className="w-[350px] h-[300px] float-right">
-            <Heatmap selectedReports={selectedReports} fieldImagePrefix={game.fieldImagePrefix} />
-          </div>
         </div>
 
         <SmallGraph selectedReports={selectedReports} team={selectedTeam ?? 0} />
