@@ -8,6 +8,7 @@ import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
 import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
 import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
+import { ObjectId } from "bson";
 
 /**
  * Standard Account Type
@@ -25,9 +26,36 @@ export interface Session extends NextAuthSession {
   _id: string;
 }
 
-export class User implements NextAuthUser {
+export class HasId {
+  _id: ObjectId;
+
+  constructor(_id: ObjectId | undefined = undefined) {
+    this._id = _id ?? new ObjectId();
+  }
+}
+
+export class OwnedByTeam extends HasId {
+  ownerTeam: ObjectId;
+
+  constructor(ownerTeam: ObjectId) {
+    super();
+
+    this.ownerTeam = ownerTeam;
+  }
+}
+
+export class OwnedByComp extends OwnedByTeam {
+  ownerComp: ObjectId;
+
+  constructor(ownerTeam: ObjectId, ownerComp: ObjectId) {
+    super(ownerTeam);
+
+    this.ownerComp = ownerComp;
+  }
+}
+
+export class User extends HasId implements NextAuthUser {
   id: string = "";
-  _id: string | undefined;
   name: string | undefined;
   email: string | undefined;
   image: string;
@@ -53,6 +81,8 @@ export class User implements NextAuthUser {
     xp: number = 10,
     level: number = 1
   ) {
+    super();
+
     this.name = name;
     this.email = email;
     this.image = image;
@@ -73,21 +103,20 @@ export class FieldPos {
   static Zero = new FieldPos();
 }
 
-export class Team {
-  _id: string | undefined;
+export class Team extends HasId {
   name: string;
   slug: string | undefined;
   tbaId: string | undefined;
   number: number;
   league: League = League.FRC;
 
-  owners: string[];
-  users: string[];
-  scouters: string[];
-  subjectiveScouters: string[];
-  requests: string[];
+  owners: ObjectId[];
+  users: ObjectId[];
+  scouters: ObjectId[];
+  subjectiveScouters: ObjectId[];
+  requests: ObjectId[];
 
-  seasons: string[];
+  seasons: ObjectId[];
 
   slackChannel: string | undefined;
 
@@ -97,14 +126,16 @@ export class Team {
     tbaId: string | undefined,
     number: number,
     league: League = League.FRC,
-    owners: string[] = [],
-    users: string[] = [],
-    scouters: string[] = [],
-    subjectiveScouters: string[] = [],
-    requests: string[] = [],
-    seasons: string[] = [],
+    owners: ObjectId[] = [],
+    users: ObjectId[] = [],
+    scouters: ObjectId[] = [],
+    subjectiveScouters: ObjectId[] = [],
+    requests: ObjectId[] = [],
+    seasons: ObjectId[] = [],
     slackChannel: string | undefined = undefined
   ) {
+    super();
+    
     this.name = name;
     this.slug = slug;
     this.tbaId = tbaId;
@@ -286,8 +317,7 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
   }
 }
 
-export class Season {
-  _id: string | undefined;
+export class Season extends OwnedByTeam {
   name: string;
   slug: string | undefined;
 
@@ -302,8 +332,11 @@ export class Season {
     slug: string | undefined,
     year: number,
     gameId: GameId = GameId.Crescendo,
+    ownerTeam: ObjectId,
     competitions: string[] = []
   ) {
+    super(ownerTeam);
+
     this.name = name;
     this.slug = slug;
     this.year = year;
@@ -322,24 +355,23 @@ export abstract class PitReportData {
   comments: string = "";
 }
 
-export class Pitreport<TFormData extends PitReportData = PitReportData> {
-  _id: string | undefined;
-
+export class Pitreport<TFormData extends PitReportData = PitReportData> extends OwnedByComp {
   teamNumber: number;
 
   submitted: boolean = false;
-  submitter: string | undefined;
+  submitter: ObjectId | undefined;
 
   data: TFormData | undefined;
 
-  constructor(teamNumber: number, data: TFormData) {
+  constructor(teamNumber: number, data: TFormData, ownerTeam: ObjectId, ownerComp: ObjectId) {
+    super(ownerTeam, ownerComp);
+
     this.teamNumber = teamNumber;
     this.data = data;
   }
 }
 
-export class Competition {
-  _id: string | undefined;
+export class Competition extends OwnedByTeam {
   name: string;
   slug: string | undefined;
   tbaId: string | undefined;
@@ -351,10 +383,10 @@ export class Competition {
   start: number;
   end: number;
 
-  pitReports: string[];
-  matches: string[];
+  pitReports: ObjectId[];
+  matches: ObjectId[];
 
-  picklist: string;
+  picklist: ObjectId;
 
   constructor(
     name: string,
@@ -362,12 +394,15 @@ export class Competition {
     tbaId: string | undefined,
     start: number,
     end: number,
-    pitReports: string[] = [],
-    matches: string[] = [],
-    picklist: string = "",
+    ownerTeam: ObjectId,
+    pitReports: ObjectId[] = [],
+    matches: ObjectId[] = [],
+    picklist: ObjectId = new ObjectId(),
     publicData = false,
     gameId: GameId | undefined = undefined
   ) {
+    super(ownerTeam);
+
     this.name = name;
     this.slug = slug;
     this.tbaId = tbaId;
@@ -436,9 +471,7 @@ export enum MatchType {
   Finals = "Finals",
 }
 
-// add more fields
-export class Match {
-  _id: string | undefined;
+export class Match extends OwnedByComp {
   slug: string | undefined;
   tbaId: string | undefined;
 
@@ -449,10 +482,10 @@ export class Match {
   redAlliance: Alliance;
 
   time: number; // time the match begins
-  reports: string[];
+  reports: ObjectId[];
 
-  subjectiveScouter: string | undefined;
-  subjectiveReports: string[] = [];
+  subjectiveScouter: ObjectId | undefined;
+  subjectiveReports: ObjectId[] = [];
   subjectiveReportsCheckInTimestamps: { [userId: string]: string } = {};
   assignedSubjectiveScouterHasSubmitted: boolean = false;
 
@@ -464,8 +497,12 @@ export class Match {
     type: MatchType,
     blueAlliance: Alliance,
     redAlliance: Alliance,
-    reports: string[] = [],
+    ownerTeam: ObjectId,
+    ownerComp: ObjectId,
+    reports: ObjectId[] = [],
   ) {
+    super(ownerTeam, ownerComp);
+
     this.number = number;
     this.tbaId = tbaId;
     this.time = time;
@@ -477,16 +514,14 @@ export class Match {
   }
 }
 
-export class Report<TFormData extends QuantData = QuantData>{
-  _id: string | undefined;
-
+export class Report<TFormData extends QuantData = QuantData> extends OwnedByComp {
   timestamp: number | undefined; // time it was initially submitted
-  user: string | undefined; // id of user assigned to report
-  submitter: string | undefined; // id of user who submitted the report
+  user: ObjectId | undefined; // id of user assigned to report
+  submitter: ObjectId | undefined; // id of user who submitted the report
 
   color: AllianceColor;
   robotNumber: number; // number of robot to be reported
-  match: string; // id of match
+  match: ObjectId; // id of match
 
   submitted: boolean = false;
   data: TFormData;
@@ -494,14 +529,18 @@ export class Report<TFormData extends QuantData = QuantData>{
   checkInTimestamp: string | undefined;
 
   constructor(
-    user: string | undefined,
+    user: ObjectId | undefined,
     data: TFormData,
     robotNumber: number,
     color: AllianceColor,
-    match: string,
+    match: ObjectId,
+    ownerTeam: ObjectId,
+    ownerComp: ObjectId,
     timestamp: number = 0,
     checkInTimestamp: string | undefined = undefined
   ) {
+    super(ownerTeam, ownerComp);
+
     this.timestamp = timestamp;
     this.user = user;
     this.data = data;
@@ -519,18 +558,19 @@ export enum SubjectiveReportSubmissionType {
   NotSubmitted = "NotSubmitted",
 }
 
-export class SubjectiveReport {
-  _id: string | undefined;
-  submitter: string | undefined;
+export class SubjectiveReport extends OwnedByComp {
+  submitter: ObjectId | undefined;
   submitted: SubjectiveReportSubmissionType = SubjectiveReportSubmissionType.NotSubmitted;
 
-  match: string; // id of match
+  match: ObjectId; // id of match
   matchNumber: number;
 
   wholeMatchComment: string = "";
   robotComments: { [key: number]: string } = {};
 
-  constructor(match: string, matchNumber: number) {
+  constructor(match: ObjectId, matchNumber: number, ownerTeam: ObjectId, ownerComp: ObjectId) {
+    super(ownerTeam, ownerComp);
+
     this.match = match;
     this.matchNumber = matchNumber;
   }
@@ -548,7 +588,11 @@ export interface EventData {
 }
 
 export type DbPicklist = {
-  _id: string;
+  _id: ObjectId;
+
+  ownerTeam: ObjectId;
+  ownerComp: ObjectId;
+
   picklists: {
     [name: string]: number[];
   };

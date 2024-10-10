@@ -1,7 +1,7 @@
 import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
 import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
@@ -20,6 +20,7 @@ import QRCode from "react-qr-code";
 import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "../QrCode";
+import { ObjectId } from "bson";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -29,7 +30,7 @@ export type FormProps = {
   fieldImagePrefix: string;
   teamNumber: number;
   compName: string;
-  compId: string;
+  compId: ObjectId;
 };
 
 export default function Form(props: FormProps) {
@@ -43,6 +44,11 @@ export default function Form(props: FormProps) {
   const alliance = props.report?.color;
 
   async function submitForm() {
+    if (!session?.user) {
+      console.error("User is not logged in!");
+      return;
+    }
+
     console.log("Submitting form...");
 
     setSubmitting(true);
@@ -58,7 +64,7 @@ export default function Form(props: FormProps) {
           return;
 
         updateCompInLocalStorage(props.compId, (comp) => {
-          const report = comp.quantReports[props.report._id ?? ""]
+          const report = comp.quantReports[props.report._id .toString() ?? ""]
 
           report.data = formData;
           report.submitted = true;
@@ -78,7 +84,7 @@ export default function Form(props: FormProps) {
 
   const sync = async () => {
     setSyncing(true);
-    await api.updateReport({ data: formData }, props.report?._id);
+    await api.updateReport({ data: formData }, props.report._id);
     setSyncing(false);
   };
 

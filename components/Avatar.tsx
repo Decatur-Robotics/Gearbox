@@ -1,4 +1,4 @@
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import { User } from "@/lib/Types";
 import { levelToClassName } from "@/lib/Xp";
 import { BsGearFill } from "react-icons/bs";

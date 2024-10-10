@@ -5,14 +5,15 @@ import UrlResolver, {
 } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import Collections from "@/lib/client/CollectionId";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { FaPlus } from "react-icons/fa";
 import { GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -24,13 +25,18 @@ export default function CreateSeason(props: CreateSeasonProps) {
   const team = props.team;
 
   const createSeason = async (gameId: GameId) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
     const game = games[gameId];
 
     const s = await api.createSeason(
       game.name,
       game.year,
       gameId,
-      team?._id as string
+      team._id
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;

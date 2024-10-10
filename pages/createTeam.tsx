@@ -1,20 +1,35 @@
 import { League, Team } from "@/lib/Types";
 import { useEffect, useState } from "react";
 
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import Container from "@/components/Container";
 import Card from "@/components/Card";
 import Flex from "@/components/Flex";
 import { Analytics } from "@/lib/client/Analytics";
+import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
+import { search } from "slack";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function CreateTeam() {
+  const router = useRouter();
+
   const { session, status } = useCurrentSession();
 
-  const [team, setTeam] = useState<Partial<Team>>({});
+  const [team, setTeam] = useState<Partial<Team>>({
+  });
+
+  useEffect(() => {
+    setTeam({ 
+      ...team, 
+      league: router.query.league ? router.query.league as League : undefined, 
+      number: router.query.number ? +router.query.number : undefined 
+    });
+  }, [router.query]);
+
   const [error, setError] = useState("");
 
   const createTeam = async () => {

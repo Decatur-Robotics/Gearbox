@@ -1,9 +1,12 @@
+import CollectionId from './client/CollectionId';
+import DbInterface from './client/DbInterface';
 import {
   Db,
+  Filter,
   MongoClient,
   MongoClientOptions,
   ObjectId,
-  UpdateResult,
+  Document,
 } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
@@ -28,22 +31,6 @@ clientPromise = global.clientPromise;
 
 export { clientPromise };
 
-export enum Collections {
-  Seasons = "Seasons",
-  Competitions = "Competitions",
-  Matches = "Matches",
-  Reports = "Reports",
-  Teams = "Teams",
-  Users = "users",
-  Accounts = "accounts",
-  Sessions = "sessions",
-  Forms = "Forms",
-  Pitreports = "Pitreports",
-  Picklists = "Picklists",
-  SubjectiveReports = "SubjectiveReports",
-  SlackInstallations = "SlackInstallations",
-}
-
 export async function getDatabase(): Promise<MongoDBInterface> {
   if (!global.interface) {
     await clientPromise;
@@ -57,7 +44,7 @@ export async function getDatabase(): Promise<MongoDBInterface> {
   return global.interface;
 }
 
-export class MongoDBInterface {
+export class MongoDBInterface implements DbInterface {
   promise: Promise<MongoClient> | undefined;
   client: MongoClient | undefined;
   db: Db | undefined;
@@ -74,7 +61,7 @@ export class MongoDBInterface {
     const collections = await this.db?.listCollections().toArray();
     if (collections?.length === 0) {
       try {
-        Object.values(Collections).forEach(
+        Object.values(CollectionId).forEach(
           async (collectionName) =>
             await this.db?.createCollection(collectionName)
         );
@@ -84,58 +71,58 @@ export class MongoDBInterface {
     }
   }
 
-  async addObject<Type>(collection: Collections, object: any): Promise<Type> {
+  async addObject<Type extends Document>(collection: CollectionId, object: any): Promise<Type> {
     const ack = await this?.db?.collection(collection).insertOne(object);
     object._id = ack?.insertedId;
     return object as Type;
   }
 
-  async deleteObjectById(collection: Collections, id: ObjectId) {
+  async deleteObjectById(collection: CollectionId, id: ObjectId) {
     var query = { _id: id };
     await this?.db?.collection(collection).deleteOne(query);
   }
 
-  async updateObjectById<Type>(
-    collection: Collections,
+  async updateObjectById<Type extends Document>(
+    collection: CollectionId,
     id: ObjectId,
-    newValues: Partial<Type> | { [key: string]: any }
-  ): Promise<UpdateResult<Document> | undefined> {
-    var query = { _id: id };
+    newValues: Partial<Type>
+  ): Promise<void> {
+    const query = { _id: id };
     var updated = { $set: newValues };
-    return this?.db
+    this?.db
       ?.collection(collection)
       .updateOne(query, updated);
   }
 
-  async findObjectById<Type>(
-    collection: Collections,
+  async findObjectById<Type extends Document>(
+    collection: CollectionId,
     id: ObjectId
-  ): Promise<Type> {
+  ): Promise<Type | undefined | null> {
     var query = { _id: id };
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
+    return (await this?.db?.collection(collection).findOne(query)) as Type | undefined | null;
   }
 
-  async findObject<Type>(
-    collection: Collections,
+  async findObject<Type extends Document>(
+    collection: CollectionId,
     query: object
-  ): Promise<Type> {
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
+  ): Promise<Type | undefined | null> {
+    return (await this?.db?.collection(collection).findOne(query as Document)) as Type | undefined | null;
   }
 
-  async findObjects<Type>(
-    collection: Collections,
+  async findObjects<Type extends Document>(
+    collection: CollectionId,
     query: object
   ): Promise<Type[]> {
     return (await this?.db
       ?.collection(collection)
-      .find(query)
-      .toArray()) as Type[];
+      .find(query as Document)
+      .toArray()) as unknown as Type[];
   }
 
   async countObjects(
-    collection: Collections,
+    collection: CollectionId,
     query: object
   ): Promise<number | undefined> {
-    return await this?.db?.collection(collection).countDocuments(query);
+    return await this?.db?.collection(collection).countDocuments(query as Document);
   }
 }

@@ -2,14 +2,15 @@ import Container from "@/components/Container";
 import Loading from "@/components/Loading";
 import { League, Season, Team } from "@/lib/Types";
 import ClientAPI from "@/lib/client/ClientAPI";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import useDynamicState from "@/lib/client/useDynamicState";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
+import useDynamicState from "@/lib/client/hooks/useDynamicState";
 import { useRouter } from "next/router";
 import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { ObjectId } from "bson";
 
 const api = new ClientAPI("gearboxiscool")
 
@@ -20,13 +21,13 @@ export default function Onboarding() {
   const [league, setLeague] = useState<League>();
   const [teamNumber, setTeamNumber, getTeamNumber] = useDynamicState<number | undefined>();
   const [team, setTeam] = useState<{ 
-    _id?: string, 
+    _id?: ObjectId, 
     name: string, 
     number: number, 
     slug?: string,
     tbaId?: string, 
-    users?: string[],
-    requests?: string[]
+    users?: ObjectId[],
+    requests?: ObjectId[]
   }>();
   const [teamConfirmed, setTeamConfirmed] = useState<boolean>(false);
 
@@ -75,15 +76,18 @@ export default function Onboarding() {
                           })));
 
     setTeam(team);
-    setJoinRequestStatus("requests" in team && (team.requests?.includes(session?.user?._id ?? "") ?? false) 
+    setJoinRequestStatus("requests" in team && (team.requests?.includes(new ObjectId(session.user?._id)) ?? false) 
       ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
   }
 
   async function requestToJoinTeam() {
-    if (!session?.user?._id || !teamNumber) return;
+    if (!session?.user?._id || !teamNumber || !team || !team._id) {
+      console.error("Invalid request to join team");
+      return;
+    }
 
     setJoinRequestStatus(JoinRequestStatus.Requested);
-    await api.requestToJoinTeam(session?.user?._id, team?._id);
+    await api.requestToJoinTeam(session.user._id, team._id);
   }
 
   async function updateTeamRequestStatus() {

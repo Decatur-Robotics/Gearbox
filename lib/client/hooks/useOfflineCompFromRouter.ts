@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { SavedCompetition, Report, Match, Pitreport } from "../Types";
-import { getCompFromLocalStorage } from "./offlineUtils";
+import { SavedCompetition, Report, Match, Pitreport } from "../../Types";
+import { getCompFromLocalStorage } from "../offlineUtils";
 import useDynamicState from "./useDynamicState";
 
 export enum OfflineLoadStatus {

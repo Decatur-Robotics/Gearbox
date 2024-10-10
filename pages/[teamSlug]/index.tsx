@@ -8,12 +8,13 @@ import { useEffect, useState } from "react";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Competition, League, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
-import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { Collections, getDatabase } from "@/lib/MongoDB";
-import { ObjectId } from "mongodb";
+import { getDatabase } from "@/lib/MongoDB";
+import Collections from "@/lib/client/CollectionId";
+import { ObjectId } from "bson";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import {
@@ -35,6 +36,10 @@ import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
+import useDocumentFromDb from "@/lib/client/hooks/useDocumentFromDb";
+import CollectionId from "@/lib/client/CollectionId";
+import { useRouter } from "next/router";
+import useDocumentArrayFromDb from "@/lib/client/hooks/useDocumentArrayFromDb";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -45,6 +50,7 @@ type TeamPageProps = {
   pastSeasons: Season[] | undefined;
   users: User[] | undefined;
   isManager: boolean;
+  updateTeam: (team: Partial<Team>) => Promise<void[]>;
 };
 
 function Overview(props: TeamPageProps) {
@@ -77,7 +83,7 @@ function Overview(props: TeamPageProps) {
                 <h1 className="text-md font-semibold">Past Seasons:</h1>
                 <ul className="list-disc ml-8">
                   {props.pastSeasons?.map((season) => (
-                    <li key={season._id}>
+                    <li key={season._id.toString()}>
                       <Link
                         href={`/${props.team?.slug}/${season.slug}`}
                         className="text-accent"
@@ -113,7 +119,7 @@ function Roster(props: TeamPageProps) {
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [requests, setRequests] = useState<User[]>([]);
 
-  const owner = team?.owners.includes(session.user?._id as string);
+  const isManager = props.isManager;
 
   useEffect(() => {
     const loadRequests = async () => {
@@ -129,8 +135,15 @@ function Roster(props: TeamPageProps) {
     loadRequests();
   }, []);
 
-  const handleTeamRequest = async (userId: string, accept: boolean) => {
-    await api.handleRequest(accept, userId as string, team?._id as string);
+  const handleTeamRequest = async (userIdRaw: string, accept: boolean) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
+    }
+
+    const userId = new ObjectId(userIdRaw);
+
+    await api.handleRequest(accept, userId, team._id);
 
     const reqClone = structuredClone(requests);
     const userIndex = reqClone.findIndex((user) => userId === user._id);
@@ -143,52 +156,31 @@ function Roster(props: TeamPageProps) {
     }
 
     Analytics.teamJoinRequestHandled(team?.number ?? -1, team?.league ?? League.FRC, 
-      user.name ?? "Unknown User", session.user?.name ?? "Unknown User", accept);
+      user.name ?? "Unknown User", session?.user?.name ?? "Unknown User", accept);
   };
 
-  const updateScouter = async (userId: string) => {
-    var teamClone = structuredClone(team);
-    var scouters = teamClone?.scouters;
-    if (scouters?.includes(userId)) {
-      scouters.splice(scouters.indexOf(userId), 1);
+  async function toggleArrayInclusion(array: ObjectId[], id: ObjectId) {
+    if (!array.find((item) => item.equals?.(id) ?? item.toString() === id.toString())) {
+      array.push(id);
     } else {
-      scouters?.push(userId);
+      array.splice(array.indexOf(id), 1);
+    }
+  }
+
+  async function togglePermissions(userId: ObjectId, permissions: "owners" | "scouters" | "subjectiveScouters") {
+    if (!team)
+      return;
+
+    toggleArrayInclusion(team[permissions], userId);
+    props.updateTeam({ [permissions]: team[permissions] });
+  }
+
+  const removeUser = async (userId: ObjectId) => {
+    if (!team) {
+      console.error("Team not found");
+      return;
     }
 
-    await api.updateTeam({ scouters }, team?._id);
-    setTeam(teamClone);
-  };
-
-  const updateSubjectiveScouter = async (userId: string) => {
-    var teamClone = structuredClone(team);
-    if (!teamClone) return;
-
-    teamClone.subjectiveScouters ??= [];
-    var scouters = teamClone?.subjectiveScouters;
-    if (scouters?.includes(userId)) {
-      scouters.splice(scouters.indexOf(userId), 1);
-    } else {
-      scouters?.push(userId);
-    }
-
-    await api.updateTeam({ subjectiveScouters: scouters }, team?._id);
-    setTeam(teamClone);
-  };
-
-  const updateOwner = async (userId: string) => {
-    var teamClone = structuredClone(team);
-    var owners = teamClone?.owners;
-    if (owners?.includes(userId)) {
-      owners.splice(owners.indexOf(userId), 1);
-    } else {
-      owners?.push(userId);
-    }
-
-    await api.updateTeam({ owners }, team?._id);
-    setTeam(teamClone);
-  };
-
-  const removeUser = async (userId: string) => {
     const confirmed = ConfirmModal(
       "Are you sure you want to remove this user?"
     );
@@ -198,13 +190,13 @@ function Roster(props: TeamPageProps) {
     }
 
     if (team?.owners.includes(userId)) {
-      await updateOwner(userId);
+      await togglePermissions(userId, "owners");
     }
     if (team?.scouters.includes(userId)) {
-      await updateScouter(userId);
+      await togglePermissions(userId, "scouters");
     }
     if (team?.subjectiveScouters?.includes(userId)) {
-      await updateScouter(userId);
+      await togglePermissions(userId, "subjectiveScouters");
     }
 
     var teamClone = structuredClone(team);
@@ -227,7 +219,7 @@ function Roster(props: TeamPageProps) {
         <span className="text-accent">{users?.length}</span> total members
       </h1>
 
-      {owner ? (
+      {isManager ? (
         <div className="w-full collapse collapse-arrow bg-base-300">
           <input type="checkbox" />
           <div className="collapse-title text-lg font-medium">
@@ -244,7 +236,7 @@ function Roster(props: TeamPageProps) {
             ) : (
               <div className="w-full grid grid-cols-2 grid-rows-1">
                 {requests.map((user) => (
-                  <Card className="" key={user._id}>
+                  <Card className="" key={user._id.toString()}>
                     <Flex mode="col" className="space-x-2">
                       <div className="flex flex-row space-x-4 items-center">
                         <img
@@ -299,9 +291,9 @@ function Roster(props: TeamPageProps) {
             </tr>
           </thead>
           <tbody className="">
-            {users.map((user, index) => (
+            {users?.map?.((user, index) => (
               <tr
-                key={user._id}
+                key={user._id.toString()}
                 className="p-0 h-20 even:bg-base-100 odd:bg-base-200 max-sm:text-xs"
               >
                 <th className="w-10">{index + 1}</th>
@@ -313,40 +305,34 @@ function Roster(props: TeamPageProps) {
                   <input
                     type="checkbox"
                     className="toggle toggle-secondary"
-                    checked={team?.scouters.includes(user._id as string)}
-                    disabled={!owner}
-                    onChange={() => {
-                      updateScouter(user._id as string);
-                    }}
+                    checked={team?.scouters.includes(user._id)}
+                    disabled={!isManager}
+                    onChange={() => togglePermissions(user._id, "scouters")}
                   />
                 </td><td>
                   <input
                     type="checkbox"
                     className="toggle toggle-accent"
-                    checked={team?.subjectiveScouters?.includes(user._id as string)}
-                    disabled={!owner}
-                    onChange={() => {
-                      updateSubjectiveScouter(user._id as string);
-                    }}
+                    checked={team?.subjectiveScouters?.includes(user._id)}
+                    disabled={!isManager}
+                    onChange={() => togglePermissions(user._id, "subjectiveScouters")}
                   />
                 </td>
                 <td>
                   <input
                     type="checkbox"
                     className="toggle toggle-primary"
-                    checked={team?.owners.includes(user._id as string)}
-                    disabled={!owner}
-                    onChange={() => {
-                      updateOwner(user._id as string);
-                    }}
+                    checked={team?.owners.includes(user._id)}
+                    disabled={!isManager}
+                    onChange={() => togglePermissions(user._id, "owners")}
                   />
                 </td>
                 <td>
                   <button
                     className="btn btn-outline btn-error"
-                    disabled={!owner}
+                    disabled={!isManager}
                     onClick={() => {
-                      removeUser(user._id as string);
+                      removeUser(user._id);
                     }}
                   >
                     <MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
@@ -366,14 +352,19 @@ function Settings(props: TeamPageProps) {
   const [error, setError] = useState("");
 
   const updateTeam = async () => {
+    if (!props.team) {
+      console.error("Team not found");
+      return;
+    }
+
     setError("");
     if (!validName(teamName, true)) {
       setError("Invalid Team Name");
       return;
     }
 
-    await api.updateTeam({ name: teamName }, props.team?._id);
-    location.reload();
+    await props.updateTeam({ name: teamName });
+    // location.reload();
   };
 
   return (
@@ -400,15 +391,51 @@ function Settings(props: TeamPageProps) {
   );
 }
 
-export default function TeamIndex(props: TeamPageProps) {
+export default function TeamIndex() {
   const { session, status } = useCurrentSession();
-  const team = props.team;
+
+  const router = useRouter();
+
+  const teamDocument = useDocumentFromDb<Team>({
+    collection: CollectionId.Teams,
+    query: { slug: router.query.teamSlug as string },
+  });
+  const team = teamDocument?.value;
+
+  const seasons = useDocumentArrayFromDb<Season>({
+    collection: CollectionId.Seasons,
+    query: { ownerTeam: team?._id }
+  });
+
+  const competitions = useDocumentArrayFromDb<Competition>({
+    collection: CollectionId.Competitions,
+    query: { ownerTeam: team?._id }
+  });
+
+  const users = useDocumentArrayFromDb<User>({
+    collection: CollectionId.Users,
+    query: { _id: { $in: team?.users ?? [] } }
+  });
 
   const isFrc = team?.tbaId || team?.league === League.FRC;
 
   const [page, setPage] = useState(0);
+  
+  // includes is by reference, so we need to use .find and .equals
+  const isManager = session?.user && team?.owners?.find((owner) => owner.equals?.(session?.user?._id) ?? (owner as unknown as string) === session.user?._id.toString()) !== undefined;
 
-  const isManager = team?.owners.includes(session?.user?._id as string);
+  const componentProps: TeamPageProps = {
+    team: team,
+    currentSeason: seasons.value?.[(seasons.value?.length ?? 0) - 1],
+    pastSeasons: seasons.value,
+    currentCompetition: competitions.value?.[(competitions.value?.length ?? 0) - 1],
+    users: users.value,
+    isManager: isManager ?? false,
+    updateTeam: (team) => {
+      teamDocument.set({ ...teamDocument.value, ...team });
+      return Promise.all(teamDocument.saveChanges());
+    }
+  };
 
   return (
     <Container requireAuthentication={true} hideMenu={false} title={team ? `${team.number} - ${team.name}` : "Team Loading..."}>
@@ -425,7 +452,7 @@ export default function TeamIndex(props: TeamPageProps) {
                 className="inline-block mr-2"
                 size={30}
               ></FaUserFriends>
-              <span className="text-accent">{team?.users.length}</span> Active
+              <span className="text-accent">{team?.users?.length}</span> Active
               Members
             </h1>
           </Flex>
@@ -451,7 +478,7 @@ export default function TeamIndex(props: TeamPageProps) {
                 ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
                 : <div>
                     Not linked to Slack.
-                    { team?.owners.includes(session?.user?._id ?? "") && 
+                    { (session?.user && team?.owners?.includes(session?.user._id)) && 
                       <>
                         {" "}<AddToSlack />
                         , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
@@ -503,55 +530,13 @@ export default function TeamIndex(props: TeamPageProps) {
           </div>
         </div>
 
-        {page === 0 ? <Overview {...props} isManager={isManager ?? false}></Overview> : <></>}
-        {page === 1 ? <Roster {...props}></Roster> : <></>}
-        {page === 2 ? <Settings {...props}></Settings> : <></>}
+        { team && <>
+            {page === 0 && <Overview {...componentProps} isManager={isManager ?? false} />}
+            {page === 1 && <Roster {...componentProps} />}
+            {page === 2 && <Settings {...componentProps} />}
+          </>
+        }
       </Flex>
     </Container>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const db = await getDatabase();
-  const resolved = await UrlResolver(context);
-
-  const seasonIds = resolved.team?.seasons.map(
-    (seasonId) => new ObjectId(seasonId)
-  );
-  const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
-  const seasons = await db.findObjects<Season>(Collections.Seasons, {
-    _id: { $in: seasonIds },
-  });
-
-  var users = await db.findObjects<User>(Collections.Users, {
-    _id: { $in: userIds },
-  });
-
-  users = users.map((user) => {
-    var c = structuredClone(user);
-    c._id = user?._id?.toString();
-    c.teams = user.teams.map((id) => String(id));
-    return c;
-  });
-
-  const currentSeason = seasons[seasons.length - 1];
-  var comp = undefined;
-  if (currentSeason) {
-    comp = await db.findObjectById<Competition>(
-      Collections.Competitions,
-      new ObjectId(
-        currentSeason.competitions[currentSeason.competitions.length - 1]
-      )
-    );
-  }
-
-  return {
-    props: {
-      team: resolved.team,
-      users: users,
-      currentCompetition: SerializeDatabaseObject(comp),
-      currentSeason: SerializeDatabaseObject(currentSeason),
-      pastSeasons: SerializeDatabaseObjects(seasons),
-    },
-  };
-};
