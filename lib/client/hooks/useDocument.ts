@@ -57,7 +57,7 @@ function getChanges<T>(original: T, current: T): Changes<T>[] | Changes<T> {
 
     // We can't break apart ObjectIds without them ceasing to be ObjectIds
     if (currentObj[key] instanceof ObjectId) {
-      if (!(originalObj[key] instanceof ObjectId) || !currentObj[key].equals(originalObj[key])) {
+      if (!(originalObj[key] instanceof ObjectId) || !(currentObj[key] as ObjectId).equals(originalObj[key] as ObjectId)) {
         changes[key] = currentObj[key];
       }
     } else changes[key] = getChanges(originalObj[key], currentObj[key]);
@@ -133,7 +133,7 @@ function applyChanges<T>(original: T, changes: Changes<T>): T {
     if (typeof changes[key] === "object") {
       if (changes[key] instanceof ObjectId) {
         newObject[key] = changes[key] as any;
-      } else newObject[key] = applyChanges(original[key], changes[key]);
+      } else newObject[key] = applyChanges(original[key], changes[key] as any); // I don't like disabling the type check here, but I don't know how to fix it
     } else {
       // I don't like disabling the type check here, but I don't know how to fix it
       newObject[key] = changes[key] as any;

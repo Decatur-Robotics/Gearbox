@@ -625,6 +625,14 @@ export default function CompetitionIndex(props: {
     setDownloadModalOpen(false);
   }
 
+  if (!session) {
+    return (
+      <div className="min-h-screen w-screen flex justify-center items-center">
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen w-screen flex flex-col sm:flex-row justify-center items-center sm:space-x-6 my-2 overflow-hidden max-sm:my-4">

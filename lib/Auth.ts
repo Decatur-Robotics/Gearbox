@@ -84,7 +84,7 @@ export const AuthenticationOptions: AuthOptions = {
       session.user = await (await db).findObjectById(
         CollectionId.Users,
         new ObjectId(user.id)
-      );
+      ) ?? undefined;
       return session;
     },
 

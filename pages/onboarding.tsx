@@ -76,7 +76,7 @@ export default function Onboarding() {
                           })));
 
     setTeam(team);
-    setJoinRequestStatus("requests" in team && (team.requests?.includes(new ObjectId(session.user?._id)) ?? false) 
+    setJoinRequestStatus("requests" in team && (team.requests && team.requests?.includes(new ObjectId(session?.user?._id))) 
       ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
   }
 
@@ -193,7 +193,7 @@ export default function Onboarding() {
                         </button>
                       </div>
                     : <div>
-                        { (team?.users?.length ?? 0) > 0 ?? false
+                        { team.users && team.users.length > 0
                           ? <div>
                               { joinRequestStatus === JoinRequestStatus.NotRequested
                                   ? <div>

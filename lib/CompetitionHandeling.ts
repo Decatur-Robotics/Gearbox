@@ -28,9 +28,13 @@ export async function AssignScoutersToCompetitionMatches(
     CollectionId.Teams,
     new ObjectId(teamId),
   );
+
+  if (!comp || !team)
+    return "Error";
+
   const matchIds = comp.matches;
-  let scouters = team?.scouters ?? [];
-  let subjectiveScouters = team?.subjectiveScouters ?? [];
+  let scouters = team.scouters ?? [];
+  let subjectiveScouters = team.subjectiveScouters ?? [];
 
   scouters = shuffle ? shuffleArray(scouters) : scouters;
   subjectiveScouters = shuffle ? shuffleArray(subjectiveScouters) : subjectiveScouters;
@@ -70,12 +74,15 @@ export async function AssignScoutersToMatch(
 
 export async function generateReportsForMatch(matchId: ObjectId | Match, gameId: GameId, scouters?: ObjectId[]) {
   const db = await getDatabase();
-  let match: Match;
+  let match: Match | undefined | null;
   if (ObjectId.prototype.isPrototypeOf(matchId)) {
     match = await db.findObjectById<Match>(CollectionId.Matches, matchId as ObjectId);
   } else {
     match = matchId as Match;
   }
+
+  if (!match)
+    return;
 
   const existingReportPromises = match.reports.map((r) =>
     db.findObjectById<Report>(CollectionId.Reports, new ObjectId(r)));
@@ -90,7 +97,7 @@ export async function generateReportsForMatch(matchId: ObjectId | Match, gameId:
       ? AllianceColor.Blue
       : AllianceColor.Red;
 
-    const oldReport = existingReports.find((r) => r.robotNumber === teamNumber);
+    const oldReport = existingReports.find((r) => r?.robotNumber === teamNumber);
 
     if (!oldReport) {
       // Create a new report

@@ -31,7 +31,7 @@ namespace AccessLevels {
       }
 
       // Using both == and .equals is for backwards compatibility with IDs stored as strings
-      return (await team)?.users?.some((id) => id == userId || (typeof id.equals === "function" && id.equals(userId)));
+      return (await team)?.users?.some((id) => id == userId || (typeof id.equals === "function" && id.equals(userId))) ?? false;
     }
 
     export async function ifOnOwnerTeamOrCompIsPublic<TDocument extends OwnedByComp | Competition>(userId: ObjectId | undefined, document: TDocument, 
@@ -41,7 +41,7 @@ namespace AccessLevels {
         : Promise.resolve(document as Competition);
       const canReadTeam = ifOnOwnerTeam(userId, document, db);
 
-      return (await comp).publicData || await canReadTeam;
+      return ((await comp)?.publicData ?? false) || await canReadTeam;
     }
 
     export async function never() {

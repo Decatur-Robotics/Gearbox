@@ -41,7 +41,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;
 
-    Analytics.seasonCreated(gameId, team.number, session.user?.name ?? "Unknown User");
+    Analytics.seasonCreated(gameId, team.number, session?.user?.name ?? "Unknown User");
   };
 
   const gamesWithIds = Object.entries(games).map(([id, game]) => {
