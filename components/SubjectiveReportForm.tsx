@@ -94,7 +94,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: Obj
         );
     
         Analytics.subjectiveReportSubmitted(teamsWithComments, props.teamNumber ?? -1, props.compName ?? "Unknown Competition", 
-          session.session.user?.name ?? "Unknown User");
+          session.session?.user?.name ?? "Unknown User");
       })
       .finally(() => {
         if (location.href.includes("offline"))

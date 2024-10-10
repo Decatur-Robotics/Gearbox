@@ -52,6 +52,8 @@ declare global {
 
       NEXT_PUBLIC_BUILD_TIME: string;
 
+      DEVELOPER_EMAILS: string;
+
       NODE_ENV: "development" | "production";
     }
   }

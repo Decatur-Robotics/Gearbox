@@ -41,7 +41,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;
 
-    Analytics.seasonCreated(gameId, team.number, session.user?.name ?? "Unknown User");
+    Analytics.seasonCreated(gameId, team.number, session?.user?.name ?? "Unknown User");
   };
 
   const gamesWithIds = Object.entries(games).map(([id, game]) => {
@@ -53,21 +53,24 @@ export default function CreateSeason(props: CreateSeasonProps) {
       <Flex mode="row" center={true} className="h-fit py-12 md:py-24">
         <div className="w-2/3 max-sm:w-11/12 flex flex-row max-sm:flex-col max-sm:space-y-4 md:space-x-4">
           {
-            gamesWithIds.map(game => <Card key={game.id} title={game.name} className="w-1/3 bg-base-300">
+            gamesWithIds.map(game => <Card key={game.id} title={game.name} className="w-1/3 bg-base-300 flex flex-col">
               <h1 className="text-lg font-semibold">
                 {game.year} {game.league} season
               </h1>
-              <img
-                className="w-fit h-auto"
-                src={game.coverImage}
-              ></img>
+              {/* The following div pushes the create button to the bottom and vertically aligns the image to the middle of the remaining space */}
+              <div className="grow flex items-center">
+                <img
+                  className="w-fit h-auto"
+                  src={game.coverImage}
+                />
+              </div>
               <button
                 className="btn btn-primary"
                 onClick={() => {
                   createSeason(game.id);
                 }}
               >
-                <FaPlus></FaPlus>Create
+                <FaPlus />Create
               </button>
             </Card>)
           }

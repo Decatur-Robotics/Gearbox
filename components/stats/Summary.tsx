@@ -1,14 +1,23 @@
 import { Report } from "@/lib/Types";
 import { NumericalAverage, MostCommonValue } from "@/lib/client/StatsMath";
+import { Dot } from "./Heatmap";
 
-export default function Summary(props: { selectedReports: Report[] }) {
+export default function Summary(props: { selectedReports: Report[], dots: Dot[] }) {
   if (!props.selectedReports) {
-    return <code></code>;
+    return (
+    <code>
+      <div>
+        {
+          props.dots.map((dot, index) => (
+            <div key={index} className="badge badge-sm badge-primary w-full">{dot.label}</div>
+          ))
+        }
+      </div>
+    </code>);
   }
 
-  const avgX = NumericalAverage("AutoStartX", props.selectedReports);
-  const avgA = NumericalAverage("AutoStartAngle", props.selectedReports);
-  const intake = MostCommonValue("IntakeType", props.selectedReports);
+  const avgX = NumericalAverage((r) => r.AutoStart?.x ?? 0, props.selectedReports);
+  const avgA = NumericalAverage((r) => r.AutoStart?.y ?? 0, props.selectedReports);
   const matches = props.selectedReports.length;
   const startingSide = avgX < 350 / 2 ? "left" : "right";
   const startingAngle = avgA < 180 ? "low" : "high";
@@ -31,6 +40,13 @@ export default function Summary(props: { selectedReports: Report[] }) {
           This robot has competed in {matches} matches and is very well characterized.
         </>
       )}
+      <div>
+        {
+          props.dots.map((dot, index) => (
+            <div key={index} className="badge badge-sm badge-primary">{dot.label}</div>
+          ))
+        }
+      </div>
     </code>
   );
 }

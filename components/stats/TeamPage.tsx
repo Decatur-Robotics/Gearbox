@@ -3,11 +3,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/lib/Layout";
 
 import {
-  AveragePoints,
-  MostCommonValue,
-  BooleanAverage,
   StandardDeviation,
-  TotalPoints,
   Round,
 } from "@/lib/client/StatsMath";
 
@@ -163,7 +159,7 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
     setTeamSubjectiveReports(subjectiveReports);
   }, [props.subjectiveReports]);
 
-  const pointTotals = reports.map((report) => TotalPoints([report]));
+  const pointTotals = reports.map((report) => game.getAvgPoints([report]));
   const avgPoints = game.getAvgPoints(reports);
   const stDev = StandardDeviation(pointTotals);
 
@@ -218,11 +214,15 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
       <div className="w-5/12 h-full flex flex-col space-y-4">
         <div className="w-full h-[300px] flex flex-row justify-end mt-2">
           <div className="w-3/4 p-2 h-full bg-base-300 rounded-l-lg">
-            <Summary selectedReports={selectedReports} />
+            <Summary selectedReports={selectedReports} dots={game.statsLayout.getGraphDots(selectedReports, pitReports[selectedTeam ?? 0])} />
           </div>
 
           <div className="w-[350px] h-[300px] float-right">
-            <Heatmap selectedReports={selectedReports} fieldImagePrefix={game.fieldImagePrefix} />
+            <Heatmap 
+              selectedReports={selectedReports} 
+              fieldImagePrefix={game.fieldImagePrefix}
+              dots={game.statsLayout.getGraphDots(selectedReports, pitReports[selectedTeam ?? 0])}
+            />
           </div>
         </div>
 

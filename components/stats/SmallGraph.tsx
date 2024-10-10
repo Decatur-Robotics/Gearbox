@@ -56,7 +56,7 @@ const options = {
 const api = new ClientAPI("gearboxiscool");
 
 export default function SmallGraph(props: { selectedReports: Report[], team: number }) {
-  const [key, setKey] = useState("AutoStartX");
+  const [key, setKey] = useState("Defense");
   const keys = Array.from(new Set(props.selectedReports?.map(r => Object.keys(r.data)).flat() ?? []));
 
   interface Datapoint {

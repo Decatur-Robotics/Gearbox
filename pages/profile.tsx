@@ -1,5 +1,5 @@
 import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { League, Team } from "@/lib/Types";
@@ -10,11 +10,7 @@ import Card from "@/components/Card";
 import Avatar from "@/components/Avatar";
 import { IoCheckmarkCircle, IoCloseCircle, IoMail } from "react-icons/io5";
 import Loading from "@/components/Loading";
-import { FaPlus } from "react-icons/fa";
-import { getDatabase } from "@/lib/MongoDB";
 import Collections from "@/lib/client/CollectionId";
-import { GetServerSideProps } from "next";
-import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
@@ -57,8 +53,9 @@ export default function Profile(props: { teamList: Team[] }) {
 
     setLoadingRequest(true);
 
+    // TODO
     dbWriter?.updateObjectById(Collections.Teams, new ObjectId(teamId), {
-      $push: { requests: user._id },
+      // $push: { requests: user._id },
     })
       .then(() => {
         setTeamsRequestedToJoin({
@@ -89,7 +86,7 @@ export default function Profile(props: { teamList: Team[] }) {
           >
             <div className="flex flex-col">
               <Avatar />
-              <button className="btn btn-secondary mt-3" onClick={() => signOut()}>Sign Out</button>
+              <button onClick={() => signOut()} className="btn btn-primary mt-2">Sign Out</button>
             </div>
             <div className="">
               <h1 className="italic text-lg max-sm:text-sm">

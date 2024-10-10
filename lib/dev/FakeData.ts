@@ -67,6 +67,11 @@ export async function fillTeamWithFakeUsers(
     CollectionId.Teams,
     new ObjectId(teamId),
   );
+
+  if (!team) {
+    throw new Error("Team not found");
+  }
+
   team.users = team.users.concat(users);
   team.scouters = team.scouters.concat(users);
 

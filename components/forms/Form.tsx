@@ -1,4 +1,4 @@
-import { AllianceColor, Report, QuantData } from "@/lib/Types";
+import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
 import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/hooks/useCurrentSession";
@@ -9,7 +9,7 @@ import { TfiReload } from "react-icons/tfi";
 import ClientAPI from "@/lib/client/ClientAPI";
 import Checkbox from "./Checkboxes";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
-import StartingPosition from "./StartingPosition";
+import FieldPositionSelector from "./FieldPositionSelector";
 import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
@@ -44,7 +44,7 @@ export default function Form(props: FormProps) {
   const alliance = props.report?.color;
 
   async function submitForm() {
-    if (!session.user) {
+    if (!session?.user) {
       console.error("User is not logged in!");
       return;
     }
@@ -53,13 +53,9 @@ export default function Form(props: FormProps) {
 
     setSubmitting(true);
 
-    api.submitForm(props.report._id, formData, session.user._id)
-      .finally(() => {
+    api.submitForm(props.report?._id, formData, session?.user?._id)
+      .then(() => {
         console.log("Submitted form successfully!");
-        if (location.href.includes("offline"))
-          location.href = `/offline/${props.compId}`;
-        else
-          location.href = location.href.substring(0, location.href.lastIndexOf("/"));
       })
       .catch((e) => {
         console.error(e);
@@ -75,6 +71,12 @@ export default function Form(props: FormProps) {
 
           return comp;
         });
+      })
+      .finally(() => {
+        if (location.href.includes("offline"))
+          location.href = `/offline/${props.compId}`;
+        else
+          location.href = location.href.substring(0, location.href.lastIndexOf("/"));
       });
 
     Analytics.quantReportSubmitted(props.report.robotNumber, props.teamNumber, props.compName, session.user?.name ?? "Unknown User");
@@ -87,7 +89,7 @@ export default function Form(props: FormProps) {
   };
 
   const setCallback = useCallback(
-    (key: any, value: boolean | string | number) => {
+    (key: any, value: boolean | string | number | object) => {
       setFormData((old) => {
         let copy = structuredClone(old);
         copy[key] = value;
@@ -126,12 +128,12 @@ export default function Form(props: FormProps) {
 
     if (element.type === "startingPos") {
       return (
-        <StartingPosition
+        <FieldPositionSelector
           alliance={alliance}
-          data={formData}
           callback={setCallback}
           fieldImagePrefix={props.fieldImagePrefix}
           key={key}
+          initialPos={formData[key] as FieldPos}
         />
       );
     }
@@ -171,7 +173,7 @@ export default function Form(props: FormProps) {
 
     const elements = [];
 
-    console.log(`Block: ${rowCount}x${colCount}: ${block.flat().map(e => e.key).join(", ")}`);
+    // console.log(`Block: ${rowCount}x${colCount}: ${block.flat().map(e => e.key).join(", ")}`);
     for (let r = 0; r < rowCount; r++) {
       for (let c = 0; c < colCount; c++) {
         let topRounding = "", bottomRounding = "";
@@ -196,7 +198,7 @@ export default function Form(props: FormProps) {
           }
         }
 
-        console.log(`(${r}, ${c}) - ${topRounding}, ${bottomRounding}`);
+        // console.log(`(${r}, ${c}) - ${topRounding}, ${bottomRounding}`);
 
         if (!BlockElement.isBlock(block[c][r])) {
           const element = block[c][r] as FormElement<QuantData>;

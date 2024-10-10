@@ -1,5 +1,5 @@
 import { getDatabase } from "@/lib/MongoDB";
-import { PitReportData, Pitreport } from "@/lib/Types";
+import { Game, PitReportData, Pitreport } from "@/lib/Types";
 import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
@@ -13,18 +13,17 @@ import PitReportForm from "@/components/PitReport";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import { Analytics } from "@/lib/client/Analytics";
 import ClientAPI from "@/lib/client/ClientAPI";
-import Collections from "@/lib/client/CollectionId";
+import CollectionId from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 
-export default function PitreportForm(props: { pitreport: Pitreport, layout: FormLayout<PitReportData>, teamNumber: number, compName: string }) {
+export default function PitreportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, teamNumber: number, compName: string, game: Game }) {
   const { session, status } = useCurrentSession();
   const hide = status === "authenticated";
 
   return (
-    <Container requireAuthentication={false} hideMenu={!hide} title={`${props.pitreport.teamNumber} | Pit Scouting`}>
-      <PitReportForm pitReport={props.pitreport} layout={props.layout} usersteamNumber={props.teamNumber} 
-        compName={props.compName} username={session?.user?.name} />ccess
+    <Container requireAuthentication={false} hideMenu={!hide} title={`${props.pitReport?.teamNumber ?? "Loading..."} | Pit Scouting`}>
+      <PitReportForm {...props} />
     </Container>
   );
 }
@@ -32,7 +31,7 @@ export default function PitreportForm(props: { pitreport: Pitreport, layout: For
 async function getPitreport(id: string) {
   const db = await getDatabase();
   return await db.findObjectById<Pitreport>(
-    Collections.Pitreports,
+    CollectionId.Pitreports,
     new ObjectId(id)
   );
 }
@@ -46,10 +45,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: { 
-      pitreport: SerializeDatabaseObject(pitreport),
+      pitReport: SerializeDatabaseObject(pitreport),
       layout: makeObjSerializeable(game.pitReportLayout),
       teamNumber: urlData.team?.number,
-      compName: urlData.competition?.name
+      compName: urlData.competition?.name,
+      game: makeObjSerializeable(game),
      },
   };
 };

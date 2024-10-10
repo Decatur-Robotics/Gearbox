@@ -95,6 +95,14 @@ export class User extends HasId implements NextAuthUser {
   }
 }
 
+export class FieldPos {
+  x: number = 0;
+  y: number = 0;
+  angle: number = 0;
+
+  static Zero = new FieldPos();
+}
+
 export class Team extends HasId {
   name: string;
   slug: string | undefined;
@@ -148,9 +156,7 @@ export abstract class QuantData {
 
   Presented: boolean = true;
 
-  AutoStartX: number = 0; // pixel position of robot
-  AutoStartY: number = 0;
-  AutoStartAngle: number = 0; // stored... but probably wont ever be used
+  AutoStart: FieldPos = FieldPos.Zero;
 
   Defense: Defense = Defense.None;
 
@@ -193,14 +199,21 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
    * @param pitDataType 
    * @param pitReportLayout will auto-populate fields from PitReportData (everything not unique to the game)
    */
-  constructor(name: string, year: number, league: League, 
-      quantDataType: new() => TQuantData, pitDataType: new() => TPitData, 
-      pitReportLayout: FormLayoutProps<TPitData>, quantitativeReportLayout: FormLayoutProps<TQuantData>,
+  constructor(
+      name: string, 
+      year: number, 
+      league: League, 
+      quantDataType: new() => TQuantData, 
+      pitDataType: new() => TPitData, 
+      pitReportLayout: FormLayoutProps<TPitData>, 
+      quantitativeReportLayout: FormLayoutProps<TQuantData>,
       statsLayout: StatsLayout<TPitData, TQuantData>,
-      pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, fieldImagePrefix: string, 
+      pitStatsLayout: PitStatsLayout<TPitData, TQuantData>, 
+      fieldImagePrefix: string, 
       coverImage: string,
       getBadges: (pitData: Pitreport<TPitData> | undefined, quantitativeReports: Report<TQuantData>[] | undefined, card: boolean) => Badge[],
-      getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number) {
+      getAvgPoints: (quantitativeReports: Report<TQuantData>[] | undefined) => number
+    ) {
     this.name = name;
     this.year = year;
     this.league = league;
@@ -246,7 +259,8 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
 
     // Copy over the rest of the layout
     for (const [header, keys] of Object.entries(layout)) {
-      finalLayout[header] = keys;
+      if (header === "Pre-Match") finalLayout["Pre-Match"].push(...keys);
+      else finalLayout[header] = keys;
     }
 
     const keys = Object.keys(layout);
@@ -256,17 +270,17 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
   }
 
   private static mergeStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
-      (layout: StatsLayout<TPitData, TQuantData>) {
-    const finalLayout: typeof layout = {
+      (layout: StatsLayout<TPitData, TQuantData>): StatsLayout<TPitData, TQuantData> {
+    const finalSections: typeof layout.sections = {
       "Positioning": [{label: "Avg Start X", key: "AutoStartX"}, {label: "Avg Start Y", key: "AutoStartY"}, 
         {label: "Avg Start Angle (Deg)", key: "AutoStartAngle"}],
     }
 
-    for (const [header, stats] of Object.entries(layout)) {
-      finalLayout[header] = stats;
+    for (const [header, stats] of Object.entries(layout.sections)) {
+      finalSections[header] = stats;
     }
 
-    return finalLayout;
+    return { sections: finalSections, getGraphDots: layout.getGraphDots };
   }
 
   private static mergePitStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>

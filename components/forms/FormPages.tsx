@@ -7,6 +7,7 @@ export type PageProps = {
   callback: (key: string, value: string | number | boolean) => void;
   fieldImagePrefix?: string;
 };
+
 export type EndPageProps = {
   alliance: AllianceColor;
   data: QuantData;

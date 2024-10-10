@@ -358,7 +358,7 @@ function Settings(props: TeamPageProps) {
     }
 
     setError("");
-    if (!validName(teamName)) {
+    if (!validName(teamName, true)) {
       setError("Invalid Team Name");
       return;
     }

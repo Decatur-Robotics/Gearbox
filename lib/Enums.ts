@@ -1,7 +1,17 @@
+import { StringKeyedObject, ElementType } from "./Layout";
+
 export enum Defense {
   None = "None",
   Partial = "Partial",
   Full = "Full",
+}
+
+export enum FTCEndgame {
+  None = "None",
+  Parked = "Parked",
+  TouchingTheLowerBar = "Touching the Lower Bar",
+  LowClimb = "Low Climb",
+  HighClimb = "High Climb",
 }
 
 export enum IntakeTypes {
@@ -50,5 +60,21 @@ export namespace CenterStageEnums {
     Backstage = "Backstage",
     Audience = "Audience",
     NoPreference = "No Preference",
+  }
+}
+
+export namespace IntoTheDeepEnums {
+  export enum StartedWith {
+    Nothing = "Nothing",
+    Sample = "Sample",
+    Specimen = "Specimen",
+  }
+
+  export enum EndgameLevelClimbed {
+    None = "None",
+    Parked = "Parked",
+    TouchedLowRung = "Touched Low Rung",
+    LowLevelClimb = "Low Level Climb",
+    HighLevelClimb = "High Level Climb",
   }
 }

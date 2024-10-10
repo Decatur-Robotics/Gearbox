@@ -31,6 +31,7 @@ import { xpToLevel } from "./Xp";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
+import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { Collections } from "./client/Collections";
 import DbInterface from "./client/DbInterface";
@@ -43,8 +44,8 @@ export namespace API {
     slackClient: WebClient;
     db: MongoDBInterface;
     tba: TheBlueAlliance.Interface;
+    userPromise: Promise<User | undefined>;
     data: TData;
-    user: User | undefined;
   };
 
   type Route = (
@@ -151,8 +152,8 @@ export namespace API {
             slackClient: this.slackClient,
             db: await this.db,
             tba: this.tba,
+            userPromise: session.then((s) => s?.user as User | undefined),
             data: req.body,
-            user: (await session)?.user as User | undefined,
           };
 
           this.routes[route](req, new NextApiResponseWrapper(res), contents);
@@ -194,7 +195,7 @@ export namespace API {
   async function findInDb(req: NextApiRequest, res: NextApiResponseWrapper, contents: FindRouteContents,
     find: (db: DbInterface, collectionId: CollectionId, query: object) => Promise<Document | Document[] | null | undefined>
   ) {
-    const { user, data, db } = contents;
+    const { userPromise, data, db } = contents;
 
     const collectionId = data.collection as CollectionId;
       const collection = Collections[collectionId];
@@ -206,6 +207,8 @@ export namespace API {
 
         res.status(200).send(obj);
       }
+
+      const user = await userPromise;
 
       if (!(await collection.canRead(user?._id, obj, db))) {
         // If we ``, lines breaks and tabs are preserved in the string
@@ -241,12 +244,7 @@ export namespace API {
       res.status(200).send(await db.addObject(collection, object));
     },
 
-    update: async (req, res, { db, data, user }: RouteContents<{ collection: CollectionId, id: string, newValues: { [key: string]: any } }>) => {
-      // {
-      //     collection,
-      //      id,
-      //     newValues,
-      // }
+    update: async (req, res, { db, data, userPromise }: RouteContents<{ collection: CollectionId, id: string, newValues: { [key: string]: any } }>) => {
       const collectionId = data.collection;
       const id = data.id;
       const newValues = data.newValues;
@@ -255,6 +253,8 @@ export namespace API {
       if (!current) {
         return res.status(404).send({ error: "Not found" });
       }
+
+      const user = await userPromise;
 
       if (!(await Collections[collectionId].canWrite(user?._id, current, newValues, db))) {
         return res.status(403).send({ error: "Unauthorized" });
@@ -423,11 +423,27 @@ export namespace API {
     },
 
     // creation
-    createTeam: async (req, res, { db, data, user }: RouteContents<{ number: number, tbaId: string, name: string, league: League }>) => {
-      const creator = user?._id;
+    createTeam: async (req, res, { db, userPromise, data }: RouteContents<{ name: string, tbaId: string, number: number, league: League }>) => {
+      const user = await userPromise;
 
-      if (!creator) {
-        return res.status(403).send({ error: "Unauthorized" });
+      if (!user || !user._id) {
+        return res.status(403).send({ error: "Not signed in" });
+      }
+
+      // Find if team already exists
+      const existingTeam = await db.findObject<Team>(CollectionId.Teams, {
+        number: data.number,
+        ...(data.league === League.FRC 
+          ? { $or: [
+              { league: League.FRC }, 
+              { league: undefined }
+            ] } 
+          : { league: data.league }
+        )
+      });
+
+      if (existingTeam) {
+        return res.status(400).send({ error: "Team already exists" });
       }
 
       const newTeamObj = new Team(
@@ -436,9 +452,9 @@ export namespace API {
         data?.tbaId,
         data.number,
         data.league,
-        [creator],
-        [creator],
-        [creator]
+        [user._id],
+        [user._id],
+        [user._id]
       );
       const team = await db.addObject<Team>(CollectionId.Teams, newTeamObj);
 
@@ -450,6 +466,9 @@ export namespace API {
         new ObjectId(user._id),
         user
       );
+
+      ResendUtils.emailDevelopers(`New team created: ${team.name}`, 
+        `A new team has been created by ${user.name}: ${team.league} ${team.number}, ${team.name}.`);
 
       if (process.env.FILL_TEAMS === "true") {
         fillTeamWithFakeUsers(20, team._id!.toString());
