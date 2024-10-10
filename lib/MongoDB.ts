@@ -5,7 +5,7 @@ import {
   ObjectId,
   UpdateResult,
 } from "mongodb";
-import { getDbName } from "./GitUtils";
+import { getDbName } from "./JsUtils";
 
 if (!process.env.MONGODB_URI) {
   // Necessary to allow connections from files running outside of Next

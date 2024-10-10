@@ -51,7 +51,8 @@ declare global {
       NEXT_PUBLIC_FORCE_OFFLINE_MODE: string;
 
       NEXT_PUBLIC_BUILD_TIME: string;
-      NEXT_PUBLIC_GIT_BRANCH: string;
+      
+      GIT_BRANCH: string;
 
       DEVELOPER_EMAILS: string;
 

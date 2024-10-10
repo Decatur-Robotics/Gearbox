@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development npx tsx index.ts",
-    "build": "next build",
+    "dev": "npm run transpile & cross-env NODE_ENV=development npx tsx index.ts",
+    "build": "npm run transpile & next build",
     "start": "cross-env NODE_ENV=production npx tsx index.ts ",
-    "restart": "next build && cross-env NODE_ENV=production npx tsx index.ts",
+    "restart": "npm run build && npm run start",
     "lint": "next lint",
     "prettier": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
-    "test": "jest"
+    "test": "jest",
+    "transpile": "tsc lib/JsUtils.ts --outDir transpiled"
   },
   "dependencies": {
     "@next-auth/mongodb-adapter": "^1.1.3",

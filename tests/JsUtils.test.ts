@@ -1,4 +1,4 @@
-import { getGitBranchName } from "@/lib/GitUtils";
+import { getGitBranchName } from "@/lib/JsUtils";
 import git from "isomorphic-git";
 import fs from "fs";
 

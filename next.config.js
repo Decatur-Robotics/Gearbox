@@ -3,7 +3,7 @@ const withPwa = require("next-pwa")({
   cacheOnFrontEndNav: true,
 });
 
-const { getGitBranchName } = require("./lib/GitUtils");
+const { getGitBranchName } = require("./transpiled/JsUtils");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,7 +18,7 @@ const nextConfig = {
   },
   env: {
     NEXT_PUBLIC_BUILD_TIME: Date.now().toString(),
-    NEXT_PUBLIC_GIT_BRANCH: getGitBranchName(),
+    GIT_BRANCH: getGitBranchName(),
   }
 };
 

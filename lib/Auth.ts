@@ -10,7 +10,7 @@ import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
-import { getDbName } from "./GitUtils";
+import { getDbName } from "./JsUtils";
 
 var db = getDatabase();
 
