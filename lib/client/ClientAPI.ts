@@ -181,11 +181,10 @@ export default class ClientAPI {
     league: League
   ): Promise<Team> {
     return await this.request("/createTeam", {
-      name: name,
-      number: number,
-      creator: creator,
-      tbaId: tbaId,
-      league: league,
+      name,
+      number,
+      tbaId,
+      league,
     });
   }
 
