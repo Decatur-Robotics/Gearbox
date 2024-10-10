@@ -58,6 +58,7 @@ export namespace Crescendo {
     TeleopMissedSpeaker: number = 0;
     TeleopScoredTrap: number = 0;
     TeleopMissedTrap: number = 0;
+    TeleopPassed: number = 0;
   
     Coopertition: boolean = false; // true if used any point in match
     ClimbedStage: boolean = false;
@@ -99,6 +100,7 @@ export namespace Crescendo {
         ["TeleopScoredSpeaker", "TeleopMissedSpeaker"],
         ["TeleopScoredTrap", "TeleopMissedTrap"]
       ],
+      [[{ key: "TeleopPassed", label: "Notes Passed" }]],
       "Defense"
     ],
     "Summary": [
@@ -144,6 +146,10 @@ export namespace Crescendo {
             { label: "Avg Missed Trap Shots", key: "TeleopMissedTrap" }
           ],
           label: "Overall Trap Accuracy"
+        },
+        {
+          key: "TeleopPassed",
+          label: "Notes Passed"
         }
       ]
     },
