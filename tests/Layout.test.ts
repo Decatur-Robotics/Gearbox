@@ -23,7 +23,7 @@ test(keyToType.name, () => {
   ]);
 });
 
-test(`${FormElement.name}.${FormElement.fromProps.name}: From Key`, () => {
+test(`${FormElement.name}.${FormElement.fromProps.name}: From key`, () => {
   const exampleData = {
     "text": "string"
   };
@@ -35,7 +35,7 @@ test(`${FormElement.name}.${FormElement.fromProps.name}: From Key`, () => {
   expect(element.type).toBe("string");
 });
 
-test(`${FormElement.name}.${FormElement.fromProps.name}: From Props`, () => {
+test(`${FormElement.name}.${FormElement.fromProps.name}: From props`, () => {
   const exampleData = {
     "number": 1
   };

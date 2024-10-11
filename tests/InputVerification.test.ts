@@ -1,12 +1,12 @@
 import { MinimumNameLength, validEmail, validName } from "@/lib/client/InputVerification";
 
-test(`${validName.name}: No Names < ${MinimumNameLength} Characters`, () => {
+test(`${validName.name}: No names < ${MinimumNameLength} characters`, () => {
   let name = "a".repeat(MinimumNameLength - 1);
   expect(validName(name)).toBe(false);
   expect(validName(name+"a")).toBe(true);
 });
 
-test(`${validName.name}: Alphanumeric Only`, () => {
+test(`${validName.name}: Alphanumeric only`, () => {
   let name = "a".repeat(MinimumNameLength);
   expect(validName(name)).toBe(true);
   expect(validName(name+"1")).toBe(true);
@@ -14,7 +14,7 @@ test(`${validName.name}: Alphanumeric Only`, () => {
   expect(validName(name+" ")).toBe(false);
 });
 
-test(`${validName.name}: Allow Spaces`, () => {
+test(`${validName.name}: Allow spaces`, () => {
   let name = "a".repeat(MinimumNameLength);
   expect(validName(name+" ")).toBe(false);
   expect(validName(name+" ", true)).toBe(true);
