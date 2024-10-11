@@ -1,6 +1,6 @@
 import Container from "@/components/Container";
 import CollectionId from "@/lib/client/CollectionId";
-import { useLocalDb } from "@/lib/client/MiniMongoInterface";
+import { useLocalDb } from "@/lib/client/dbinterfaces/MiniMongoInterface";
 import { ObjectId } from "bson";
 import React from "react";
 import { useEffect, useState } from "react";

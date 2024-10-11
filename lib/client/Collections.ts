@@ -1,7 +1,7 @@
 import { ObjectId } from "bson"
 import CollectionId from "./CollectionId"
 import { Account, Competition, DbPicklist, Match, OwnedByComp, OwnedByTeam, Pitreport, Report, Season, Session, SubjectiveReport, Team, User } from "../Types"
-import DbInterface from "./DbInterface"
+import DbInterface from "./dbinterfaces/DbInterface"
 
 class Collection<TDocument> {
   canRead: (userId: ObjectId | undefined, document: TDocument, db: DbInterface) => Promise<boolean>

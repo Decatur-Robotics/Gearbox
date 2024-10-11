@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import CollectionId from "../CollectionId";
 import { ObjectId } from "bson";
 import ClientAPI from '../ClientAPI';
-import MiniMongoInterface, { useLocalDb } from "../MiniMongoInterface";
+import MiniMongoInterface, { useLocalDb } from "../dbinterfaces/MiniMongoInterface";
 import useDynamicState from "./useDynamicState";
 
 export type Changes<T> = Partial<{

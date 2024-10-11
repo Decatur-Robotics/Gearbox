@@ -1,4 +1,6 @@
 import { camelCaseToTitleCase, removeDuplicates, removeWhitespaceAndMakeLowerCase, rotateArray, toDict } from "@/lib/client/ClientUtils";
+import { HasId } from "@/lib/Types";
+import { ObjectId } from "bson";
 
 test(camelCaseToTitleCase.name, () => {
   expect(camelCaseToTitleCase("notLinkedToTba")).toBe("Not Linked To Tba");
@@ -6,16 +8,15 @@ test(camelCaseToTitleCase.name, () => {
 
 test(toDict.name, () => {
   const array = [
-    { _id: "1", name: "one" },
-    { _id: "2", name: "two" },
-    { _id: "3", name: "three" }
+    { _id: new ObjectId(), name: "one" },
+    { _id: new ObjectId(), name: "two" },
+    { _id: new ObjectId(), name: "three" }
   ]
 
-  const dict = {
-    "1": { _id: "1", name: "one" },
-    "2": { _id: "2", name: "two" },
-    "3": { _id: "3", name: "three" }
-  }
+  const dict: { [_id: string]: HasId & { name: string } } = {};
+  array.forEach((item) => {
+    dict[item._id.toString()] = item;
+  });
 
   expect(toDict(array)).toEqual(dict);
 });

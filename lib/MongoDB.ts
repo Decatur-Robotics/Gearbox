@@ -1,5 +1,5 @@
 import CollectionId from './client/CollectionId';
-import DbInterface from './client/DbInterface';
+import DbInterface from './client/dbinterfaces/DbInterface';
 import {
   Db,
   Filter,

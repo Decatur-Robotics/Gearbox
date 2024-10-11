@@ -34,7 +34,7 @@ import { TheOrangeAlliance } from "./TheOrangeAlliance";
 import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { Collections } from "./client/Collections";
-import DbInterface from "./client/DbInterface";
+import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Document } from "mongodb";
 
 export namespace API {

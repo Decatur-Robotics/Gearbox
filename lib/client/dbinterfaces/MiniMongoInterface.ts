@@ -1,7 +1,7 @@
 import { ObjectId, Document, EJSON } from "bson";
 import { LocalStorageDb, MinimongoCollection, MinimongoDb } from "minimongo";
 import DbInterface from "./DbInterface";
-import CollectionId from "./CollectionId";
+import CollectionId from "../CollectionId";
 import { useState, useEffect } from "react";
 
 export default class MiniMongoInterface implements DbInterface {
@@ -56,7 +56,6 @@ export default class MiniMongoInterface implements DbInterface {
   }
 
   private async performOperationOnCollection<Type>(
-    operationName: string, 
     collection: CollectionId, 
     operation: (collection: MinimongoCollection) => Promise<Type>,
     onlyIf: (collection: MinimongoCollection) => Promise<boolean> = () => Promise.resolve(true)
@@ -77,18 +76,17 @@ export default class MiniMongoInterface implements DbInterface {
 
   addObject<Type>(collection: CollectionId, object: any): Promise<Type>
   {
-    return this.performOperationOnCollection("add", collection, (collection) => collection.upsert(object));
+    return this.performOperationOnCollection(collection, (collection) => collection.upsert(object));
   }
 
   deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>
   {
-    return this.performOperationOnCollection("delete", collection, (collection) => collection.remove(id.toHexString()));
+    return this.performOperationOnCollection(collection, (collection) => collection.remove(id.toHexString()));
   }
 
   updateObjectById<Type>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>
   {
     return this.performOperationOnCollection(
-      "update", 
       collection, 
       (collection) => collection.upsert({
         ...newValues,
@@ -105,17 +103,17 @@ export default class MiniMongoInterface implements DbInterface {
 
   findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
   {
-    return this.performOperationOnCollection("find one", collection, (collection) => collection.findOne(query));
+    return this.performOperationOnCollection(collection, (collection) => collection.findOne(query));
   }
   
   findObjects<Type>(collection: CollectionId, query: object): Promise<Type[]>
   {
-    return this.performOperationOnCollection("find multiple", collection, (collection) => collection.find(query).fetch());
+    return this.performOperationOnCollection(collection, (collection) => collection.find(query).fetch());
   }
 
   countObjects(collection: CollectionId, query: object): Promise<number | undefined>
   {
-    return this.performOperationOnCollection("count", collection, (collection) => collection.find(query).fetch().then((objects) => objects.length));
+    return this.performOperationOnCollection(collection, (collection) => collection.find(query).fetch().then((objects) => objects.length));
   }  
 }
 

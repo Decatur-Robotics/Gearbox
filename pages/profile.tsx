@@ -16,13 +16,13 @@ import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
 import { ObjectId } from "bson";
 import useDocumentArrayFromDb from "@/lib/client/hooks/useDocumentArrayFromDb";
-import { useDbWriter } from "@/lib/client/DualDbWriter";
+import { useDualDbWriter } from "@/lib/client/dbinterfaces/DualDbWriter";
 import { signOut } from "next-auth/react";
 
 const api = new ClientAPI("gearboxiscool");
 
 export default function Profile(props: { teamList: Team[] }) {
-  const dbWriter = useDbWriter();
+  const dbWriter = useDualDbWriter();
   const { session } = useCurrentSession();
   const user = session?.user;
 
