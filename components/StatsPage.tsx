@@ -45,8 +45,8 @@ export default function Stats(props: StatsPageProps) {
       api
         .competitionReports(props.competition._id, true, usePublicData)
         .then((data) => setReports(data)),
-      pitReports.length === 0 &&
-        api.getPitReports(props.competition.pitReports).then((data) => {
+      pitReports.length === 0 && props.competition._id &&
+        api.getPitReports(props.competition._id).then((data) => {
             setPitReports(data);
           }),
       api.getSubjectiveReportsForComp(props.competition._id!).then(setSubjectiveReports),

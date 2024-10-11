@@ -138,10 +138,6 @@ export default class ClientAPI {
     });
   }
 
-  async allTeams(): Promise<Team[]> {
-    return await this.request("/findAll", { collection: "Teams" });
-  }
-
   async getTeamAutofillData(teamNumber: number | undefined, league: League = League.FRC): Promise<Team> {
     return await this.request("/teamAutofill", { number: teamNumber, league });
   }
@@ -382,16 +378,6 @@ export default class ClientAPI {
     return await this.request("/setSlackId", { userId, slackId });
   }
 
-  async addUserXp(
-    userId: string | undefined,
-    oweBucksToAdd: number | undefined
-  ) {
-    return await this.request("/addUserXp", {
-      userId,
-      oweBucksToAdd,
-    });
-  }
-
   async initialEventData(eventKey: string | undefined): Promise<EventData> {
     return await this.request("/initialEventData", { eventKey });
   }
@@ -431,8 +417,8 @@ export default class ClientAPI {
     return await this.request("/teamCompRanking", { tbaId, team });
   }
 
-  async getPitReports(reportIds: string[]) {
-    return await this.request("/getPitReports", { reportIds });
+  async getPitReports(compId: string) {
+    return await this.request("/getPitReports", { compId });
   }
 
   async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
