@@ -59,7 +59,13 @@ export default class ClientAPI {
       body: JSON.stringify(body),
     });
     
-    return await rawResponse.json();
+    const res = await rawResponse.json();
+
+    if (res.error) {
+      throw new Error(`${subUrl}: ${res.error}`);
+    }
+
+    return res;
   }
   
   /**
@@ -517,9 +523,9 @@ export default class ClientAPI {
     return await this.request("/ping", {});
   }
 
-  async getSubjectiveReportsFromMatches(matches: Match[], fallback: SubjectiveReport[] | undefined = undefined): Promise<SubjectiveReport[]> {
+  async getSubjectiveReportsFromMatches(compId: string, matches: Match[], fallback: SubjectiveReport[] | undefined = undefined): Promise<SubjectiveReport[]> {
     try {
-      return await this.request("/getSubjectiveReportsFromMatches", { matches });
+      return await this.request("/getSubjectiveReportsFromMatches", { compId, matches });
     }
     catch(e) {
       if (fallback)

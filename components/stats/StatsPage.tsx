@@ -4,9 +4,9 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { Competition, Pitreport, SubjectiveReport, Report, DbPicklist } from "@/lib/Types";
 import { useState, useEffect } from "react";
 import Container from "@/components/Container";
-import PicklistScreen from "./stats/Picklist";
-import TeamPage from "./stats/TeamPage";
-import PredictionScreen from "./stats/PredictionScreen";
+import PicklistScreen from "./Picklist";
+import TeamPage from "./TeamPage";
+import PredictionScreen from "./PredictionScreen";
 import { games } from "@/lib/games";
 
 const api = new ClientAPI("gearboxiscool");

@@ -20,11 +20,11 @@ export default function Subjective(props: ResolvedUrlData) {
   const [match, setMatch] = useState<Match | undefined>();
 
   useEffect(() => {
-    if (match)
+    if (match || !matchId)
       return;
 
     api.findMatchById(matchId as string).then(setMatch);
-  }, [match]);
+  }, [match, matchId]);
 
   if (!match)
     return (
