@@ -596,8 +596,8 @@ export default function CompetitionIndex(props: {
 
   return (
     <>
-      <div className="min-h-screen w-screen flex flex-col sm:flex-row grow-0 items-start justify-center max-sm:content-center sm:space-x-6 my-2 overflow-hidden max-sm:my-4">
-        <div className="w-1/2 sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
+      <div className="min-h-screen w-screen flex flex-col sm:flex-row justify-center items-center sm:space-x-6 my-2 overflow-hidden max-sm:my-4">
+        <div className="w-4/5 sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
           <CompHeaderCard comp={comp} openDownloadModal={openDownloadModal} isOnline={isOnline} />
           <InsightsAndSettingsCard 
             showSettings={showSettings} setShowSettings={setShowSettings} isManager={isManager} comp={comp}
@@ -613,7 +613,7 @@ export default function CompetitionIndex(props: {
           />
         </div>
 
-        <div className="w-1/2 flex flex-col max-sm:items-center h-screen space-y-4">
+        <div className="w-4/5 sm:w-1/2 flex flex-col max-sm:items-center h-screen space-y-4">
           <MatchScheduleCard 
             matches={matches} qualificationMatches={qualificationMatches}
             usersById={usersById} reportsById={reportsById} comp={comp} isManager={isManager} openEditMatchModal={openEditMatchModal}

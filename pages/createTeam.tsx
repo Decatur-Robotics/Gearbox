@@ -7,9 +7,6 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import Container from "@/components/Container";
 import Card from "@/components/Card";
 import Flex from "@/components/Flex";
-import Loading from "@/components/Loading";
-import TeamCard from "@/components/TeamCard";
-import { TheOrangeAlliance } from "@/lib/TheOrangeAlliance";
 import { Analytics } from "@/lib/client/Analytics";
 
 const api = new ClientAPI("gearboxiscool");

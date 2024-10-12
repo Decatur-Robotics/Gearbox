@@ -30,7 +30,7 @@ test(`${removeDuplicates.name}: 2D array`, () => {
   expect(removeDuplicates(arr)).toEqual([1, 2, 3, 4, 5]);
 });
 
-test(`${removeDuplicates.name}: Not In Place`, () => {
+test(`${removeDuplicates.name}: Not in place`, () => {
   const arr = [1, 2, 3, 4, 5, 1, 2, 3, 4];
   const original = arr.slice();
   removeDuplicates(arr);

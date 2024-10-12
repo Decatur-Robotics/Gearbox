@@ -40,6 +40,7 @@ export namespace API {
     slackClient: WebClient;
     db: MongoDBInterface;
     tba: TheBlueAlliance.Interface;
+    user: Promise<User | undefined>;
     data: TData;
   };
 
@@ -118,11 +119,14 @@ export namespace API {
         : routeRaw;
 
       if (route in this.routes) {
+        const session = getServerSession(req, res, AuthenticationOptions);
+
         this.routes[route](req, res, {
           slackClient: this.slackClient,
           db: await this.db,
           tba: this.tba,
           data: req.body,
+          user: session.then((s) => s?.user as User | undefined),
         });
       } else {
         new NotFoundError(res, route);
@@ -331,13 +335,28 @@ export namespace API {
     },
 
     // creation
-    createTeam: async (req, res, { db, data }) => {
-      // {
-      //     number
-      //     tbaId?
-      //     name,
-      //     creator
-      // }
+    createTeam: async (req, res, { db, user: userPromise, data }: RouteContents<{ name: string, tbaId: string, number: number, league: League }>) => {
+      const user = await userPromise;
+
+      if (!user || !user._id) {
+        return res.status(403).send({ error: "Not signed in" });
+      }
+
+      // Find if team already exists
+      const existingTeam = await db.findObject<Team>(Collections.Teams, {
+        number: data.number,
+        ...(data.league === League.FRC 
+          ? { $or: [
+              { league: League.FRC }, 
+              { league: undefined }
+            ] } 
+          : { league: data.league }
+        )
+      });
+
+      if (existingTeam) {
+        return res.status(400).send({ error: "Team already exists" });
+      }
 
       const newTeamObj = new Team(
         data.name,
@@ -345,16 +364,12 @@ export namespace API {
         data?.tbaId,
         data.number,
         data.league,
-        [data.creator],
-        [data.creator],
-        [data.creator]
+        [user._id],
+        [user._id],
+        [user._id]
       );
       const team = await db.addObject<Team>(Collections.Teams, newTeamObj);
 
-      var user = await db.findObjectById<User>(
-        Collections.Users,
-        new ObjectId(data.creator)
-      );
       user.teams = removeDuplicates(...user.teams, team._id!.toString());
       user.owner = removeDuplicates(...user.owner, team._id!.toString());
 
