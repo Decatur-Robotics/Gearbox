@@ -597,7 +597,7 @@ export default function CompetitionIndex(props: {
   return (
     <>
       <div className="min-h-screen w-screen flex max-sm:flex-col sm:flex-row justify-center sm:space-x-6 my-2 overflow-hidden max-sm:my-4">
-        <div className="w-4/5 sm:w-2/5 flex flex-col grow-0 space-y-14 h-full">
+        <div className="w-4/5 sm:w-2/5 flex flex-col space-y-14 h-full">
           <CompHeaderCard comp={comp} openDownloadModal={openDownloadModal} isOnline={isOnline} />
           <InsightsAndSettingsCard 
             showSettings={showSettings} setShowSettings={setShowSettings} isManager={isManager} comp={comp}
