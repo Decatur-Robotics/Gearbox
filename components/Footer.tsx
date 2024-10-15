@@ -112,20 +112,25 @@ export default function Footer() {
         <div>{swStatus}</div>
         <div>
           Size:{" "}
-          <span className="sm:hidden">
-            XS
-          </span>
-          <span className="max-xs:hidden md:hidden">
-            SM
-          </span>
-          <span className="max-sm:hidden lg:hidden">
-            MD
-          </span>
-          <span className="max-md:hidden xl:hidden">
-            LG
-          </span>
-          <span className="max-lg:hidden">
-            XL
+          <span className="xs:text-primary sm:text-accent md:text-secondary lg:underline lg:text-primary xl:text-accent 2xl:text-secondary">
+            <span className="sm:hidden">
+              XS
+            </span>
+            <span className="max-xs:hidden md:hidden">
+              SM
+            </span>
+            <span className="max-sm:hidden lg:hidden">
+              MD
+            </span>
+            <span className="max-md:hidden xl:hidden">
+              LG
+            </span>
+            <span className="max-lg:hidden 2xl:hidden">
+              XL
+            </span>
+            <span className="max-xl:hidden">
+              2XL
+            </span>
           </span>
         </div>
       </nav>
