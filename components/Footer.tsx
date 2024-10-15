@@ -94,15 +94,15 @@ export default function Footer() {
           <HiStatusOnline className="inline mr-1" size={16} />
           Status
         </Link>
-      </nav>
-      <nav className="max-sm:pl-8">
-        <h6 className="footer-title">About</h6>
         <Link
           className="link link-hover"
           href="https://www.decaturrobotics.org/our-team"
         >
           <FaList className="inline mr-1" size={16}/>About Us
         </Link>
+      </nav>
+      <nav className="max-sm:pl-8">
+        <h6 className="footer-title">Debug</h6>
         <div>
           Version {(() => {
             const timestamp = new Date(+process.env.NEXT_PUBLIC_BUILD_TIME);
@@ -110,6 +110,24 @@ export default function Footer() {
           })()}
         </div>
         <div>{swStatus}</div>
+        <div>
+          Size:{" "}
+          <span className="sm:hidden">
+            XS
+          </span>
+          <span className="max-xs:hidden md:hidden">
+            SM
+          </span>
+          <span className="max-sm:hidden lg:hidden">
+            MD
+          </span>
+          <span className="max-md:hidden xl:hidden">
+            LG
+          </span>
+          <span className="max-lg:hidden">
+            XL
+          </span>
+        </div>
       </nav>
       <div className="max-sm:hidden flex-row flex space-x-4">
         <Link
