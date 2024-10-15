@@ -53,6 +53,8 @@ export default function Onboarding() {
   }, [session?.user?.email]);
 
   async function completeOnboarding(redirect: string = "/profile") {
+    console.log("Season:", season);
+
     if (!session?.user?._id) return;
 
     api.setOnboardingCompleted(session?.user?._id);
@@ -189,7 +191,7 @@ export default function Onboarding() {
                         </button>
                       </div>
                     : <div>
-                        { (team?.users?.length ?? 0) > 0 ?? false
+                        { (team?.users?.length ?? 0) > 0
                           ? <div>
                               { joinRequestStatus === JoinRequestStatus.NotRequested
                                   ? <div>

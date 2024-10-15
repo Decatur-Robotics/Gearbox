@@ -14,7 +14,7 @@ import ClientAPI from "@/lib/client/ClientAPI";
 import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
-import StatsPage, { StatsPageProps } from "@/components/StatsPage";
+import StatsPage, { StatsPageProps } from "@/components/stats/StatsPage";
 import { ObjectId } from "mongodb";
 
 export default function Stats(props: StatsPageProps) {
