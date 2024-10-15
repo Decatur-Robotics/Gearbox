@@ -28,23 +28,23 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
 
   const [report, setReport] = useState<SubjectiveReport | undefined>(undefined);
 
-  function getReportFromForm(e: FormEvent<HTMLFormElement>): SubjectiveReport {
+  function getReportFromForm(): SubjectiveReport {
     return {
       _id: undefined,
       match: match._id as string,
       matchNumber: match?.number ?? 0,
-      wholeMatchComment: (e.target as any)[0].value,
+      wholeMatchComment: (document.getElementById("comment-WholeMatch") as HTMLTextAreaElement)?.value ?? "",
       robotComments: Object.fromEntries(
-        [...(e.target as any)].slice(1).map((element: any, index: number) => 
-          [match?.blueAlliance.concat(match.redAlliance)[index], element.value])
+        match?.blueAlliance.concat(match.redAlliance).map((team: number, index: number) => 
+          [match?.blueAlliance.concat(match.redAlliance)[index], (document.getElementById(`comment-${team}`) as HTMLTextAreaElement).value ?? ""])
       ),
       submitter: undefined,
       submitted: SubjectiveReportSubmissionType.NotSubmitted
     };
   }
 
-  function updateReport(e: FormEvent<HTMLFormElement>) {
-    setReport(getReportFromForm(e));
+  function updateReport() {
+    setReport(getReportFromForm());
   }
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -69,7 +69,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
       return;
     }
 
-    api.submitSubjectiveReport(getReportFromForm(e), session?.session?.user?._id!, teamSlug as string)
+    api.submitSubjectiveReport(getReportFromForm(), session?.session?.user?._id!, teamSlug as string)
       .catch((err) => {
         console.error(err);
 
@@ -78,7 +78,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
 
         updateCompInLocalStorage(props.compId, (comp) => {
           const subjectiveReport: SubjectiveReport = { 
-            ...getReportFromForm(e),
+            ...getReportFromForm(),
             _id: new BSON.ObjectId().toHexString()
           };
 
@@ -126,7 +126,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
                           {team}
                         </span>
                       </div>
-                      <textarea className="input input-bordered w-full h-20" placeholder="Enter comments here..."/>
+                      <textarea id={`comment-${team.toString().replace(" ", "")}`} className="input input-bordered w-full h-20" placeholder="Enter comments here..."/>
                     </div>
                   ))
                 }

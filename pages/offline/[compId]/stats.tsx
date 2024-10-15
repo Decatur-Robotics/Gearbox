@@ -1,4 +1,4 @@
-import StatsPage from "@/components/StatsPage";
+import StatsPage from "@/components/stats/StatsPage";
 import useOfflineCompFromRouter from "@/lib/client/useOfflineCompFromRouter";
 
 export default function OfflineStats() {

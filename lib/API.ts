@@ -13,6 +13,8 @@ import {
   SubjectiveReport,
   SubjectiveReportSubmissionType,
   SavedCompetition,
+  MatchType,
+  Alliance,
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
@@ -40,7 +42,7 @@ export namespace API {
     slackClient: WebClient;
     db: MongoDBInterface;
     tba: TheBlueAlliance.Interface;
-    user: Promise<User | undefined>;
+    userPromise: Promise<User | undefined>;
     data: TData;
   };
 
@@ -126,7 +128,7 @@ export namespace API {
           db: await this.db,
           tba: this.tba,
           data: req.body,
-          user: session.then((s) => s?.user as User | undefined),
+          userPromise: session.then((s) => s?.user as User | undefined),
         });
       } else {
         new NotFoundError(res, route);
@@ -156,6 +158,99 @@ export namespace API {
     return pitreports.map((pit) => String(pit._id));
   }
 
+  function onTeam(team?: Team, user?: User) {
+    return team && user && user._id && team.users.find((owner) => owner === user._id?.toString()) !== undefined;
+  }
+
+  function ownsTeam(team?: Team, user?: User) {
+    return team && user && user._id && team.owners.find((owner) => owner === user._id?.toString()) !== undefined;
+  }
+
+  function getCompFromReport(db: MongoDBInterface, report: Report) {
+    return db.findObject<Competition>(Collections.Competitions, {
+      matches: report.match?.toString()
+    });
+  }
+
+  function getCompFromMatch(db: MongoDBInterface, match: Match) {
+    return db.findObject<Competition>(Collections.Competitions, {
+      matches: match._id?.toString()
+    });
+  }
+
+  function getCompFromPitReport(db: MongoDBInterface, report: Pitreport) {
+    return db.findObject<Competition>(Collections.Competitions, {
+      pitReports: report._id?.toString()
+    });
+  }
+
+  function getCompFromSubjectiveReport(db: MongoDBInterface, report: SubjectiveReport) {
+    return db.findObject<Match>(Collections.Matches, {
+      subjectiveReports: report._id?.toString()
+    }).then(match => {
+      if (!match)
+        return undefined;
+
+      return getCompFromMatch(db, match);
+    });
+  }
+
+  function getCompFromPicklist(db: MongoDBInterface, picklist: DbPicklist) {
+    return db.findObject<Competition>(Collections.Competitions, {
+      picklist: picklist._id?.toString()
+    });
+  }
+
+  function getSeasonFromComp(db: MongoDBInterface, comp: Competition) {
+    return db.findObject<Season>(Collections.Seasons, {
+      competitions: comp?._id?.toString() // Specifying one value is effectively includes for arrays
+    });
+  }
+
+  function getTeamFromSeason(db: MongoDBInterface, season: Season) {
+    return db.findObject<Team>(Collections.Teams, {
+      seasons: season._id?.toString()
+    });
+  }
+
+  async function getTeamFromComp(db: MongoDBInterface, comp: Competition) {
+    const season = await getSeasonFromComp(db, comp);
+
+    if (!season)
+      return undefined;
+
+    return getTeamFromSeason(db, season);
+  }
+
+  async function getTeamFromDocument(db: MongoDBInterface, getComp: (db: MongoDBInterface, doc: any) => Promise<any>, doc: any) {
+    const comp = await getComp(db, doc);
+
+    if (!comp)
+      return undefined;
+
+    return getTeamFromComp(db, comp);
+  }
+
+  async function getTeamFromReport(db: MongoDBInterface, report: Report) {
+    return getTeamFromDocument(db, getCompFromReport, report);
+  }
+
+  async function getTeamFromMatch(db: MongoDBInterface, match: Match) {
+    return getTeamFromDocument(db, getCompFromMatch, match);
+  }
+
+  async function getTeamFromPitReport(db: MongoDBInterface, report: Pitreport) {
+    return getTeamFromDocument(db, getCompFromPitReport, report);
+  }
+
+  async function getTeamFromPicklist(db: MongoDBInterface, picklist: DbPicklist) {
+    return getTeamFromDocument(db, getCompFromPicklist, picklist);
+  }
+
+  async function getTeamFromSubjectiveReport(db: MongoDBInterface, report: SubjectiveReport) {
+    return getTeamFromDocument(db, getCompFromSubjectiveReport, report);
+  }
+
   export const Routes: RouteCollection = {
     hello: async (req, res, { db, data }) => {
       res.status(200).send({
@@ -165,25 +260,10 @@ export namespace API {
       });
     },
 
-    // crud operations- no need to make extra endpoints when we can just shape the query client side;
-    // FORCE THEM TO USE POST
-    add: async (req, res, { db, data }) => {
-      // {
-      //     collection,
-      //     object
-      // }
-      const collection = data.collection;
-      const object = data.object;
-
-      res.status(200).send(await db.addObject(collection, object));
-    },
-
-    update: async (req, res, { db, data }) => {
-      // {
-      //     collection,
-      //      id,
-      //     newValues,
-      // }
+    /**
+     * TODO: Add user verification
+     */
+    update: async (req, res, { db, data }: RouteContents<{ collection: Collections, id: string, newValues: object }>) => {
       const collection = data.collection;
       const id = data.id;
       const newValues = data.newValues;
@@ -194,19 +274,11 @@ export namespace API {
           await db.updateObjectById(collection, new ObjectId(id), newValues)
         );
     },
-
-    delete: async (req, res, { db, data }) => {
-      // {
-      //     collection,
-      //     id
-      // }
-      const collection = data.collection;
-      const id = data.id;
-
-      res.status(200).send(await db.deleteObjectById(collection, id));
-    },
-
-    find: async (req, res, { db, data }) => {
+    
+    /**
+     * TODO: Add user verification
+     */
+    find: async (req, res, { db, data }: RouteContents<{ collection: Collections, query: { _id?: string | ObjectId } }>) => {
       // {
       //     collection,
       //     query
@@ -224,16 +296,6 @@ export namespace API {
       }
 
       res.status(200).send(obj);
-    },
-
-    findAll: async (req, res, { db, data }) => {
-      // {
-      //     collection,
-
-      // }
-      const collection = data.collection;
-
-      res.status(200).send(await db.findObjects(collection, {}));
     },
 
     // modification
@@ -260,21 +322,25 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
 
-    handleRequest: async (req, res, { db, data }) => {
-      // {
-      //     accept
-      //     userId
-      //     teamId
-      // }
-
-      let team = await db.findObjectById<Team>(
+    handleRequest: async (req, res, { db, data, userPromise }: RouteContents<{ accept: boolean, userId: string, teamId: string }>) => {
+      const teamPromise = db.findObjectById<Team>(
         Collections.Teams,
         new ObjectId(data.teamId)
       );
-      let user = await db.findObjectById<User>(
+      
+      const joineePromise = db.findObjectById<User>(
         Collections.Users,
         new ObjectId(data.userId)
       );
+
+      const userOnTeam = await userPromise;
+      const team = await teamPromise;
+      
+      if (!ownsTeam(team, userOnTeam)) {
+        return res.status(403).send({ error: "You do not own this team" });
+      }
+
+      const joinee = await joineePromise;
 
       team.requests.splice(team.requests.indexOf(data.userId), 1);
 
@@ -282,60 +348,50 @@ export namespace API {
         team.users = removeDuplicates(...team.users, data.userId);
         team.scouters = removeDuplicates(...team.scouters, data.userId);
 
-        user.teams = removeDuplicates(...user.teams, data.teamId);
+        joinee.teams = removeDuplicates(...joinee.teams, data.teamId);
       }
 
-      await db.updateObjectById<User>(
-        Collections.Users,
-        new ObjectId(data.userId),
-        user
-      );
-      await db.updateObjectById<Team>(
-        Collections.Teams,
-        new ObjectId(data.teamId),
-        team
-      );
+      await Promise.all([
+        db.updateObjectById<User>(
+          Collections.Users,
+          new ObjectId(data.userId),
+          joinee
+        ),
+        db.updateObjectById<Team>(
+          Collections.Teams,
+          new ObjectId(data.teamId),
+          team
+        )
+      ]);
 
       return res.status(200).send(team);
     },
 
     // tba shit
 
-    teamAutofill: async (req, res, { tba, data }) => {
-      // {
-      //     number
-      // }
+    teamAutofill: async (req, res, { tba, data }: RouteContents<{ number: number, league: League }>) => {
       return res.status(200).send(data.league === League.FTC 
         ? await TheOrangeAlliance.getTeam(data.number)
         : await tba.getTeamAutofillData(data.number)
       );
     },
 
-    competitionAutofill: async (req, res, { tba, data }) => {
-      // {
-      //     tbaId
-      // }
+    competitionAutofill: async (req, res, { tba, data }: RouteContents<{ tbaId: string }>) => {
       return res
         .status(200)
         .send(await tba.getCompetitionAutofillData(data.tbaId));
     },
 
-    competitionMatches: async (req, res, { tba, data }) => {
-      // {
-      //     tbaId
-      // }
+    competitionMatches: async (req, res, { tba, data }: RouteContents<{ tbaId: string }>) => {
       return res.status(200).send(await tba.getCompetitionMatches(data.tbaId));
     },
 
-    matchAutofill: async (req, res, { tba, data }) => {
-      // {
-      //    tbaId
-      // }
+    matchAutofill: async (req, res, { tba, data }: RouteContents<{ tbaId: string }>) => {
       return res.status(200).send(await tba.getMatchAutofillData(data.tbaId));
     },
 
     // creation
-    createTeam: async (req, res, { db, user: userPromise, data }: RouteContents<{ name: string, tbaId: string, number: number, league: League }>) => {
+    createTeam: async (req, res, { db, userPromise: userPromise, data }: RouteContents<{ name: string, tbaId: string, number: number, league: League }>) => {
       const user = await userPromise;
 
       if (!user || !user._id) {
@@ -364,9 +420,9 @@ export namespace API {
         data?.tbaId,
         data.number,
         data.league,
-        [user._id],
-        [user._id],
-        [user._id]
+        [user._id.toString()],
+        [user._id.toString()],
+        [user._id.toString()]
       );
       const team = await db.addObject<Team>(Collections.Teams, newTeamObj);
 
@@ -390,13 +446,17 @@ export namespace API {
     },
 
     // NEEDS TO BE ADDED TO TEAM DUMBASS
-    createSeason: async (req, res, { db, data }) => {
-      // {
-      //     year
-      //     name
-      //     teamId;
-      // }
-      var season = await db.addObject<Season>(
+    createSeason: async (req, res, { db, data, userPromise }: RouteContents<{ year: number, name: string, teamId: string, gameId: GameId }>) => {
+      const team = await db.findObjectById<Team>(
+        Collections.Teams,
+        new ObjectId(data.teamId)
+      );
+
+      if (!ownsTeam(team, (await userPromise))) {
+        return res.status(403).send({ error: "Unauthorized" });
+      }
+
+      const season = await db.addObject<Season>(
         Collections.Seasons,
         new Season(
           data.name,
@@ -404,10 +464,6 @@ export namespace API {
           data.year,
           data.gameId
         )
-      );
-      var team = await db.findObjectById<Team>(
-        Collections.Teams,
-        new ObjectId(data.teamId)
       );
       team.seasons = [...team.seasons, String(season._id)];
 
@@ -420,12 +476,19 @@ export namespace API {
       return res.status(200).send(season);
     },
 
-    reloadCompetition: async (req, res, { db, data, tba }) => {
-      // {comp id, tbaId}
+    reloadCompetition: async (req, res, { db, data, tba, userPromise }: RouteContents<{ compId: string }>) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const team = await getTeamFromComp(db, comp);
 
-      const comp = db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      if (!ownsTeam(team, await userPromise)) {
+        return res.status(403).send({ error: "Unauthorized" });
+      }
 
-      var matches = await tba.getCompetitionMatches(data.tbaId);
+      if (!comp.tbaId) {
+        return res.status(200).send({ result: "none" });
+      }
+
+      const matches = await tba.getCompetitionMatches(comp.tbaId);
       if (!matches || matches.length <= 0) {
         res.status(200).send({ result: "none" });
         return;
@@ -436,7 +499,7 @@ export namespace API {
           (await db.addObject<Match>(Collections.Matches, match))._id
       );
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, (await comp).gameId);
+      const pitReports = await generatePitReports(tba, db, comp.tbaId, comp.gameId);
 
       await db.updateObjectById(
         Collections.Competitions,
@@ -449,25 +512,21 @@ export namespace API {
       res.status(200).send({ result: "success" });
     },
 
-    createCompetiton: async (req, res, { db, data, tba }) => {
-      // {
-      //     tbaId?
-      //     start
-      //     end
-      //     name
-      //     seasonId
-      //     publicData
-      // }
-      
-      const seasonPromise = db.findObjectById<Season>(Collections.Seasons, new ObjectId(data.seasonId));
+    createCompetiton: async (req, res, { db, data, tba, userPromise }: 
+        RouteContents<{ tbaId: string, start: number, end: number, name: string, seasonId: string, publicData: boolean }>) => {      
+      const season = await db.findObjectById<Season>(Collections.Seasons, new ObjectId(data.seasonId));
+      const team = await getTeamFromSeason(db, season);
 
-      var matches = await tba.getCompetitionMatches(data.tbaId);
+      if (!ownsTeam(team, await userPromise)) {
+        return res.status(403).send({ error: "Unauthorized" });
+      }
+
+      const matches = await tba.getCompetitionMatches(data.tbaId);
       matches.map(
         async (match) =>
           (await db.addObject<Match>(Collections.Matches, match))._id,
       );
       
-      const season = await seasonPromise;
       const pitReports = await generatePitReports(tba, db, data.tbaId, season.gameId);
 
       const picklist = await db.addObject<DbPicklist>(Collections.Picklists, {
@@ -475,7 +534,7 @@ export namespace API {
         picklists: {},
       });
 
-      var comp = await db.addObject<Competition>(
+      const comp = await db.addObject<Competition>(
         Collections.Competitions,
         new Competition(
           data.name,
@@ -508,10 +567,17 @@ export namespace API {
       return res.status(200).send(comp);
     },
 
-    regeneratePitReports: async (req, res, { db, data, tba }) => {
+    regeneratePitReports: async (req, res, { db, data, tba, userPromise }) => {
       const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
 
-      const pitReports = await generatePitReports(tba, db, data.tbaId, comp.gameId);
+      if (!comp.tbaId)
+        return res.status(200).send({ error: "not linked to TBA" });
+
+      const team = await getTeamFromComp(db, comp);
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      const pitReports = await generatePitReports(tba, db, comp.tbaId, comp.gameId);
 
       await db.updateObjectById(
         Collections.Competitions,
@@ -522,13 +588,17 @@ export namespace API {
       return res.status(200).send({ result: "success", pitReports });
     },
 
-    createMatch: async (req, res, { db, data }) => {
-      // {
-      //     tbaId?
-      //     number
-      //     time
-      //     type
-      // }
+    createMatch: async (req, res, { db, data, userPromise }: 
+        RouteContents<{ tbaId?: string, number: number, time: number, type: MatchType, redAlliance: Alliance, blueAlliance: Alliance, compId: string }>) => {
+      const comp = await db.findObjectById<Competition>(
+        Collections.Competitions,
+        new ObjectId(data.compId)
+      );
+
+      const team = await getTeamFromComp(db, comp);
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       const match = await db.addObject<Match>(
         Collections.Matches,
         new Match(
@@ -540,11 +610,6 @@ export namespace API {
           data.redAlliance,
           data.blueAlliance
         )
-      );
-
-      const comp = await db.findObjectById<Competition>(
-        Collections.Competitions,
-        new ObjectId(data.compId)
       );
       comp.matches.push(match._id ? String(match._id) : "");
 
@@ -559,22 +624,22 @@ export namespace API {
       return res.status(200).send(match);
     },
 
-    searchCompetitionByName: async (req, res, { tba, data }) => {
-      // {
-      //    name
-      // }
+    searchCompetitionByName: async (req, res, { tba, data }: RouteContents<{ name: string}>) => {
       return res.status(200).send(await tba.searchCompetitionByName(data.name));
     },
 
-    assignScouters: async (req, res, { tba, data }) => {
-      // {
-      //    teamId
-      //    compId
-      //    shuffle
-      // }
+    assignScouters: async (req, res, { data, db, userPromise }: RouteContents<{ compId: string, shuffle: boolean }>) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+
+      const team = await getTeamFromComp(db, comp);
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      if (!team?._id)
+        return res.status(400).send({ error: "Team not found" });
 
       const result = await AssignScoutersToCompetitionMatches(
-        data.teamId,
+        team?._id?.toString(),
         data.compId,
         data.shuffle
       );
@@ -583,52 +648,46 @@ export namespace API {
       return res.status(200).send({ result: result });
     },
 
-    submitForm: async (req, res, { db, data }) => {
-      // {
-      //    reportId
-      //    formData
-      // }
-
-      var form = await db.findObjectById<Report>(
+    submitForm: async (req, res, { db, data, userPromise }: RouteContents<{ reportId: string, formData: QuantData }>) => {
+      const form = await db.findObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId)
       );
+
+      const team = await getTeamFromReport(db, form);
+      const user = await userPromise;
+      if (!onTeam(team, user) || !user?._id)
+        return res.status(403).send({ error: "Unauthorized" });
       
       form.data = data.formData;
       form.submitted = true;
-      form.submitter = data.userId;
+      form.submitter = user._id.toString();
 
       await db.updateObjectById(
         Collections.Reports,
         new ObjectId(data.reportId),
         form
       );
-      let user = await db.findObjectById<User>(
-        Collections.Users,
-        new ObjectId(data.userId)
-      );
 
-      addXp(data.userId, 10);
+      addXp(user._id.toString(), 10);
 
       await db.updateObjectById(
         Collections.Users,
-        new ObjectId(data.userId),
+        new ObjectId(user._id.toString()),
         user
       );
       return res.status(200).send({ result: "success" });
     },
 
-    competitionReports: async (req, res, { db, data }) => {
-      // {
-      // compId
-      // submitted
-      // usePubl
-      // }
-
+    competitionReports: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string, submitted: boolean, usePublicData: boolean }>) => {
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
+
+      const team = await getTeamFromComp(db, comp);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const usedComps = data.usePublicData && comp.tbaId !== NotLinkedToTba 
         ? await db.findObjects<Competition>(Collections.Competitions, { publicData: true, tbaId: comp.tbaId, gameId: comp.gameId })
@@ -646,94 +705,117 @@ export namespace API {
       return res.status(200).send(reports);
     },
 
-    allCompetitionMatches: async (req, res, { db, data }) => {
-      // {
-      // compId
-      // }
-
+    allCompetitionMatches: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string }>) => {
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
+
+      const team = await getTeamFromComp(db, comp);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       const matches = await db.findObjects<Match[]>(Collections.Matches, {
         _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
       });
       return res.status(200).send(matches);
     },
 
-    matchReports: async (req, res, { db, data }) => {
-      // {
-      // compId
-      // }
-
+    matchReports: async (req, res, { db, data, userPromise }: RouteContents<{ matchId: string }>) => {
       const match = await db.findObjectById<Match>(
         Collections.Matches,
         new ObjectId(data.matchId)
       );
+
+      const team = await getTeamFromMatch(db, match);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       const reports = await db.findObjects<Report[]>(Collections.Reports, {
         _id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
       });
       return res.status(200).send(reports);
     },
 
-    changePFP: async (req, res, { db, data }) => {
+    changePFP: async (req, res, { db, data, userPromise }: RouteContents<{ newImage: string }>) => {
+      const user = await userPromise;
+
+      if (!user?._id)
+        return res.status(403).send({ error: "Unauthorized" });
+
       await db.updateObjectById<User>(
         Collections.Users,
-        new ObjectId(data.userId),
-        { image: `${data.newImage}` }
+        new ObjectId(user._id),
+        { image: data.newImage }
       );
+
+      return res.status(200).send({ result: "success" });
     },
 
-    checkInForReport: async (req, res, { db, data }) => {
+    checkInForReport: async (req, res, { db, data, userPromise }: RouteContents<{ reportId: string }>) => {
+      const report = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
+      const team = await getTeamFromReport(db, report);
+
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId),
         { checkInTimestamp: new Date().toISOString() }
       );
+
+      return res.status(200).send({ result: "success" });
     },
 
-    checkInForSubjectiveReport: async (req, res, { db, data }) => {
-      // {
-      //     matchId
-      // }
-      const user = (await getServerSession(req, res, AuthenticationOptions))?.user as User;
+    checkInForSubjectiveReport: async (req, res, { db, data, userPromise }: RouteContents<{ matchId: string }>) => {
+      const match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(data.matchId));
+      const team = await getTeamFromMatch(db, match);
+      const user = await userPromise;
+
+      if (!onTeam(team, user))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const update: { [key: string]: any } = {};
-      update[`subjectiveReportsCheckInTimestamps.${user._id?.toString()}`] = new Date().toISOString();
+      update[`subjectiveReportsCheckInTimestamps.${user?._id?.toString()}`] = new Date().toISOString();
       await db.updateObjectById<Match>(Collections.Matches, new ObjectId(data.matchId), update);
 
       return res.status(200).send({ result: "success" });
     },
 
-    remindSlack: async (req, res, { db, slackClient, data }) => {
+    remindSlack: async (req, res, { db, slackClient, data, userPromise }: RouteContents<{ teamId: string, slackId: string }>) => {
       const team = await db.findObjectById<Team>(Collections.Teams, new ObjectId(data.teamId));
-      if (!team)
-        return res.status(200).send({ error: "Team not found" });
+      const user = await userPromise;
+
+      if (!onTeam(team, user))
+        return res.status(403).send({ error: "Unauthorized" });
+
       if (!team.slackChannel)
         return res.status(200).send({ error: "Team has not linked their Slack channel" });
 
       const msgRes = await slackClient.chat.postMessage({
         token: process.env.SLACK_BOT_TOKEN,
         channel: team.slackChannel,
-        text: `<@${data.slackId}>, please report to our section and prepare for scouting. Sent by <@${data.senderSlackId}>`,
+        text: `<@${data.slackId}>, please report to our section and prepare for scouting. Sent by <@${user?.slackId}>`,
       });
 
       return res.status(200).send({ result: "success", msgRes });
     },
 
-    setSlackId: async (req, res, { db, data }) => {
+    setSlackId: async (req, res, { db, data, userPromise }: RouteContents<{ slackId: string }>) => {
+      const user = await userPromise;
+
+      if (!user?._id)
+        return res.status(403).send({ error: "Unauthorized" });
+
       await db.updateObjectById<User>(
         Collections.Users,
-        new ObjectId(data.userId),
+        new ObjectId(user._id),
         { slackId: data.slackId }
       );
     },
 
-    addUserXp: async (req, res, { db, data }) => {
-      addXp(data.userId, data.oweBucksToAdd);
-    },
-
-    initialEventData: async (req, res, { tba, data }) => {
+    initialEventData: async (req, res, { tba, data }: RouteContents<{ eventKey: string }>) => {
       const compRankingsPromise = tba.req.getCompetitonRanking(data.eventKey);
       const eventInformationPromise = tba.getCompetitionAutofillData(
         data.eventKey
@@ -747,17 +829,17 @@ export namespace API {
       });
     },
 
-    compRankings: async (req, res, { tba, data }) => {
+    compRankings: async (req, res, { tba, data }: RouteContents<{ tbaId: string }>) => {
       const compRankings = await tba.req.getCompetitonRanking(data.tbaId);
       return res.status(200).send(compRankings.rankings);
     },
 
-    statboticsTeamEvent: async (req, res, { data }) => {
+    statboticsTeamEvent: async (req, res, { data }: RouteContents<{ eventKey: string, team: number| string }>) => {
       const teamEvent = await Statbotics.getTeamEvent(data.eventKey, data.team);
       return res.status(200).send(teamEvent);
     },
 
-    getMainPageCounterData: async (req, res, { db, data }) => {
+    getMainPageCounterData: async (req, res, { db }) => {
       const teamsPromise = db.countObjects(Collections.Teams, {});
       const usersPromise = db.countObjects(Collections.Users, {});
       const reportsPromise = db.countObjects(Collections.Reports, {});
@@ -781,12 +863,17 @@ export namespace API {
       });
     },
 
-    exportCompAsCsv: async (req, res, { db, data }) => {
+    exportCompAsCsv: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string }>) => {
       // Get all the reports for the competition
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
+
+      const team = await getTeamFromComp(db, comp);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       const matches = await db.findObjects<Match>(Collections.Matches, {
         _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
       });
@@ -834,7 +921,7 @@ export namespace API {
       res.status(200).send({ csv });
     },
 
-    teamCompRanking: async (req, res, { tba, data }) => {
+    teamCompRanking: async (req, res, { tba, data }: RouteContents<{ tbaId: string, team: string }>) => {
       const tbaResult = await tba.req.getCompetitonRanking(data.tbaId);
       if (!tbaResult || !tbaResult.rankings) {
         return res.status(200).send({ place: "?", max: "?" });
@@ -857,17 +944,27 @@ export namespace API {
       });
     },
 
-    getPitReports: async (req, res, { db, data }) => {
-      const objIds = data.reportIds.map((reportId: string) => new ObjectId(reportId));
+    getPitReports: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string }>) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const team = await getTeamFromComp(db, comp);
+
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const pitReports = await db.findObjects<Pitreport>(Collections.Pitreports, {
-        _id: { $in: objIds },
+        _id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
       });
 
       return res.status(200).send(pitReports);
     },
 
-    changeScouterForReport: async (req, res, { db, data }) => {
+    changeScouterForReport: async (req, res, { db, data, userPromise }: RouteContents<{ reportId: string, scouterId: string }>) => {
+      const report = await db.findObjectById<Report>(Collections.Reports, new ObjectId(data.reportId));
+      const team = await getTeamFromReport(db, report);
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       await db.updateObjectById<Report>(
         Collections.Reports,
         new ObjectId(data.reportId),
@@ -877,11 +974,15 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
   
-    getCompReports: async (req, res, { db, data }) => {
+    getCompReports: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string }>) => {
       const comp = await db.findObjectById<Competition>(
         Collections.Competitions,
         new ObjectId(data.compId)
       );
+
+      const team = await getTeamFromComp(db, comp);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const reports = await db.findObjects<Report>(Collections.Reports, {
         match: { $in: comp.matches },
@@ -890,11 +991,15 @@ export namespace API {
       return res.status(200).send(reports);
     },
 
-    findScouterManagementData: async (req, res, { db, data }) => {
-      const typedData = data as {
-        compId: string,
-        scouterIds: string[]
-      };
+    findScouterManagementData: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string }>) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const team = await getTeamFromComp(db, comp);
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      if (!team?._id)
+        return res.status(400).send({ error: "Team not found" });
 
       const promises: Promise<any>[] = [];
 
@@ -904,11 +1009,10 @@ export namespace API {
       const pitReports: Pitreport[] = [];
       const subjectiveReports: SubjectiveReport[] = [];
 
-      for (const scouterId of typedData.scouterIds) {
+      for (const scouterId of team?.scouters) {
         promises.push(db.findObjectById<User>(Collections.Users, new ObjectId(scouterId)).then((scouter) => scouters.push(scouter)));
       }
 
-      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(typedData.compId));
       for (const matchId of comp.matches) {
         promises.push(db.findObjectById<Match>(Collections.Matches, new ObjectId(matchId)).then((match) => matches.push(match)));
       }
@@ -931,44 +1035,64 @@ export namespace API {
       return res.status(200).send({ scouters, matches, quantitativeReports, pitReports, subjectiveReports });
     },
 
-    getPicklist: async (req, res, { db, data }) => {
+    getPicklist: async (req, res, { db, data, userPromise }: RouteContents<{ id: string }>) => {
       const picklist = await db.findObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.id));
+
+      const team = await getTeamFromPicklist(db, picklist);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       return res.status(200).send(picklist);
     },
 
-    updatePicklist: async (req, res, { db, data }) => {
+    updatePicklist: async (req, res, { db, data, userPromise }: RouteContents<{ picklist: DbPicklist }>) => {
+      const existingPicklist = await db.findObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id));
+      const team = await getTeamFromPicklist(db, existingPicklist);
+
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       const { _id, ...picklist } = data.picklist;
       await db.updateObjectById<DbPicklist>(Collections.Picklists, new ObjectId(data.picklist._id), picklist);
       return res.status(200).send({ result: "success" });
     },
 
-    setCompPublicData: async (req, res, { db, data }) => {
+    setCompPublicData: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string, publicData: boolean }>) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const team = await getTeamFromComp(db, comp);
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       await db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId), { publicData: data.publicData });
       return res.status(200).send({ result: "success" });
     },
   
-    setOnboardingCompleted: async (req, res, { db, data }: RouteContents<{userId: string}>) => {
-      await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), { onboardingComplete: true });
+    setOnboardingCompleted: async (req, res, { db, data, userPromise }: RouteContents<{userId: string}>) => {
+      const user = await userPromise;
+      if (!user?._id)
+        return res.status(403).send({ error: "Unauthorized" });
+
+      await db.updateObjectById<User>(Collections.Users, new ObjectId(user._id), { onboardingComplete: true });
       return res.status(200).send({ result: "success" });
     },
     
-    submitSubjectiveReport: async (req, res, { db, data }) => {
+    submitSubjectiveReport: async (req, res, { db, data, userPromise }: RouteContents<{ report: SubjectiveReport, match: string }>) => {
       const rawReport = data.report as SubjectiveReport;
 
-      const matchPromise = db.findObjectById<Match>(Collections.Matches, new ObjectId(rawReport.match));
-      const teamPromise = db.findObject<Team>(Collections.Teams, {
-        slug: data.teamId
-      });
+      const match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(rawReport.match));
+      const team = await getTeamFromMatch(db, match);
+      const user = await userPromise;
 
-      const [match, team] = await Promise.all([matchPromise, teamPromise]);
+      if (!onTeam(team, user))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const report: SubjectiveReport = {
         ...data.report,
-        _id: new ObjectId(),
-        submitter: data.userId,
-        submitted: match.subjectiveScouter === data.userId 
+        _id: new ObjectId().toString(),
+        submitter: user!._id!.toString(),
+        submitted: match.subjectiveScouter === user!._id!.toString()
           ? SubjectiveReportSubmissionType.ByAssignedScouter
-          : team.subjectiveScouters.includes(data.userId)
+          : team!.subjectiveScouters.find(id => id === user!._id!.toString())
             ? SubjectiveReportSubmissionType.BySubjectiveScouter
             : SubjectiveReportSubmissionType.ByNonSubjectiveScouter,
       };
@@ -977,53 +1101,65 @@ export namespace API {
         subjectiveReports: [...match.subjectiveReports ?? [], report._id!.toString()],
       };
 
-      if (match.subjectiveScouter === data.userId)
+      if (match.subjectiveScouter === user!._id!.toString())
         update.assignedSubjectiveScouterHasSubmitted = true;
 
       const insertReportPromise = db.addObject<SubjectiveReport>(Collections.SubjectiveReports, report);
       const updateMatchPromise = db.updateObjectById<Match>(Collections.Matches, new ObjectId(match._id), update);
 
-      addXp(data.userId, match.subjectiveScouter === data.userId ? 10 : 5);
+      addXp(user!._id!, match.subjectiveScouter === user!._id!.toString() ? 10 : 5);
 
       await Promise.all([insertReportPromise, updateMatchPromise]);
-
       return res.status(200).send({ result: "success" });
     },
 
-    getSubjectiveReportsForComp: async (req, res, { db, data }) => {
+    getSubjectiveReportsForComp: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string }>) => {
       const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const team = await getTeamFromComp(db, comp);
 
-      const matchIds = comp.matches.map((matchId) => new ObjectId(matchId));
-      const matches = await db.findObjects<Match>(Collections.Matches, {
-        _id: { $in: matchIds },
-      });
-
-      const reportIds = matches.flatMap((match) => match.subjectiveReports ?? []);
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+      
       const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
-        _id: { $in: reportIds.map((id) => new ObjectId(id)) },
+        match: { $in: comp.matches },
       });
 
       return res.status(200).send(reports);
     },
 
-    updateSubjectiveReport: async (req, res, { db, data }) => {
+    updateSubjectiveReport: async (req, res, { db, data, userPromise }: RouteContents<{ report: SubjectiveReport }>) => {
       const report = data.report as SubjectiveReport;
+      const team = await getTeamFromSubjectiveReport(db, report);
+
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
       await db.updateObjectById<SubjectiveReport>(Collections.SubjectiveReports, new ObjectId(report._id), report);
       return res.status(200).send({ result: "success" });
     },
 
-    setSubjectiveScouterForMatch: async (req, res, { db, data }) => {
-      const { matchId, userId } = data;
-      await db.updateObjectById<Match>(Collections.Matches, new ObjectId(matchId), {
-        subjectiveScouter: userId,
+    setSubjectiveScouterForMatch: async (req, res, { db, data, userPromise }: RouteContents<{ matchId: string }>) => {
+      const match = await db.findObjectById<Match>(Collections.Matches, new ObjectId(data.matchId));
+      const team = await getTeamFromMatch(db, match);
+      const user = await userPromise;
+
+      if (!ownsTeam(team, user))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      await db.updateObjectById<Match>(Collections.Matches, new ObjectId(data.matchId), {
+        subjectiveScouter: user!._id?.toString(),
       });
       return res.status(200).send({ result: "success" });
     },
 
-    createPitReportForTeam: async (req, res, { db, data }) => {
+    createPitReportForTeam: async (req, res, { db, data, userPromise }: RouteContents<{ teamNumber: number, compId: string }>) => {
       const { teamNumber, compId } = data;
 
       const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
+      const team = await getTeamFromComp(db, comp);
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
       const pitReportId = (await db.addObject<Pitreport>(Collections.Pitreports, pitReport))._id?.toString();
@@ -1040,8 +1176,14 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
 
-    updateCompNameAndTbaId: async (req, res, { db, data }) => {
+    updateCompNameAndTbaId: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string, name: string, tbaId: string }>) => {
       const { compId, name, tbaId } = data;
+
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
+      const team = await getTeamFromComp(db, comp);
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
 
       await db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(compId), {
         name,
@@ -1051,7 +1193,7 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
 
-    getFtcTeamAutofillData: async (req, res, { tba, data }: RouteContents<{ teamNumber: number }>) => {
+    getFtcTeamAutofillData: async (req, res, { data }: RouteContents<{ teamNumber: number }>) => {
       const team = await TheOrangeAlliance.getTeam(data.teamNumber);
       return res.status(200).send(team);
     },
@@ -1060,7 +1202,19 @@ export namespace API {
       return res.status(200).send({ result: "success" });
     },
 
-    getSubjectiveReportsFromMatches: async (req, res, { db, data }: RouteContents<{ matches: Match[] }>) => {
+    getSubjectiveReportsFromMatches: async (req, res, { db, data, userPromise }: RouteContents<{ compId: string, matches: Match[] }>) => {
+      const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(data.compId));
+      const team = await getTeamFromComp(db, comp);
+
+      if (!onTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      // Reject if any of the matches are not in the competition
+      for (const match of data.matches) {
+        if (!comp.matches.find(id => id === match._id?.toString()))
+          return res.status(400).send({ error: "Match not in competition" });
+      }
+
       const matchIds = data.matches.map((match) => match._id?.toString());
       const reports = await db.findObjects<SubjectiveReport>(Collections.SubjectiveReports, {
         match: { $in: matchIds },
@@ -1069,8 +1223,14 @@ export namespace API {
       return res.status(200).send(reports);
     },
 
-    uploadSavedComp: async (req, res, { db, data }: RouteContents<{ save: SavedCompetition }>) => {
+    uploadSavedComp: async (req, res, { db, data, userPromise }: RouteContents<{ save: SavedCompetition }>) => {
       const { comp, matches, quantReports: reports, pitReports, subjectiveReports } = data.save;
+
+      const existingComp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(comp._id));
+      const team = await getTeamFromComp(db, existingComp);
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
 
       const promises: Promise<any>[] = [];
       promises.push(db.updateObjectById<Competition>(Collections.Competitions, new ObjectId(comp._id), comp));

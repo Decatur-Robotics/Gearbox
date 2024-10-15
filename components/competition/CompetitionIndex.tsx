@@ -226,7 +226,7 @@ export default function CompetitionIndex(props: {
 
     setMatches(matches);
 
-    api.getSubjectiveReportsFromMatches(matches, fallbackData?.subjectiveReports).then((reports) => {
+    api.getSubjectiveReportsFromMatches(comp?._id ?? "", matches, fallbackData?.subjectiveReports).then((reports) => {
       setSubjectiveReports(reports);
 
       const newReportIds: { [key: string]: SubjectiveReport } = {};
