@@ -62,6 +62,9 @@ export default class ClientAPI {
     const res = await rawResponse.json();
 
     if (res.error) {
+      if (res.error === "Unauthorized") {
+        alert(`Unauthorized API request: ${subUrl}. If this is an error, please contact the developers.`);
+      }
       throw new Error(`${subUrl}: ${res.error}`);
     }
 

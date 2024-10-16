@@ -58,7 +58,7 @@ export default function MatchScheduleCard(props: {
   } = props;
 
   return (
-    <div className="max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl ">
+    <div className="w-full card bg-base-200 shadow-xl ">
       <div className="card-body">
         <h1 className="card-title text-2xl md:text-3xl font-bold">
           {team?.name} - {team?.number}
