@@ -375,10 +375,6 @@ export default function Homepage() {
               <button className="btn btn-primary text-2xl">Sign In</button>
             </a>
         </div>
-
-        <div className="hero w-full py-12 bg-base-200">
-
-        </div>
       </div>
     </Container>
   );
