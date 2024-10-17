@@ -387,7 +387,7 @@ export default function Homepage() {
           </div>
           <p>
             Gearbox is completely open source, meaning you can view the code
-            and contribute to the project. If there's something you don&apos;t like,
+            and contribute to the project. If there&apos;s something you don&apos;t like,
             you can change it! Build the future of scouting today on{" "}
             <a href="https://github.com/Decatur-Robotics/Gearbox" className="link text-secondary">our GitHub</a>.
           </p>
