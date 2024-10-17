@@ -116,19 +116,19 @@ export default function Footer() {
             <span className="sm:hidden">
               XS
             </span>
-            <span className="max-xs:hidden md:hidden">
+            <span className="max-sm:hidden md:hidden">
               SM
             </span>
-            <span className="max-sm:hidden lg:hidden">
+            <span className="max-md:hidden lg:hidden">
               MD
             </span>
-            <span className="max-md:hidden xl:hidden">
+            <span className="max-lg:hidden xl:hidden">
               LG
             </span>
-            <span className="max-lg:hidden 2xl:hidden">
+            <span className="max-xl:hidden 2xl:hidden">
               XL
             </span>
-            <span className="max-xl:hidden">
+            <span className="max-2xl:hidden">
               2XL
             </span>
           </span>
