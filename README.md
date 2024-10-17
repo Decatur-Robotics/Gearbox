@@ -1,4 +1,4 @@
-# Gearbox: Intuitive, powerful scouting at [4026.org](https://4026.org)
+# Gearbox: Intuitive, Powerful Scouting at [4026.org](https://4026.org)
 The final incarnation of Scout Janssen.
 
 Rewritten fully in Typescript, written to be easy to maintain and modular.
