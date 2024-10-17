@@ -57,4 +57,11 @@ Features full feature parity with SJ2, whilst remaining simpler, faster and cool
 ## Contributing
 You've made it past set up and are ready to contibure to the future scouting - here's how.
 
-We recommend you start with issues labelled `good first issue` to get a feel for the codebase. Fork the repo (unless you're part of Decatur Robotics) and then make a pull request to the main branch. We'll review it and, if it looks good, merge it.
+We recommend you start with issues labelled `good first issue` to get a feel for the codebase. Fork the repo (unless you're part of Decatur Robotics, in which case make a new branch) and then make a pull request to the main branch. We'll review it and, if it looks good, merge it.
+
+## Contibutors
+<a href="https://github.com/Decatur-Robotics/Gearbox/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Decatur-Robotics/Gearbox" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
