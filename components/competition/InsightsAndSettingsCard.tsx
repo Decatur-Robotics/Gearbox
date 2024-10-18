@@ -222,7 +222,7 @@ export default function InsightsAndSettingsCard(props: {
 
             <div className="flex flex-row">
               <div className="w-1/2 flex flex-col items-center">
-                <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
+                <h1 className="text-red-500 font-bold text-xl">Red</h1>
                 <div className="flex flex-row items-center justify-evenly">
                   {
                     allianceIndices.map((index) =>
@@ -243,7 +243,7 @@ export default function InsightsAndSettingsCard(props: {
                 </div>
               </div>
               <div className="w-1/2 flex flex-col items-center">
-                <h1 className="text-red-500 font-bold text-xl">Red</h1>
+                <h1 className="text-blue-500 font-bold text-xl">Blue</h1>
                 <div className="flex flex-row items-center justify-evenly">
                   {
                     allianceIndices.map((index) =>

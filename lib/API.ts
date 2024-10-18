@@ -607,8 +607,8 @@ export namespace API {
           data.tbaId,
           data.time,
           data.type,
-          data.redAlliance,
-          data.blueAlliance
+          data.blueAlliance,
+          data.redAlliance
         )
       );
       comp.matches.push(match._id ? String(match._id) : "");
