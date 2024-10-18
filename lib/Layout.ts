@@ -25,7 +25,7 @@ export class FormElement<TData extends StringKeyedObject> {
   }
 
   /**
-   * @tested_by Layout.test.ts
+   * @tested_by tests/lib/Layout.test.ts
    */
   static fromProps<TData extends StringKeyedObject>(props: FormElementProps<TData>, dataExample: TData): FormElement<TData> {
     if (typeof props === "string")
@@ -100,7 +100,7 @@ export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends Qu
 }
 
 /**
- * @tested_by Layout.test.ts
+ * @tested_by tests/lib/Layout.test.ts
  */
 export function keyToType(key: string, exampleData: StringKeyedObject): ElementType {
   if (key === "image")
