@@ -80,7 +80,6 @@ export default function CompetitionIndex(props: {
   const [redAlliance, setRedAlliance] = useState<number[]>([]);
 
   const [matches, setMatches] = useState<Match[]>([]);
-  const qualificationMatches = matches.filter((match) => match.type === MatchType.Qualifying);
 
   const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
 
@@ -615,7 +614,7 @@ export default function CompetitionIndex(props: {
 
         <div className="w-full sm:w-1/2 flex flex-col flex-grow justify-center h-screen space-y-4">
           <MatchScheduleCard 
-            matches={matches} qualificationMatches={qualificationMatches}
+            matches={matches}
             usersById={usersById} reportsById={reportsById} comp={comp} isManager={isManager} openEditMatchModal={openEditMatchModal}
             loadingMatches={loadingMatches} loadingReports={loadingReports}
             loadingUsers={loadingUsers} team={team} ranking={ranking} noMatches={noMatches}

@@ -28,7 +28,6 @@ export default function MatchScheduleCard(props: {
   seasonSlug: string | undefined;
   reportsById: { [id: string]: Report };
   usersById: { [id: string]: User };
-  qualificationMatches: Match[];
   updatingComp: string;
   session: AdvancedSession;
   showSubmittedMatches: boolean;
@@ -53,7 +52,6 @@ export default function MatchScheduleCard(props: {
     seasonSlug,
     reportsById,
     usersById,
-    qualificationMatches,
     updatingComp,
     session,
     showSubmittedMatches
