@@ -72,7 +72,7 @@ function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Pi
       ref={dragRef}
     >
       <h1>
-        {props.rank !== undefined ? `${props.rank + 1}. ` : ""}Team <span className="text-accent">#{teamNumber}</span>
+        {props.rank !== undefined ? `${props.rank + 1}. ` : ""}<span className="max-sm:hidden">Team</span> <span className="text-accent">#{teamNumber}</span>
       </h1>
       {
         props.rank !== undefined && props.lastRank && props.picklist ? (
@@ -114,10 +114,11 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
 
   return (
     <div
-      className="bg-base-200 max-h-[30rem] rounded-lg w-1/6 min-h-32 flex flex-col items-center space-y-2 p-4"
+      className="bg-base-200 max-h-[30rem] rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
       ref={dropRef}
     >
-      <input defaultValue={picklist.name} className="w-[95%] input input-sm" onChange={changeName}></input>
+      <input defaultValue={picklist.name} className="w-[95%] input input-sm max-sm:hidden" onChange={changeName} />
+      <h1 className="w-[95%] input input-sm input-disabled sm:hidden">{picklist.name}</h1>
       {picklist.teams.map((team, index) => (
         <TeamCard
           cardData={team}
