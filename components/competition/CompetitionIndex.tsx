@@ -622,7 +622,7 @@ export default function CompetitionIndex(props: {
             isOnline={isOnline} matchesAssigned={matchesAssigned} assignScouters={assignScouters}
             assigningMatches={assigningMatches} remindUserOnSlack={remindUserOnSlack}
             reloadCompetition={reloadCompetition} seasonSlug={seasonSlug} updatingComp={updatingComp}
-            session={session}
+            session={session} showSubmittedMatches={showSubmittedMatches}
           />
           <PitScoutingCard pitreports={pitreports} loadingPitreports={loadingPitreports} comp={comp} />
         </div>
