@@ -18,7 +18,10 @@ type ScheduleMatch = {
   assignedScouters: string[];
 }
 
-function generateSchedule(scouters: string[], subjectiveScouters: string[], matchCount: number, robotsPerMatch: number) {
+/**
+ * @tested_by tests/lib/CompetitionHandling.test.ts
+ */
+export function generateSchedule(scouters: string[], subjectiveScouters: string[], matchCount: number, robotsPerMatch: number) {
   const schedule = [];
   for (let i = 0; i < matchCount; i++) {
     const subjectiveScouter = subjectiveScouters.length > 0 ? subjectiveScouters[0] : undefined;

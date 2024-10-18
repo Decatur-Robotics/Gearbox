@@ -20,7 +20,7 @@ import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
-import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
+import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth, { AuthenticationOptions } from "./Auth";
