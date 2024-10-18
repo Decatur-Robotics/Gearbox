@@ -342,7 +342,7 @@ export default function InsightsAndSettingsCard(props: {
                 </div>
                 <div className="stat-value text-accent">
                   {submittedReports && !Number.isNaN(submittedReports)
-                        ? (+(Round(submittedReports / reports.length) * 100)).toFixed(2)
+                        ? (+(Round(submittedReports / reports.length) * 100)).toFixed(0)
                     : "?"}
                   %
                 </div>
@@ -364,7 +364,7 @@ export default function InsightsAndSettingsCard(props: {
                   <div>
                     <div className="stat-value text-primary">
                       {submittedReports && !Number.isNaN(submittedReports)
-                        ? (+(Round(submittedReports / reports.length) * 100)).toFixed(2)
+                        ? (+(Round(submittedReports / reports.length) * 100)).toFixed(0)
                         : "?"}
                       %
                     </div>
