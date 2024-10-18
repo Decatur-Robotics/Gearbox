@@ -113,8 +113,18 @@ export function makeObjSerializeable(obj: Object) {
  * Removes whitespace from a string and makes it lower case.
  * @param str - The string to remove whitespace from
  * @returns - A "filtered" string
- * @tested_by tests/lib/clientClientUtils.test.ts
+ * @tested_by tests/lib/client/ClientUtils.test.ts
  */
 export function removeWhitespaceAndMakeLowerCase(str: string): string {
   return str.replace(/\s/g, "").toLowerCase();
+}
+
+/**
+* @tested_by tests/lib/clien/tClientUtils.test.ts
+*/
+export function promisify<TReturn>(func: (...args: any[]) => TReturn): (...args: any[]) => Promise<TReturn> {
+  return (...args: any[]) => 
+    new Promise<TReturn>((resolve, reject) => {
+      func(...args, (val: TReturn) => resolve(val), (err: any) => reject(err));
+    });
 }

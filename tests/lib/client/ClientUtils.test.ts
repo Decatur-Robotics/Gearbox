@@ -1,4 +1,4 @@
-import { camelCaseToTitleCase, removeDuplicates, removeWhitespaceAndMakeLowerCase, rotateArray, toDict } from "@/lib/client/ClientUtils";
+import { camelCaseToTitleCase, promisify, removeDuplicates, removeWhitespaceAndMakeLowerCase, rotateArray, toDict } from "@/lib/client/ClientUtils";
 
 test(camelCaseToTitleCase.name, () => {
   expect(camelCaseToTitleCase("notLinkedToTba")).toBe("Not Linked To Tba");
@@ -48,4 +48,22 @@ test(removeWhitespaceAndMakeLowerCase.name, () => {
   expect(removeWhitespaceAndMakeLowerCase("Hello World ")).toBe("helloworld");
   expect(removeWhitespaceAndMakeLowerCase(" Hello World")).toBe("helloworld");
   expect(removeWhitespaceAndMakeLowerCase(" Hello  World ")).toBe("helloworld");
+});
+
+test(`${promisify.name}: Resolves`, async() => {
+  const func = (resolve: () => void) => {
+    resolve();
+  };
+
+  const funcAsync = promisify(func);
+  return expect(funcAsync()).resolves.toBeUndefined();
+});
+
+test(`${promisify.name}: Rejects`, async() => {
+  const func = (resolve: () => void, reject: (err: string) => void) => {
+    reject("error");
+  };
+
+  const funcAsync = promisify(func);
+  return expect(funcAsync()).rejects.toBe("error");
 });
