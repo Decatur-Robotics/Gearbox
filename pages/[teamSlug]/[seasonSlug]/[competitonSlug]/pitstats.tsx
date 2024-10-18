@@ -14,13 +14,14 @@ import { BsGearFill } from "react-icons/bs";
 
 import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useRef, useState } from "react";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import { MostCommonValue, NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { PitStatsLayout, Badge } from "@/lib/Layout";
+import CollectionId from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -402,7 +403,7 @@ export default function Pitstats(props: { competition: Competition }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
   const compSlug = context.resolvedUrl.split("/")[3];
-  const comp = await db.findObject(Collections.Competitions, {
+  const comp = await db.findObject(CollectionId.Competitions, {
     slug: compSlug,
   });
 

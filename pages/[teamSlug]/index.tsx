@@ -12,7 +12,8 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import CollectionId from "@/lib/client/CollectionId";
 import { ObjectId } from "mongodb";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
@@ -519,11 +520,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     (seasonId) => new ObjectId(seasonId)
   );
   const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
-  const seasons = await db.findObjects<Season>(Collections.Seasons, {
+  const seasons = await db.findObjects<Season>(CollectionId.Seasons, {
     _id: { $in: seasonIds },
   });
 
-  var users = await db.findObjects<User>(Collections.Users, {
+  var users = await db.findObjects<User>(CollectionId.Users, {
     _id: { $in: userIds },
   });
 
@@ -538,7 +539,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   var comp = undefined;
   if (currentSeason) {
     comp = await db.findObjectById<Competition>(
-      Collections.Competitions,
+      CollectionId.Competitions,
       new ObjectId(
         currentSeason.competitions[currentSeason.competitions.length - 1]
       )
