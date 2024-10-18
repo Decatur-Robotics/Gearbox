@@ -275,7 +275,7 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
 
       { loadingPicklists !== LoadState.Loading &&
         <button
-          className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
+          className="max-sm:hidden btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
           onClick={addPicklist}
         >
           <FaPlus></FaPlus>

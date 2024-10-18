@@ -12,6 +12,9 @@ function getSelection<T extends QuantData>(selector: Selector<T>, report: Report
   return typeof selector === "string" ? report.data[selector] : selector(report.data);
 }
 
+/**
+ * Rounds to two decimal places
+ */
 export function Round(n: number): number {
   return Math.round(n * 100) / 100;
 }
