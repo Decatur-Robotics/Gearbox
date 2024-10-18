@@ -39,7 +39,6 @@ function generateSchedule(scouters: string[], subjectiveScouters: string[], matc
 export async function AssignScoutersToCompetitionMatches(
   teamId: string,
   competitionId: string,
-  shuffle: boolean = false,
 ) {
   const db = await getDatabase();
   const comp = await db.findObjectById<Competition>(
@@ -51,6 +50,9 @@ export async function AssignScoutersToCompetitionMatches(
     Collections.Teams,
     new ObjectId(teamId),
   );
+
+  team.scouters = team.scouters.filter((s) => team.users.includes(s));
+  team.subjectiveScouters = team.subjectiveScouters.filter((s) => team.users.includes(s));
 
   const schedule = generateSchedule(team.scouters, team.subjectiveScouters, comp.matches.length, games[comp.gameId].league == League.FRC ? 6 : 4);
 

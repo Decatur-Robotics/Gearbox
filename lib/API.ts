@@ -641,7 +641,6 @@ export namespace API {
       const result = await AssignScoutersToCompetitionMatches(
         team?._id?.toString(),
         data.compId,
-        data.shuffle
       );
 
       console.log(result);
