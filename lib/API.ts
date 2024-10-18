@@ -34,6 +34,7 @@ import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
 import ResendUtils from "./ResendUtils";
+import { users } from "slack";
 
 export namespace API {
   export const GearboxHeader = "gearbox-auth";
@@ -1256,6 +1257,40 @@ export namespace API {
       
     addSlackBot: async (req, res, { db, data }) => {
       return res.status(200).send({ result: "success" });
+    },
+
+    removeUserFromTeam: async (req, res, { db, data, userPromise }: RouteContents<{ teamId: string, userId: string }>) => {
+      const team = await db.findObjectById<Team>(Collections.Teams, new ObjectId(data.teamId));
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      const removedUserPromise = db.findObjectById<User>(Collections.Users, new ObjectId(data.userId));
+
+      const newTeam: Team = {
+        ...team,
+        users: team.users.filter((id) => id !== data.userId),
+        owners: team.owners.filter((id) => id !== data.userId),
+        scouters: team.scouters.filter((id) => id !== data.userId),
+        subjectiveScouters: team.subjectiveScouters.filter((id) => id !== data.userId),
+      }
+      
+      const teamPromise = db.updateObjectById<Team>(Collections.Teams, new ObjectId(data.teamId), newTeam);
+
+      const removedUser = await removedUserPromise;
+      if (!removedUser)
+        return res.status(404).send({ error: "User not found" });
+
+      const newUserData: User = {
+        ...removedUser,
+        teams: removedUser.teams.filter((id) => id !== data.teamId),
+        owner: removedUser.owner.filter((id) => id !== data.teamId),
+      }
+
+      await db.updateObjectById<User>(Collections.Users, new ObjectId(data.userId), newUserData);
+      await teamPromise;
+
+      return res.status(200).send({ result: "success", team: newTeam });
     }
   }; 
 }

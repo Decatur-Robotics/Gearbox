@@ -28,7 +28,6 @@ import CompetitionCard from "@/components/CompetitionCard";
 import SeasonCard from "@/components/SeasonCard";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
-import ConfirmModal from "@/lib/client/Confirm";
 import { validName } from "@/lib/client/InputVerification";
 import { BsSlack } from "react-icons/bs";
 import { games } from "@/lib/games";
@@ -189,35 +188,13 @@ function Roster(props: TeamPageProps) {
   };
 
   const removeUser = async (userId: string) => {
-    const confirmed = ConfirmModal(
-      "Are you sure you want to remove this user?"
-    );
-
-    if (!confirmed) {
+    if (!confirm("Are you sure you want to remove this user?")) {
       return;
     }
-
-    if (team?.owners.includes(userId)) {
-      await updateOwner(userId);
-    }
-    if (team?.scouters.includes(userId)) {
-      await updateScouter(userId);
-    }
-    if (team?.subjectiveScouters?.includes(userId)) {
-      await updateScouter(userId);
-    }
-
-    var teamClone = structuredClone(team);
-    var newUsers = teamClone?.users;
-    newUsers?.splice(newUsers.indexOf(userId), 1);
-    await api.updateTeam({ users: newUsers }, team?._id);
-
-    setTeam(teamClone);
-
-    var userClone = [...users];
-    var index = userClone.findIndex((user) => user._id === userId);
-    userClone.splice(index, 1);
-    setUsers(userClone);
+    
+    const { team: newTeam } = await api.removeUserFromTeam(userId, team?._id as string);
+    setTeam(newTeam);
+    setUsers(users.filter((user) => user._id !== userId));
   };
 
   return (
