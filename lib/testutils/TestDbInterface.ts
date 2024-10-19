@@ -3,26 +3,20 @@ import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
 import { MemoryDb } from "minimongo";
 
-function replaceOidOperator(obj: { [key: string]: any }, escape: boolean): { [key: string]: any } {
+function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): { [key: string]: any } {
   const newObj = { ...obj };
 
   for (const key in newObj) {
-    if (escape && key === "_id") {
-      newObj["_id"] = newObj._id.toString();
-    } else if (!escape && key === "_id") {
+    if (idsToString && key === "_id") {
+      newObj["_id"] = newObj._id.$oid;
+    } else if (!idsToString && key === "_id") {
       newObj._id = new ObjectId(newObj._id);
-    } if (escape && key === "$oid") {
-      newObj["/$oid"] = obj[key];
-      delete newObj["$oid"];
-    } else if (!escape && key === "/$oid") {
-      newObj["$oid"] = obj[key];
-      delete newObj["/$oid"];
     } else if (typeof newObj[key] === "object") {
-      newObj[key] = replaceOidOperator(newObj[key], escape);
+      newObj[key] = replaceOidOperator(newObj[key], idsToString);
     } else if (Array.isArray(newObj[key])) {
       newObj[key] = newObj[key].map((item: any) => {
         if (typeof item === "object") {
-          return replaceOidOperator(item, escape);
+          return replaceOidOperator(item, idsToString);
         }
         return item;
       });
@@ -37,7 +31,7 @@ function serialize(obj: any): any {
 }
 
 function deserialize(obj: any): any {
-  return EJSON.deserialize(replaceOidOperator(obj, false));
+  return replaceOidOperator(EJSON.deserialize(obj), false);
 }
 
 /**
@@ -86,17 +80,24 @@ export default class TestDbInterface implements DbInterface {
 
   updateObjectById<Type extends Document>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>
   {
-    return this.backingDb.collections[collection].upsert(serialize({ _id: id, ...newValues }));
+    return this.backingDb.collections[collection].findOne(serialize({ _id: id })).then((existingDoc) => {
+      if (!existingDoc)
+      {
+        throw new Error(`Document with id ${id} not found in collection ${collection}`);
+      }
+
+      return this.backingDb.collections[collection].upsert(serialize({ _id: id, ...existingDoc, ...newValues }));
+    })
   }
 
   findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined | null>
   {
-    return deserialize(this.backingDb.collections[collection].findOne(serialize({ _id: id })));
+    return this.findObject(collection, { _id: id });
   }
 
   findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
   {
-    return deserialize(this.backingDb.collections[collection].findOne(serialize(query)));
+    return this.backingDb.collections[collection].findOne(serialize(query)).then(deserialize);
   }
 
   findObjects<Type extends Document>(collection: CollectionId, query: object): Promise<Type[]>

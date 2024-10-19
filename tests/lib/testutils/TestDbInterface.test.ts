@@ -40,24 +40,28 @@ test(`${TestDbInterface.name}.${TestDbInterface.prototype.updateObjectById.name}
   await db.addObject(CollectionId.Users, object);
 
   const updated = { name: "Updated User" };
+  console.log("Current Doc:", await db.findObjectById(CollectionId.Users, object._id));
   await db.updateObjectById(CollectionId.Users, object._id, updated);
+  console.log("Updated Doc:", await db.findObjectById(CollectionId.Users, object._id));
   console.log(await db.findObjectById(CollectionId.Users, object._id));
   expect(await db.findObjectById(CollectionId.Users, object._id)).toStrictEqual({ ...object, ...updated });
 });
 
-// test(`${TestDbInterface.name}.${TestDbInterface.prototype.findObjectById.name}: Finds object by id`, async () => {
-//   const db = await getDb();
-//   const object = { _id: new ObjectId(), name: "Test User" };
-//   await db.addObject(CollectionId.Users, object);
-//   expect(await db.findObjectById(CollectionId.Users, object._id)).toStrictEqual(object);
-// });
+test(`${TestDbInterface.name}.${TestDbInterface.prototype.findObjectById.name}: Finds object by id`, async () => {
+  const db = await getDb();
 
-// test(`${TestDbInterface.name}.${TestDbInterface.prototype.findObject.name}: Finds object by query`, async () => {
-//   const db = await getDb();
-//   const object = { _id: new ObjectId(), name: "Test User" };
-//   await db.addObject(CollectionId.Users, object);
-//   expect(await db.findObject(CollectionId.Users, { name: object.name })).toStrictEqual(object);
-// });
+  const object = { _id: new ObjectId(), name: "Test User" };
+  await db.addObject(CollectionId.Users, object);
+
+  expect(await db.findObjectById(CollectionId.Users, object._id)).toStrictEqual(object);
+});
+
+test(`${TestDbInterface.name}.${TestDbInterface.prototype.findObject.name}: Finds object by query`, async () => {
+  const db = await getDb();
+  const object = { _id: new ObjectId(), name: "Test User" };
+  await db.addObject(CollectionId.Users, object);
+  expect(await db.findObject(CollectionId.Users, { name: object.name })).toStrictEqual(object);
+});
 
 test(`${TestDbInterface.name}.${TestDbInterface.prototype.countObjects.name}: Counts objects`, async () => {
   const db = await getDb();
