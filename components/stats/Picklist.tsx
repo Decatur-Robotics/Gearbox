@@ -114,7 +114,7 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
 
   return (
     <div
-      className="bg-base-200 max-h-[30rem] rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
+      className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
       ref={dropRef}
     >
       <input defaultValue={picklist.name} className="w-[95%] input input-sm max-sm:hidden" onChange={changeName} />
@@ -150,12 +150,12 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
   return (
     <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
       {
-        props.teams.map((team) => (
+        props.teams.sort((a, b) => a.number - b.number).map((team) => (
           <TeamCard
             draggable={true}
             cardData={team}
             key={team.number}
-          ></TeamCard>
+          />
         ))
       }
       { props.teams.length !== props.expectedTeamCount &&
@@ -253,7 +253,7 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
     <div className="w-full h-fit flex flex-col space-y-2">
       <TeamList teams={teams} picklists={picklists} expectedTeamCount={props.expectedTeamCount}></TeamList>
 
-      <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">
+      <div className="w-full min-h-[30rem] h-fit px-4 py-2 flex flex-row space-x-3">
         {
           loadingPicklists === LoadState.Loading
           ?  <div className="w-full h-full flex items-center justify-center">
