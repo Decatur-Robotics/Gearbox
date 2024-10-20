@@ -22,7 +22,7 @@
     "bootstrap": "^5.3.3",
     "browser-image-compression": "^2.0.2",
     "bson": "^6.8.0",
-    "cloc": "^2.0.0-cloc",
+    "cloc": "^2.11.0",
     "dependencies": "^0.0.1",
     "dotenv": "^16.4.5",
     "eslint": "8.39.0",
