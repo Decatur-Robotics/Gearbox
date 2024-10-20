@@ -1,6 +1,6 @@
 import { Document, EJSON, ObjectId } from "bson";
-import CollectionId from "../client/CollectionId";
-import DbInterface from "../client/dbinterfaces/DbInterface";
+import CollectionId from "@/lib/client/CollectionId";
+import DbInterface from "@/lib/client/dbinterfaces/DbInterface";
 import { MemoryDb } from "minimongo";
 
 function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): { [key: string]: any } {
@@ -35,9 +35,9 @@ function deserialize(obj: any): any {
 }
 
 /**
-* @tested_by tests/lib/testutils/TestDbInterface.test.ts
+* @tested_by tests/lib/client/dbinterfaces/InMemoryDbInterface.test.ts
 */
-export default class TestDbInterface implements DbInterface {
+export default class InMemoryDbInterface implements DbInterface {
   backingDb: MemoryDb;
 
   constructor() {
@@ -86,7 +86,8 @@ export default class TestDbInterface implements DbInterface {
         throw new Error(`Document with id ${id} not found in collection ${collection}`);
       }
 
-      return this.backingDb.collections[collection].upsert(serialize({ _id: id, ...existingDoc, ...newValues }));
+      const returnValue = this.backingDb.collections[collection].upsert(serialize({ ...existingDoc, ...newValues, _id: id }));
+      return deserialize(returnValue);
     })
   }
 
@@ -102,7 +103,9 @@ export default class TestDbInterface implements DbInterface {
 
   findObjects<Type extends Document>(collection: CollectionId, query: object): Promise<Type[]>
   {
-    return deserialize(this.backingDb.collections[collection].find(serialize(query)).fetch());
+    return this.backingDb.collections[collection].find(serialize(query)).fetch().then((res: { [index: string]: object }) => {
+      return Object.values(res).map(deserialize);
+    });
   }
 
   countObjects(collection: CollectionId, query: object): Promise<number | undefined>

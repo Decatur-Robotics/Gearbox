@@ -1,5 +1,5 @@
 import CollectionId from "@/lib/client/CollectionId";
-import TestDbInterface from "@/lib/testutils/TestDbInterface";
+import TestDbInterface from "@/lib/client/dbinterfaces/TestDbInterface";
 import { EJSON, ObjectId } from "bson";
 
 async function getDb() {
@@ -40,10 +40,8 @@ test(`${TestDbInterface.name}.${TestDbInterface.prototype.updateObjectById.name}
   await db.addObject(CollectionId.Users, object);
 
   const updated = { name: "Updated User" };
-  console.log("Current Doc:", await db.findObjectById(CollectionId.Users, object._id));
-  await db.updateObjectById(CollectionId.Users, object._id, updated);
-  console.log("Updated Doc:", await db.findObjectById(CollectionId.Users, object._id));
-  console.log(await db.findObjectById(CollectionId.Users, object._id));
+  await db.updateObjectById(CollectionId.Users, object._id, updated)
+
   expect(await db.findObjectById(CollectionId.Users, object._id)).toStrictEqual({ ...object, ...updated });
 });
 
@@ -61,6 +59,23 @@ test(`${TestDbInterface.name}.${TestDbInterface.prototype.findObject.name}: Find
   const object = { _id: new ObjectId(), name: "Test User" };
   await db.addObject(CollectionId.Users, object);
   expect(await db.findObject(CollectionId.Users, { name: object.name })).toStrictEqual(object);
+});
+
+test(`${TestDbInterface.name}.${TestDbInterface.prototype.findObjects.name}: Finds multiple objects by query`, async () => {
+  const db = await getDb();
+
+  const objects = [
+    { _id: new ObjectId(), name: "Test User", group: 1 }, 
+    { _id: new ObjectId(), name: "Test User 2", group: 1 },
+    { _id: new ObjectId(), name: "Test User 3", group: 2 }
+  ];
+  
+  for (const object of objects) {
+    await db.addObject(CollectionId.Users, object);
+  }
+
+  expect(await db.findObjects(CollectionId.Users, { group: 1 })).toStrictEqual(objects.filter(o => o.group === 1));
+  expect(await db.findObjects(CollectionId.Users, { name: objects[0].name })).toStrictEqual([objects[0]]);
 });
 
 test(`${TestDbInterface.name}.${TestDbInterface.prototype.countObjects.name}: Counts objects`, async () => {
