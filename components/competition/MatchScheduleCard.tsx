@@ -28,9 +28,9 @@ export default function MatchScheduleCard(props: {
   seasonSlug: string | undefined;
   reportsById: { [id: string]: Report };
   usersById: { [id: string]: User };
-  qualificationMatches: Match[];
   updatingComp: string;
   session: AdvancedSession;
+  showSubmittedMatches: boolean;
 }) {
   const {
     team,
@@ -52,10 +52,12 @@ export default function MatchScheduleCard(props: {
     seasonSlug,
     reportsById,
     usersById,
-    qualificationMatches,
     updatingComp,
-    session
+    session,
+    showSubmittedMatches
   } = props;
+
+  const displayedMatches = showSubmittedMatches ? matches : matches.filter((match) => match.reports.some((reportId) => !reportsById[reportId]?.submitted));
 
   return (
     <div className="w-full card bg-base-200 shadow-xl ">
@@ -119,7 +121,7 @@ export default function MatchScheduleCard(props: {
                   className=
                     "carousel carousel-center max-w-lg max-sm:max-w-sm h-56 p-4 space-x-4 bg-transparent rounded-box overflow-y-visible"
                 >
-                  {qualificationMatches.map((match, index) => (
+                  {displayedMatches.map((match, index) => (
                     <div
                       key={match._id}
                       className="carousel-item max-sm:scale-[75%] bg-base-20 w-full flex flex-col items-center md:-translate-y-[34px]"

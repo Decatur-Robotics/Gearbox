@@ -20,7 +20,7 @@ import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
 import { ObjectId } from "mongodb";
 import { fillTeamWithFakeUsers } from "./dev/FakeData";
-import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandeling";
+import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "./CompetitionHandling";
 import { WebClient } from "@slack/web-api";
 import { getServerSession } from "next-auth";
 import Auth, { AuthenticationOptions } from "./Auth";
@@ -34,6 +34,7 @@ import { games } from "./games";
 import { GameId } from "./client/GameId";
 import { TheOrangeAlliance } from "./TheOrangeAlliance";
 import ResendUtils from "./ResendUtils";
+import { users } from "slack";
 import CollectionId from "./client/CollectionId";
 
 export namespace API {
@@ -608,8 +609,8 @@ export namespace API {
           data.tbaId,
           data.time,
           data.type,
-          data.redAlliance,
-          data.blueAlliance
+          data.blueAlliance,
+          data.redAlliance
         )
       );
       comp.matches.push(match._id ? String(match._id) : "");
@@ -642,7 +643,6 @@ export namespace API {
       const result = await AssignScoutersToCompetitionMatches(
         team?._id?.toString(),
         data.compId,
-        data.shuffle
       );
 
       console.log(result);
@@ -1258,6 +1258,40 @@ export namespace API {
       
     addSlackBot: async (req, res, { db, data }) => {
       return res.status(200).send({ result: "success" });
+    },
+
+    removeUserFromTeam: async (req, res, { db, data, userPromise }: RouteContents<{ teamId: string, userId: string }>) => {
+      const team = await db.findObjectById<Team>(CollectionId.Teams, new ObjectId(data.teamId));
+
+      if (!ownsTeam(team, await userPromise))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      const removedUserPromise = db.findObjectById<User>(CollectionId.Users, new ObjectId(data.userId));
+
+      const newTeam: Team = {
+        ...team,
+        users: team.users.filter((id) => id !== data.userId),
+        owners: team.owners.filter((id) => id !== data.userId),
+        scouters: team.scouters.filter((id) => id !== data.userId),
+        subjectiveScouters: team.subjectiveScouters.filter((id) => id !== data.userId),
+      }
+      
+      const teamPromise = db.updateObjectById<Team>(CollectionId.Teams, new ObjectId(data.teamId), newTeam);
+
+      const removedUser = await removedUserPromise;
+      if (!removedUser)
+        return res.status(404).send({ error: "User not found" });
+
+      const newUserData: User = {
+        ...removedUser,
+        teams: removedUser.teams.filter((id) => id !== data.teamId),
+        owner: removedUser.owner.filter((id) => id !== data.teamId),
+      }
+
+      await db.updateObjectById<User>(CollectionId.Users, new ObjectId(data.userId), newUserData);
+      await teamPromise;
+
+      return res.status(200).send({ result: "success", team: newTeam });
     }
   }; 
 }

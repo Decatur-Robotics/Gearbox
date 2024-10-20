@@ -80,7 +80,6 @@ export default function CompetitionIndex(props: {
   const [redAlliance, setRedAlliance] = useState<number[]>([]);
 
   const [matches, setMatches] = useState<Match[]>([]);
-  const qualificationMatches = matches.filter((match) => match.type === MatchType.Qualifying);
 
   const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
 
@@ -596,7 +595,7 @@ export default function CompetitionIndex(props: {
 
   return (
     <>
-      <div className="min-h-screen w-full flex flex-col sm:flex-row flex-grow justify-center sm:space-x-6 my-4 sm:my-4">
+      <div className="min-h-screen w-full flex flex-col sm:flex-row flex-grow justify-center sm:space-x-6 my-4">
         <div className="w-full sm:w-2/5 flex flex-col items-center flex-grow justify-center space-y-4 h-full">
           <CompHeaderCard comp={comp} openDownloadModal={openDownloadModal} isOnline={isOnline} />
           <InsightsAndSettingsCard 
@@ -613,16 +612,16 @@ export default function CompetitionIndex(props: {
           />
         </div>
 
-        <div className="w-full sm:w-1/2 flex flex-col flex-grow justify-center h-screen space-y-4">
+        <div className="w-full sm:w-1/2 flex flex-col flex-grow h-screen space-y-4">
           <MatchScheduleCard 
-            matches={matches} qualificationMatches={qualificationMatches}
+            matches={matches}
             usersById={usersById} reportsById={reportsById} comp={comp} isManager={isManager} openEditMatchModal={openEditMatchModal}
             loadingMatches={loadingMatches} loadingReports={loadingReports}
             loadingUsers={loadingUsers} team={team} ranking={ranking} noMatches={noMatches}
             isOnline={isOnline} matchesAssigned={matchesAssigned} assignScouters={assignScouters}
             assigningMatches={assigningMatches} remindUserOnSlack={remindUserOnSlack}
             reloadCompetition={reloadCompetition} seasonSlug={seasonSlug} updatingComp={updatingComp}
-            session={session}
+            session={session} showSubmittedMatches={showSubmittedMatches}
           />
           <PitScoutingCard pitreports={pitreports} loadingPitreports={loadingPitreports} comp={comp} />
         </div>

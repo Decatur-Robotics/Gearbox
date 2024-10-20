@@ -541,4 +541,8 @@ export default class ClientAPI {
     return await this.request("/uploadSavedComp", { save });
   }
 
+  async removeUserFromTeam(userId: string, teamId: string): Promise<{ result: string, team: Team }> {
+    return await this.request("/removeUserFromTeam", { userId, teamId });
+  }
+
 }

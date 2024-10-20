@@ -12,22 +12,37 @@ function getSelection<T extends QuantData>(selector: Selector<T>, report: Report
   return typeof selector === "string" ? report.data[selector] : selector(report.data);
 }
 
+/**
+ * Rounds to two decimal places
+ * 
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function Round(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function StandardDeviation(numbers: number[]) {
   const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
   const variance = numbers.reduce((a, b) => a + (b - mean) ** 2, 0) / numbers.length;
   return Math.sqrt(variance);
 }
 
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function NumericalTotal<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
   let sum = 0;
   reports?.forEach((report) => (sum += getSelection(selector, report)));
   return Round(sum);
 }
 
+
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function MostCommonValue<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
   // Get a list of all values of the specified field
   let values: string[] = [];
@@ -47,16 +62,25 @@ export function MostCommonValue<T extends QuantData>(selector: Selector<T>, repo
   return mode === "undefined" ? "Unknown" : mode;
 }
 
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function BooleanAverage<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
   const trues = reports?.filter((report) => getSelection(selector, report) === true).length;
 
   return trues / Math.max(reports?.length, 1) > 0.5;
 }
 
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function NumericalAverage<T extends QuantData>(selector: Selector<T>, reports: Report<T>[]) {
   return Round(NumericalTotal(selector, reports) / reports?.length);
 }
 
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function ComparativePercent<T extends QuantData>(
   selector1: Selector<T>,
   selector2: Selector<T>,
