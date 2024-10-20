@@ -30,6 +30,7 @@
     "formidable": "^3.5.1",
     "jose": "^5.9.3",
     "levenary": "^1.1.1",
+    "minimongo": "^6.19.0",
     "mongodb": "^5.9.2",
     "next": "^14.2.13",
     "next-auth": "^4.22.1",

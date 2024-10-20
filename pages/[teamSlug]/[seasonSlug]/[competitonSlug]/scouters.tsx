@@ -1,8 +1,9 @@
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import { Competition, Match, Team, User, Report } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientAPI from "@/lib/client/ClientAPI";
+import CollectionId from "@/lib/client/CollectionId";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
@@ -323,10 +324,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
 
   const teamSlug = context.params?.teamSlug as string;
-  const team = await db.findObject(Collections.Teams, { slug: teamSlug });
+  const team = await db.findObject(CollectionId.Teams, { slug: teamSlug });
 
   const compSlug = context.params?.competitonSlug as string;
-  const comp = await db.findObject(Collections.Competitions, {
+  const comp = await db.findObject(CollectionId.Competitions, {
     slug: compSlug,
   });
 

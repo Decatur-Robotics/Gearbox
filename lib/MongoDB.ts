@@ -5,6 +5,7 @@ import {
   ObjectId,
   UpdateResult,
 } from "mongodb";
+import CollectionId from "./client/CollectionId";
 
 if (!process.env.MONGODB_URI) {
   // Necessary to allow connections from files running outside of Next
@@ -27,22 +28,6 @@ if (!global.clientPromise) {
 clientPromise = global.clientPromise;
 
 export { clientPromise };
-
-export enum Collections {
-  Seasons = "Seasons",
-  Competitions = "Competitions",
-  Matches = "Matches",
-  Reports = "Reports",
-  Teams = "Teams",
-  Users = "users",
-  Accounts = "accounts",
-  Sessions = "sessions",
-  Forms = "Forms",
-  Pitreports = "Pitreports",
-  Picklists = "Picklists",
-  SubjectiveReports = "SubjectiveReports",
-  SlackInstallations = "SlackInstallations",
-}
 
 export async function getDatabase(): Promise<MongoDBInterface> {
   if (!global.interface) {
@@ -71,32 +56,32 @@ export class MongoDBInterface {
     this.db = this.client?.db(process.env.DB);
     //@ts-ignore
 
-    const collections = await this.db?.listCollections().toArray();
-    if (collections?.length === 0) {
+    const CollectionId = await this.db?.listCollections().toArray() as CollectionId;
+    if (CollectionId?.length === 0) {
       try {
-        Object.values(Collections).forEach(
+        Object.values(CollectionId).forEach(
           async (collectionName) =>
             await this.db?.createCollection(collectionName)
         );
       } catch (e) {
-        console.log("Failed to create collections... (probably exist already)");
+        console.log("Failed to create CollectionId... (probably exist already)");
       }
     }
   }
 
-  async addObject<Type>(collection: Collections, object: any): Promise<Type> {
+  async addObject<Type>(collection: CollectionId, object: any): Promise<Type> {
     const ack = await this?.db?.collection(collection).insertOne(object);
     object._id = ack?.insertedId;
     return object as Type;
   }
 
-  async deleteObjectById(collection: Collections, id: ObjectId) {
+  async deleteObjectById(collection: CollectionId, id: ObjectId) {
     var query = { _id: id };
     await this?.db?.collection(collection).deleteOne(query);
   }
 
   async updateObjectById<Type>(
-    collection: Collections,
+    collection: CollectionId,
     id: ObjectId,
     newValues: Partial<Type> | { [key: string]: any }
   ): Promise<UpdateResult<Document> | undefined> {
@@ -108,7 +93,7 @@ export class MongoDBInterface {
   }
 
   async findObjectById<Type>(
-    collection: Collections,
+    collection: CollectionId,
     id: ObjectId
   ): Promise<Type> {
     var query = { _id: id };
@@ -116,14 +101,14 @@ export class MongoDBInterface {
   }
 
   async findObject<Type>(
-    collection: Collections,
+    collection: CollectionId,
     query: object
   ): Promise<Type> {
     return (await this?.db?.collection(collection).findOne(query)) as Type;
   }
 
   async findObjects<Type>(
-    collection: Collections,
+    collection: CollectionId,
     query: object
   ): Promise<Type[]> {
     return (await this?.db
@@ -133,7 +118,7 @@ export class MongoDBInterface {
   }
 
   async countObjects(
-    collection: Collections,
+    collection: CollectionId,
     query: object
   ): Promise<number | undefined> {
     return await this?.db?.collection(collection).countDocuments(query);

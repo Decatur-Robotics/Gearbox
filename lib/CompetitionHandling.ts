@@ -1,4 +1,4 @@
-import { getDatabase, Collections } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import {
   Competition,
   Match,
@@ -12,6 +12,7 @@ import { ObjectId } from "mongodb";
 import { rotateArray, shuffleArray } from "./client/ClientUtils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
+import CollectionId from "./client/CollectionId";
 
 type ScheduleMatch = {
   subjectiveScouter?: string;
@@ -45,12 +46,12 @@ export async function AssignScoutersToCompetitionMatches(
 ) {
   const db = await getDatabase();
   const comp = await db.findObjectById<Competition>(
-    Collections.Competitions,
+    CollectionId.Competitions,
     new ObjectId(competitionId),
   );
 
   const team = await db.findObject<Team>(
-    Collections.Teams,
+    CollectionId.Teams,
     new ObjectId(teamId),
   );
 
@@ -73,7 +74,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
   const db = await getDatabase();
   if (typeof match === "string") {
     match = await db.findObjectById<Match>(
-      Collections.Matches,
+      CollectionId.Matches,
       new ObjectId(match),
     );
   }
@@ -81,7 +82,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
   match.subjectiveScouter = schedule?.subjectiveScouter;
 
   const existingReportPromises = match.reports.map((r) =>
-    db.findObjectById<Report>(Collections.Reports, new ObjectId(r)));
+    db.findObjectById<Report>(CollectionId.Reports, new ObjectId(r)));
   const existingReports = await Promise.all(existingReportPromises);
     
   const bots = match.blueAlliance.concat(match.redAlliance);
@@ -108,7 +109,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
       );
 
       reports.push(
-        String((await db.addObject<Report>(Collections.Reports, newReport))._id),
+        String((await db.addObject<Report>(CollectionId.Reports, newReport))._id),
       );
     }
     else {
@@ -116,7 +117,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
       oldReport.user = scouter;
 
       await db.updateObjectById<Report>(
-        Collections.Reports,
+        CollectionId.Reports,
         new ObjectId(oldReport._id),
         oldReport,
       );
@@ -126,7 +127,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
 
   match.reports = reports.filter((r) => r !== undefined) as string[];
   await db.updateObjectById<Match>(
-    Collections.Matches,
+    CollectionId.Matches,
     new ObjectId(match._id),
     match,
   );

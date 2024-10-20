@@ -1,4 +1,4 @@
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import { Game, PitReportData, Pitreport } from "@/lib/Types";
 import { ObjectId } from "mongodb";
 import { GetServerSideProps } from "next";
@@ -13,6 +13,7 @@ import PitReportForm from "@/components/PitReport";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import { Analytics } from "@/lib/client/Analytics";
 import ClientAPI from "@/lib/client/ClientAPI";
+import CollectionId from "@/lib/client/CollectionId";
 
 const api = new ClientAPI("gearboxiscool");
 
@@ -30,7 +31,7 @@ export default function PitreportForm(props: { pitReport: Pitreport, layout: For
 async function getPitreport(id: string) {
   const db = await getDatabase();
   return await db.findObjectById<Pitreport>(
-    Collections.Pitreports,
+    CollectionId.Pitreports,
     new ObjectId(id)
   );
 }
