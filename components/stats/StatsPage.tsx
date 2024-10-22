@@ -76,7 +76,6 @@ export default function Stats(props: StatsPageProps) {
     <Container
       requireAuthentication={false}
       hideMenu={true}
-      notForMobile={true}
       title="Stats"
     >
       <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">

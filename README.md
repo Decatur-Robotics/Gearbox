@@ -65,3 +65,6 @@ We recommend you start with issues labelled `good first issue` to get a feel for
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
+
+## Licensed under a CC BY-NC-SA 4.0 license
+Read the license [here](LICENSE.md).

@@ -79,7 +79,7 @@ export default function TeamStats(props: {
 
   if (!props.selectedTeam) {
     return (
-      <div className="w-2/5 h-[700px] flex flex-col items-center justify-center bg-base-200">
+      <div className="w-full sm:w-2/5 h-[700px] flex flex-col items-center justify-center bg-base-200">
         <h1 className="text-3xl text-accent animate-bounce font-semibold">
           Select A Team
         </h1>
@@ -96,7 +96,7 @@ export default function TeamStats(props: {
         // Single stat
         const singleStat = stat as Stat<PitReportData, QuantData>;
 
-        return <h1 key={index}>
+        return <h1 key={index} className="max-sm:text-xs">
           {singleStat.label}: {NumericalAverage(singleStat.key as string, props.selectedReports)}
         </h1>
       }
@@ -113,7 +113,7 @@ export default function TeamStats(props: {
       const second = pair.stats[1].get?.(pitReport ?? undefined, props.selectedReports) 
         ?? NumericalAverage(pair.stats[1].key as string, props.selectedReports);
 
-      return <div key={index} className="w-full h-fit flex flex-row items-center">
+      return <div key={index} className="w-full h-fit flex flex-row items-center max-sm:text-xs">
         <div>
           <h1>
             {pair.stats[0].label}: {first}
@@ -152,7 +152,7 @@ export default function TeamStats(props: {
   const sections = Object.entries(props.layout.sections).map(([header, stats]) => getSections(header, stats));
 
   return (
-    <div className="w-2/5 h-fit flex flex-col bg-base-200 pl-10 py-4 text-sm">
+    <div className="w-full sm:w-2/5 h-fit flex flex-col bg-base-200 sm:pl-10 py-4 text-sm">
       <h1 className="text-3xl text-accent font-semibold">
         Team #{props.selectedTeam}
       </h1>
