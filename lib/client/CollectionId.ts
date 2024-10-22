@@ -12,6 +12,7 @@ enum CollectionId {
   Picklists = "Picklists",
   SubjectiveReports = "SubjectiveReports",
   SlackInstallations = "SlackInstallations",
+  Misc = "Misc", 
 }
 
 // We can't do export default enum CollectionId
