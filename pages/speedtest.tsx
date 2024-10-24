@@ -19,8 +19,8 @@ type SpeedTestResponse = {
   totalTime: number
 };
 
-const SPEED_TEST_LENGTH = 6000;
-const SPEED_TEST_PARALLEL_REQUESTS = 60;
+const SPEED_TEST_LENGTH = 12000;
+const SPEED_TEST_PARALLEL_REQUESTS = 120;
 
 export default function SpeedTest() {
   const [times, setTimes] = useState<SpeedTestResponse>();
@@ -92,7 +92,7 @@ export default function SpeedTest() {
 
   return (
     <Container requireAuthentication={true} title={"Speed Test"}>
-      { resultsCompleted !== undefined && <div className="h-2/3 flex flex-col gap-0">
+      { resultsCompleted !== undefined && <div className="h-[70%] flex flex-col gap-0">
         {
           trialCountByThread!.map((count, index) => 
             <progress key={index} value={count} max={Math.round(SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS)} className={`w-full h-[1/${SPEED_TEST_PARALLEL_REQUESTS}]`} />
