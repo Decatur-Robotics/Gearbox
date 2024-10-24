@@ -1,5 +1,4 @@
 import Container from "@/components/Container";
-import Loading from "@/components/Loading";
 import ClientAPI from "@/lib/client/ClientAPI";
 import { Round } from "@/lib/client/StatsMath";
 import { useEffect, useState } from "react";
