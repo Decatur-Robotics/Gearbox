@@ -19,7 +19,7 @@ type SpeedTestResponse = {
   totalTime: number
 };
 
-const SPEED_TEST_LENGTH = 10;
+const SPEED_TEST_LENGTH = 50;
 
 export default function SpeedTest() {
   const [times, setTimes] = useState<SpeedTestResponse>();
@@ -77,15 +77,15 @@ export default function SpeedTest() {
           ? (
             <div>
               {Object.entries(times).map(([key, value]) => (
-                <div key={key}>
+                <div key={key} className={`${key === "dbTime" && "mt-4"}`}>
                   {key}: {Round(value)}ms ({Round(value / times.totalTime * 100)}%)
                 </div>
               ))}
             </div>
           )
-          : <div>Loading...</div>
+          : <div>Loading... {resultsCompleted}/{SPEED_TEST_LENGTH} Trials Complete</div>
       }
-      <button onClick={runSpeedTest} className="btn btn-primary">Run Speed Test</button>
+      <button onClick={runSpeedTest} className="btn btn-primary mt-4">Run Speed Test</button>
     </Container>
   );
 }
