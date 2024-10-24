@@ -33,7 +33,7 @@ export default function SpeedTest() {
       const newTimes = await api.speedTest();
       newResults.push({
         ...newTimes,
-        dbTime: newTimes.insertTime + newTimes.findTime + newTimes.updateTime + newTimes.deleteTime,
+        dbTime: newTimes.authTime + newTimes.insertTime + newTimes.findTime + newTimes.updateTime + newTimes.deleteTime,
         totalTime: Object.values(newTimes).reduce((acc, time) => acc + time, 0)
       });
       setResultsCompleted(newResults.length);
