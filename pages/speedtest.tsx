@@ -94,8 +94,8 @@ export default function SpeedTest() {
     <Container requireAuthentication={true} title={"Speed Test"}>
       { resultsCompleted !== undefined && <div className="h-2/3 flex flex-col gap-0">
         {
-          trialCountByThread!.map(count => 
-            <progress value={count} max={Math.round(SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS)} className={`w-full h-[1/${SPEED_TEST_PARALLEL_REQUESTS}]`} />
+          trialCountByThread!.map((count, index) => 
+            <progress key={index} value={count} max={Math.round(SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS)} className={`w-full h-[1/${SPEED_TEST_PARALLEL_REQUESTS}]`} />
           )
         }
         </div> }
