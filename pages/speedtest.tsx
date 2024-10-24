@@ -47,7 +47,7 @@ export default function SpeedTest() {
       trialCountByThread[thread]++;
       setTrialCountByThread(trialCountByThread);
 
-      if (newResults.length < SPEED_TEST_LENGTH)
+      if (trialCountByThread[thread] < Math.ceil(SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS))
         api.speedTest().then(res => onTrialComplete(res, thread));
     }
 
