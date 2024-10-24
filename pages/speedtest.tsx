@@ -15,6 +15,7 @@ type SpeedTestResponse = {
   deleteTime: number,
   responseTime: number, 
   dbTime: number,
+  transmitTime: number,
   totalTime: number
 };
 
@@ -34,6 +35,7 @@ export default function SpeedTest() {
       newResults.push({
         ...newTimes,
         dbTime: newTimes.authTime + newTimes.insertTime + newTimes.findTime + newTimes.updateTime + newTimes.deleteTime,
+        transmitTime: newTimes.responseTime + newTimes.requestTime,
         totalTime: Object.values(newTimes).reduce((acc, time) => acc + time, 0)
       });
       setResultsCompleted(newResults.length);
@@ -53,6 +55,7 @@ export default function SpeedTest() {
       deleteTime: 0,
       responseTime: 0,
       dbTime: 0,
+      transmitTime: 0,
       totalTime: 0
     });
 
