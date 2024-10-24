@@ -25,27 +25,36 @@ const SPEED_TEST_PARALLEL_REQUESTS = 60;
 export default function SpeedTest() {
   const [times, setTimes] = useState<SpeedTestResponse>();
   const [resultsCompleted, setResultsCompleted] = useState<number | undefined>(undefined);
+  const [trialCountByThread, setTrialCountByThread] = useState<number[]>();
 
   async function runSpeedTest() {
     setResultsCompleted(undefined);
 
     const newResults: SpeedTestResponse[] = [];
 
-    function onTrialComplete(newTimes: Omit<SpeedTestResponse, "totalTime" | "dbTime" | "transmitTime">) {
+    const trialCountByThread: number[] = [];
+
+    function onTrialComplete(newTimes: Omit<SpeedTestResponse, "totalTime" | "dbTime" | "transmitTime">, thread: number) {
       newResults.push({
         ...newTimes,
         dbTime: newTimes.authTime + newTimes.insertTime + newTimes.findTime + newTimes.updateTime + newTimes.deleteTime,
         transmitTime: newTimes.responseTime + newTimes.requestTime,
         totalTime: Object.values(newTimes).reduce((acc, time) => acc + time, 0)
       } as SpeedTestResponse);
+
       setResultsCompleted(newResults.length);
 
+      trialCountByThread[thread]++;
+      setTrialCountByThread(trialCountByThread);
+
       if (newResults.length < SPEED_TEST_LENGTH)
-        api.speedTest().then(onTrialComplete);
+        api.speedTest().then(res => onTrialComplete(res, thread));
     }
 
     for (let i = 0; i < SPEED_TEST_PARALLEL_REQUESTS; i++) {
-      api.speedTest().then(onTrialComplete)
+      const thread = i; // Break the reference
+      trialCountByThread[thread] = 0;
+      api.speedTest().then(res => onTrialComplete(res, thread))
     }
     
     while (newResults.length < SPEED_TEST_LENGTH)
@@ -83,7 +92,13 @@ export default function SpeedTest() {
 
   return (
     <Container requireAuthentication={true} title={"Speed Test"}>
-      { resultsCompleted !== undefined && <progress value={resultsCompleted} max={SPEED_TEST_LENGTH} className="w-full h-1/3" /> }
+      { resultsCompleted !== undefined && <div className="h-2/3 flex flex-col gap-0">
+        {
+          trialCountByThread!.map(count => 
+            <progress value={count} max={Math.round(SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS)} className={`w-full h-[1/${SPEED_TEST_PARALLEL_REQUESTS}]`} />
+          )
+        }
+        </div> }
       {
         times 
           ? (
