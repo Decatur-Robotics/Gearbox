@@ -19,7 +19,8 @@ type SpeedTestResponse = {
   totalTime: number
 };
 
-const SPEED_TEST_LENGTH = 50;
+const SPEED_TEST_LENGTH = 6000;
+const SPEED_TEST_PARALLEL_REQUESTS = 60;
 
 export default function SpeedTest() {
   const [times, setTimes] = useState<SpeedTestResponse>();
@@ -30,17 +31,26 @@ export default function SpeedTest() {
 
     const newResults: SpeedTestResponse[] = [];
 
-    while (newResults.length < SPEED_TEST_LENGTH) {
-      const newTimes = await api.speedTest();
+    function onTrialComplete(newTimes: Omit<SpeedTestResponse, "totalTime" | "dbTime" | "transmitTime">) {
       newResults.push({
         ...newTimes,
         dbTime: newTimes.authTime + newTimes.insertTime + newTimes.findTime + newTimes.updateTime + newTimes.deleteTime,
         transmitTime: newTimes.responseTime + newTimes.requestTime,
         totalTime: Object.values(newTimes).reduce((acc, time) => acc + time, 0)
-      });
+      } as SpeedTestResponse);
       setResultsCompleted(newResults.length);
+
+      if (newResults.length < SPEED_TEST_LENGTH)
+        api.speedTest().then(onTrialComplete);
+    }
+
+    for (let i = 0; i < SPEED_TEST_PARALLEL_REQUESTS; i++) {
+      api.speedTest().then(onTrialComplete)
     }
     
+    while (newResults.length < SPEED_TEST_LENGTH)
+      await new Promise(resolve => setTimeout(resolve, 25));
+
     const avgTimes: typeof times = newResults.reduce((acc, times) => {
       Object.entries(times).forEach(([key, value]) => {
         acc[key] += value;
@@ -73,7 +83,7 @@ export default function SpeedTest() {
 
   return (
     <Container requireAuthentication={true} title={"Speed Test"}>
-      { resultsCompleted !== undefined && <progress value={resultsCompleted} max={SPEED_TEST_LENGTH} className="progress progress-primary" /> }
+      { resultsCompleted !== undefined && <progress value={resultsCompleted} max={SPEED_TEST_LENGTH} className="w-full h-1/3" /> }
       {
         times 
           ? (
