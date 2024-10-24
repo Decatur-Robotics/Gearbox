@@ -6,6 +6,7 @@ const api = new ClientAPI("gearboxiscool");
 
 type SpeedTestResponse = { 
   requestTime: number,
+  authTime: number,
   insertTime: number,
   findTime: number,
   updateTime: number,

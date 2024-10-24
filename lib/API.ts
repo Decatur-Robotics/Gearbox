@@ -1299,13 +1299,14 @@ export namespace API {
     },
 
     speedTest: async (req, res, { db, data, userPromise }: RouteContents<{ requestTimestamp: number }>) => {
+      const authStart = Date.now();
       const user = await userPromise;
-      console.log(user?.email, JSON.parse(process.env.DEVELOPER_EMAILS));
       if (!user || !isDeveloper(user.email))
         return res.status(403).send({ error: "Unauthorized" });
 
       const resObj = {
-        requestTime: Date.now() - data.requestTimestamp,
+        requestTime: Math.max(Date.now() - data.requestTimestamp, 0),
+        authTime: Date.now() - authStart,
         insertTime: 0,
         findTime: 0,
         updateTime: 0,

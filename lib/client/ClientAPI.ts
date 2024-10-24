@@ -547,6 +547,7 @@ export default class ClientAPI {
 
   async speedTest(): Promise<{ 
     requestTime: number,
+    authTime: number,
     insertTime: number,
     findTime: number,
     updateTime: number,
