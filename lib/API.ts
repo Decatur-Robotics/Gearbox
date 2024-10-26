@@ -46,8 +46,7 @@ export namespace API {
     tba: TheBlueAlliance.Interface;
     userPromise: Promise<User | undefined>;
     data: TData;
-  };
-
+  }
 
   type Route = (
     req: NextApiRequest,

@@ -1,23 +1,25 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-export class ApiSegment<TRouteDependencies> {
-  [path: string]: ApiRoute<TRouteDependencies, any[], any> | ApiSegment<TRouteDependencies>;
+export type ApiRoute<TArgs extends Array<any>, TReturn, TDependencies> = {
+  (...args: TArgs): Promise<TReturn>;
+  (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, args: TArgs): TReturn;
+}
 
-  handle(req: NextApiRequest, res: NextApiResponse, deps: TRouteDependencies, args: any[]): Promise<void> {
-    fo
+const route: ApiRoute<[string, number], string, {}> = {
+  (name, number) => {
+    return Promise.resolve(`Hello, ${name} ${number}!`);
   }
 }
 
-export interface ApiRoute<TRouteDependencies, TClientParams extends Array<any>, TReturn> {
-  path: string;
-
-  (...args: TClientParams): Promise<TReturn>;
-  (req: NextApiRequest, res: NextApiResponse, deps: TRouteDependencies, args: TClientParams): Promise<void>;
-}
+route("hello", 1).then(console.log);
 
 /**
- * ApiSegment has 2 call signatures:
+ * ApiRoute has 2 call signatures:
  * - (args): client method
- *  - Needs to be populated with full path
+ *    - Needs to be populated with full path
  * - (req, res, deps, args): server method
+ * 
+ * ApiSegment has a fields that are ApiRoutes
+ * 
+ * ServerApiManager has a root ApiSegment
  */
