@@ -38,7 +38,7 @@ namespace ApiLib {
   export type Route<TArgs extends Array<any>, TReturn, TDependencies> = {
     subUrl: string;
     (...args: TArgs): Promise<TReturn>;
-    handler: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, args: TArgs) => TReturn;
+    handler: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, args: TArgs) => void;
   }
   
   export enum RequestMethod {
@@ -86,7 +86,7 @@ namespace ApiLib {
     [route: string]: Segment<TDependencies> | Route<any, any, TDependencies>;
   }
 
-  export abstract class ClientApiTemplate<TDependencies> {
+  export abstract class ApiTemplate<TDependencies> {
     [route: string]: any;
 
     private initSegment(segment: Segment<any>, subUrl: string) {
@@ -121,7 +121,7 @@ namespace ApiLib {
 
 
   export abstract class ServerApi<TDependencies> {
-    constructor(private api: ClientApiTemplate<TDependencies>) {}
+    constructor(private api: ApiTemplate<TDependencies>) {}
 
     async handle(req: NextApiRequest, res: NextApiResponse) {
       if (!req.url) {
@@ -134,8 +134,7 @@ namespace ApiLib {
       if (!route?.handler)
         throw new Errors.NotFoundError(res, path.join("/"));
 
-      const result = await route(req, res, this.getDependencies(), JSON.parse(req.body));
-      res.json(result);
+      route.handler(req, res, this.getDependencies(), JSON.parse(req.body));
     }
 
     abstract getDependencies(): TDependencies;
