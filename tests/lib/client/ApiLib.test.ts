@@ -1,6 +1,10 @@
-import exp from 'constants';
 import ApiLib from '../../../lib/client/ApiLib';
-class TestClientApi extends ApiLib.ClientApiTemplate {
+
+type TestDependencies = {
+  testDependency: string;
+};
+
+class TestClientApi extends ApiLib.ClientApiTemplate<TestDependencies> {
   segment = {
     routeWithPresetCaller: ApiLib.createRoute(
       {
@@ -25,6 +29,18 @@ class TestClientApi extends ApiLib.ClientApiTemplate {
   constructor() {
     super(false);
     this.init();
+  }
+}
+
+class TestServerApi extends ApiLib.ServerApi<TestDependencies> {
+  constructor() {
+    super(new TestClientApi());
+  }
+
+  getDependencies() {
+    return {
+      testDependency: "test"
+    };
   }
 }
 

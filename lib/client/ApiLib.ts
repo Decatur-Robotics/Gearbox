@@ -5,6 +5,36 @@ import { OmitCallSignature } from "@/lib/Types";
  * @tested_by tests/lib/client/ApiLib.test.ts
  */
 namespace ApiLib {
+  export namespace Errors {
+    export class Error {
+      constructor(
+        res: NextApiResponse,
+        errorCode: number = 500,
+        description: string = "The server encountered an error while processing the request"
+      ) {
+        res.status(errorCode).send({ error: description });
+      }
+    }
+
+    export class NotFoundError extends Error {
+      constructor(res: NextApiResponse, routeName: string) {
+        super(res, 404, `This API Route (/${routeName}) does not exist`);
+      }
+    }
+
+    export class InvalidRequestError extends Error {
+      constructor(res: NextApiResponse) {
+        super(res, 400, "Invalid Request");
+      }
+    }
+
+    export class UnauthorizedError extends Error {
+      constructor(res: NextApiResponse) {
+        super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key");
+      }
+    }
+  }
+
   export type Route<TArgs extends Array<any>, TReturn, TDependencies> = {
     subUrl: string;
     (...args: TArgs): Promise<TReturn>;
@@ -56,15 +86,15 @@ namespace ApiLib {
     [route: string]: Segment<TDependencies> | Route<any, any, TDependencies>;
   }
 
-  export abstract class ClientApiTemplate {
+  export abstract class ClientApiTemplate<TDependencies> {
     [route: string]: any;
 
     private initSegment(segment: Segment<any>, subUrl: string) {
       for (const [key, value] of Object.entries(segment)) {
         if (typeof value === "function") {
           value.subUrl = subUrl + "/" + key;
-        }  else if ((value as unknown as Route<any, any, any>).subUrl === "newRoute") {
-          const route = value as unknown as Route<any, any, any>;
+        }  else if ((value as unknown as Route<any, any, TDependencies>).subUrl === "newRoute") {
+          const route = value as unknown as Route<any, any, TDependencies>;
           route.subUrl = subUrl + "/" + key;
 
           segment[key] = createRoute(route, (...args: any[]) => request(route.subUrl, args));
@@ -87,6 +117,28 @@ namespace ApiLib {
         this.init();
       }
     }
+  }
+
+
+  export abstract class ServerApi<TDependencies> {
+    constructor(private api: ClientApiTemplate<TDependencies>) {}
+
+    async handle(req: NextApiRequest, res: NextApiResponse) {
+      if (!req.url) {
+        throw new Errors.InvalidRequestError(res);
+      }
+
+      const path = req.url.split("/").slice(process.env.NEXT_PUBLIC_API_URL.split("/").length);
+      const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies> | undefined;
+
+      if (!route?.handler)
+        throw new Errors.NotFoundError(res, path.join("/"));
+
+      const result = await route(req, res, this.getDependencies(), JSON.parse(req.body));
+      res.json(result);
+    }
+
+    abstract getDependencies(): TDependencies;
   }
 }
 
