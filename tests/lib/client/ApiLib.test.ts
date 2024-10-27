@@ -1,5 +1,9 @@
-import { NextApiResponse } from 'next';
 import ApiLib from '../../../lib/client/ApiLib';
+
+class TestRes {
+  status = jest.fn(() => this);
+  send = jest.fn(() => this);
+}
 
 type TestDependencies = {
   testDependency: string;
@@ -9,7 +13,8 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
   segment = {
     routeWithPresetCaller: ApiLib.createRoute(
       {
-        handler: (req, res, deps, [name, number]) => {
+        isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+        handler: (req, res, deps, authData, [name, number]) => {
           res.status(200).send(`Hello, ${name} ${number}!`);
         },
       },
@@ -20,13 +25,42 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
 
     routeWithoutPresetCaller: ApiLib.createRoute(
       {
-        handler: (req, res, deps, [name, number]) => {
-          console.log("Called routeWithoutPresetCaller", name, number);
-          return `Hello, ${name} ${number}!`;
+        isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+        handler: (req, res, deps, authData, [name, number]) => {
+          res.status(200).send(`Hello, ${name} ${number}!`);
         },
       }
-    )
+    )    
   };
+
+  rootRoute = ApiLib.createRoute(
+    {
+      isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+      handler: (req, res, deps, authData, [name, number]) => {
+        res.status(200).send(`Hello, ${name} ${number}!`);
+      },
+    }
+  )
+
+  unauthorizedRoute = ApiLib.createRoute(
+    {
+      isAuthorized: (req, res, deps, args) => ({ authorized: false, authData: undefined }),
+      handler(req, res, deps, authData, args)
+      {
+        res.status(200).send("Should not be happening!");
+      },
+    }
+  )
+
+  routeWithAuthData = ApiLib.createRoute(
+    {
+      isAuthorized: (req, res, deps, args) => ({ authorized: true, authData: { x: 0 } }),
+      handler(req, res, deps, authData, args)
+      {
+        res.status(200).send(authData.x);
+      },
+    }
+  )
 
   constructor() {
     super(false);
@@ -53,11 +87,11 @@ test(`ApiLib.${ApiLib.createRoute.name}: Creates callable route`, async () => {
   expect(res).toBe("Hello, world 42!");
 });
 
-test(`ApiLib.${ApiLib.ApiTemplate.prototype.name}: Sets subUrl`, () => {
+test(`ApiLib.${ApiLib.ApiTemplate.prototype.name}.init: Sets subUrl`, () => {
   expect(clientApi.segment.routeWithPresetCaller.subUrl).toBe("/segment/routeWithPresetCaller");
 });
 
-test(`ApiLib.${ApiLib.ApiTemplate.prototype.name}: Sets caller`, async () => {
+test(`ApiLib.${ApiLib.ApiTemplate.prototype.name}.init: Sets caller`, async () => {
   expect(clientApi.segment.routeWithPresetCaller.call).toBeDefined();
 });
 
@@ -66,19 +100,50 @@ test(`ApiLib.${ApiLib.createRoute.name}: Creates callable route without caller`,
   expect(clientApi.segment.routeWithoutPresetCaller.subUrl).toBe("/segment/routeWithoutPresetCaller");
 });
 
-test(`ApiLib.${ApiLib.ServerApi.name}: Finds correct method`, async () => {
-  const serverApi = new TestServerApi();
+test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Finds correct method`, async () => {
   const req = {
-    url: process.env.NEXT_PUBLIC_API_URL + "/segment/routeWithPresetCaller",
+    url: process.env.NEXT_PUBLIC_API_URL + "/segment/routeWithoutPresetCaller",
     body: JSON.stringify(["world", 42])
   };
-  const res: NextApiResponse = {
-    json: jest.fn(() => res),
-    status: jest.fn(() => res),
-    send: jest.fn(() => res)
-  } as any;
-  await serverApi.handle(req as any, res as any);
+  const res = new TestRes();
+
+  await new TestServerApi().handle(req as any, res as any);
   
-  expect(res.json).toHaveBeenCalledWith("Hello, world 42!");
+  expect(res.send).toHaveBeenCalledWith("Hello, world 42!");
   expect(res.status).toHaveBeenCalledWith(200);
+});
+
+test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Finds methods that are not in segments`, async () => {
+  const req = {
+    url: process.env.NEXT_PUBLIC_API_URL + "/rootRoute",
+    body: JSON.stringify(["world", 42])
+  };
+  const res = new TestRes();
+
+  await new TestServerApi().handle(req as any, res as any);
+  
+  expect(res.send).toHaveBeenCalledWith("Hello, world 42!");
+  expect(res.status).toHaveBeenCalledWith(200);
+});
+
+test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Throws 403 if unauthorized`, async () => {
+  const req = {
+    url: process.env.NEXT_PUBLIC_API_URL + "/unauthorizedRoute"
+  }
+  const res = new TestRes();
+
+  await new TestServerApi().handle(req as any, res as any);
+
+  expect(res.status).toHaveBeenCalledWith(403);
+});
+
+test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Passes authData to handler`, async () => {
+  const req = {
+    url: process.env.NEXT_PUBLIC_API_URL + "/routeWithAuthData"
+  }
+  const res = new TestRes();
+
+  await new TestServerApi().handle(req as any, res as any);
+
+  expect(res.send).toHaveBeenCalledWith(0);
 });

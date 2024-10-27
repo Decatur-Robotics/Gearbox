@@ -30,15 +30,18 @@ namespace ApiLib {
 
     export class UnauthorizedError extends Error {
       constructor(res: NextApiResponse) {
-        super(res, 401, "Please provide a valid 'Gearbox-Auth' Header Key");
+        super(res, 403, "Please provide a valid 'Gearbox-Auth' Header Key");
       }
     }
   }
 
-  export type Route<TArgs extends Array<any>, TReturn, TDependencies> = {
+  export type Route<TArgs extends Array<any>, TReturn, TDependencies, TDataFetchedDuringAuth> = {
     subUrl: string;
+    
     (...args: TArgs): Promise<TReturn>;
-    handler: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, args: TArgs) => void;
+
+    isAuthorized: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, args: TArgs) => { authorized: boolean, authData: TDataFetchedDuringAuth };
+    handler: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, authData: TDataFetchedDuringAuth, args: TArgs) => void;
   }
   
   export enum RequestMethod {
@@ -75,15 +78,15 @@ namespace ApiLib {
   /**
    * There's no easy one-liner to create a function with properties while maintaining typing, so I made this shortcut
    */
-  export function createRoute<TArgs extends Array<any>, TReturn, TDependencies>(
-    server: Omit<OmitCallSignature<Route<TArgs, TReturn, TDependencies>>, "subUrl">,
+  export function createRoute<TArgs extends Array<any>, TReturn, TDependencies, TFetchedDuringAuth>(
+    server: Omit<OmitCallSignature<Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth>>, "subUrl">,
     clientHandler?: (...args: TArgs) => Promise<TReturn>
-  ): Route<TArgs, TReturn, TDependencies> {
+  ): Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth> {
     return Object.assign(clientHandler ?? { subUrl: "newRoute" }, server) as any;
   }
 
   export type Segment<TDependencies> = {
-    [route: string]: Segment<TDependencies> | Route<any, any, TDependencies>;
+    [route: string]: Segment<TDependencies> | Route<any, any, TDependencies, any>;
   }
 
   export abstract class ApiTemplate<TDependencies> {
@@ -93,8 +96,8 @@ namespace ApiLib {
       for (const [key, value] of Object.entries(segment)) {
         if (typeof value === "function") {
           value.subUrl = subUrl + "/" + key;
-        }  else if ((value as unknown as Route<any, any, TDependencies>).subUrl === "newRoute") {
-          const route = value as unknown as Route<any, any, TDependencies>;
+        }  else if ((value as unknown as Route<any, any, TDependencies, any>).subUrl === "newRoute") {
+          const route = value as unknown as Route<any, any, TDependencies, any>;
           route.subUrl = subUrl + "/" + key;
 
           segment[key] = createRoute(route, (...args: any[]) => request(route.subUrl, args));
@@ -124,17 +127,27 @@ namespace ApiLib {
     constructor(private api: ApiTemplate<TDependencies>) {}
 
     async handle(req: NextApiRequest, res: NextApiResponse) {
-      if (!req.url) {
-        throw new Errors.InvalidRequestError(res);
-      }
+      try {
+        if (!req.url) {
+          throw new Errors.InvalidRequestError(res);
+        }
 
-      const path = req.url.split("/").slice(process.env.NEXT_PUBLIC_API_URL.split("/").length);
-      const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies> | undefined;
+        const path = req.url.split("/").slice(process.env.NEXT_PUBLIC_API_URL.split("/").length);
+        const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies, any> | undefined;
 
-      if (!route?.handler)
-        throw new Errors.NotFoundError(res, path.join("/"));
+        if (!route?.handler)
+          throw new Errors.NotFoundError(res, path.join("/"));
 
-      route.handler(req, res, this.getDependencies(), JSON.parse(req.body));
+        const deps = this.getDependencies();
+        const json = req.body ? JSON.parse(req.body) : {};
+
+        const { authorized, authData } = route.isAuthorized(req, res, deps, json);
+
+        if (!authorized)
+          throw new Errors.UnauthorizedError(res);
+
+        route.handler(req, res, deps, authData, json);
+      } catch (e) { }
     }
 
     abstract getDependencies(): TDependencies;
@@ -146,7 +159,8 @@ export default ApiLib;
 const segment = {
   route: ApiLib.createRoute(
     {
-      handler: (req, res, deps, [name, number]) => {
+      isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+      handler: (req, res, deps, authData, [name, number]) => {
         return `Hello, ${name} ${number}!`;
       },
     },
