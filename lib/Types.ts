@@ -40,6 +40,7 @@ export class User implements NextAuthUser {
   level: number = 1;
   onboardingComplete: boolean = false;
   resendContactId: string | undefined = undefined;
+  lastSignInDate: string | undefined = undefined;
 
   constructor(
     name: string | undefined,
@@ -552,4 +553,38 @@ export type DbPicklist = {
   picklists: {
     [name: string]: number[];
   };
+}
+
+type LinkedNode<T> = {
+  prev?: LinkedNode<T>;
+  next?: LinkedNode<T>;
+}
+
+export class LinkedList<T> {
+  private head?: LinkedNode<T> = undefined;
+
+  size() {
+    let count = 0;
+
+    for (let node = this.head; node !== undefined; node = node.next)
+      count++;
+
+    return count;
+  }
+
+  isEmpty() {
+    return this.head === undefined;
+  }
+
+  first() {
+    return this.head;
+  }
+
+  last() {
+    let node = this.head;
+    while (node?.next)
+      node = node.next;
+
+    return node;
+  }
 }

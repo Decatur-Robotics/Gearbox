@@ -1335,6 +1335,16 @@ export namespace API {
 
       resObj.responseTimestamp = Date.now();
       return res.status(200).send(resObj);
+    },
+
+    getUserAnalyticsData: async (req, res, { db, userPromise }) => {
+      if (!isDeveloper((await userPromise)?.email))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      const [teams, users] = await Promise.all([
+        db.findObjects<Team>(CollectionId.Teams, {}),
+        db.findObjects<User>(CollectionId.Users, { lastSignInDate: { $exists: true } })
+      ]);
     }
   }; 
 }

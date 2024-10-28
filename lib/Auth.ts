@@ -96,6 +96,14 @@ export const AuthenticationOptions: AuthOptions = {
       Analytics.signIn(user.name ?? "Unknown User");
       ResendUtils.createContact(user);
 
+      const today = new Date().toDateString();
+      if ((user as User).lastSignInDate !== today) {
+        await getDatabase()
+          .then(db => db.updateObjectById(CollectionId.Users, new ObjectId(user.id), {
+            lastSignInDate: today
+          }))
+      }
+
       return true;
     }
   },
