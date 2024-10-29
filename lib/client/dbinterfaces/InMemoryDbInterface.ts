@@ -11,8 +11,6 @@ function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): 
       newObj["_id"] = newObj._id.$oid;
     } else if (!idsToString && key === "_id") {
       newObj._id = new ObjectId(newObj._id);
-    } else if (typeof newObj[key] === "object") {
-      newObj[key] = replaceOidOperator(newObj[key], idsToString);
     } else if (Array.isArray(newObj[key])) {
       newObj[key] = newObj[key].map((item: any) => {
         if (typeof item === "object") {
@@ -20,7 +18,9 @@ function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): 
         }
         return item;
       });
-    }
+    } else if (typeof newObj[key] === "object") {
+      newObj[key] = replaceOidOperator(newObj[key], idsToString);
+    } 
   }
 
   return newObj;
@@ -98,7 +98,14 @@ export default class InMemoryDbInterface implements DbInterface {
 
   findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
   {
-    return this.backingDb.collections[collection].findOne(serialize(query)).then(deserialize);
+    return this.backingDb.collections[collection].findOne(serialize(query)).then(deserialize).then((obj: Type) => {
+      if (Object.keys(obj).length === 0)
+      {
+        return undefined;
+      }
+
+      return obj;
+    });
   }
 
   findObjects<Type extends Document>(collection: CollectionId, query: object): Promise<Type[]>

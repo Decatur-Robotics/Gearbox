@@ -6,32 +6,53 @@ import { OmitCallSignature } from "@/lib/Types";
  */
 namespace ApiLib {
   export namespace Errors {
+    export type ErrorType = { error: string };
+
     export class Error {
       constructor(
-        res: NextApiResponse,
+        res: ApiResponse<ErrorType>,
         errorCode: number = 500,
         description: string = "The server encountered an error while processing the request"
       ) {
-        res.status(errorCode).send({ error: description });
+        res.error(errorCode, description);
       }
     }
 
     export class NotFoundError extends Error {
-      constructor(res: NextApiResponse, routeName: string) {
+      constructor(res: ApiResponse<ErrorType>, routeName: string) {
         super(res, 404, `This API Route (/${routeName}) does not exist`);
       }
     }
 
     export class InvalidRequestError extends Error {
-      constructor(res: NextApiResponse) {
+      constructor(res: ApiResponse<ErrorType>) {
         super(res, 400, "Invalid Request");
       }
     }
 
     export class UnauthorizedError extends Error {
-      constructor(res: NextApiResponse) {
+      constructor(res: ApiResponse<ErrorType>) {
         super(res, 403, "Please provide a valid 'Gearbox-Auth' Header Key");
       }
+    }
+  }
+
+  export class ApiResponse<TSend> {
+    constructor(private res: NextApiResponse) {}
+
+    send(data: TSend) {
+      this.res.send(data);
+      return this;
+    }
+
+    status(code: number) {
+      this.res.status(code);
+      return this;
+    }
+
+    error(code: number, message: string) {
+      this.res.status(code).send({ error: message });
+      return this;
     }
   }
 
@@ -40,8 +61,8 @@ namespace ApiLib {
     
     (...args: TArgs): Promise<TReturn>;
 
-    isAuthorized: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, args: TArgs) => { authorized: boolean, authData: TDataFetchedDuringAuth };
-    handler: (req: NextApiRequest, res: NextApiResponse, deps: TDependencies, authData: TDataFetchedDuringAuth, args: TArgs) => void;
+    isAuthorized: (req: NextApiRequest, res: ApiResponse<TReturn>, deps: TDependencies, args: TArgs) => Promise<{ authorized: boolean, authData: TDataFetchedDuringAuth }>;
+    handler: (req: NextApiRequest, res: ApiResponse<TReturn>, deps: TDependencies, authData: TDataFetchedDuringAuth, args: TArgs) => Promise<any> | any;
   }
   
   export enum RequestMethod {
@@ -126,8 +147,10 @@ namespace ApiLib {
   export abstract class ServerApi<TDependencies> {
     constructor(private api: ApiTemplate<TDependencies>) {}
 
-    async handle(req: NextApiRequest, res: NextApiResponse) {
+    async handle(req: NextApiRequest, rawRes: NextApiResponse) {
       try {
+        const res = new ApiResponse(rawRes);
+
         if (!req.url) {
           throw new Errors.InvalidRequestError(res);
         }
@@ -141,7 +164,7 @@ namespace ApiLib {
         const deps = this.getDependencies(req, res);
         const json = req.body ? JSON.parse(req.body) : {};
 
-        const { authorized, authData } = route.isAuthorized(req, res, deps, json);
+        const { authorized, authData } = await route.isAuthorized(req, res, deps, json);
 
         if (!authorized)
           throw new Errors.UnauthorizedError(res);
@@ -150,27 +173,14 @@ namespace ApiLib {
       } catch (e) { }
     }
 
-    abstract getDependencies(req: NextApiRequest, res: NextApiResponse): TDependencies;
+    abstract getDependencies(req: NextApiRequest, res: ApiResponse<any>): TDependencies;
   }
 }
 
 export default ApiLib;
 
-const segment = {
-  route: ApiLib.createRoute(
-    {
-      isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
-      handler: (req, res, deps, authData, [name, number]) => {
-        return `Hello, ${name} ${number}!`;
-      },
-    },
-    (name: string, number: number) => {
-      return Promise.resolve(`Hello, ${name} ${number}!`);
-    }
-  )
-};
-
 /**
+ * Misc design notes (may be outdated):
  * ApiRoute has 2 call signatures:
  * - (args): client method
  *    - Needs to be populated with full path

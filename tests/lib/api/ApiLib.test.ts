@@ -1,9 +1,5 @@
 import ApiLib from '@/lib/api/ApiLib';
-
-class TestRes {
-  status = jest.fn(() => this);
-  send = jest.fn(() => this);
-}
+import { TestRes } from '@/lib/TestUtils';
 
 type TestDependencies = {
   testDependency: string;
@@ -13,7 +9,7 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
   segment = {
     routeWithPresetCaller: ApiLib.createRoute(
       {
-        isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+        isAuthorized: (req, res, deps, [name, number]) => Promise.resolve({ authorized: true, authData: {} }),
         handler: (req, res, deps, authData, [name, number]) => {
           res.status(200).send(`Hello, ${name} ${number}!`);
         },
@@ -25,7 +21,7 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
 
     routeWithoutPresetCaller: ApiLib.createRoute(
       {
-        isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+        isAuthorized: (req, res, deps, [name, number]) => Promise.resolve({ authorized: true, authData: {} }),
         handler: (req, res, deps, authData, [name, number]) => {
           res.status(200).send(`Hello, ${name} ${number}!`);
         },
@@ -35,7 +31,7 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
 
   rootRoute = ApiLib.createRoute(
     {
-      isAuthorized: (req, res, deps, [name, number]) => ({ authorized: true, authData: {} }),
+      isAuthorized: (req, res, deps, [name, number]) => Promise.resolve({ authorized: true, authData: {} }),
       handler: (req, res, deps, authData, [name, number]) => {
         res.status(200).send(`Hello, ${name} ${number}!`);
       },
@@ -44,7 +40,7 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
 
   unauthorizedRoute = ApiLib.createRoute(
     {
-      isAuthorized: (req, res, deps, args) => ({ authorized: false, authData: undefined }),
+      isAuthorized: (req, res, deps, args) => Promise.resolve({ authorized: false, authData: undefined }),
       handler(req, res, deps, authData, args)
       {
         res.status(200).send("Should not be happening!");
@@ -54,7 +50,7 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
 
   routeWithAuthData = ApiLib.createRoute(
     {
-      isAuthorized: (req, res, deps, args) => ({ authorized: true, authData: { x: 0 } }),
+      isAuthorized: (req, res, deps, args) => Promise.resolve({ authorized: true, authData: { x: 0 } }),
       handler(req, res, deps, authData, args)
       {
         res.status(200).send(authData.x);

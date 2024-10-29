@@ -19,7 +19,7 @@ export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
     return {
       db: getDatabase(),
       tba: new TheBlueAlliance.Interface(),
-      slackClient: new WebClient(process.env.FUCK_YOU_FASCIST_ASSHOLES),
+      slackClient: new WebClient(process.env.SLACK_CLIENT_SECRET),
       userPromise: getServerSession(req, res, AuthenticationOptions).then((s) => s?.user as User | undefined)
     };
   }

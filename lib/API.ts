@@ -263,6 +263,8 @@ export namespace API {
 
     /**
      * TODO: Add user verification
+     * 
+     * @deprecated
      */
     update: async (req, res, { db, data }: RouteContents<{ collection: CollectionId, id: string, newValues: object }>) => {
       const collection = data.collection;
@@ -278,6 +280,8 @@ export namespace API {
     
     /**
      * TODO: Add user verification
+     * 
+     * @deprecated
      */
     find: async (req, res, { db, data }: RouteContents<{ collection: CollectionId, query: { _id?: string | ObjectId } }>) => {
       // {
