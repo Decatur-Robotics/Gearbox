@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { OmitCallSignature } from "@/lib/Types";
 
 /**
- * @tested_by tests/lib/client/ApiLib.test.ts
+ * @tested_by tests/lib/api/ApiLib.test.ts
  */
 namespace ApiLib {
   export namespace Errors {
@@ -138,7 +138,7 @@ namespace ApiLib {
         if (!route?.handler)
           throw new Errors.NotFoundError(res, path.join("/"));
 
-        const deps = this.getDependencies();
+        const deps = this.getDependencies(req, res);
         const json = req.body ? JSON.parse(req.body) : {};
 
         const { authorized, authData } = route.isAuthorized(req, res, deps, json);
@@ -150,7 +150,7 @@ namespace ApiLib {
       } catch (e) { }
     }
 
-    abstract getDependencies(): TDependencies;
+    abstract getDependencies(req: NextApiRequest, res: NextApiResponse): TDependencies;
   }
 }
 

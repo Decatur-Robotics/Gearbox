@@ -1,4 +1,4 @@
-import ApiLib from '../../../lib/client/ApiLib';
+import ApiLib from '@/lib/api/ApiLib';
 
 class TestRes {
   status = jest.fn(() => this);
