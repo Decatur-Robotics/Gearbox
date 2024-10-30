@@ -555,13 +555,39 @@ export type DbPicklist = {
   };
 }
 
-type LinkedNode<T> = {
+type LinkedNode<T> = T & {
   prev?: LinkedNode<T>;
   next?: LinkedNode<T>;
 }
 
+/**
+ * @tested_by tests/lib/types/LinkedList.test.ts
+ */
 export class LinkedList<T> {
   private head?: LinkedNode<T> = undefined;
+
+  constructor(head: T | T[] | undefined) {
+    if (Array.isArray(head) && head.length > 0) {
+      let node: LinkedNode<T>;
+
+      for (const element of head) {
+        if (!this.head) {
+          this.head = {
+            ...element,
+            next: undefined,
+            prev: undefined
+          }
+
+          node = this.head;
+        } else node = this.insertAfter(node!, element);
+      }
+    } else if (head)
+      this.head = {
+        ...head as T,
+        next: undefined,
+        prev: undefined
+      };
+  }
 
   size() {
     let count = 0;
@@ -586,5 +612,38 @@ export class LinkedList<T> {
       node = node.next;
 
     return node;
+  }
+
+  insertBefore(existingNode: LinkedNode<T>, insertedVal: T) {
+    const insertedNode: LinkedNode<T> = {
+      ...insertedVal,
+      next: existingNode,
+    }
+
+    if (existingNode.prev) {
+      existingNode.prev.next = insertedNode;
+      insertedNode.prev = existingNode.prev;
+    }
+    existingNode.prev = insertedNode;
+
+    if (this.head === existingNode)
+      this.head = insertedNode;
+
+    return insertedNode;
+  }
+
+  insertAfter(existingNode: LinkedNode<T>, insertedVal: T) {
+    const insertedNode: LinkedNode<T> = {
+      ...insertedVal,
+      prev: existingNode
+    }
+
+    if (existingNode.next) {
+      existingNode.next.prev = insertedNode;
+      insertedNode.next = existingNode.next;
+    }
+    existingNode.next = insertedNode;
+
+    return insertedNode;
   }
 }
