@@ -105,6 +105,8 @@ export const AuthenticationOptions: AuthOptions = {
         typedUser.slug = await GenerateSlug(CollectionId.Users, typedUser.name!);
         typedUser.teams = [];
         typedUser.owner = [];
+
+        await (await db).updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), typedUser);
       }
 
       return true;
