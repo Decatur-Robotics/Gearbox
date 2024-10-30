@@ -98,6 +98,7 @@ export const AuthenticationOptions: AuthOptions = {
 
       const typedUser = user as User;
       if (!typedUser.slug) {
+        console.log("User is incomplete, filling in missing fields");
         // User is incomplete, fill in the missing fields
         typedUser.name = typedUser.name ?? typedUser.email?.split("@")[0];
         typedUser.image = typedUser.image ?? "https://4026.org/user.jpg";
