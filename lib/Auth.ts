@@ -96,6 +96,16 @@ export const AuthenticationOptions: AuthOptions = {
       Analytics.signIn(user.name ?? "Unknown User");
       ResendUtils.createContact(user);
 
+      const typedUser = user as User;
+      if (!typedUser.slug) {
+        // User is incomplete, fill in the missing fields
+        typedUser.name = typedUser.name ?? typedUser.email?.split("@")[0];
+        typedUser.image = typedUser.image ?? "https://4026.org/user.jpg";
+        typedUser.slug = await GenerateSlug(CollectionId.Users, typedUser.name!);
+        typedUser.teams = [];
+        typedUser.owner = [];
+      }
+
       return true;
     }
   },
