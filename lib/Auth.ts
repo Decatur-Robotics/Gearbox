@@ -106,6 +106,7 @@ export const AuthenticationOptions: AuthOptions = {
         typedUser.teams = [];
         typedUser.owner = [];
 
+        console.log("Updating user with missing fields", typedUser);
         await (await db).updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), typedUser);
       }
 
