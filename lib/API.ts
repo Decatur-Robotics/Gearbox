@@ -253,6 +253,10 @@ export namespace API {
     return getTeamFromDocument(db, getCompFromSubjectiveReport, report);
   }
 
+  function isDeveloper(email: string | undefined) {
+    return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(email ?? "");
+  }
+
   export const Routes: RouteCollection = {
     hello: async (req, res, { db, data }) => {
       res.status(200).send({
@@ -1292,6 +1296,45 @@ export namespace API {
       await teamPromise;
 
       return res.status(200).send({ result: "success", team: newTeam });
+    },
+
+    speedTest: async (req, res, { db, data, userPromise }: RouteContents<{ requestTimestamp: number }>) => {
+      const authStart = Date.now();
+      const user = await userPromise;
+      if (!user || !isDeveloper(user.email))
+        return res.status(403).send({ error: "Unauthorized" });
+
+      const resObj = {
+        requestTime: Math.max(Date.now() - data.requestTimestamp, 0),
+        authTime: Date.now() - authStart,
+        insertTime: 0,
+        findTime: 0,
+        updateTime: 0,
+        deleteTime: 0,
+        responseTimestamp: Date.now(),
+      }
+
+      const testObject = {
+        _id: new ObjectId(),
+      }
+      const insertStart = Date.now();
+      await db.addObject(CollectionId.Misc, testObject);
+      resObj.insertTime = Date.now() - insertStart;
+
+      const findStart = Date.now();
+      await db.findObjectById(CollectionId.Misc, testObject._id);
+      resObj.findTime = Date.now() - findStart;
+
+      const updateStart = Date.now();
+      await db.updateObjectById(CollectionId.Misc, testObject._id, {name: "test"});
+      resObj.updateTime = Date.now() - updateStart;
+
+      const deleteStart = Date.now();
+      await db.deleteObjectById(CollectionId.Misc, testObject._id);
+      resObj.deleteTime = Date.now() - deleteStart;
+
+      resObj.responseTimestamp = Date.now();
+      return res.status(200).send(resObj);
     }
   }; 
 }
