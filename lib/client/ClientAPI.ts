@@ -545,4 +545,18 @@ export default class ClientAPI {
     return await this.request("/removeUserFromTeam", { userId, teamId });
   }
 
+  async speedTest(): Promise<{ 
+    requestTime: number,
+    authTime: number,
+    insertTime: number,
+    findTime: number,
+    updateTime: number,
+    deleteTime: number,
+    responseTime: number, 
+  }> {
+    const { responseTimestamp, ...times } = await this.request("/speedTest", { requestTimestamp: Date.now() }); ;
+
+    return { ...times, responseTime: Date.now() - responseTimestamp };
+  }
+
 }
