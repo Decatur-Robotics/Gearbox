@@ -2,7 +2,7 @@ import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { FaDatabase, FaUserGroup } from "react-icons/fa6";
+import { FaCodePullRequest, FaDatabase, FaUserGroup } from "react-icons/fa6";
 import { FaDiscord, FaUser, FaWifi } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
 import ClientAPI from "@/lib/client/ClientAPI";
@@ -374,6 +374,23 @@ export default function Homepage() {
             >
               <button className="btn btn-primary text-2xl">Sign In</button>
             </a>
+        </div>      
+      </div>
+      
+      <div className="hero w-full py-12 bg-base-200 max-lg:hidden">
+        <div className="hero-content flex flex-col justify-start">
+          <div className="w-full flex flex-row space-x-4 items-center">
+            <FaCodePullRequest size={32} />
+            <h1 className="text-4xl font-bold">
+              Completely <span className="text-accent">Open Source</span>
+            </h1>
+          </div>
+          <p>
+            Gearbox is completely open source, meaning you can view the code
+            and contribute to the project. If there&apos;s something you don&apos;t like,
+            you can change it! Build the future of scouting today on{" "}
+            <a href="https://github.com/Decatur-Robotics/Gearbox" className="link text-secondary">our GitHub</a>.
+          </p>
         </div>
       </div>
     </Container>

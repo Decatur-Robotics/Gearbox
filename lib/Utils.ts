@@ -5,7 +5,8 @@
  */
 
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
-import { Collections, getDatabase } from "./MongoDB";
+import CollectionId from "./client/CollectionId";
+import { getDatabase } from "./MongoDB";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -20,7 +21,7 @@ import { Collections, getDatabase } from "./MongoDB";
  * @returns - A Unique SLUG
  */
 export async function GenerateSlug(
-  collection: Collections,
+  collection: CollectionId,
   name: string,
   index: number = 0,
 ): Promise<string> {

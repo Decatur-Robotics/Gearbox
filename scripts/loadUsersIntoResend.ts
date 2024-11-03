@@ -1,4 +1,5 @@
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import CollectionId from "@/lib/client/CollectionId";
 import ResendUtils from "@/lib/ResendUtils";
 import { User } from "@/lib/Types";
 
@@ -9,7 +10,7 @@ async function loadUsersIntoResend() {
   const db = await getDatabase();
   
   console.log("Finding users...");
-  const users = await db.findObjects<User>(Collections.Users, {});
+  const users = await db.findObjects<User>(CollectionId.Users, {});
 
   console.log(`Saving ${users.length} users to Resend...`);
   

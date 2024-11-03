@@ -12,7 +12,8 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Link from "next/link";
 
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import CollectionId from "@/lib/client/CollectionId";
 import { ObjectId } from "mongodb";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
@@ -28,7 +29,6 @@ import CompetitionCard from "@/components/CompetitionCard";
 import SeasonCard from "@/components/SeasonCard";
 import Avatar from "@/components/Avatar";
 import Loading from "@/components/Loading";
-import ConfirmModal from "@/lib/client/Confirm";
 import { validName } from "@/lib/client/InputVerification";
 import { BsSlack } from "react-icons/bs";
 import { games } from "@/lib/games";
@@ -189,35 +189,13 @@ function Roster(props: TeamPageProps) {
   };
 
   const removeUser = async (userId: string) => {
-    const confirmed = ConfirmModal(
-      "Are you sure you want to remove this user?"
-    );
-
-    if (!confirmed) {
+    if (!confirm("Are you sure you want to remove this user?")) {
       return;
     }
-
-    if (team?.owners.includes(userId)) {
-      await updateOwner(userId);
-    }
-    if (team?.scouters.includes(userId)) {
-      await updateScouter(userId);
-    }
-    if (team?.subjectiveScouters?.includes(userId)) {
-      await updateScouter(userId);
-    }
-
-    var teamClone = structuredClone(team);
-    var newUsers = teamClone?.users;
-    newUsers?.splice(newUsers.indexOf(userId), 1);
-    await api.updateTeam({ users: newUsers }, team?._id);
-
-    setTeam(teamClone);
-
-    var userClone = [...users];
-    var index = userClone.findIndex((user) => user._id === userId);
-    userClone.splice(index, 1);
-    setUsers(userClone);
+    
+    const { team: newTeam } = await api.removeUserFromTeam(userId, team?._id as string);
+    setTeam(newTeam);
+    setUsers(users.filter((user) => user._id !== userId));
   };
 
   return (
@@ -519,11 +497,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     (seasonId) => new ObjectId(seasonId)
   );
   const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
-  const seasons = await db.findObjects<Season>(Collections.Seasons, {
+  const seasons = await db.findObjects<Season>(CollectionId.Seasons, {
     _id: { $in: seasonIds },
   });
 
-  var users = await db.findObjects<User>(Collections.Users, {
+  var users = await db.findObjects<User>(CollectionId.Users, {
     _id: { $in: userIds },
   });
 
@@ -538,7 +516,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   var comp = undefined;
   if (currentSeason) {
     comp = await db.findObjectById<Competition>(
-      Collections.Competitions,
+      CollectionId.Competitions,
       new ObjectId(
         currentSeason.competitions[currentSeason.competitions.length - 1]
       )

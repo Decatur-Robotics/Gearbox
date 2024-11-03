@@ -59,7 +59,16 @@ export default class ClientAPI {
       body: JSON.stringify(body),
     });
     
-    return await rawResponse.json();
+    const res = await rawResponse.json();
+
+    if (res.error) {
+      if (res.error === "Unauthorized") {
+        alert(`Unauthorized API request: ${subUrl}. If this is an error, please contact the developers.`);
+      }
+      throw new Error(`${subUrl}: ${res.error}`);
+    }
+
+    return res;
   }
   
   /**
@@ -136,10 +145,6 @@ export default class ClientAPI {
       collection: "Pitreports",
       query: { _id: id },
     });
-  }
-
-  async allTeams(): Promise<Team[]> {
-    return await this.request("/findAll", { collection: "Teams" });
   }
 
   async getTeamAutofillData(teamNumber: number | undefined, league: League = League.FRC): Promise<Team> {
@@ -382,16 +387,6 @@ export default class ClientAPI {
     return await this.request("/setSlackId", { userId, slackId });
   }
 
-  async addUserXp(
-    userId: string | undefined,
-    oweBucksToAdd: number | undefined
-  ) {
-    return await this.request("/addUserXp", {
-      userId,
-      oweBucksToAdd,
-    });
-  }
-
   async initialEventData(eventKey: string | undefined): Promise<EventData> {
     return await this.request("/initialEventData", { eventKey });
   }
@@ -431,8 +426,8 @@ export default class ClientAPI {
     return await this.request("/teamCompRanking", { tbaId, team });
   }
 
-  async getPitReports(reportIds: string[]) {
-    return await this.request("/getPitReports", { reportIds });
+  async getPitReports(compId: string) {
+    return await this.request("/getPitReports", { compId });
   }
 
   async changeScouterForReport(reportId: string, scouterId: string, compId: string) {
@@ -531,9 +526,9 @@ export default class ClientAPI {
     return await this.request("/ping", {});
   }
 
-  async getSubjectiveReportsFromMatches(matches: Match[], fallback: SubjectiveReport[] | undefined = undefined): Promise<SubjectiveReport[]> {
+  async getSubjectiveReportsFromMatches(compId: string, matches: Match[], fallback: SubjectiveReport[] | undefined = undefined): Promise<SubjectiveReport[]> {
     try {
-      return await this.request("/getSubjectiveReportsFromMatches", { matches });
+      return await this.request("/getSubjectiveReportsFromMatches", { compId, matches });
     }
     catch(e) {
       if (fallback)
@@ -544,6 +539,24 @@ export default class ClientAPI {
 
   async uploadSavedComp(save: SavedCompetition): Promise<void> {
     return await this.request("/uploadSavedComp", { save });
+  }
+
+  async removeUserFromTeam(userId: string, teamId: string): Promise<{ result: string, team: Team }> {
+    return await this.request("/removeUserFromTeam", { userId, teamId });
+  }
+
+  async speedTest(): Promise<{ 
+    requestTime: number,
+    authTime: number,
+    insertTime: number,
+    findTime: number,
+    updateTime: number,
+    deleteTime: number,
+    responseTime: number, 
+  }> {
+    const { responseTimestamp, ...times } = await this.request("/speedTest", { requestTimestamp: Date.now() }); ;
+
+    return { ...times, responseTime: Date.now() - responseTimestamp };
   }
 
 }
