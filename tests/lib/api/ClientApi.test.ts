@@ -1,7 +1,7 @@
 import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
 import { getTestApiParams, getTestApiUtils } from "@/lib/TestUtils";
-import { Team, User } from "@/lib/Types";
+import { League, Team, User } from "@/lib/Types";
 import { ObjectId } from "bson";
 
 const api = new ClientApi();
@@ -54,4 +54,36 @@ test(`${ClientApi.name}.${api.requestToJoinTeam.name}: Returns 404 if team not f
   await api.requestToJoinTeam.handler(...getTestApiParams(res, { db, userPromise: { _id: "2" } }, [teamId.toString()]));
 
   expect(res.error).toHaveBeenCalledWith(404, "Team not found");
+});
+
+test(`${ClientApi.name}.${api.createTeam.name}: Returns 400 if team already exists`, async () => {
+  const { db, res } = getTestApiUtils();
+
+  const userPromise: User = {
+    _id: new ObjectId(),
+    teams: [],
+    owner: []
+  } as any;
+
+  const promises = [
+    db.addObject(CollectionId.Teams, {
+      number: 1,
+      league: League.FRC
+    }),
+    db.addObject(CollectionId.Teams, {
+      number: 2,
+      league: League.FTC
+    }),
+    db.addObject(CollectionId.Users, userPromise)
+  ];
+  await Promise.all(promises);
+
+  await api.createTeam.handler(...getTestApiParams(res, { db, userPromise }, ["", "", 1, League.FRC]));
+  expect(res.status).toHaveBeenCalledWith(400);
+
+  await api.createTeam.handler(...getTestApiParams(res, { db, userPromise }, ["", "", 2, League.FTC]));
+  expect(res.status).toHaveBeenCalledWith(400);
+
+  await api.createTeam.handler(...getTestApiParams(res, { db, userPromise }, ["", "", 2, League.FRC]));
+  expect(res.status).toHaveBeenCalledWith(200);
 });

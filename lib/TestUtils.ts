@@ -1,10 +1,11 @@
 import { NextApiResponse } from "next";
 import ApiLib from "./api/ApiLib";
 import InMemoryDbInterface from "./client/dbinterfaces/InMemoryDbInterface";
-import ClientApi from "./api/ClientApi";
 import ApiDependencies from "./api/ApiDependencies";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 import { User } from "./Types";
+import { ResendInterface } from "./ResendUtils";
+import { User as NextAuthUser } from 'next-auth';
 
 export class TestRes extends ApiLib.ApiResponse<any> {
   status = jest.fn((code) => this);
@@ -20,6 +21,16 @@ export class TestRes extends ApiLib.ApiResponse<any> {
   }
 }
 
+export class TestResend implements ResendInterface {
+  async createContact() {
+    return;
+  }
+  
+  async emailDevelopers() {
+    return;
+  }
+}
+
 export function getTestApiUtils() {
   const db = new InMemoryDbInterface();
   db.init();
@@ -27,11 +38,12 @@ export function getTestApiUtils() {
   return {
     res: new TestRes(),
     db,
+    resend: new TestResend()
   }
 }
 
 export function getTestApiParams<TArgs extends Array<any>>(
-  res: TestRes, deps: Partial<ApiDependencies> | Partial<{ db: DbInterface, userPromise: Partial<User> }>, args: TArgs
+  res: TestRes, deps: Partial<ApiDependencies> | Partial<{ db: DbInterface, userPromise: Partial<User>, resend: ResendInterface }>, args: TArgs
 ): [any, TestRes, ApiDependencies, undefined, any] {
   return [
     {} as any,
@@ -41,6 +53,7 @@ export function getTestApiParams<TArgs extends Array<any>>(
       slackClient: undefined,
       userPromise: Promise.resolve(deps.userPromise ?? undefined),
       tba: undefined,
+      resend: deps.resend ?? new TestResend(),
       ...deps
     } as ApiDependencies,
     undefined,

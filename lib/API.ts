@@ -440,11 +440,11 @@ export namespace API {
         user
       );
 
-      ResendUtils.emailDevelopers(`New team created: ${team.name}`, 
+      new ResendUtils().emailDevelopers(`New team created: ${team.name}`, 
         `A new team has been created by ${user.name}: ${team.league} ${team.number}, ${team.name}.`);
 
       if (process.env.FILL_TEAMS === "true") {
-        fillTeamWithFakeUsers(20, team._id);
+        fillTeamWithFakeUsers(20, team._id, db);
       }
 
       return res.status(200).send(team);

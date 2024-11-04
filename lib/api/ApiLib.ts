@@ -38,20 +38,20 @@ namespace ApiLib {
   }
 
   export class ApiResponse<TSend> {
-    constructor(private res: NextApiResponse) {}
+    constructor(public innerRes: NextApiResponse) {}
 
     send(data: TSend) {
-      this.res.send(data);
+      this.innerRes.send(data);
       return this;
     }
 
     status(code: number) {
-      this.res.status(code);
+      this.innerRes.status(code);
       return this;
     }
 
     error(code: number, message: string) {
-      this.res.status(code).send({ error: message });
+      this.innerRes.status(code).send({ error: message });
       return this;
     }
   }

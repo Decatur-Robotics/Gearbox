@@ -3,9 +3,13 @@ import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
 import ApiLib from "./ApiLib";
-import { Team, User } from "@/lib/Types";
+import { Competition, League, Match, Team, User } from "@/lib/Types";
 import { removeDuplicates } from "../client/ClientUtils";
 import { ownsTeam } from "./ApiUtils";
+import { TheOrangeAlliance } from "../TheOrangeAlliance";
+import { GenerateSlug } from "../Utils";
+import ResendUtils from "../ResendUtils";
+import { fillTeamWithFakeUsers } from "../dev/FakeData";
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
@@ -56,7 +60,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   handleTeamJoinRequest = ApiLib.createRoute<[boolean, string, string], Team | ApiLib.Errors.ErrorType, ApiDependencies, void>({
-    isAuthorized: AccessLevels.AlwaysAuthorized,
+    isAuthorized: AccessLevels.AlwaysAuthorizedIfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [accept, teamId, userId]) => {
       const db = await dbPromise;
 
@@ -108,6 +112,84 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
           team
         )
       ]);
+
+      return res.status(200).send(team);
+    }
+  });
+
+  teamAutofill = ApiLib.createRoute<[number, League], Team | undefined, ApiDependencies, void>({
+    isAuthorized: AccessLevels.AlwaysAuthorized,
+    handler: async (req, res, { tba }, authData, [number, league]) => {
+      res.status(200).send(league === League.FTC 
+        ? await TheOrangeAlliance.getTeam(number)
+        : await tba.getTeamAutofillData(number)
+      );
+    }
+  });
+
+  competitionAutofill = ApiLib.createRoute<[string], Competition | undefined, ApiDependencies, void>({
+    isAuthorized: AccessLevels.AlwaysAuthorized,
+    handler: async (req, res, { tba }, authData, [tbaId]) => {
+      res.status(200).send(await tba.getCompetitionAutofillData(tbaId));
+    }
+  });
+
+  competitionMatches = ApiLib.createRoute<[string], Match | undefined, ApiDependencies, void>({
+    isAuthorized: AccessLevels.AlwaysAuthorized,
+    handler: async (req, res, { tba }, authData, [tbaId]) => {
+      res.status(200).send(await tba.getMatchAutofillData(tbaId));
+    }
+  });
+
+  createTeam = ApiLib.createRoute<[string, string, number, League], Team | ApiLib.Errors.ErrorType | undefined, ApiDependencies, void>({
+    isAuthorized: AccessLevels.AlwaysAuthorizedIfSignedIn,
+    handler: async (req, res, { db: dbPromise, resend, userPromise }, authData, [name, tbaId, number, league]) => {
+      const user = (await userPromise)!;
+      const db = await dbPromise;
+
+      // Find if team already exists
+      const existingTeam = await db.findObject<Team>(CollectionId.Teams, {
+        number,
+        ...(league === League.FRC 
+          ? { $or: [
+              { league: League.FRC }, 
+              { league: undefined }
+            ] } 
+          : { league: league }
+        )
+      });
+
+      if (existingTeam) {
+        return res.status(400).send({ error: "Team already exists" });
+      }
+
+      const newTeamObj = new Team(
+        name,
+        await GenerateSlug(CollectionId.Teams, name),
+        tbaId,
+        number,
+        league,
+        [user._id!.toString()],
+        [user._id!.toString()],
+        [user._id!.toString()]
+      );
+      const team = await db.addObject<Team>(CollectionId.Teams, newTeamObj);
+
+      user.teams = removeDuplicates(...user.teams, team._id!.toString());
+      user.owner = removeDuplicates(...user.owner, team._id!.toString());
+
+      await db.updateObjectById(
+        CollectionId.Users,
+        new ObjectId(user._id?.toString()),
+        user
+      );
+
+      resend.emailDevelopers(`New team created: ${team.name}`, 
+        `A new team has been created by ${user.name}: ${team.league} ${team.number}, ${team.name}.`);
+
+      if (process.env.FILL_TEAMS === "true") {
+        fillTeamWithFakeUsers(20, team._id, db);
+      }
 
       return res.status(200).send(team);
     }

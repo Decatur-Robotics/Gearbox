@@ -70,7 +70,10 @@ export default class InMemoryDbInterface implements DbInterface {
 
   addObject<Type extends Document>(collection: CollectionId, object: any): Promise<Type>
   {
-    return deserialize(this.backingDb.collections[collection].upsert(serialize(object)));
+    if (!object._id)
+      object._id = new ObjectId();
+
+    return this.backingDb.collections[collection].upsert(serialize(object)).then(deserialize);
   }
 
   deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>
