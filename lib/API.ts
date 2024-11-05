@@ -444,7 +444,7 @@ export namespace API {
         `A new team has been created by ${user.name}: ${team.league} ${team.number}, ${team.name}.`);
 
       if (process.env.FILL_TEAMS === "true") {
-        fillTeamWithFakeUsers(20, team._id, db);
+        fillTeamWithFakeUsers(20, team._id.toString(), db);
       }
 
       return res.status(200).send(team);

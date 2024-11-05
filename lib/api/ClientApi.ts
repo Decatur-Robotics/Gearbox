@@ -66,12 +66,12 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
       const teamPromise = db.findObjectById<Team>(
         CollectionId.Teams,
-        new ObjectId(teamId)
+        new ObjectId(teamId.toString())
       );
       
       const joineePromise = db.findObjectById<User>(
         CollectionId.Users,
-        new ObjectId(userId)
+        new ObjectId(userId.toString())
       );
 
       const userOnTeam = await userPromise;
@@ -188,7 +188,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         `A new team has been created by ${user.name}: ${team.league} ${team.number}, ${team.name}.`);
 
       if (process.env.FILL_TEAMS === "true") {
-        fillTeamWithFakeUsers(20, team._id, db);
+        fillTeamWithFakeUsers(20, team._id.toString(), db);
       }
 
       return res.status(200).send(team);

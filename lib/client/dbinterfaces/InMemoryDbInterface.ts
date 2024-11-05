@@ -10,7 +10,7 @@ function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): 
     if (idsToString && key === "_id") {
       newObj["_id"] = newObj._id.$oid;
     } else if (!idsToString && key === "_id") {
-      newObj._id = new ObjectId(newObj._id);
+      newObj._id = new ObjectId(newObj._id.toString());
     } else if (Array.isArray(newObj[key])) {
       newObj[key] = newObj[key].map((item: any) => {
         if (typeof item === "object") {
