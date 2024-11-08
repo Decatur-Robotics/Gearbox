@@ -130,7 +130,7 @@ function Roster(props: TeamPageProps) {
   }, []);
 
   const handleTeamRequest = async (userId: string, accept: boolean) => {
-    await api.handleRequest(accept, userId as string, team?._id as string);
+    await api.handleRequest(accept, userId as string, team?._id.toString() ?? "");
 
     const reqClone = structuredClone(requests);
     const userIndex = reqClone.findIndex((user) => userId === user._id);
@@ -155,7 +155,7 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ scouters }, team?._id);
+    await api.updateTeam({ scouters }, team?._id.toString());
     setTeam(teamClone);
   };
 
@@ -171,7 +171,7 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ subjectiveScouters: scouters }, team?._id);
+    await api.updateTeam({ subjectiveScouters: scouters }, team?._id.toString());
     setTeam(teamClone);
   };
 
@@ -184,7 +184,7 @@ function Roster(props: TeamPageProps) {
       owners?.push(userId);
     }
 
-    await api.updateTeam({ owners }, team?._id);
+    await api.updateTeam({ owners }, team?._id.toString());
     setTeam(teamClone);
   };
 
@@ -193,7 +193,7 @@ function Roster(props: TeamPageProps) {
       return;
     }
     
-    const { team: newTeam } = await api.removeUserFromTeam(userId, team?._id as string);
+    const { team: newTeam } = await api.removeUserFromTeam(userId, team?._id.toString() ?? "");
     setTeam(newTeam);
     setUsers(users.filter((user) => user._id !== userId));
   };
@@ -350,7 +350,7 @@ function Settings(props: TeamPageProps) {
       return;
     }
 
-    await api.updateTeam({ name: teamName }, props.team?._id);
+    await api.updateTeam({ name: teamName }, props.team?._id.toString());
     location.reload();
   };
 

@@ -116,7 +116,7 @@ export default function Profile(props: { teamList: Team[] }) {
                   <Link
                     href={"/" + team.slug}
                     className="w-full"
-                    key={team._id}
+                    key={team._id.toString()}
                   >
                     <TeamCard team={team} />
                   </Link>
@@ -156,7 +156,7 @@ export default function Profile(props: { teamList: Team[] }) {
                               onClick={() => {
                                 requestTeam(String(team._id), team.number);
                               }}
-                              key={team._id}
+                              key={team._id.toString()}
                             >
                               <h1 className="max-sm:text-sm h-10">
                                 {team.tbaId ? "FRC" : "FTC"}{" "}

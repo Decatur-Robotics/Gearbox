@@ -31,7 +31,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
       game.name,
       game.year,
       gameId,
-      team?._id as string
+      team?._id.toString()
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;

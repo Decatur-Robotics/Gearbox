@@ -1,8 +1,10 @@
+import { ObjectId } from "bson";
 import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
 import { GameId } from "../client/GameId";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { User, Team, Report, Competition, DbPicklist, Match, Pitreport, Season, SubjectiveReport } from "../Types";
+import { xpToLevel } from "../Xp";
 
 export function onTeam(team?: Team | null, user?: User) {
   return team && user && user._id && team.users.find((owner) => owner === user._id?.toString()) !== undefined;
@@ -102,4 +104,20 @@ export async function generatePitReports(tba: TheBlueAlliance.Interface, db: DbI
   pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.Pitreports, report))._id)
 
   return pitreports.map((pit) => String(pit._id));
+}
+
+export async function addXp(db: DbInterface, userId: string, xp: number) {
+  const user = await db.findObjectById<User>(CollectionId.Users, new ObjectId(userId));
+
+  if (!user)
+    return;
+
+  const newXp = user.xp + xp
+  const newLevel = xpToLevel(newXp);
+
+  await db.updateObjectById<User>(
+    CollectionId.Users,
+    new ObjectId(userId),
+    { xp: newXp, level: newLevel }
+  );
 }

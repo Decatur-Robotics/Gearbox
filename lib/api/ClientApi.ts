@@ -3,15 +3,17 @@ import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
 import ApiLib from './ApiLib';
-import { Competition, DbPicklist, League, Match, Season, Team, User } from "@/lib/Types";
+import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
-import { generatePitReports, ownsTeam } from "./ApiUtils";
+import { addXp, generatePitReports, getTeamFromMatch, getTeamFromReport, onTeam, ownsTeam } from "./ApiUtils";
 import { TheOrangeAlliance } from "../TheOrangeAlliance";
 import { GenerateSlug } from "../Utils";
-import ResendUtils from "../ResendUtils";
 import { fillTeamWithFakeUsers } from "../dev/FakeData";
 import { GameId } from "../client/GameId";
-import { generateReportsForMatch } from "../CompetitionHandling";
+import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "../CompetitionHandling";
+import { games } from "../games";
+import { Statbotics } from "../Statbotics";
+import { TheBlueAlliance } from "../TheBlueAlliance";
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
@@ -314,31 +316,6 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  update = ApiLib.createRoute<[CollectionId, string, object], any, ApiDependencies, void>({
-    isAuthorized: (req, res, deps, [collection, id, newValues]) => AccessLevels.IfTeamOwner(req, res, deps, id),
-    handler: async (req, res, { db }, authData, [collection, id, newValues]) => {
-      res.status(200).send(
-        await (await db).updateObjectById(collection, new ObjectId(id), newValues)
-      );
-    }
-  });
-
-  find = ApiLib.createRoute<[CollectionId, { _id?: string | ObjectId }], any, ApiDependencies, void>({
-    isAuthorized: AccessLevels.IfSignedIn,
-    handler: async (req, res, { db }, authData, [collection, query]) => {
-      if (query._id) {
-        query._id = new ObjectId(query._id);
-      }
-
-      let obj = await (await db).findObject(collection, query);
-      if (!obj) {
-        obj = {};
-      }
-
-      res.status(200).send(obj);
-    }
-  });
-
   createMatch = ApiLib.createRoute<[string, number, number, MatchType, Alliance, Alliance], Match, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, number, time, type, redAlliance, blueAlliance]) => {
@@ -377,7 +354,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  assignScouters = ApiLib.createRoute<[string, boolean], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
+  assignScouters = ApiLib.createRoute<[string, boolean], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, shuffle]) => {
       const db = await dbPromise;
@@ -396,7 +373,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  submitForm = ApiLib.createRoute<[string, QuantData], { result: string }, ApiDependencies, void>({
+  submitForm = ApiLib.createRoute<[string, QuantData], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [reportId, formData]) => {
       const db = await dbPromise;
@@ -405,6 +382,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         CollectionId.Reports,
         new ObjectId(reportId)
       );
+
+      if (!form)
+        return res.status(404).send({ error: "Report not found" });
 
       const team = await getTeamFromReport(db, form);
       const user = await userPromise;
@@ -421,7 +401,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         form
       );
 
-      addXp(user._id.toString(), 10);
+      addXp(db, user._id.toString(), 10);
 
       await db.updateObjectById(
         CollectionId.Users,
@@ -459,7 +439,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId]) => {
       const db = await dbPromise;
 
-      const matches = await db.findObjects<Match[]>(CollectionId.Matches, {
+      const matches = await db.findObjects<Match>(CollectionId.Matches, {
         _id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
       });
       return res.status(200).send(matches);
@@ -467,18 +447,18 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   matchReports = ApiLib.createRoute<[string], Report[], ApiDependencies, { team: Team, match: Match }>({
-    isAuthorized: (req, res, deps, [matchId]) => AccessLevels.IfCompOwner(req, res, deps, matchId),
+    isAuthorized: (req, res, deps, [matchId]) => AccessLevels.IfMatchOwner(req, res, deps, matchId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [matchId]) => {
       const db = await dbPromise;
 
-      const reports = await db.findObjects<Report[]>(CollectionId.Reports, {
+      const reports = await db.findObjects<Report>(CollectionId.Reports, {
         _id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
       });
       return res.status(200).send(reports);
     }
   });
 
-  changePFP = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
+  changePFP = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [newImage]) => {
       const db = await dbPromise;
@@ -497,12 +477,15 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  checkInForReport = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
+  checkInForReport = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [reportId]) => {
       const db = await dbPromise;
 
       const report = await db.findObjectById<Report>(CollectionId.Reports, new ObjectId(reportId));
+      if (!report)
+        return res.status(404).send({ error: "Report not found" });
+
       const team = await getTeamFromReport(db, report);
 
       if (!onTeam(team, await userPromise))
@@ -518,12 +501,15 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  checkInForSubjectiveReport = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
+  checkInForSubjectiveReport = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [matchId]) => {
       const db = await dbPromise;
 
       const match = await db.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId));
+      if (!match)
+        return res.status(404).send({ error: "Match not found" });
+
       const team = await getTeamFromMatch(db, match);
       const user = await userPromise;
 
@@ -538,7 +524,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  remindSlack = ApiLib.createRoute<[string, string], { result: string, msgRes: any }, ApiDependencies, { team: Team }>({
+  remindSlack = ApiLib.createRoute<[string, string], { result: string, msgRes: any } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team }>({
     isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfCompOwner(req, res, deps, teamId),
     handler: async (req, res, { db: dbPromise, slackClient, userPromise }, { team }, [teamId, slackId]) => {
       const db = await dbPromise;
@@ -557,7 +543,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  setSlackId = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
+  setSlackId = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [slackId]) => {
       const db = await dbPromise;
@@ -609,7 +595,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  getMainPageCounterData = ApiLib.createRoute<[], { teams: number | null, users: number | null, datapoints: number | null, competitions: number | null }, ApiDependencies, void>({
+  getMainPageCounterData = ApiLib.createRoute<[], { teams: number | undefined, users: number | undefined, datapoints: number | undefined, competitions: number | undefined }, ApiDependencies, void>({
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { db: dbPromise }, authData, args) => {
       const db = await dbPromise;
@@ -638,7 +624,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  exportCompAsCsv = ApiLib.createRoute<[string], { csv: string }, ApiDependencies, { team: Team, comp: Competition }>({
+  exportCompAsCsv = ApiLib.createRoute<[string], { csv: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId]) => {
       const db = await dbPromise;
@@ -686,7 +672,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  teamCompRanking = ApiLib.createRoute<[string, string], { place: number | string, max: number }, ApiDependencies, void>({
+  teamCompRanking = ApiLib.createRoute<[string, string], { place: number | string, max: number | string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { tba }, authData, [tbaId, team]) => {
       const tbaResult = await tba.req.getCompetitonRanking(tbaId);
@@ -706,7 +692,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       }
 
       return res.status(200).send({
-        place: rankings?.find((ranking) => ranking.team_key === `frc${team}`)?.rank,
+        place: rankings?.find((ranking) => ranking.team_key === `frc${team}`)?.rank ?? "?",
         max: rankings?.length,
       });
     }
@@ -767,11 +753,11 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       const subjectiveReports: SubjectiveReport[] = [];
 
       for (const scouterId of team?.scouters) {
-        promises.push(db.findObjectById<User>(CollectionId.Users, new ObjectId(scouterId)).then((scouter) => scouters.push(scouter)));
+        promises.push(db.findObjectById<User>(CollectionId.Users, new ObjectId(scouterId)).then((scouter) => scouter && scouters.push(scouter)));
       }
 
       for (const matchId of comp.matches) {
-        promises.push(db.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId)).then((match) => matches.push(match)));
+        promises.push(db.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId)).then((match) => match && matches.push(match)));
       }
 
       promises.push(db.findObjects<Report>(CollectionId.Reports, {
@@ -793,7 +779,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  getPicklist = ApiLib.createRoute<[string], DbPicklist, ApiDependencies, { team: Team, comp: Competition }>({
+  getPicklist = ApiLib.createRoute<[string], DbPicklist | undefined, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [id]) => AccessLevels.IfCompOwner(req, res, deps, id),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [id]) => {
       const db = await dbPromise;
@@ -825,7 +811,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  setOnboardingCompleted = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
+  setOnboardingCompleted = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [userId]) => {
       const db = await dbPromise;
@@ -838,8 +824,8 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  submitSubjectiveReport = ApiLib.createRoute<[SubjectiveReport, string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
-    isAuthorized: (req, res, deps, [report, matchId]) => AccessLevels.IfCompOwner(req, res, deps, matchId),
+  submitSubjectiveReport = ApiLib.createRoute<[SubjectiveReport, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, match: Match }>({
+    isAuthorized: (req, res, deps, [report, matchId]) => AccessLevels.IfMatchOwner(req, res, deps, matchId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [report, matchId]) => {
       const db = await dbPromise;
       const rawReport = report as SubjectiveReport;
@@ -870,7 +856,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       const insertReportPromise = db.addObject<SubjectiveReport>(CollectionId.SubjectiveReports, newReport);
       const updateMatchPromise = db.updateObjectById<Match>(CollectionId.Matches, new ObjectId(match._id), update);
 
-      addXp(user!._id!, match.subjectiveScouter === user!._id!.toString() ? 10 : 5);
+      addXp(db, user!._id!, match.subjectiveScouter === user!._id!.toString() ? 10 : 5);
 
       await Promise.all([insertReportPromise, updateMatchPromise]);
       return res.status(200).send({ result: "success" });
@@ -891,7 +877,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   updateSubjectiveReport = ApiLib.createRoute<[SubjectiveReport], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
-    isAuthorized: (req, res, deps, [report]) => AccessLevels.IfCompOwner(req, res, deps, report._id),
+    isAuthorized: (req, res, deps, [report]) => AccessLevels.IfCompOwner(req, res, deps, report._id?.toString() ?? ""),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [report]) => {
       const db = await dbPromise;
 
@@ -901,7 +887,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   setSubjectiveScouterForMatch = ApiLib.createRoute<[string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
-    isAuthorized: (req, res, deps, [matchId]) => AccessLevels.IfCompOwner(req, res, deps, matchId),
+    isAuthorized: (req, res, deps, [matchId]) => AccessLevels.IfMatchOwner(req, res, deps, matchId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [matchId]) => {
       const db = await dbPromise;
       const user = await userPromise;
@@ -912,18 +898,4 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       return res.status(200).send({ result: "success" });
     }
   });
-
-  createPitReportForTeam = ApiLib.createRoute<[number, string], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
-    isAuthorized: (req, res, deps, [teamNumber, compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [teamNumber, compId]) => {
-      const db = await dbPromise;
-
-      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
-      const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
-
-      if (!pitReportId)
-        return res.status(500).send({ error: "Failed to create pit report" });
-
-      comp.pitReports.push(pitReportId);
-
-      await db.updateObjectById<Competition>(CollectionId
+}

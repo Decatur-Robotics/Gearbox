@@ -6,8 +6,11 @@ export default interface DbInterface {
   addObject<Type extends Document>(collection: CollectionId, object: any): Promise<Type>;
   deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>;
   updateObjectById<Type extends Document>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>;
-  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined | null>;
-  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>;
+  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined>;
+  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined>;
+  /**
+   * Type should not be an array! This function returns an array of Type (Type[]).
+   */
   findObjects<Type extends Document>(collection: CollectionId, query: object): Promise<Type[]>;
   countObjects(collection: CollectionId, query: object): Promise<number | undefined>;
 }

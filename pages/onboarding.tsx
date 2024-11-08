@@ -76,7 +76,10 @@ export default function Onboarding() {
                             name: "",
                           })));
 
-    setTeam(team);
+    setTeam({
+      ...team,
+      _id: (team as any)._id?.toString(),
+    });
     setJoinRequestStatus("requests" in team && (team.requests?.includes(session?.user?._id ?? "") ?? false) 
       ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
   }
@@ -124,7 +127,11 @@ export default function Onboarding() {
       return;
     }
 
-    setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId ?? NotLinkedToTba, league));
+    const newTeam = await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId ?? NotLinkedToTba, league);
+    setTeam({
+      ...newTeam,
+      _id: (newTeam as any)._id?.toString(),
+    });
     setJoinRequestStatus(JoinRequestStatus.CreatedTeam);
   }
 

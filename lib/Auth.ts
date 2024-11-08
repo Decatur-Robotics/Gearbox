@@ -94,7 +94,7 @@ export const AuthenticationOptions: AuthOptions = {
 
     async signIn({ user }) {
       Analytics.signIn(user.name ?? "Unknown User");
-      ResendUtils.createContact(user);
+      new ResendUtils().createContact(user);
 
       return true;
     }

@@ -379,7 +379,7 @@ export default function CompetitionIndex(props: {
 
   const assignScouters = async () => {
     setAssigningMatches(true);
-    const res = await api.assignScouters(team?._id, comp?._id, true, props.fallbackData);
+    const res = await api.assignScouters(team?._id.toString(), comp?._id, true, props.fallbackData);
 
     if (props.fallbackData && res === props.fallbackData) {
       location.reload();
@@ -516,7 +516,7 @@ export default function CompetitionIndex(props: {
     
   function remindUserOnSlack(slackId: string) {
     if (slackId && session?.user?.slackId && team?._id && isManager && confirm("Remind scouter on Slack?"))
-      api.remindSlack(slackId, session?.user?.slackId, team._id);
+      api.remindSlack(slackId, session?.user?.slackId, team._id.toString());
   }
 
   function addTeam() {

@@ -94,12 +94,12 @@ export default class InMemoryDbInterface implements DbInterface {
     })
   }
 
-  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined | null>
+  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined>
   {
     return this.findObject(collection, { _id: id });
   }
 
-  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
+  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined>
   {
     return this.backingDb.collections[collection].findOne(serialize(query)).then(deserialize).then((obj: Type) => {
       if (Object.keys(obj).length === 0)
