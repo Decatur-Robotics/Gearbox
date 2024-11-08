@@ -3,7 +3,7 @@ import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
 import ApiLib from './ApiLib';
-import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report } from "@/lib/Types";
+import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report, SavedCompetition } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import { addXp, generatePitReports, getTeamFromMatch, getTeamFromReport, onTeam, ownsTeam } from "./ApiUtils";
 import { TheOrangeAlliance } from "../TheOrangeAlliance";
@@ -969,7 +969,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  getSubjectiveReportsFromMatches = ApiLib.createRoute<[string, Match[]], SubjectiveReport[], ApiDependencies, { team: Team, comp: Competition }>({
+  getSubjectiveReportsFromMatches = ApiLib.createRoute<[string, Match[]], SubjectiveReport[] | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, matches]) => {
       const db = await dbPromise;
@@ -990,7 +990,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
   uploadSavedComp = ApiLib.createRoute<[SavedCompetition], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [save]) => AccessLevels.IfCompOwner(req, res, deps, save.comp._id?.toString() ?? ""),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [save]) => {
+    handler: async (req, res, { db: dbPromise, userPromise }, { team }, [save]) => {
       const db = await dbPromise;
 
       const { comp, matches, quantReports: reports, pitReports, subjectiveReports } = save;
@@ -1019,9 +1019,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  removeUserFromTeam = ApiLib.createRoute<[string, string], { result: string, team: Team } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team }>({
+  removeUserFromTeam = ApiLib.createRoute<[string, string], { result: string, team: Team } | ApiLib.Errors.ErrorType, ApiDependencies, Team>({
     isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team }, [teamId, userId]) => {
+    handler: async (req, res, { db: dbPromise, userPromise }, team, [teamId, userId]) => {
       const db = await dbPromise;
 
       const removedUserPromise = db.findObjectById<User>(CollectionId.Users, new ObjectId(userId));
