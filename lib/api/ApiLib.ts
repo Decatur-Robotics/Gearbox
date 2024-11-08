@@ -61,7 +61,7 @@ namespace ApiLib {
     
     (...args: TArgs): Promise<TReturn>;
 
-    isAuthorized: (req: NextApiRequest, res: ApiResponse<TReturn>, deps: TDependencies, args: TArgs) => Promise<{ authorized: boolean, authData: TDataFetchedDuringAuth }>;
+    isAuthorized: (req: NextApiRequest, res: ApiResponse<TReturn>, deps: TDependencies, args: TArgs) => Promise<{ authorized: boolean, authData: TDataFetchedDuringAuth | undefined }>;
     handler: (req: NextApiRequest, res: ApiResponse<TReturn>, deps: TDependencies, authData: TDataFetchedDuringAuth, args: TArgs) => Promise<any> | any;
   }
   

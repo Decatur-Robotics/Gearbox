@@ -565,7 +565,7 @@ export namespace API {
 
       // Create reports
       const reportCreationPromises = matches.map((match) =>
-        generateReportsForMatch(match, comp.gameId)
+        generateReportsForMatch(db, match, comp.gameId)
       );
       await Promise.all(reportCreationPromises);
 
@@ -618,7 +618,7 @@ export namespace API {
       );
       comp.matches.push(match._id ? String(match._id) : "");
 
-      const reportPromise = generateReportsForMatch(match, comp.gameId);
+      const reportPromise = generateReportsForMatch(db, match, comp.gameId);
 
       await Promise.all([db.updateObjectById(
         CollectionId.Competitions,
@@ -644,6 +644,7 @@ export namespace API {
         return res.status(400).send({ error: "Team not found" });
 
       const result = await AssignScoutersToCompetitionMatches(
+        db,
         team?._id?.toString(),
         data.compId,
       );

@@ -1,12 +1,14 @@
 import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
+import { GameId } from "../client/GameId";
+import { TheBlueAlliance } from "../TheBlueAlliance";
 import { User, Team, Report, Competition, DbPicklist, Match, Pitreport, Season, SubjectiveReport } from "../Types";
 
-export function onTeam(team?: Team, user?: User) {
+export function onTeam(team?: Team | null, user?: User) {
   return team && user && user._id && team.users.find((owner) => owner === user._id?.toString()) !== undefined;
 }
 
-export function ownsTeam(team?: Team, user?: User) {
+export function ownsTeam(team?: Team | null, user?: User) {
   return team && user && user._id && team.owners.find((owner) => owner === user._id?.toString()) !== undefined;
 }
 
@@ -93,4 +95,11 @@ export async function getTeamFromPicklist(db: DbInterface, picklist: DbPicklist)
 
 export async function getTeamFromSubjectiveReport(db: DbInterface, report: SubjectiveReport) {
   return getTeamFromDocument(db, getCompFromSubjectiveReport, report);
+}
+
+export async function generatePitReports(tba: TheBlueAlliance.Interface, db: DbInterface, tbaId: string, gameId: GameId): Promise<string[]> {
+  var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
+  pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.Pitreports, report))._id)
+
+  return pitreports.map((pit) => String(pit._id));
 }
