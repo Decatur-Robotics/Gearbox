@@ -898,4 +898,158 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       return res.status(200).send({ result: "success" });
     }
   });
+
+  regeneratePitReports = ApiLib.createRoute<[string], { result: string, pitReports: string[] } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+    isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
+    handler: async (req, res, { db: dbPromise, tba, userPromise }, { team, comp }, [compId]) => {
+      const db = await dbPromise;
+
+      if (!comp.tbaId)
+        return res.status(200).send({ error: "not linked to TBA" });
+
+      const pitReports = await generatePitReports(tba, db, comp.tbaId, comp.gameId);
+
+      await db.updateObjectById(
+        CollectionId.Competitions,
+        new ObjectId(compId),
+        { pitReports: pitReports }
+      );
+
+      return res.status(200).send({ result: "success", pitReports });
+    }
+  });
+
+  createPitReportForTeam = ApiLib.createRoute<[number, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+    isAuthorized: (req, res, deps, [teamNumber, compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
+    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [teamNumber, compId]) => {
+      const db = await dbPromise;
+
+      const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
+      const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
+
+      if (!pitReportId)
+        return res.status(500).send({ error: "Failed to create pit report" });
+
+      comp.pitReports.push(pitReportId);
+
+      await db.updateObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId), {
+        pitReports: comp.pitReports,
+      });
+
+      return res.status(200).send({ result: "success" });
+    }
+  });
+
+  updateCompNameAndTbaId = ApiLib.createRoute<[string, string, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+    isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
+    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, name, tbaId]) => {
+      const db = await dbPromise;
+
+      await db.updateObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId), {
+        name,
+        tbaId,
+      });
+
+      return res.status(200).send({ result: "success" });
+    }
+  });
+
+  getFtcTeamAutofillData = ApiLib.createRoute<[number], Team | undefined, ApiDependencies, void>({
+    isAuthorized: AccessLevels.AlwaysAuthorized,
+    handler: async (req, res, { tba }, authData, [teamNumber]) => {
+      const team = await TheOrangeAlliance.getTeam(teamNumber);
+      return res.status(200).send(team);
+    }
+  });
+
+  ping = ApiLib.createRoute<[], { result: string }, ApiDependencies, void>({
+    isAuthorized: AccessLevels.AlwaysAuthorized,
+    handler: async (req, res, authData, args) => {
+      return res.status(200).send({ result: "success" });
+    }
+  });
+
+  getSubjectiveReportsFromMatches = ApiLib.createRoute<[string, Match[]], SubjectiveReport[], ApiDependencies, { team: Team, comp: Competition }>({
+    isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
+    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, matches]) => {
+      const db = await dbPromise;
+
+      for (const match of matches) {
+        if (!comp.matches.find(id => id === match._id?.toString()))
+          return res.status(400).send({ error: "Match not in competition" });
+      }
+
+      const matchIds = matches.map((match) => match._id?.toString());
+      const reports = await db.findObjects<SubjectiveReport>(CollectionId.SubjectiveReports, {
+        match: { $in: matchIds },
+      });
+
+      return res.status(200).send(reports);
+    }
+  });
+
+  uploadSavedComp = ApiLib.createRoute<[SavedCompetition], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
+    isAuthorized: (req, res, deps, [save]) => AccessLevels.IfCompOwner(req, res, deps, save.comp._id?.toString() ?? ""),
+    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [save]) => {
+      const db = await dbPromise;
+
+      const { comp, matches, quantReports: reports, pitReports, subjectiveReports } = save;
+
+      const promises: Promise<any>[] = [];
+      promises.push(db.updateObjectById<Competition>(CollectionId.Competitions, new ObjectId(comp._id), comp));
+
+      for (const match of Object.values(matches)) {
+        promises.push(db.updateObjectById<Match>(CollectionId.Matches, new ObjectId(match._id), match));
+      }
+
+      for (const report of Object.values(reports)) {
+        promises.push(db.updateObjectById<Report>(CollectionId.Reports, new ObjectId(report._id), report));
+      }
+
+      for (const report of Object.values(subjectiveReports)) {
+        promises.push(db.updateObjectById<SubjectiveReport>(CollectionId.SubjectiveReports, new ObjectId(report._id), report));
+      }
+
+      for (const report of Object.values(pitReports)) {
+        promises.push(db.updateObjectById<Pitreport>(CollectionId.Pitreports, new ObjectId(report._id), report));
+      }
+
+      await Promise.all(promises);
+      return res.status(200).send({ result: "success" });
+    }
+  });
+
+  removeUserFromTeam = ApiLib.createRoute<[string, string], { result: string, team: Team } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team }>({
+    isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
+    handler: async (req, res, { db: dbPromise, userPromise }, { team }, [teamId, userId]) => {
+      const db = await dbPromise;
+
+      const removedUserPromise = db.findObjectById<User>(CollectionId.Users, new ObjectId(userId));
+
+      const newTeam: Team = {
+        ...team,
+        users: team.users.filter((id) => id !== userId),
+        owners: team.owners.filter((id) => id !== userId),
+        scouters: team.scouters.filter((id) => id !== userId),
+        subjectiveScouters: team.subjectiveScouters.filter((id) => id !== userId),
+      }
+      
+      const teamPromise = db.updateObjectById<Team>(CollectionId.Teams, new ObjectId(teamId), newTeam);
+
+      const removedUser = await removedUserPromise;
+      if (!removedUser)
+        return res.status(404).send({ error: "User not found" });
+
+      const newUserData: User = {
+        ...removedUser,
+        teams: removedUser.teams.filter((id) => id !== teamId),
+        owner: removedUser.owner.filter((id) => id !== teamId),
+      }
+
+      await db.updateObjectById<User>(CollectionId.Users, new ObjectId(userId), newUserData);
+      await teamPromise;
+
+      return res.status(200).send({ result: "success", team: newTeam });
+    }
+  });
 }
