@@ -14,7 +14,7 @@ import SmallGraph from "@/components/stats/SmallGraph";
 import Loading from "../Loading";
 import { Crescendo, games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
-import { Drivetrain } from "@/lib/Enums";
+import { FrcDrivetrain } from "@/lib/Enums";
 
 function TeamCard(props: {
   number: number;
@@ -72,7 +72,7 @@ function TeamCard(props: {
 
   let drivetrainColor = "outline";
   if (pitReport?.submitted) {
-    drivetrainColor = data?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
+    drivetrainColor = data?.drivetrain === FrcDrivetrain.Swerve ? "accent" : "warning";
   }
 
   return (

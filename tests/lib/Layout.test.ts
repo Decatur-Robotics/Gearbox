@@ -1,7 +1,8 @@
-import { Defense } from "@/lib/Enums";
+import { Defense, FrcDrivetrain, FtcDrivetrain } from "@/lib/Enums";
 import { FormElement, keyToType } from "@/lib/Layout";
+import { League } from "@/lib/Types";
 
-test(keyToType.name, () => {
+test(`${keyToType.name}: Returns correct types`, () => {
   const exampleData = {
     "image": "image",
     "text": "string",
@@ -11,7 +12,7 @@ test(keyToType.name, () => {
     "Defense": Defense.Full
   };
 
-  const types = Object.keys(exampleData).map(key => keyToType(key, exampleData));
+  const types = Object.keys(exampleData).map(key => keyToType(League.FRC, key, exampleData));
 
   expect(types).toEqual([
     "image",
@@ -23,12 +24,17 @@ test(keyToType.name, () => {
   ]);
 });
 
+test(`${keyToType.name}: Chooses FrcDrivetrain or FtcDrivetrain correctly`, () => {
+  expect(keyToType(League.FRC, "FrcDrivetrain", { "FrcDrivetrain": "Tank" })).toBe(FrcDrivetrain);
+  expect(keyToType(League.FTC, "FtcDrivetrain", { "FtcDrivetrain": "Tank" })).toBe(FtcDrivetrain);
+});
+
 test(`${FormElement.name}.${FormElement.fromProps.name}: From key`, () => {
   const exampleData = {
     "text": "string"
   };
 
-  const element = FormElement.fromProps("text", exampleData);
+  const element = FormElement.fromProps(League.FRC, "text", exampleData);
 
   expect(element.key).toBe("text");
   expect(element.label).toBe("Text");
@@ -40,7 +46,7 @@ test(`${FormElement.name}.${FormElement.fromProps.name}: From props`, () => {
     "number": 1
   };
 
-  const element = FormElement.fromProps({ key: "number", label: "Number", type: "number" }, exampleData);
+  const element = FormElement.fromProps(League.FRC, { key: "number", label: "Number", type: "number" }, exampleData);
 
   expect(element.key).toBe("number");
   expect(element.label).toBe("Number");
