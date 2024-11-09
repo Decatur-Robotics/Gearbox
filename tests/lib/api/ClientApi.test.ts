@@ -197,3 +197,332 @@ describe(`${ClientApi.name}.${api.createTeam.name}`, () => {
     expect(resend.emailDevelopers).toHaveBeenCalled();
   });
 });
+
+describe(`${ClientApi.name}.${api.findUserById.name}`, () => {
+  test(`${ClientApi.name}.${api.findUserById.name}: Returns user if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await db.addObject(CollectionId.Users, user);
+
+    await api.findUserById.handler(...await getTestApiParams(res, { db, user }, [user._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(user);
+  });
+
+  test(`${ClientApi.name}.${api.findUserById.name}: Returns undefined if user not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findUserById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findTeamById.name}`, () => {
+  test(`${ClientApi.name}.${api.findTeamById.name}: Returns team if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC);
+    await db.addObject(CollectionId.Teams, team);
+
+    await api.findTeamById.handler(...await getTestApiParams(res, { db, user }, [team._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(team);
+  });
+
+  test(`${ClientApi.name}.${api.findTeamById.name}: Returns undefined if team not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findTeamById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findTeamByNumberAndLeague.name}`, () => {
+  test(`${ClientApi.name}.${api.findTeamByNumberAndLeague.name}: Returns team if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC);
+    await db.addObject(CollectionId.Teams, team);
+
+    await api.findTeamByNumberAndLeague.handler(...await getTestApiParams(res, { db, user }, [team.number, team.league]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(team);
+  });
+
+  test(`${ClientApi.name}.${api.findTeamByNumberAndLeague.name}: Returns undefined if team not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findTeamByNumberAndLeague.handler(...await getTestApiParams(res, { db, user }, [1234, League.FRC]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findSeasonById.name}`, () => {
+  test(`${ClientApi.name}.${api.findSeasonById.name}: Returns season if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const season = { _id: new ObjectId(), name: "Test Season", slug: "test-season", year: 2022, gameId: "test-game", competitions: [] };
+    await db.addObject(CollectionId.Seasons, season);
+
+    await api.findSeasonById.handler(...await getTestApiParams(res, { db, user }, [season._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(season);
+  });
+
+  test(`${ClientApi.name}.${api.findSeasonById.name}: Returns undefined if season not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findSeasonById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findCompetitionById.name}`, () => {
+  test(`${ClientApi.name}.${api.findCompetitionById.name}: Returns competition if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const competition = { _id: new ObjectId(), name: "Test Competition", slug: "test-competition", tbaId: "test-tbaId", start: 0, end: 0, pitReports: [], matches: [], picklist: "", publicData: false, gameId: "test-game" };
+    await db.addObject(CollectionId.Competitions, competition);
+
+    await api.findCompetitionById.handler(...await getTestApiParams(res, { db, user }, [competition._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(competition);
+  });
+
+  test(`${ClientApi.name}.${api.findCompetitionById.name}: Returns undefined if competition not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findCompetitionById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findMatchById.name}`, () => {
+  test(`${ClientApi.name}.${api.findMatchById.name}: Returns match if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const match = { _id: new ObjectId(), slug: "test-match", tbaId: "test-tbaId", type: "test-type", number: 1, blueAlliance: [], redAlliance: [], time: 0, reports: [], subjectiveScouter: "", subjectiveReports: [], subjectiveReportsCheckInTimestamps: {}, assignedSubjectiveScouterHasSubmitted: false };
+    await db.addObject(CollectionId.Matches, match);
+
+    await api.findMatchById.handler(...await getTestApiParams(res, { db, user }, [match._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(match);
+  });
+
+  test(`${ClientApi.name}.${api.findMatchById.name}: Returns undefined if match not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findMatchById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findReportById.name}`, () => {
+  test(`${ClientApi.name}.${api.findReportById.name}: Returns report if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: "test-match", submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
+    await db.addObject(CollectionId.Reports, report);
+
+    await api.findReportById.handler(...await getTestApiParams(res, { db, user }, [report._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(report);
+  });
+
+  test(`${ClientApi.name}.${api.findReportById.name}: Returns undefined if report not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findReportById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
+  test(`${ClientApi.name}.${api.findPitreportById.name}: Returns pitreport if found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    await db.addObject(CollectionId.Pitreports, pitreport);
+
+    await api.findPitreportById.handler(...await getTestApiParams(res, { db, user }, [pitreport._id!.toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(pitreport);
+  });
+
+  test(`${ClientApi.name}.${api.findPitreportById.name}: Returns undefined if pitreport not found`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await api.findPitreportById.handler(...await getTestApiParams(res, { db, user }, [new ObjectId().toString()]));
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe(`${ClientApi.name}.${api.updateUser.name}`, () => {
+  test(`${ClientApi.name}.${api.updateUser.name}: Updates user if authorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    await db.addObject(CollectionId.Users, user);
+
+    const newValues = { name: "Updated User" };
+    await api.updateUser.handler(...await getTestApiParams(res, { db, user }, [newValues, user._id!.toString()]));
+
+    const updatedUser = await db.findObjectById<User>(CollectionId.Users, new ObjectId(user._id!));
+    expect(updatedUser?.name).toEqual(newValues.name);
+  });
+
+  test(`${ClientApi.name}.${api.updateUser.name}: Returns 403 if unauthorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const newValues = { name: "Updated User" };
+    await api.updateUser.handler(...await getTestApiParams(res, { db, user }, [newValues, new ObjectId().toString()]));
+
+    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+  });
+});
+
+describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
+  test(`${ClientApi.name}.${api.updateTeam.name}: Updates team if authorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
+    await db.addObject(CollectionId.Teams, team);
+
+    const newValues = { name: "Updated Team" };
+    await api.updateTeam.handler(...await getTestApiParams(res, { db, user }, [newValues, team._id!.toString()]));
+
+    const updatedTeam = await db.findObjectById<Team>(CollectionId.Teams, new ObjectId(team._id!));
+    expect(updatedTeam?.name).toEqual(newValues.name);
+  });
+
+  test(`${ClientApi.name}.${api.updateTeam.name}: Returns 403 if unauthorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC);
+    await db.addObject(CollectionId.Teams, team);
+
+    const newValues = { name: "Updated Team" };
+    await api.updateTeam.handler(...await getTestApiParams(res, { db, user }, [newValues, team._id!.toString()]));
+
+    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+  });
+});
+
+describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
+  test(`${ClientApi.name}.${api.updateSeason.name}: Updates season if authorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
+    await db.addObject(CollectionId.Teams, team);
+
+    const season = { _id: new ObjectId(), name: "Test Season", slug: "test-season", year: 2022, gameId: "test-game", competitions: [] };
+    await db.addObject(CollectionId.Seasons, season);
+
+    const newValues = { name: "Updated Season" };
+    await api.updateSeason.handler(...await getTestApiParams(res, { db, user }, [newValues, season._id!.toString()]));
+
+    const updatedSeason = await db.findObjectById(CollectionId.Seasons, new ObjectId(season._id!));
+    expect(updatedSeason?.name).toEqual(newValues.name);
+  });
+
+  test(`${ClientApi.name}.${api.updateSeason.name}: Returns 403 if unauthorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const season = { _id: new ObjectId(), name: "Test Season", slug: "test-season", year: 2022, gameId: "test-game", competitions: [] };
+    await db.addObject(CollectionId.Seasons, season);
+
+    const newValues = { name: "Updated Season" };
+    await api.updateSeason.handler(...await getTestApiParams(res, { db, user }, [newValues, season._id!.toString()]));
+
+    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+  });
+});
+
+describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
+  test(`${ClientApi.name}.${api.updateReport.name}: Updates report if authorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
+    await db.addObject(CollectionId.Teams, team);
+
+    const match = { _id: new ObjectId(), slug: "test-match", tbaId: "test-tbaId", type: "test-type", number: 1, blueAlliance: [], redAlliance: [], time: 0, reports: [], subjectiveScouter: "", subjectiveReports: [], subjectiveReportsCheckInTimestamps: {}, assignedSubjectiveScouterHasSubmitted: false };
+    await db.addObject(CollectionId.Matches, match);
+
+    const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: match._id!.toString(), submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
+    await db.addObject(CollectionId.Reports, report);
+
+    const newValues = { data: { updated: true } };
+    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()]));
+
+    const updatedReport = await db.findObjectById(CollectionId.Reports, new ObjectId(report._id!));
+    expect(updatedReport?.data).toEqual(newValues.data);
+  });
+
+  test(`${ClientApi.name}.${api.updateReport.name}: Returns 403 if unauthorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: "test-match", submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
+    await db.addObject(CollectionId.Reports, report);
+
+    const newValues = { data: { updated: true } };
+    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()]));
+
+    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+  });
+});
+
+describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
+  test(`${ClientApi.name}.${api.updatePitreport.name}: Updates pitreport if authorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
+    await db.addObject(CollectionId.Teams, team);
+
+    const competition = { _id: new ObjectId(), name: "Test Competition", slug: "test-competition", tbaId: "test-tbaId", start: 0, end: 0, pitReports: [], matches: [], picklist: "", publicData: false, gameId: "test-game" };
+    await db.addObject(CollectionId.Competitions, competition);
+
+    const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    await db.addObject(CollectionId.Pitreports, pitreport);
+
+    const newValues = { data: { updated: true } };
+    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [newValues, pitreport._id!.toString()]));
+
+    const updatedPitreport = await db.findObjectById(CollectionId.Pitreports, new ObjectId(pitreport._id!));
+    expect(updatedPitreport?.data).toEqual(newValues.data);
+  });
+
+  test(`${ClientApi.name}.${api.updatePitreport.name}: Returns 403 if unauthorized`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+
+    const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    await db.addObject(CollectionId.Pitreports, pitreport);
+
+    const newValues = { data: { updated: true } };
+    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [newValues, pitreport._id!.toString()]));
+
+    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+  });
+});
