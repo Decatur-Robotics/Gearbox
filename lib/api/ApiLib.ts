@@ -35,6 +35,12 @@ namespace ApiLib {
         super(res, 403, "Please provide a valid 'Gearbox-Auth' Header Key");
       }
     }
+
+    export class InternalServerError extends Error {
+      constructor(res: ApiResponse<ErrorType>) {
+        super(res, 500, "The server encountered an error while processing the request");
+      }
+    }
   }
 
   export class ApiResponse<TSend> {
@@ -145,7 +151,7 @@ namespace ApiLib {
 
 
   export abstract class ServerApi<TDependencies> {
-    constructor(private api: ApiTemplate<TDependencies>) {}
+    constructor(private api: ApiTemplate<TDependencies>, private urlPrefix: string) {}
 
     async handle(req: NextApiRequest, rawRes: NextApiResponse) {
       try {
@@ -155,22 +161,34 @@ namespace ApiLib {
           throw new Errors.InvalidRequestError(res);
         }
 
-        const path = req.url.split("/").slice(process.env.NEXT_PUBLIC_API_URL.split("/").length);
+        const path = req.url
+          .slice(this.urlPrefix.length)
+          .split("/");
+
         const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies, any> | undefined;
 
         if (!route?.handler)
           throw new Errors.NotFoundError(res, path.join("/"));
 
         const deps = this.getDependencies(req, res);
-        const json = req.body ? JSON.parse(req.body) : {};
+        const body = req.body;
 
-        const { authorized, authData } = await route.isAuthorized(req, res, deps, json);
+        const { authorized, authData } = await route.isAuthorized(req, res, deps, body);
 
         if (!authorized)
           throw new Errors.UnauthorizedError(res);
 
-        route.handler(req, res, deps, authData, json);
-      } catch (e) { }
+        await route.handler(req, res, deps, authData, body);
+      } catch (e) {
+        console.error(e);
+
+        // If it's an error we've already handled, don't do anything
+        if (e instanceof Errors.Error) {
+          return;
+        }
+
+        new Errors.InternalServerError(new ApiResponse(rawRes));
+      }
     }
 
     abstract getDependencies(req: NextApiRequest, res: ApiResponse<any>): TDependencies;

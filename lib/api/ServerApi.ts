@@ -12,7 +12,7 @@ import ResendUtils from "../ResendUtils";
 
 export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
   constructor(clientApi?: ApiLib.ApiTemplate<ApiDependencies>) {
-    super(clientApi ?? new ClientApi());
+    super(clientApi ?? new ClientApi(), "/api/");
   }
 
   getDependencies(req: NextApiRequest, res: ApiLib.ApiResponse<any>): ApiDependencies
