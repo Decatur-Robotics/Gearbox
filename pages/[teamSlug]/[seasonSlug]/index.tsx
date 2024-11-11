@@ -75,7 +75,11 @@ export default function Home(props: SeasonPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 2);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+  
   const team = resolved.team;
   const season = resolved.season;
 
