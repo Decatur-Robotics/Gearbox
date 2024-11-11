@@ -31,7 +31,7 @@ export default function PitreportForm(props: { pitReport: Pitreport, layout: For
 async function getPitreport(id: string) {
   const db = await getDatabase();
   return await db.findObjectById<Pitreport>(
-    CollectionId.Pitreports,
+    CollectionId.PitReports,
     new ObjectId(id)
   );
 }

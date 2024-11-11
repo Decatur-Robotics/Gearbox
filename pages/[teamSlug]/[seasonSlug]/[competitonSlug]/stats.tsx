@@ -30,7 +30,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     submitted: true,
   });
   
-  const pitReports = await db.findObjects<Pitreport>(CollectionId.Pitreports, {
+  const pitReports = await db.findObjects<Pitreport>(CollectionId.PitReports, {
     _id: { $in: url.competition?.pitReports },
   });
 

@@ -149,9 +149,14 @@ namespace ApiLib {
     }
   }
 
+  export enum ErrorLogMode {
+    Throw,
+    Log,
+    None
+  }
 
   export abstract class ServerApi<TDependencies> {
-    constructor(private api: ApiTemplate<TDependencies>, private urlPrefix: string) {}
+    constructor(private api: ApiTemplate<TDependencies>, private urlPrefix: string, private errorLogMode: ErrorLogMode = ErrorLogMode.Log) {}
 
     async handle(req: NextApiRequest, rawRes: NextApiResponse) {
       try {
@@ -163,7 +168,8 @@ namespace ApiLib {
 
         const path = req.url
           .slice(this.urlPrefix.length)
-          .split("/");
+          .split("/")
+          .slice(1);
 
         const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies, any> | undefined;
 
@@ -180,6 +186,12 @@ namespace ApiLib {
 
         await route.handler(req, res, deps, authData, body);
       } catch (e) {
+        if (this.errorLogMode === ErrorLogMode.None)
+          return;
+
+        if (this.errorLogMode === ErrorLogMode.Throw)
+          throw e;
+
         console.error(e);
 
         // If it's an error we've already handled, don't do anything

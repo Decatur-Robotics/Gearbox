@@ -53,9 +53,12 @@ export async function getTestApiUtils() {
   }
 }
 
-export async function getTestApiParams<TArgs extends Array<any>>(
-  res: TestRes, deps: Partial<ApiDependencies> | Partial<{ db: DbInterface, user: Partial<User>, resend: ResendInterface }>, args: TArgs
-): Promise<[any, TestRes, ApiDependencies, undefined, any]> {
+export async function getTestApiParams<TArgs extends Array<any>, TAuthData = undefined>(
+  res: TestRes, 
+  deps: Partial<ApiDependencies> | Partial<{ db: DbInterface, user: Partial<User>, resend: ResendInterface }>, 
+  args: TArgs,
+  authData: TAuthData = undefined as any
+): Promise<[any, TestRes, ApiDependencies, TAuthData, any]> {
   let user = (deps as any).user ?? (deps as any).userPromise;
   const db = await deps.db ?? new InMemoryDbInterface();
 
@@ -77,7 +80,7 @@ export async function getTestApiParams<TArgs extends Array<any>>(
       resend: deps.resend ?? new TestResend(),
       ...deps
     } as ApiDependencies,
-    undefined,
+    authData,
     args
   ]
 }

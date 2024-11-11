@@ -164,7 +164,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       });
 
       if (existingTeam) {
-        return res.status(400).send({ error: "Team already exists" });
+        return res.error(400, "Team already exists");
       }
 
       const newTeamObj = new Team(
@@ -603,7 +603,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       const teamsPromise = db.countObjects(CollectionId.Teams, {});
       const usersPromise = db.countObjects(CollectionId.Users, {});
       const reportsPromise = db.countObjects(CollectionId.Reports, {});
-      const pitReportsPromise = db.countObjects(CollectionId.Pitreports, {});
+      const pitReportsPromise = db.countObjects(CollectionId.PitReports, {});
       const subjectiveReportsPromise = db.countObjects(CollectionId.SubjectiveReports, {});
       const competitionsPromise = db.countObjects(CollectionId.Competitions, {});
 
@@ -703,7 +703,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId]) => {
       const db = await dbPromise;
 
-      const pitReports = await db.findObjects<Pitreport>(CollectionId.Pitreports, {
+      const pitReports = await db.findObjects<Pitreport>(CollectionId.PitReports, {
         _id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
       });
 
@@ -764,7 +764,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         match: { $in: comp.matches },
       }).then((r) => quantitativeReports.push(...r)));
 
-      promises.push(db.findObjects<Pitreport>(CollectionId.Pitreports, {
+      promises.push(db.findObjects<Pitreport>(CollectionId.PitReports, {
         _id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
         submitted: true
       }).then((r) => pitReports.push(...r)));
@@ -925,7 +925,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       const db = await dbPromise;
 
       const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
-      const pitReportId = (await db.addObject<Pitreport>(CollectionId.Pitreports, pitReport))._id?.toString();
+      const pitReportId = (await db.addObject<Pitreport>(CollectionId.PitReports, pitReport))._id?.toString();
 
       if (!pitReportId)
         return res.status(500).send({ error: "Failed to create pit report" });
@@ -1011,7 +1011,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       }
 
       for (const report of Object.values(pitReports)) {
-        promises.push(db.updateObjectById<Pitreport>(CollectionId.Pitreports, new ObjectId(report._id), report));
+        promises.push(db.updateObjectById<Pitreport>(CollectionId.PitReports, new ObjectId(report._id), report));
       }
 
       await Promise.all(promises);
@@ -1129,28 +1129,25 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { db: dbPromise }, authData, [id]) => {
       const db = await dbPromise;
-      const pitreport = await db.findObjectById<Pitreport>(CollectionId.Pitreports, new ObjectId(id));
+      const pitreport = await db.findObjectById<Pitreport>(CollectionId.PitReports, new ObjectId(id));
       return res.status(200).send(pitreport);
     }
   });
 
-  updateUser = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  updateUser = ApiLib.createRoute<[object], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
-    handler: async (req, res, { db: dbPromise, userPromise }, authData, [newValues, userId]) => {
+    handler: async (req, res, { db: dbPromise, userPromise }, authData, [newValues]) => {
       const db = await dbPromise;
       const user = await userPromise;
 
-      if (!user?._id || user._id.toString() !== userId)
-        return res.status(403).send({ error: "Unauthorized" });
-
-      await db.updateObjectById<User>(CollectionId.Users, new ObjectId(userId), newValues);
+      await db.updateObjectById<User>(CollectionId.Users, new ObjectId(user?._id?.toString()), newValues);
       return res.status(200).send({ result: "success" });
     }
   });
 
-  updateTeam = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team }>({
-    isAuthorized: (req, res, deps, [newValues, teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team }, [newValues, teamId]) => {
+  updateTeam = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, Team>({
+    isAuthorized: (req, res, deps, [newValues, teamId]) => AccessLevels.IfOnTeam(req, res, deps, teamId),
+    handler: async (req, res, { db: dbPromise, userPromise }, team, [newValues, teamId]) => {
       const db = await dbPromise;
 
       await db.updateObjectById<Team>(CollectionId.Teams, new ObjectId(teamId), newValues);
@@ -1169,7 +1166,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   updateReport = ApiLib.createRoute<[Partial<Report>, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, match: Match }>({
-    isAuthorized: (req, res, deps, [newValues, reportId]) => AccessLevels.IfMatchOwner(req, res, deps, reportId),
+    isAuthorized: (req, res, deps, [newValues, reportId]) => AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, reportId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [newValues, reportId]) => {
       const db = await dbPromise;
 
@@ -1179,11 +1176,11 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   updatePitreport = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
-    isAuthorized: (req, res, deps, [newValues, pitreportId]) => AccessLevels.IfCompOwner(req, res, deps, pitreportId),
+    isAuthorized: (req, res, deps, [newValues, pitreportId]) => AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitreportId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [newValues, pitreportId]) => {
       const db = await dbPromise;
 
-      await db.updateObjectById<Pitreport>(CollectionId.Pitreports, new ObjectId(pitreportId), newValues);
+      await db.updateObjectById<Pitreport>(CollectionId.PitReports, new ObjectId(pitreportId), newValues);
       return res.status(200).send({ result: "success" });
     }
   });

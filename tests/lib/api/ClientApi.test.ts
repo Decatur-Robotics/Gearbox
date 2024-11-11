@@ -1,8 +1,9 @@
 import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
+import { GameId } from "@/lib/client/GameId";
 import { getTestApiParams, getTestApiUtils } from "@/lib/TestUtils";
-import { League, Team, User } from "@/lib/Types";
-import { ObjectId } from "bson";
+import { AllianceColor, League, Match, MatchType, QuantData, Report, Season, Team, User } from "@/lib/Types";
+import { EJSON, ObjectId } from "bson";
 
 const api = new ClientApi();
 
@@ -224,8 +225,7 @@ describe(`${ClientApi.name}.${api.findTeamById.name}`, () => {
   test(`${ClientApi.name}.${api.findTeamById.name}: Returns team if found`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC);
-    await db.addObject(CollectionId.Teams, team);
+    const team = await db.addObject(CollectionId.Teams, new Team("Test Team", "test-team", "tbaId", 1234, League.FRC));
 
     await api.findTeamById.handler(...await getTestApiParams(res, { db, user }, [team._id!.toString()]));
 
@@ -248,6 +248,7 @@ describe(`${ClientApi.name}.${api.findTeamByNumberAndLeague.name}`, () => {
     const { db, res, user } = await getTestApiUtils();
 
     const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC);
+
     await db.addObject(CollectionId.Teams, team);
 
     await api.findTeamByNumberAndLeague.handler(...await getTestApiParams(res, { db, user }, [team.number, team.league]));
@@ -270,7 +271,7 @@ describe(`${ClientApi.name}.${api.findSeasonById.name}`, () => {
   test(`${ClientApi.name}.${api.findSeasonById.name}: Returns season if found`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const season = { _id: new ObjectId(), name: "Test Season", slug: "test-season", year: 2022, gameId: "test-game", competitions: [] };
+    const season = new Season("Test Season", "test-season", 2022, GameId.IntoTheDeep, []);
     await db.addObject(CollectionId.Seasons, season);
 
     await api.findSeasonById.handler(...await getTestApiParams(res, { db, user }, [season._id!.toString()]));
@@ -363,7 +364,7 @@ describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
     const { db, res, user } = await getTestApiUtils();
 
     const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
-    await db.addObject(CollectionId.Pitreports, pitreport);
+    await db.addObject(CollectionId.PitReports, pitreport);
 
     await api.findPitreportById.handler(...await getTestApiParams(res, { db, user }, [pitreport._id!.toString()]));
 
@@ -382,37 +383,28 @@ describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
 });
 
 describe(`${ClientApi.name}.${api.updateUser.name}`, () => {
-  test(`${ClientApi.name}.${api.updateUser.name}: Updates user if authorized`, async () => {
+  test(`${ClientApi.name}.${api.updateUser.name}: Updates user`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
     await db.addObject(CollectionId.Users, user);
 
     const newValues = { name: "Updated User" };
-    await api.updateUser.handler(...await getTestApiParams(res, { db, user }, [newValues, user._id!.toString()]));
+    await api.updateUser.handler(...await getTestApiParams(res, { db, user }, [newValues]));
 
     const updatedUser = await db.findObjectById<User>(CollectionId.Users, new ObjectId(user._id!));
     expect(updatedUser?.name).toEqual(newValues.name);
   });
-
-  test(`${ClientApi.name}.${api.updateUser.name}: Returns 403 if unauthorized`, async () => {
-    const { db, res, user } = await getTestApiUtils();
-
-    const newValues = { name: "Updated User" };
-    await api.updateUser.handler(...await getTestApiParams(res, { db, user }, [newValues, new ObjectId().toString()]));
-
-    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
-  });
 });
 
 describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
-  test(`${ClientApi.name}.${api.updateTeam.name}: Updates team if authorized`, async () => {
+  test(`${ClientApi.name}.${api.updateTeam.name}: Updates team`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
     const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
     await db.addObject(CollectionId.Teams, team);
 
     const newValues = { name: "Updated Team" };
-    await api.updateTeam.handler(...await getTestApiParams(res, { db, user }, [newValues, team._id!.toString()]));
+    await api.updateTeam.handler(...await getTestApiParams(res, { db, user }, [newValues, team._id!.toString()], team));
 
     const updatedTeam = await db.findObjectById<Team>(CollectionId.Teams, new ObjectId(team._id!));
     expect(updatedTeam?.name).toEqual(newValues.name);
@@ -425,77 +417,77 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
     await db.addObject(CollectionId.Teams, team);
 
     const newValues = { name: "Updated Team" };
-    await api.updateTeam.handler(...await getTestApiParams(res, { db, user }, [newValues, team._id!.toString()]));
+    const args = await getTestApiParams(res, { db, user }, [newValues, team._id!.toString()]);
 
-    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+    expect((await api.updateTeam.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
   });
 });
 
 describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
-  test(`${ClientApi.name}.${api.updateSeason.name}: Updates season if authorized`, async () => {
+  test(`${ClientApi.name}.${api.updateSeason.name}: Updates season`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
     const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
     await db.addObject(CollectionId.Teams, team);
 
-    const season = { _id: new ObjectId(), name: "Test Season", slug: "test-season", year: 2022, gameId: "test-game", competitions: [] };
+    const season: Season = new Season("Test Season", "test-season", 2022, GameId.IntoTheDeep, []);
     await db.addObject(CollectionId.Seasons, season);
 
     const newValues = { name: "Updated Season" };
-    await api.updateSeason.handler(...await getTestApiParams(res, { db, user }, [newValues, season._id!.toString()]));
+    await api.updateSeason.handler(...await getTestApiParams(res, { db, user }, [newValues, season._id!.toString()], { team, season }));
 
     const updatedSeason = await db.findObjectById(CollectionId.Seasons, new ObjectId(season._id!));
     expect(updatedSeason?.name).toEqual(newValues.name);
   });
 
-  test(`${ClientApi.name}.${api.updateSeason.name}: Returns 403 if unauthorized`, async () => {
+  test(`${ClientApi.name}.${api.updateSeason.name}: Check if user owns team`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const season = { _id: new ObjectId(), name: "Test Season", slug: "test-season", year: 2022, gameId: "test-game", competitions: [] };
+    const season = new Season("Test Season", "test-season", 2022, GameId.IntoTheDeep, []);
     await db.addObject(CollectionId.Seasons, season);
 
     const newValues = { name: "Updated Season" };
-    await api.updateSeason.handler(...await getTestApiParams(res, { db, user }, [newValues, season._id!.toString()]));
-
-    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+    const args = await getTestApiParams(res, { db, user }, [newValues, season._id!.toString()]);
+    
+    expect((await api.updateSeason.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
   });
 });
 
 describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
-  test(`${ClientApi.name}.${api.updateReport.name}: Updates report if authorized`, async () => {
+  test(`${ClientApi.name}.${api.updateReport.name}: Updates report`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
     const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
     await db.addObject(CollectionId.Teams, team);
 
-    const match = { _id: new ObjectId(), slug: "test-match", tbaId: "test-tbaId", type: "test-type", number: 1, blueAlliance: [], redAlliance: [], time: 0, reports: [], subjectiveScouter: "", subjectiveReports: [], subjectiveReportsCheckInTimestamps: {}, assignedSubjectiveScouterHasSubmitted: false };
+    const match: Match = new Match(0, "test-match", "test-tbaId", 0, MatchType.Qualifying, [], [], []);
     await db.addObject(CollectionId.Matches, match);
 
-    const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: match._id!.toString(), submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
+    const report = new Report(new ObjectId().toString(), {} as QuantData, 0, AllianceColor.Blue, "", 1, "");
     await db.addObject(CollectionId.Reports, report);
 
     const newValues = { data: { updated: true } };
-    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()]));
+    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()], { team, match }));
 
     const updatedReport = await db.findObjectById(CollectionId.Reports, new ObjectId(report._id!));
     expect(updatedReport?.data).toEqual(newValues.data);
   });
 
-  test(`${ClientApi.name}.${api.updateReport.name}: Returns 403 if unauthorized`, async () => {
+  test(`${ClientApi.name}.${api.updateReport.name}: Check if user is on team`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
     const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: "test-match", submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
     await db.addObject(CollectionId.Reports, report);
 
     const newValues = { data: { updated: true } };
-    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()]));
-
-    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+    const args = await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()]);
+    
+    expect((await api.updateReport.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
   });
 });
 
 describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
-  test(`${ClientApi.name}.${api.updatePitreport.name}: Updates pitreport if authorized`, async () => {
+  test(`${ClientApi.name}.${api.updatePitreport.name}: Updates pitreport`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
     const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
@@ -505,24 +497,24 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
     await db.addObject(CollectionId.Competitions, competition);
 
     const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
-    await db.addObject(CollectionId.Pitreports, pitreport);
+    await db.addObject(CollectionId.PitReports, pitreport);
 
     const newValues = { data: { updated: true } };
-    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [newValues, pitreport._id!.toString()]));
+    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [newValues, pitreport._id!.toString()], { team: team as any, comp: competition as any }));
 
-    const updatedPitreport = await db.findObjectById(CollectionId.Pitreports, new ObjectId(pitreport._id!));
+    const updatedPitreport = await db.findObjectById(CollectionId.PitReports, new ObjectId(pitreport._id!));
     expect(updatedPitreport?.data).toEqual(newValues.data);
   });
 
-  test(`${ClientApi.name}.${api.updatePitreport.name}: Returns 403 if unauthorized`, async () => {
+  test(`${ClientApi.name}.${api.updatePitreport.name}: Check if user is on team`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
-    await db.addObject(CollectionId.Pitreports, pitreport);
+    const pitReport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    await db.addObject(CollectionId.PitReports, pitReport);
 
     const newValues = { data: { updated: true } };
-    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [newValues, pitreport._id!.toString()]));
-
-    expect(res.error).toHaveBeenCalledWith(403, "Unauthorized");
+    const args = await getTestApiParams(res, { db, user }, [newValues, pitReport._id!.toString()]);
+    
+    expect((await api.updateReport.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
   });
 });
