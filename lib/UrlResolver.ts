@@ -101,7 +101,6 @@ export default async function UrlResolver(
 
     for (const promise of promises.slice(0, depthToCheckValidity)) {
       // If the value is just null, we didn't fetch the object in the first place
-      console.log(await promise);
       if (promise instanceof Promise && (await promise === null || await promise === undefined)) {
         return createRedirect("/error", { message: `Page Not Found: ${context.resolvedUrl}`, code: 404 });
       }
