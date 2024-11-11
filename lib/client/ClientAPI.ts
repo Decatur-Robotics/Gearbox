@@ -559,4 +559,8 @@ export default class ClientAPI {
     return { ...times, responseTime: Date.now() - responseTimestamp };
   }
 
+  async getUserAnalyticsData() {
+    return await this.request("/getUserAnalyticsData", {});
+  }
+
 }
