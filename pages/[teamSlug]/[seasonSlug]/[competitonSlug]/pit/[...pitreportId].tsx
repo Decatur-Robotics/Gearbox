@@ -40,15 +40,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const id = context.resolvedUrl.split("/pit/")[1];
   const pitreport = await getPitreport(id);
 
-  const urlData = await UrlResolver(context);
-  const game = games[urlData.season?.gameId ?? GameId.Crescendo];
+  const resolved = await UrlResolver(context, 4);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
+  const game = games[resolved.season?.gameId ?? GameId.Crescendo];
 
   return {
     props: { 
       pitReport: SerializeDatabaseObject(pitreport),
       layout: makeObjSerializeable(game.pitReportLayout),
-      teamNumber: urlData.team?.number,
-      compName: urlData.competition?.name,
+      teamNumber: resolved.team?.number,
+      compName: resolved.competition?.name,
       game: makeObjSerializeable(game),
      },
   };

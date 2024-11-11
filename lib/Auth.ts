@@ -96,6 +96,28 @@ export const AuthenticationOptions: AuthOptions = {
       Analytics.signIn(user.name ?? "Unknown User");
       ResendUtils.createContact(user);
 
+      let typedUser = user as Partial<User>;
+      if (!typedUser.slug) {
+        console.log("User is incomplete, filling in missing fields");
+        
+        // User is incomplete, fill in the missing fields
+        typedUser = {
+          name: typedUser.name ?? typedUser.email?.split("@")[0],
+          image: typedUser.image ?? "https://4026.org/user.jpg",
+          slug: await GenerateSlug(CollectionId.Users, typedUser.name!),
+          teams: typedUser.teams ?? [],
+          owner: typedUser.owner ?? [],
+          slackId: typedUser.slackId ?? "",
+          onboardingComplete: typedUser.onboardingComplete ?? false,
+          admin: typedUser.admin ?? false,
+          xp: typedUser.xp ?? 0,
+          level: typedUser.level ?? 0,
+          ...typedUser,
+        } as User;
+
+        await (await db).updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), typedUser);
+      }
+      
       const today = new Date().toDateString();
       if ((user as User).lastSignInDate !== today) {
         // We use user.id since user._id strangely doesn't exist on user.

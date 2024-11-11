@@ -24,22 +24,26 @@ export default function Stats(props: StatsPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const url = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 3);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
   const reports = await db.findObjects<Report>(CollectionId.Reports, {
-    match: { $in: url.competition?.matches },
+    match: { $in: resolved.competition?.matches },
     submitted: true,
   });
   
   const pitReports = await db.findObjects<Pitreport>(CollectionId.Pitreports, {
-    _id: { $in: url.competition?.pitReports },
+    _id: { $in: resolved.competition?.pitReports },
   });
 
   const subjectiveReports = await db.findObjects<SubjectiveReport>(CollectionId.SubjectiveReports, {
-    match: { $in: url.competition?.matches },
+    match: { $in: resolved.competition?.matches },
   });
 
-  const picklists = await db.findObjectById<DbPicklist>(CollectionId.Picklists, new ObjectId(url.competition?.picklist));
-  console.log("Found picklists:", url.competition?.picklist, picklists);
+  const picklists = await db.findObjectById<DbPicklist>(CollectionId.Picklists, new ObjectId(resolved.competition?.picklist));
+  console.log("Found picklists:", resolved.competition?.picklist, picklists);
 
   return {
     props: {
@@ -47,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       pitReports: SerializeDatabaseObjects(pitReports),
       subjectiveReports: SerializeDatabaseObjects(subjectiveReports),
       picklists: SerializeDatabaseObject(picklists),
-      competition: url.competition,
+      competition: resolved.competition,
     },
   };
 };
