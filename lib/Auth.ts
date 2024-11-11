@@ -98,10 +98,11 @@ export const AuthenticationOptions: AuthOptions = {
 
       const today = new Date().toDateString();
       if ((user as User).lastSignInDate !== today) {
+        // We use user.id since user._id strangely doesn't exist on user.
         await getDatabase()
           .then(db => db.updateObjectById(CollectionId.Users, new ObjectId(user.id), {
             lastSignInDate: today
-          }))
+          }));
       }
 
       return true;
