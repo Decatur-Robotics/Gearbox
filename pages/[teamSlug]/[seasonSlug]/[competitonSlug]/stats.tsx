@@ -11,7 +11,7 @@ import PicklistScreen from "@/components/stats/Picklist";
 import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";

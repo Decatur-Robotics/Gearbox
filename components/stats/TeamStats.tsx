@@ -7,11 +7,11 @@ import { PiCrosshair, PiGitFork } from "react-icons/pi";
 import { FaCode, FaWifi } from "react-icons/fa6";
 import { FaComment } from "react-icons/fa";
 import { ReactNode, useEffect, useState } from "react";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import Loading from "../Loading";
 import { StatsLayout, Stat, StatPair, Badge } from "@/lib/Layout";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function TeamStats(props: {
   selectedTeam: number | undefined;
@@ -70,7 +70,7 @@ export default function TeamStats(props: {
     const commentList = props.selectedReports?.filter((report) => report.data?.comments.length > 0) ?? [];
     if (commentList.length === 0) return setComments(newComments);
     
-    const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => addComment(
+    const promises = commentList.map((report) => api.findMatchById(report.match).then((match) => match && addComment(
       match.number, 0, `Quantitative: ${report.data?.comments}`
     )));
 

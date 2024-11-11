@@ -5,7 +5,7 @@ import UrlResolver, {
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { Competition, League, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -36,7 +36,7 @@ import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type TeamPageProps = {
   team: Team | undefined;
@@ -120,7 +120,9 @@ function Roster(props: TeamPageProps) {
       setLoadingRequests(true);
       var newData: User[] = [];
       for (const i in team?.requests) {
-        newData.push(await api.findUserById(team?.requests[Number(i)]));
+        const user = await api.findUserById(team?.requests[Number(i)]);
+        if (user)
+          newData.push(user);
       }
       setRequests(newData);
       setLoadingRequests(false);
@@ -155,7 +157,7 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ scouters }, team?._id.toString());
+    await api.updateTeam({ scouters }, team?._id.toString()!);
     setTeam(teamClone);
   };
 
@@ -171,7 +173,7 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ subjectiveScouters: scouters }, team?._id.toString());
+    await api.updateTeam({ subjectiveScouters: scouters }, team?._id.toString()!);
     setTeam(teamClone);
   };
 
@@ -184,7 +186,7 @@ function Roster(props: TeamPageProps) {
       owners?.push(userId);
     }
 
-    await api.updateTeam({ owners }, team?._id.toString());
+    await api.updateTeam({ owners }, team?._id.toString()!);
     setTeam(teamClone);
   };
 
@@ -350,7 +352,7 @@ function Settings(props: TeamPageProps) {
       return;
     }
 
-    await api.updateTeam({ name: teamName }, props.team?._id.toString());
+    await api.updateTeam({ name: teamName }, props.team?._id.toString()!);
     location.reload();
   };
 

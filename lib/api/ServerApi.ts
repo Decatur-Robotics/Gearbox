@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { AuthenticationOptions } from "../Auth";
 import { User } from "../Types";
-import ClientApi from "./ClientApi";
+import ClientApi from "@/lib/api/ClientApi";
 import ResendUtils from "../ResendUtils";
 
 export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {

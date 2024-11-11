@@ -1,7 +1,7 @@
 import { CompetitonNameIdPair as CompetitionNameIdPair } from "@/lib/Types";
 import React, { useEffect, useState } from "react";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
@@ -12,7 +12,7 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { Analytics } from "@/lib/client/Analytics";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function CreateComp(props: ResolvedUrlData) {
   const { session } = useCurrentSession();
@@ -61,7 +61,7 @@ export default function CreateComp(props: ResolvedUrlData) {
       autofill?.tbaId ?? NotLinkedToTba,
       autofill?.start ?? now,
       autofill?.end ?? now,
-      season?._id,
+      season?._id!,
       usePublicData,
     );
     var win: Window = window;

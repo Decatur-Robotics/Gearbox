@@ -4,7 +4,7 @@ import { useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 
 type CardData = { 
@@ -164,7 +164,7 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
     </div>);
 }
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklist: DbPicklist, compId: string }) {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
@@ -230,7 +230,11 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
 
     console.log(props);
     setLoadingPicklists(LoadState.Loading);
-    api.getPicklist(props.picklist?._id).then(loadDbPicklist);
+    api.getPicklist(props.picklist?._id).then((picklist) => {
+      if (picklist) {
+        loadDbPicklist(picklist);
+      }
+    });
     loadDbPicklist(props.picklist);
 
     setLoadingPicklists(LoadState.Loaded);

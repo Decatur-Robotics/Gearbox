@@ -46,7 +46,7 @@ namespace ApiLib {
   export class ApiResponse<TSend> {
     constructor(public innerRes: NextApiResponse) {}
 
-    send(data: TSend) {
+    send(data: TSend | Errors.ErrorType) {
       this.innerRes.send(data);
       return this;
     }

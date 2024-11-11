@@ -1,4 +1,4 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { Competition, Season, Team } from "@/lib/Types";
@@ -14,7 +14,7 @@ import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
 import { ObjectId } from "mongodb";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type SeasonPageProps = {
   team: Team;

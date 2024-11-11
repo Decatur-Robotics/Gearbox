@@ -12,10 +12,10 @@ import { makeObjSerializeable } from "@/lib/client/ClientUtils";
 import PitReportForm from "@/components/PitReport";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import { Analytics } from "@/lib/client/Analytics";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function PitreportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, teamNumber: number, compName: string, game: Game }) {
   const { session, status } = useCurrentSession();

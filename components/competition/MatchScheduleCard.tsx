@@ -11,7 +11,7 @@ import { AdvancedSession } from "@/lib/client/useCurrentSession";
 export default function MatchScheduleCard(props: {
   team: Team | undefined;
   matches: Match[];
-  ranking: { place: number | string; max: number } | null;
+  ranking: { place: number | string; max: number | string } | null;
   loadingMatches: boolean;
   loadingReports: boolean;
   loadingUsers: boolean;

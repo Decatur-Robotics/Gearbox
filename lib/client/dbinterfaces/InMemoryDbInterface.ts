@@ -50,6 +50,10 @@ function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): 
   return newObj;
 }
 
+/**
+ * @param removeUndefined pass false if you're serializing a query where undefined values are important 
+ * (this is most of the time that you're serializing a query)
+ */
 function serialize(obj: any, removeUndefined: boolean = true): any {
   return replaceOidOperator(EJSON.serialize(removeUndefined ? removeUndefinedValues(obj) : obj), true);
 }

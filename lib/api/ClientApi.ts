@@ -63,7 +63,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  handleTeamJoinRequest = ApiLib.createRoute<[boolean, string, string], Team | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  handleTeamJoinRequest = ApiLib.createRoute<[boolean, string, string], Team, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [accept, teamId, userId]) => {
       const db = await dbPromise;
@@ -121,7 +121,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  teamAutofill = ApiLib.createRoute<[number, League], Team | undefined, ApiDependencies, void>({
+  getTeamAutofillData = ApiLib.createRoute<[number, League], Team | undefined, ApiDependencies, void>({
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { tba }, authData, [number, league]) => {
       res.status(200).send(league === League.FTC 
@@ -145,7 +145,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  createTeam = ApiLib.createRoute<[string, string, number, League], Team | ApiLib.Errors.ErrorType | undefined, ApiDependencies, void>({
+  createTeam = ApiLib.createRoute<[string, string, number, League], Team | undefined, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, resend, userPromise }, authData, [name, tbaId, number, league]) => {
       const user = (await userPromise)!;
@@ -199,9 +199,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  createSeason = ApiLib.createRoute<[number, string, string, GameId], ApiLib.Errors.ErrorType | Season, ApiDependencies, Team>({
-    isAuthorized: (req, res, deps, [year, name, teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
-    handler: async (req, res, { db: dbPromise, userPromise }, team, [year, name, teamId, gameId]) => {
+  createSeason = ApiLib.createRoute<[string, number, string, GameId], Season, ApiDependencies, Team>({
+    isAuthorized: (req, res, deps, [name, year, teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
+    handler: async (req, res, { db: dbPromise, userPromise }, team, [name, year, teamId, gameId]) => {
       const db = await dbPromise;
 
       if (!ownsTeam(team, (await userPromise))) {
@@ -354,7 +354,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  assignScouters = ApiLib.createRoute<[string, boolean], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+  assignScouters = ApiLib.createRoute<[string, boolean], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, shuffle]) => {
       const db = await dbPromise;
@@ -373,7 +373,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  submitForm = ApiLib.createRoute<[string, QuantData], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  submitForm = ApiLib.createRoute<[string, QuantData], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [reportId, formData]) => {
       const db = await dbPromise;
@@ -458,7 +458,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  changePFP = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  changePFP = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [newImage]) => {
       const db = await dbPromise;
@@ -477,7 +477,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  checkInForReport = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  checkInForReport = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [reportId]) => {
       const db = await dbPromise;
@@ -501,7 +501,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  checkInForSubjectiveReport = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  checkInForSubjectiveReport = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [matchId]) => {
       const db = await dbPromise;
@@ -524,7 +524,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  remindSlack = ApiLib.createRoute<[string, string], { result: string, msgRes: any } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team }>({
+  remindSlack = ApiLib.createRoute<[string, string], { result: string, msgRes: any }, ApiDependencies, { team: Team }>({
     isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfCompOwner(req, res, deps, teamId),
     handler: async (req, res, { db: dbPromise, slackClient, userPromise }, { team }, [teamId, slackId]) => {
       const db = await dbPromise;
@@ -543,7 +543,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  setSlackId = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  setSlackId = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [slackId]) => {
       const db = await dbPromise;
@@ -624,7 +624,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  exportCompAsCsv = ApiLib.createRoute<[string], { csv: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+  exportCompAsCsv = ApiLib.createRoute<[string], { csv: string }, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId]) => {
       const db = await dbPromise;
@@ -672,7 +672,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  teamCompRanking = ApiLib.createRoute<[string, string], { place: number | string, max: number | string }, ApiDependencies, void>({
+  teamCompRanking = ApiLib.createRoute<[string, number], { place: number | string, max: number | string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { tba }, authData, [tbaId, team]) => {
       const tbaResult = await tba.req.getCompetitonRanking(tbaId);
@@ -811,7 +811,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  setOnboardingCompleted = ApiLib.createRoute<[string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  setOnboardingCompleted = ApiLib.createRoute<[string], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [userId]) => {
       const db = await dbPromise;
@@ -824,7 +824,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  submitSubjectiveReport = ApiLib.createRoute<[SubjectiveReport, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, match: Match }>({
+  submitSubjectiveReport = ApiLib.createRoute<[SubjectiveReport, string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
     isAuthorized: (req, res, deps, [report, matchId]) => AccessLevels.IfMatchOwner(req, res, deps, matchId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [report, matchId]) => {
       const db = await dbPromise;
@@ -899,7 +899,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  regeneratePitReports = ApiLib.createRoute<[string], { result: string, pitReports: string[] } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+  regeneratePitReports = ApiLib.createRoute<[string], { result: string, pitReports: string[] }, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, tba, userPromise }, { team, comp }, [compId]) => {
       const db = await dbPromise;
@@ -919,7 +919,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  createPitReportForTeam = ApiLib.createRoute<[number, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+  createPitReportForTeam = ApiLib.createRoute<[number, string], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [teamNumber, compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [teamNumber, compId]) => {
       const db = await dbPromise;
@@ -940,7 +940,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  updateCompNameAndTbaId = ApiLib.createRoute<[string, string, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+  updateCompNameAndTbaId = ApiLib.createRoute<[string, string, string], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, name, tbaId]) => {
       const db = await dbPromise;
@@ -969,7 +969,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  getSubjectiveReportsFromMatches = ApiLib.createRoute<[string, Match[]], SubjectiveReport[] | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
+  getSubjectiveReportsFromMatches = ApiLib.createRoute<[string, Match[]], SubjectiveReport[], ApiDependencies, { team: Team, comp: Competition }>({
     isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfCompOwner(req, res, deps, compId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, matches]) => {
       const db = await dbPromise;
@@ -1019,7 +1019,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  removeUserFromTeam = ApiLib.createRoute<[string, string], { result: string, team: Team } | ApiLib.Errors.ErrorType, ApiDependencies, Team>({
+  removeUserFromTeam = ApiLib.createRoute<[string, string], { result: string, team: Team }, ApiDependencies, Team>({
     isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
     handler: async (req, res, { db: dbPromise, userPromise }, team, [teamId, userId]) => {
       const db = await dbPromise;
@@ -1134,7 +1134,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  updateUser = ApiLib.createRoute<[object], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, void>({
+  updateUser = ApiLib.createRoute<[object], { result: string }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfSignedIn,
     handler: async (req, res, { db: dbPromise, userPromise }, authData, [newValues]) => {
       const db = await dbPromise;
@@ -1145,7 +1145,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  updateTeam = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, Team>({
+  updateTeam = ApiLib.createRoute<[object, string], { result: string }, ApiDependencies, Team>({
     isAuthorized: (req, res, deps, [newValues, teamId]) => AccessLevels.IfOnTeam(req, res, deps, teamId),
     handler: async (req, res, { db: dbPromise, userPromise }, team, [newValues, teamId]) => {
       const db = await dbPromise;
@@ -1155,7 +1155,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  updateSeason = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, season: Season }>({
+  updateSeason = ApiLib.createRoute<[object, string], { result: string }, ApiDependencies, { team: Team, season: Season }>({
     isAuthorized: (req, res, deps, [newValues, seasonId]) => AccessLevels.IfSeasonOwner(req, res, deps, seasonId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, season }, [newValues, seasonId]) => {
       const db = await dbPromise;
@@ -1165,7 +1165,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  updateReport = ApiLib.createRoute<[Partial<Report>, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, match: Match }>({
+  updateReport = ApiLib.createRoute<[Partial<Report>, string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
     isAuthorized: (req, res, deps, [newValues, reportId]) => AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, reportId),
     handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [newValues, reportId]) => {
       const db = await dbPromise;
@@ -1175,9 +1175,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  updatePitreport = ApiLib.createRoute<[object, string], { result: string } | ApiLib.Errors.ErrorType, ApiDependencies, { team: Team, comp: Competition }>({
-    isAuthorized: (req, res, deps, [newValues, pitreportId]) => AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitreportId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [newValues, pitreportId]) => {
+  updatePitreport = ApiLib.createRoute<[string, object], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
+    isAuthorized: (req, res, deps, [pitreportId]) => AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitreportId),
+    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [pitreportId, newValues]) => {
       const db = await dbPromise;
 
       await db.updateObjectById<Pitreport>(CollectionId.PitReports, new ObjectId(pitreportId), newValues);
