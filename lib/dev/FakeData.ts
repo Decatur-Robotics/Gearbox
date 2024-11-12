@@ -43,7 +43,7 @@ export async function fakeUser(teamId: string | undefined, db: DbInterface): Pro
     "totallyrealemail@gmail.com",
     "https://media.npr.org/assets/img/2015/06/15/gettyimages-1445210_custom-9cff1c641fe4451adaf1bcd3750bf4a11fb5d4e9.jpg",
     false,
-    await GenerateSlug(CollectionId.Users, name),
+    await GenerateSlug(db, CollectionId.Users, name),
     teamId ? [teamId] : [],
     [],
     "",

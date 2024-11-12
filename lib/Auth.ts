@@ -28,7 +28,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(CollectionId.Users, profile.name),
+          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
           [],
           []
         );
@@ -56,7 +56,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(CollectionId.Users, profile.name),
+          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
           [],
           [],
           profile.sub,

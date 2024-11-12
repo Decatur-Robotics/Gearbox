@@ -467,7 +467,7 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
     await db.addObject(CollectionId.Reports, report);
 
     const newValues = { data: { updated: true } };
-    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()], { team, match }));
+    await api.updateReport.handler(...await getTestApiParams(res, { db, user }, [newValues, report._id!.toString()], { team, report }));
 
     const updatedReport = await db.findObjectById(CollectionId.Reports, new ObjectId(report._id!));
     expect(updatedReport?.data).toEqual(newValues.data);
@@ -500,7 +500,7 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
     await db.addObject(CollectionId.PitReports, pitreport);
 
     const newValues = { data: { updated: true } };
-    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [newValues, pitreport._id!.toString()], { team: team as any, comp: competition as any }));
+    await api.updatePitreport.handler(...await getTestApiParams(res, { db, user }, [pitreport._id!.toString(), newValues], { team: team as any, comp: competition as any }));
 
     const updatedPitreport = await db.findObjectById(CollectionId.PitReports, new ObjectId(pitreport._id!));
     expect(updatedPitreport?.data).toEqual(newValues.data);
@@ -513,8 +513,8 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
     await db.addObject(CollectionId.PitReports, pitReport);
 
     const newValues = { data: { updated: true } };
-    const args = await getTestApiParams(res, { db, user }, [newValues, pitReport._id!.toString()]);
+    const args = await getTestApiParams(res, { db, user }, [pitReport._id!.toString(), newValues]);
     
-    expect((await api.updateReport.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
+    expect((await api.updatePitreport.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
   });
 });
