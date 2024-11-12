@@ -34,16 +34,20 @@ export default function Homepage(props: FormProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const resolver = await UrlResolver(context);
-  const season = resolver.season;
+  const resolved = await UrlResolver(context, 4);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
+  const season = resolved.season;
 
   return {
     props: {
-      report: resolver.report,
+      report: resolved.report,
       layout: makeObjSerializeable(games[season?.gameId ?? defaultGameId].quantitativeReportLayout),
       fieldImagePrefix: games[season?.gameId ?? defaultGameId].fieldImagePrefix,
-      teamNumber: resolver.team?.number,
-      compName: resolver.competition?.name,
+      teamNumber: resolved.team?.number,
+      compName: resolved.competition?.name,
     }
   } as { props: FormProps };
 };

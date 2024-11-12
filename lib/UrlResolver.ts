@@ -1,8 +1,10 @@
-import { GetServerSidePropsContext } from "next";
+import { GetServerSidePropsContext, Redirect } from "next";
 import { getDatabase } from "./MongoDB";
 import { Competition, Match, Season, Team, Report } from "./Types";
 import { ObjectId } from "mongodb";
 import CollectionId from "./client/CollectionId";
+import { redirect } from "next/dist/server/api-utils";
+import { createRedirect } from "./Utils";
 
 // fetches the database
 const gdb = getDatabase();
@@ -60,8 +62,9 @@ export function SerializeDatabaseObjects(objectArray: any[]): any[] {
  */
 
 export default async function UrlResolver(
-  context: GetServerSidePropsContext
-): Promise<ResolvedUrlData> {
+  context: GetServerSidePropsContext,
+  depthToCheckValidity: number
+): Promise<ResolvedUrlData | { redirect: Redirect }> {
   const db = await gdb;
 
   // split the url into the specific parts
@@ -77,41 +80,44 @@ export default async function UrlResolver(
   const reportId = splittedUrl[3]?.length > 5 ? splittedUrl[3] : undefined;
 
   try {
+    const promises = [
+      db.findObject<Team>(CollectionId.Teams, { slug: teamSlug }),
+      seasonSlug
+        ? db.findObject<Season>(CollectionId.Seasons, { slug: seasonSlug })
+        : null,
+      competitionSlug
+        ? db.findObject<Competition>(CollectionId.Competitions, {
+            slug: competitionSlug,
+          })
+        : null,
+      reportId
+        ? db.findObject<Report>(CollectionId.Reports, {
+            _id: new ObjectId(reportId),
+          })
+        : null,
+    ];
+
+    await Promise.all(promises);
+
+    for (const promise of promises.slice(0, depthToCheckValidity)) {
+      // If the value is just null, we didn't fetch the object in the first place
+      if (promise instanceof Promise && (await promise === null || await promise === undefined)) {
+        return createRedirect("/error", { message: `Page Not Found: ${context.resolvedUrl}`, code: 404 });
+      }
+    }
+
     // find these slugs, and convert them to a JSON safe condition
     // if they dont exist, simply return nothing
-    var data: ResolvedUrlData = {
-      team: SerializeDatabaseObject(
-        await db.findObject<Team>(CollectionId.Teams, { slug: teamSlug })
-      ),
-      season: seasonSlug
-        ? SerializeDatabaseObject(
-            await db.findObject<Season>(CollectionId.Seasons, {
-              slug: seasonSlug,
-            })
-          )
-        : null,
-      competition: competitionSlug
-        ? SerializeDatabaseObject(
-            await db.findObject<Competition>(CollectionId.Competitions, {
-              slug: competitionSlug,
-            })
-          )
-        : null,
-      report: reportId
-        ? SerializeDatabaseObject(
-            await db.findObject<Report>(CollectionId.Reports, {
-              _id: new ObjectId(reportId),
-            })
-          )
-        : null,
+    const data: ResolvedUrlData = {
+      team: SerializeDatabaseObject(await promises[0]),
+      season: SerializeDatabaseObject(await promises[1]),
+      competition: SerializeDatabaseObject(await promises[2]),
+      report: SerializeDatabaseObject(await promises[3]),
     };
     return data;
   } catch (error) {
-    return {
-      team: undefined,
-      season: undefined,
-      competition: undefined,
-      report: undefined,
-    };
+    console.error(error);
+    
+    return createRedirect("/error", { message: `Internal Server Error: ${error}`, code: 500 });
   }
 }

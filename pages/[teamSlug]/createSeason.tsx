@@ -77,7 +77,11 @@ export default function CreateSeason(props: CreateSeasonProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 1);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+  
   const existingSeasons = await db.findObjects(CollectionId.Seasons, {
     _id: { $in: resolved.team?.seasons },
   });

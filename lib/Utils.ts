@@ -4,9 +4,12 @@
  * This is a general collection of commonly used functions
  */
 
+import { RedirectType } from "next/navigation";
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import { getDatabase } from "./MongoDB";
+import { redirect } from 'next/dist/server/api-utils';
+import { Redirect } from "next";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -40,4 +43,13 @@ export async function GenerateSlug(
   }
 
   return finalName;
+}
+
+export function createRedirect(destination: string, query: Record<string, any> = {}): { redirect: Redirect } {
+  return { 
+    redirect: {
+      destination: `${destination}?${Object.keys(query).map((key) => `${key}=${query[key]}`).join("&")}`,
+      permanent: false,
+    }
+  };
 }
