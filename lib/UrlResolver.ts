@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from "next";
 import { getDatabase } from "./MongoDB";
 import { Competition, Match, Season, Team, Report } from "./Types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import CollectionId from "./client/CollectionId";
 
 // fetches the database

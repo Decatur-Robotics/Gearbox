@@ -14,7 +14,7 @@ import Link from "next/link";
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
 import { getDatabase } from "@/lib/MongoDB";
 import CollectionId from "@/lib/client/CollectionId";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import {

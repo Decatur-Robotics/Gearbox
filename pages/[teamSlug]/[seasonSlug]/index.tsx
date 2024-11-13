@@ -12,7 +12,7 @@ import CollectionId from "@/lib/client/CollectionId";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
 const api = new ClientApi();
 

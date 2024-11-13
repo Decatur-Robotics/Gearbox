@@ -62,6 +62,8 @@ namespace AccessLevels {
       return { authorized: false, authData: undefined };
     }
 
+    console.log(team.owners, user._id?.toString());
+
     return { authorized: team.owners.includes(user._id?.toString()!), authData: { team, comp } };
   }
 

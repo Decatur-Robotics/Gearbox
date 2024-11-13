@@ -68,7 +68,10 @@ export default function Onboarding() {
     console.log("Changed team # to", number);
     setTeamNumber(number);
 
-    if (!number || isNaN(number)) setTeam(undefined);
+    if (!number || isNaN(number)) {
+      console.log("Resetting team");
+      setTeam(undefined);
+    }
 
     const team = await api.findTeamByNumberAndLeague(number, league ?? League.FRC)
       .then(team => {
@@ -191,8 +194,8 @@ export default function Onboarding() {
                         { team &&
                             <div>
                               <div className="text-lg mt-2">
-                                Team <span className="text-accent">{teamNumber}</span> 
-                                {" "}- {" "}
+                                Team <span className="text-accent">{team.number}</span> 
+                                {" "}-{" "}
                                 {team.name 
                                   ? <span className="text-accent">{team.name}</span> 
                                   : <><span className="text-secondary">Unknown Team</span> (you&apos;ll enter your team name on the next screen)</>

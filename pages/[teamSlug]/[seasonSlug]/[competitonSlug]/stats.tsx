@@ -16,7 +16,7 @@ import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import StatsPage, { StatsPageProps } from "@/components/stats/StatsPage";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
 export default function Stats(props: StatsPageProps) {
   return <StatsPage {...props} />;

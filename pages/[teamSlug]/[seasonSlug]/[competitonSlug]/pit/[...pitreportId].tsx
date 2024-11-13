@@ -1,6 +1,6 @@
 import { getDatabase } from "@/lib/MongoDB";
 import { Game, PitReportData, Pitreport } from "@/lib/Types";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
 

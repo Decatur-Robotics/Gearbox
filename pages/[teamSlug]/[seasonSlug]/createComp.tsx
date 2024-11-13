@@ -50,17 +50,17 @@ export default function CreateComp(props: ResolvedUrlData) {
 
     // Can't just do selection ? because 0 is a valid selection, but will evaluate to false
     const selectedId = selection !== undefined ? results[selection].pair.tbaId : undefined;
-    const autofill = selectedId ? await api.getCompetitionAutofillData(
+    const autofill = selectedId ? await api.competitionAutofill(
       selectedId
     ) : undefined;
 
     const now = new Date().getTime();
 
     const comp = await api.createCompetition(
-      autofill?.name ?? name,
       autofill?.tbaId ?? NotLinkedToTba,
       autofill?.start ?? now,
       autofill?.end ?? now,
+      autofill?.name ?? name,
       season?._id!,
       usePublicData,
     );

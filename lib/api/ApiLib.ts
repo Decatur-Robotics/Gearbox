@@ -9,13 +9,25 @@ namespace ApiLib {
     export type ErrorType = { error: string };
 
     export class Error {
+      errorCode: number;
+      description: string;
+      route: string | undefined;
+
       constructor(
         res: ApiResponse<ErrorType>,
         errorCode: number = 500,
         description: string = "The server encountered an error while processing the request"
       ) {
+        this.errorCode = errorCode;
+        this.description = description;
+
         res.error(errorCode, description);
       }
+
+      toString() {
+        return `${this.errorCode}: ${this.description}`;
+      }
+
     }
 
     export class NotFoundError extends Error {
@@ -32,7 +44,7 @@ namespace ApiLib {
 
     export class UnauthorizedError extends Error {
       constructor(res: ApiResponse<ErrorType>) {
-        super(res, 403, "Please provide a valid 'Gearbox-Auth' Header Key");
+        super(res, 403, "You are not authorized to execute this route");
       }
     }
 
@@ -90,9 +102,11 @@ namespace ApiLib {
       body: JSON.stringify(body),
     });
     
-    const res = await rawResponse.json();
+    // Null or undefined are sent as an empty string that we can't parse as JSON
+    const text = await rawResponse.text();
+    const res = text.length ? JSON.parse(text) : undefined;
 
-    if (res.error) {
+    if (res?.error) {
       if (res.error === "Unauthorized") {
         alert(`Unauthorized API request: ${subUrl}. If this is an error, please contact the developers.`);
       }
@@ -159,18 +173,17 @@ namespace ApiLib {
     constructor(private api: ApiTemplate<TDependencies>, private urlPrefix: string, private errorLogMode: ErrorLogMode = ErrorLogMode.Log) {}
 
     async handle(req: NextApiRequest, rawRes: NextApiResponse) {
+      const res = new ApiResponse(rawRes);
+
+      if (!req.url) {
+        throw new Errors.InvalidRequestError(res);
+      }
+
+      const path = req.url
+        .slice(this.urlPrefix.length)
+        .split("/");
+
       try {
-        const res = new ApiResponse(rawRes);
-
-        if (!req.url) {
-          throw new Errors.InvalidRequestError(res);
-        }
-
-        const path = req.url
-          .slice(this.urlPrefix.length)
-          .split("/")
-          .slice(1);
-
         const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies, any> | undefined;
 
         if (!route?.handler)
@@ -186,6 +199,8 @@ namespace ApiLib {
 
         await route.handler(req, res, deps, authData, body);
       } catch (e) {
+        (e as Errors.Error).route = path.join("/");
+
         if (this.errorLogMode === ErrorLogMode.None)
           return;
 

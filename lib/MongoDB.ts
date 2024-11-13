@@ -2,9 +2,8 @@ import {
   Db,
   MongoClient,
   MongoClientOptions,
-  ObjectId,
-  UpdateResult,
 } from "mongodb";
+import { ObjectId } from "bson";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 
@@ -97,8 +96,7 @@ export class MongoDBInterface implements DbInterface {
     collection: CollectionId,
     id: ObjectId
   ): Promise<Type> {
-    var query = { _id: id };
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
+    return (await this?.db?.collection(collection).findOne({ _id: id })) as Type;
   }
 
   async findObject<Type>(

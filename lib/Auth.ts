@@ -4,7 +4,7 @@ import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { getDatabase, clientPromise } from "./MongoDB";
-import { Admin, ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';

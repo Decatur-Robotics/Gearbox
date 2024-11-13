@@ -124,6 +124,10 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   getTeamAutofillData = ApiLib.createRoute<[number, League], Team | undefined, ApiDependencies, void>({
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { tba }, authData, [number, league]) => {
+      if (number <= 0) {
+        return res.status(200).send(undefined);
+      }
+
       res.status(200).send(league === League.FTC 
         ? await TheOrangeAlliance.getTeam(number)
         : await tba.getTeamAutofillData(number)
@@ -1053,6 +1057,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     isAuthorized: AccessLevels.AlwaysAuthorized,
     handler: async (req, res, { db: dbPromise }, authData, [number, league]) => {
       const db = await dbPromise;
+
       const query = league === League.FRC 
         ? { 
             number: number,
@@ -1062,7 +1067,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
             ]
           } 
         : { number: number, league: league };
+
       const team = await db.findObject<Team>(CollectionId.Teams, query);
+
       return res.status(200).send(team);
     }
   });
