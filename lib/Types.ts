@@ -40,7 +40,7 @@ export class User implements NextAuthUser {
   level: number = 1;
   onboardingComplete: boolean = false;
   resendContactId: string | undefined = undefined;
-  lastSignInDate: string | undefined = undefined;
+  lastSignInDate: Date | undefined = undefined;
 
   constructor(
     name: string | undefined,
@@ -566,7 +566,7 @@ type LinkedNode<T> = T & {
 export class LinkedList<T> {
   private head?: LinkedNode<T> = undefined;
 
-  constructor(head: T | T[] | undefined) {
+  constructor(head?: T | T[]) {
     if (Array.isArray(head) && head.length > 0) {
       let node: LinkedNode<T>;
 
@@ -614,6 +614,18 @@ export class LinkedList<T> {
     return node;
   }
 
+  // Add to criterion B
+  /**
+   * Will reset the list to just be head
+   */
+  setHead(insertedVal: T) {
+    this.head = {
+      ...insertedVal,
+      prev: undefined,
+      next: undefined
+    };
+  }
+
   insertBefore(existingNode: LinkedNode<T>, insertedVal: T) {
     const insertedNode: LinkedNode<T> = {
       ...insertedVal,
@@ -645,5 +657,23 @@ export class LinkedList<T> {
     existingNode.next = insertedNode;
 
     return insertedNode;
+  }
+
+  // Add to criterion B
+  forEach(func: (node: LinkedNode<T>) => any) {
+    for (let node = this.head; node; node = node.next) {
+      func(node);
+    }
+  }
+
+  // Add to criterion B
+  map<TMap>(func: (node: LinkedNode<T>) => TMap) {
+    const array: TMap[] = [];
+    
+    for (let node = this.head; node; node = node.next) {
+      array.push(func(node));
+    }
+
+    return array;
   }
 }

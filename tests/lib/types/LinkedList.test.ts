@@ -1,5 +1,7 @@
 import { LinkedList } from "@/lib/Types";
 
+// Add to test plan!
+
 test(`${LinkedList.name}.constructor: Sets head if not given array, but sets multiple if given array`, () => {
   let list = new LinkedList<any>({ i: 0 });
   expect(list.first()).toStrictEqual({ i: 0, prev: undefined, next: undefined });
@@ -33,6 +35,15 @@ test(`${LinkedList.name}.${LinkedList.prototype.last.name}`, () => {
     expect(list.last()?.i).toBe(i);
     node = list.last()!;
   }
+});
+
+test(`${LinkedList.name}.${LinkedList.prototype.setHead.name}`, () => {
+  const list = new LinkedList([{ i: 0 }, { i: 1 }]);
+
+  list.setHead({ i: 2 });
+
+  expect(list.first()).toStrictEqual({ i: 2, prev: undefined, next: undefined });
+  expect(list.size()).toBe(1);
 });
 
 test(`${LinkedList.name}.${LinkedList.prototype.insertBefore.name}: Updates next on insertedNode and prev on existingNode`, () => {
@@ -83,4 +94,29 @@ test(`${LinkedList.name}.${LinkedList.prototype.insertAfter.name}: Updates exist
   const last = list.last();
   expect(last?.prev?.i).toBe(inserted.i);
   expect(inserted.next?.i).toBe(last?.i);
+});
+
+test(`${LinkedList.name}.${LinkedList.prototype.forEach.name}: Calls func once per element`, () => {
+  const list = new LinkedList([{ i: 0 }, { i: 1 }, { i: 2 }]);
+
+  let i = 0;
+
+  list.forEach((node) => {
+    expect(node.i).toBe(i);
+    i++;
+  });
+});
+
+test(`${LinkedList.name}.${LinkedList.prototype.map.name}: Calls func once per element and returns correct array`, () => {
+  const list = new LinkedList([{ i: 0 }, { i: 1 }, { i: 2 }]);
+
+  let i = 0;
+
+  const array = list.map((node) => {
+    expect(node.i).toBe(i);
+    i++;
+    return i - 1;
+  });
+
+  expect(array).toStrictEqual([0, 1, 2]);
 });

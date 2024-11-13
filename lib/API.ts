@@ -15,6 +15,7 @@ import {
   SavedCompetition,
   MatchType,
   Alliance,
+  LinkedList,
 } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { NotLinkedToTba, removeDuplicates } from "./client/ClientUtils";
@@ -1345,6 +1346,48 @@ export namespace API {
         db.findObjects<Team>(CollectionId.Teams, {}),
         db.findObjects<User>(CollectionId.Users, { lastSignInDate: { $exists: true } })
       ]);
+
+      const signInDatesByTeam: { [team: string]: LinkedList<{ date: Date, count: number }> } = teams.reduce((acc, team) => {
+        acc[team._id!.toString()] = new LinkedList<{ date: Date, count: number }>();
+        return acc;
+      }, { all: new LinkedList() } as { [team: string]: LinkedList<{ date: Date, count: number }> });
+
+      for (const user of users) {
+        for (const team of [...user.teams, "all"]) {
+          const signInDates = signInDatesByTeam[team];
+
+          // Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
+          for(let node = signInDates.first(); true; node = node.next) {
+            if (!node) {
+              // Can't just update signInDates, as that will reference a new object and not change the old one!
+              signInDates.setHead({ date: user.lastSignInDate!, count: 1 });
+              break;
+            }
+
+            if (node && node?.date === user.lastSignInDate) {
+              node.count++;
+              break;
+            }
+
+            if (!node?.next || user.lastSignInDate! < node.next.date) {
+              signInDates.insertAfter(node!, { date: user.lastSignInDate!, count: 1 });
+              break;
+            }
+          }
+        }
+      }
+
+      // We mixed up the types for this object in Criterion B
+      const responseObj: { [team: string]: { date: Date, count: number }[] } = {};
+      for (const obj of [...teams, "all"]) {
+        const id = typeof obj === "object" ? obj._id! : obj;
+        const label = typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
+
+        responseObj[label] = signInDatesByTeam[id]
+          .map((node) => ({ date: node.date, count: node.count }));
+      }
+
+      res.status(200).send(responseObj);
     }
-  }; 
+  };
 }
