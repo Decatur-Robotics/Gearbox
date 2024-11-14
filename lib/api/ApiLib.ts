@@ -93,6 +93,8 @@ namespace ApiLib {
     body: any,
     method: RequestMethod = RequestMethod.POST
   ) {
+    console.log("Requesting", subUrl, body);
+
     const rawResponse = await fetch(process.env.NEXT_PUBLIC_API_URL + subUrl, {
       method: method,
       headers: {
