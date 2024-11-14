@@ -698,9 +698,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  changeScouterForReport = ApiLib.createRoute<[string, string], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
-    isAuthorized: (req, res, deps, [reportId]) => AccessLevels.IfCompOwner(req, res, deps, reportId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [reportId, scouterId]) => {
+  changeScouterForReport = ApiLib.createRoute<[string, string], { result: string }, ApiDependencies, any>({
+    isAuthorized: (req, res, deps, [reportId]) => AccessLevels.IfReportOwner(req, res, deps, reportId),
+    handler: async (req, res, { db: dbPromise, userPromise }, authData, [reportId, scouterId]) => {
       const db = await dbPromise;
 
       await db.updateObjectById<Report>(
@@ -766,9 +766,20 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
+  getPicklistFromComp = ApiLib.createRoute<[string], DbPicklist | undefined, ApiDependencies, { comp: Competition }>({
+    isAuthorized: (req, res, deps, [compId]) => AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
+    handler: async (req, res, { db: dbPromise }, { comp }, [compId]) => {
+      const db = await dbPromise;
+      
+      const picklist = await db.findObjectById<DbPicklist>(CollectionId.Picklists, new ObjectId(comp.picklist));
+
+      return res.status(200).send(picklist);
+    }
+  });
+
   getPicklist = ApiLib.createRoute<[string], DbPicklist | undefined, ApiDependencies, { picklist: DbPicklist }>({
     isAuthorized: (req, res, deps, [picklistId]) => AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklistId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { picklist }, [picklistId]) => {
+    handler: async (req, res, deps, { picklist }, [picklistId]) => {
       return res.status(200).send(picklist);
     }
   });
@@ -869,14 +880,18 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  setSubjectiveScouterForMatch = ApiLib.createRoute<[string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
+  setSubjectiveScouterForMatch = ApiLib.createRoute<[string, string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
     isAuthorized: (req, res, deps, [matchId]) => AccessLevels.IfMatchOwner(req, res, deps, matchId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [matchId]) => {
+    handler: async (req, res, { db: dbPromise }, { team, match }, [matchId, scouterId]) => {
       const db = await dbPromise;
-      const user = await userPromise;
+      
+      const scouter = team?.users.find(id => id === scouterId);
+
+      if (!scouter)
+        return res.status(400).send({ error: "Scouter not on team" });
 
       await db.updateObjectById<Match>(CollectionId.Matches, new ObjectId(matchId), {
-        subjectiveScouter: user!._id?.toString(),
+        subjectiveScouter: scouter
       });
       return res.status(200).send({ result: "success" });
     }

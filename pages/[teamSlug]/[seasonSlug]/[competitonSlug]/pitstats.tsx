@@ -275,7 +275,7 @@ export default function Pitstats(props: { competition: Competition }) {
           getBadges={games[comp.gameId].getBadges}
           stats={stats.map(stat => ({
               label: stat.label,
-              value: stat.values.filter(v => v.team == key)[0].value,
+              value: stat.values.filter(v => v.team == key)[0]?.value,
               mean: stat.mean,
               stDev: stat.stDev,
               rank: stat.rankings.indexOf(key) + 1,

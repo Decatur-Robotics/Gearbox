@@ -368,7 +368,7 @@ export default function CompetitionIndex(props: {
 
     // Load picklists
     if (comp?._id)
-      api.getPicklist(comp?._id).then(setPicklists).catch(console.error);
+      api.getPicklistFromComp(comp?._id).then(setPicklists).catch(console.error);
 
     // Resync pit reports if none are present
     if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {

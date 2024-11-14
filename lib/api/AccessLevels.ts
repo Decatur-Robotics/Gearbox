@@ -116,6 +116,25 @@ namespace AccessLevels {
     return { authorized: team.owners.includes(user._id?.toString()!), authData: { team, comp, match } };
   }
 
+  export async function IfReportOwner(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise, db }: UserAndDb, reportId: string) {
+    const user = await userPromise;
+    if (!user) {
+      return { authorized: false, authData: undefined };
+    }
+
+    const report = await (await db).findObjectById<Report>(CollectionId.Reports, new ObjectId(reportId));
+    if (!report) {
+      return { authorized: false, authData: undefined };
+    }
+
+    const team = await getTeamFromReport(await db, report);
+    if (!team) {
+      return { authorized: false, authData: undefined };
+    }
+
+    return { authorized: team.owners.includes(user._id?.toString()!), authData: { team, report } };
+  }
+
   export async function IfOnTeamThatOwnsComp(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise, db }: UserAndDb, compId: string) {
     const user = await userPromise;
     if (!user) {
@@ -222,6 +241,8 @@ namespace AccessLevels {
   }
 
   export async function IfOnTeamThatOwnsPicklist(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise, db }: UserAndDb, picklistId: string) {
+    console.log("IfOnTeamThatOwnsPicklist", picklistId);
+
     const user = await userPromise;
     if (!user) {
       return { authorized: false, authData: undefined };
@@ -237,6 +258,7 @@ namespace AccessLevels {
       return { authorized: false, authData: undefined };
     }
 
+    console.log(team.users, user._id?.toString());
     return { authorized: team.users.includes(user._id?.toString()!), authData: { team, picklist } };
   }
 }

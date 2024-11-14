@@ -36,6 +36,7 @@ import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
 import { redirect } from 'next/dist/server/api-utils';
+import { makeObjSerializeable } from '../../lib/client/ClientUtils';
 
 const api = new ClientApi();
 
@@ -532,7 +533,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       team: resolved.team,
-      users: users,
+      users: makeObjSerializeable(users),
       currentCompetition: SerializeDatabaseObject(comp),
       currentSeason: SerializeDatabaseObject(currentSeason),
       pastSeasons: SerializeDatabaseObjects(seasons),

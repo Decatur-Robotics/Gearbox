@@ -22,11 +22,9 @@ export default function Homepage() {
   }>>({});
 
   useEffect(() => {
-    if (counterData.teams !== null) return;
+    if (counterData.teams != null) return;
 
-    api.getMainPageCounterData().then((data) => {
-      setCounterData(data);
-    });
+    api.getMainPageCounterData().then(setCounterData);
   });
 
   function formatDataPoint(num: number | null): string {

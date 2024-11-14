@@ -85,6 +85,7 @@ export const AuthenticationOptions: AuthOptions = {
         CollectionId.Users,
         new ObjectId(user.id)
       );
+
       return session;
     },
 
@@ -99,12 +100,15 @@ export const AuthenticationOptions: AuthOptions = {
       let typedUser = user as Partial<User>;
       if (!typedUser.slug) {
         console.log("User is incomplete, filling in missing fields");
+
+        const name = typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
         
         // User is incomplete, fill in the missing fields
         typedUser = {
-          name: typedUser.name ?? typedUser.email?.split("@")[0],
+          _id: typedUser._id ?? new ObjectId(typedUser.id),
+          name,
           image: typedUser.image ?? "https://4026.org/user.jpg",
-          slug: await GenerateSlug(await getDatabase(), CollectionId.Users, typedUser.name!),
+          slug: await GenerateSlug(await getDatabase(), CollectionId.Users, name),
           teams: typedUser.teams ?? [],
           owner: typedUser.owner ?? [],
           slackId: typedUser.slackId ?? "",

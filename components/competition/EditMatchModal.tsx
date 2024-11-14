@@ -39,7 +39,7 @@ export default function EditMatchModal(props: {
     if (!userId || !props.match?._id) return;
 
     console.log(`Changing subjective scouter for match ${props.match?._id} to ${userId}`);
-    api.setSubjectiveScouterForMatch(props.match?._id).then(loadMatches);
+    api.setSubjectiveScouterForMatch(props.match?._id, userId).then(loadMatches);
   }
 
   return (
