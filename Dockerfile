@@ -11,6 +11,8 @@ RUN npm i
 
 COPY . .
 
+RUN npm run build
+
 EXPOSE 443
 
-CMD npm run build && npm run start
+CMD npm run start
