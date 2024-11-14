@@ -11,12 +11,12 @@ import PicklistScreen from "@/components/stats/Picklist";
 import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import StatsPage, { StatsPageProps } from "@/components/stats/StatsPage";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
 export default function Stats(props: StatsPageProps) {
   return <StatsPage {...props} />;
@@ -34,7 +34,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     submitted: true,
   });
   
-  const pitReports = await db.findObjects<Pitreport>(CollectionId.Pitreports, {
+  const pitReports = await db.findObjects<Pitreport>(CollectionId.PitReports, {
     _id: { $in: resolved.competition?.pitReports },
   });
 

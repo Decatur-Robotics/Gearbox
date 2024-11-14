@@ -1,4 +1,4 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { download } from "@/lib/client/ClientUtils";
 import { mergeSavedComps, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -8,7 +8,7 @@ import { useState, ChangeEvent } from "react";
 import Loading from "../Loading";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function DownloadModal(props: { 
     open: boolean, 

@@ -1,14 +1,18 @@
 import { User as NextAuthUser } from "next-auth";
-import { CreateEmailOptions, Resend } from 'resend';
+import { Resend } from 'resend';
 import { getDatabase } from './MongoDB';
-import { ObjectId } from "mongodb";
 import { User } from "./Types";
 import CollectionId from "./client/CollectionId";
 
 const resend = new Resend(process.env.SMTP_PASSWORD);
 
-namespace ResendUtils {
-  export async function createContact(rawUser: NextAuthUser) {
+export interface ResendInterface {
+  createContact: (rawUser: NextAuthUser) => Promise<void>;
+  emailDevelopers: (subject: string, message: string) => void;
+}
+
+export class ResendUtils implements ResendInterface {
+  async createContact(rawUser: NextAuthUser) {
     const user = rawUser as User;
 
     if (user.resendContactId)
@@ -42,7 +46,7 @@ namespace ResendUtils {
     db.db?.collection(CollectionId.Users).updateOne({ email: user.email}, { $set: { resendContactId: res.data.id } });
   }
 
-  export async function emailDevelopers(subject: string, message: string) {
+  async emailDevelopers(subject: string, message: string) {
     if (!process.env.DEVELOPER_EMAILS) {
       console.error("No developer emails found");
       return;

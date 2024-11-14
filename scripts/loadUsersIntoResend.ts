@@ -21,7 +21,7 @@ async function loadUsersIntoResend() {
       continue;
     }
 
-    await ResendUtils.createContact(user);
+    await new ResendUtils().createContact(user);
     await new Promise(resolve => setTimeout(resolve, 500)); // Rate limit is 2/sec
   }
 
