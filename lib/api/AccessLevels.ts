@@ -189,7 +189,6 @@ namespace AccessLevels {
       return { authorized: false, authData: undefined };
     }
 
-    console.log("reportId", reportId);
     const report = await (await db).findObjectById<Report>(CollectionId.Reports, new ObjectId(reportId));
     if (!report) {
       return { authorized: false, authData: undefined };

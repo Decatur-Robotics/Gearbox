@@ -1,7 +1,7 @@
 import ApiLib from '@/lib/api/ApiLib';
 import { TestRes } from '@/lib/TestUtils';
 
-const API_PREFIX = "/api";
+const API_PREFIX = "api/";
 
 type TestDependencies = {
   testDependency: string;
@@ -85,7 +85,7 @@ test(`ApiLib.${ApiLib.createRoute.name}: Creates callable route`, async () => {
   expect(res).toBe("Hello, world 42!");
 });
 
-test(`ApiLib.${ApiLib.ApiTemplate.prototype.name}.init: Sets subUrl`, () => {
+test(`ApiLib.${ApiLib.ApiTemplate.name}.init: Sets subUrl`, () => {
   expect(clientApi.segment.routeWithPresetCaller.subUrl).toBe("/segment/routeWithPresetCaller");
 });
 
@@ -100,7 +100,7 @@ test(`ApiLib.${ApiLib.createRoute.name}: Creates callable route without caller`,
 
 test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Finds correct method`, async () => {
   const req = {
-    url: API_PREFIX + "/segment/routeWithoutPresetCaller",
+    url: API_PREFIX + "segment/routeWithoutPresetCaller",
     body: ["world", 42]
   };
   const res = new TestRes();
@@ -113,7 +113,7 @@ test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}:
 
 test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Finds methods that are not in segments`, async () => {
   const req = {
-    url: API_PREFIX + "/rootRoute",
+    url: API_PREFIX + "rootRoute",
     body: ["world", 42]
   };
   const res = new TestRes();
@@ -126,7 +126,7 @@ test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}:
 
 test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Throws 403 if unauthorized`, async () => {
   const req = {
-    url: API_PREFIX + "/unauthorizedRoute"
+    url: API_PREFIX + "unauthorizedRoute"
   }
   const res = new TestRes();
 
@@ -137,7 +137,7 @@ test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}:
 
 test(`ApiLib.${ApiLib.ServerApi.name}.${ApiLib.ServerApi.prototype.handle.name}: Passes authData to handler`, async () => {
   const req = {
-    url: API_PREFIX + "/routeWithAuthData"
+    url: API_PREFIX + "routeWithAuthData"
   }
   const res = new TestRes();
 
