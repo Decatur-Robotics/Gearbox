@@ -4,11 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development npx tsx index.ts",
+
     "build": "next build",
     "start": "cross-env NODE_ENV=production npx tsx index.ts ",
     "restart": "next build && cross-env NODE_ENV=production npx tsx index.ts",
+
+    "docker-build": "docker build -t gearbox .",
+    "docker-start": "docker run -i -t -p 443:443 gearbox",
+
     "lint": "next lint",
     "prettier": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
+
     "test": "jest"
   },
   "dependencies": {
