@@ -93,8 +93,6 @@ namespace ApiLib {
     body: any,
     method: RequestMethod = RequestMethod.POST
   ) {
-    console.log("Requesting", subUrl, body);
-
     const rawResponse = await fetch(process.env.NEXT_PUBLIC_API_URL + subUrl, {
       method: method,
       headers: {
@@ -177,8 +175,6 @@ namespace ApiLib {
     async handle(req: NextApiRequest, rawRes: NextApiResponse) {
       const res = new ApiResponse(rawRes);
 
-      console.log(req.url);
-
       if (!req.url) {
         throw new Errors.InvalidRequestError(res);
       }
@@ -186,8 +182,6 @@ namespace ApiLib {
       const path = req.url
         .slice(this.urlPrefix.length)
         .split("/");
-
-      console.log(path);
 
       try {
         const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies, any> | undefined;
