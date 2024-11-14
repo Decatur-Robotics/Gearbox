@@ -35,6 +35,7 @@ import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
+import { redirect } from 'next/dist/server/api-utils';
 
 const api = new ClientApi();
 
@@ -493,7 +494,10 @@ export default function TeamIndex(props: TeamPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 1);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
 
   const seasonIds = resolved.team?.seasons.map(
     (seasonId) => new ObjectId(seasonId)

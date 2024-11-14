@@ -1,5 +1,5 @@
-import { CenterStageEnums, Defense, Drivetrain, IntakeTypes, IntoTheDeepEnums } from './Enums';
-import { Badge, FormLayout, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
+import { CenterStageEnums, Defense, FrcDrivetrain, IntakeTypes, IntoTheDeepEnums } from './Enums';
+import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
 import { Report, Game, League, PitReportData, QuantData, Pitreport, FieldPos } from "./Types";
 import { GameId } from "./client/GameId";
 import { AmpAutoPoints, AmpTeleopPoints, BooleanAverage, MostCommonValue, NumericalTotal, Round, SpeakerAutoPoints, SpeakerTeleopPoints, TrapPoints } from "./client/StatsMath";
@@ -24,11 +24,11 @@ function getBaseBadges(pitReport: Pitreport<PitReportData> | undefined, quantita
       drivetrainBadge.text += " (" + motorType;
     }
 
-    if (drivetrain === Drivetrain.Swerve) {
+    if (drivetrain === FrcDrivetrain.Swerve) {
       drivetrainBadge.color = "primary";
       drivetrainBadge.text += ", " + swerveLevel;
     }
-    else if (drivetrain === Drivetrain.Mecanum) {
+    else if (drivetrain === FrcDrivetrain.Mecanum) {
       drivetrainBadge.color = "warning";
     }
 

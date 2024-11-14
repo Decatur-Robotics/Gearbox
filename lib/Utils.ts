@@ -3,10 +3,10 @@
  * @remarks
  * This is a general collection of commonly used functions
  */
-
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
+import { Redirect } from "next";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -39,4 +39,17 @@ export async function GenerateSlug(
   }
 
   return finalName;
+}
+
+export function createRedirect(destination: string, query: Record<string, any> = {}): { redirect: Redirect } {
+  return { 
+    redirect: {
+      destination: `${destination}?${Object.keys(query).map((key) => `${key}=${query[key]}`).join("&")}`,
+      permanent: false,
+    }
+  };
+}
+
+export function isDeveloper(email: string | undefined) {
+  return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(email ?? "");
 }

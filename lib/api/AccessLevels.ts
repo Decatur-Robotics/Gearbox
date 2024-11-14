@@ -6,6 +6,7 @@ import CollectionId from "../client/CollectionId";
 import { ObjectId } from "bson";
 import { getCompFromMatch, getCompFromPitReport, getTeamFromComp, getTeamFromPicklist, getTeamFromReport, getTeamFromSeason, getTeamFromSubjectiveReport } from "./ApiUtils";
 import DbInterface from "../client/dbinterfaces/DbInterface";
+import { isDeveloper } from "../Utils";
 
 type UserAndDb = { userPromise: Promise<User | undefined>, db: Promise<DbInterface> };
 
@@ -14,8 +15,13 @@ namespace AccessLevels {
     return Promise.resolve({ authorized: true, authData: undefined });
   }
 
-  export async function IfSignedIn(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise }: ApiDependencies) {
+  export async function IfSignedIn(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise }: UserAndDb) {
     return { authorized: (await userPromise) !== undefined, authData: undefined };
+  }
+
+  export async function IfDeveloper(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise }: UserAndDb) {
+    const user = await userPromise;
+    return { authorized: isDeveloper(user?.email), authData: undefined };
   }
 
   export async function IfOnTeam(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise, db }: UserAndDb, teamId: string) {

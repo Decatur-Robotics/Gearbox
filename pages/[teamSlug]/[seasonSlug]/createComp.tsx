@@ -152,7 +152,13 @@ export default function CreateComp(props: ResolvedUrlData) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const resolved = await UrlResolver(context, 2);
+
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
   return {
-    props: await UrlResolver(context),
+    props: resolved,
   };
 };
