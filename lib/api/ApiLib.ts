@@ -177,6 +177,8 @@ namespace ApiLib {
     async handle(req: NextApiRequest, rawRes: NextApiResponse) {
       const res = new ApiResponse(rawRes);
 
+      console.log(req.url);
+
       if (!req.url) {
         throw new Errors.InvalidRequestError(res);
       }
