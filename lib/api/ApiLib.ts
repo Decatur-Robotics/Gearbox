@@ -121,7 +121,7 @@ namespace ApiLib {
    */
   export function createRoute<TArgs extends Array<any>, TReturn, TDependencies, TFetchedDuringAuth>(
     server: Omit<OmitCallSignature<Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth>>, "subUrl">,
-    clientHandler?: (...args: TArgs) => Promise<TReturn>
+    clientHandler?: (...args: any) => Promise<any>
   ): Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth> {
     return Object.assign(clientHandler ?? { subUrl: "newRoute" }, server) as any;
   }

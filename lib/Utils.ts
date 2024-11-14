@@ -3,8 +3,6 @@
  * @remarks
  * This is a general collection of commonly used functions
  */
-
-import { RedirectType } from "next/navigation";
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
@@ -50,4 +48,8 @@ export function createRedirect(destination: string, query: Record<string, any> =
       permanent: false,
     }
   };
+}
+
+export function isDeveloper(email: string | undefined) {
+  return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(email ?? "");
 }
