@@ -1,6 +1,6 @@
 import { Defense } from "@/lib/Enums";
 import { Report } from "@/lib/Types";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 
 import {
   Chart as ChartJS,
@@ -53,7 +53,7 @@ const options = {
   },
 };
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function SmallGraph(props: { selectedReports: Report[], team: number }) {
   const [key, setKey] = useState("Defense");
@@ -100,6 +100,8 @@ export default function SmallGraph(props: { selectedReports: Report[], team: num
     setCurrentTeam(props.team);
     for (const report of props.selectedReports) {
       api.findMatchById(report.match).then((match) => {
+        if (!match) return;
+
         setDataPoints((prev) => [...prev ?? [], {
           x: match.number,
           y: dataToNumber(key, report.data[key]),

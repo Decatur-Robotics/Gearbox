@@ -12,7 +12,7 @@ import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { useEffect, useRef, useState } from "react";
 import { getDatabase } from "@/lib/MongoDB";
 import { MostCommonValue, NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
@@ -23,7 +23,7 @@ import { games } from "@/lib/games";
 import { PitStatsLayout, Badge } from "@/lib/Layout";
 import CollectionId from "@/lib/client/CollectionId";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type PitReportPair = { [team: number]: Pitreport };
 
@@ -188,12 +188,12 @@ export default function Pitstats(props: { competition: Competition }) {
 
   const loadReports = async () => {
     const newReports = (await api.competitionReports(
-      comp._id,
+      comp._id!,
       true,
       usePublicData
     )) as Report[];
 
-    const rankings = await api.compRankings(comp.tbaId);
+    const rankings = await api.compRankings(comp.tbaId!);
 
     const allReports: typeof reports = {};
 
@@ -207,9 +207,12 @@ export default function Pitstats(props: { competition: Competition }) {
       allReports[n].quant.push(report);
     });
 
-    var newPits: PitReportPair = {};
-    for (var rid of comp?.pitReports) {
-      const pitReport = await api.findPitreportById(rid);
+    const newPits: PitReportPair = {};
+    for (const id of comp?.pitReports) {
+      const pitReport = await api.findPitreportById(id);
+      if (!pitReport)
+        continue;
+
       newPits[pitReport.teamNumber] = pitReport;
 
       if (!Object.keys(allReports).includes(pitReport.teamNumber.toString())) {

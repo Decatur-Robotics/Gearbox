@@ -1,4 +1,4 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useInterval from "@/lib/client/useInterval";
@@ -12,7 +12,7 @@ import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "./QrCode";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function SubjectiveReportForm(props: { match: Match, compId?: string, teamNumber?: number, compName?: string }) {
   const router = useRouter();
@@ -69,7 +69,7 @@ export default function SubjectiveReportForm(props: { match: Match, compId?: str
       return;
     }
 
-    api.submitSubjectiveReport(getReportFromForm(), session?.session?.user?._id!, teamSlug as string)
+    api.submitSubjectiveReport(getReportFromForm(), teamSlug as string)
       .catch((err) => {
         console.error(err);
 
