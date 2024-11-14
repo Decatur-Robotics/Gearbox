@@ -104,7 +104,7 @@ export const AuthenticationOptions: AuthOptions = {
         typedUser = {
           name: typedUser.name ?? typedUser.email?.split("@")[0],
           image: typedUser.image ?? "https://4026.org/user.jpg",
-          slug: await GenerateSlug(CollectionId.Users, typedUser.name!),
+          slug: await GenerateSlug(await getDatabase(), CollectionId.Users, typedUser.name!),
           teams: typedUser.teams ?? [],
           owner: typedUser.owner ?? [],
           slackId: typedUser.slackId ?? "",

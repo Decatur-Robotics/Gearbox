@@ -1172,7 +1172,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   speedTest = ApiLib.createRoute<
-      [number], 
+      [], 
       { 
         requestTime: number, 
         authTime: number, 
@@ -1186,7 +1186,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     >(
       {
         isAuthorized: AccessLevels.AlwaysAuthorized,
-        handler: async (req, res, { userPromise, db: dbPromise }, authData, [requestTimestamp]) => {
+        handler: async (req, res, { userPromise, db: dbPromise }, authData, args) => {
+          const [requestTimestamp] = (args as unknown as [number]);
+          
           const authStart = Date.now();
           const user = await userPromise;
           if (!user || !isDeveloper(user.email))
