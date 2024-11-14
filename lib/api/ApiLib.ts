@@ -183,6 +183,8 @@ namespace ApiLib {
         .slice(this.urlPrefix.length)
         .split("/");
 
+      console.log(path);
+
       try {
         const route = path.reduce((segment, route) => segment[route], this.api) as unknown as Route<any, any, TDependencies, any> | undefined;
 
