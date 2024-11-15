@@ -1,9 +1,9 @@
 import Container from "@/components/Container";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { Round } from "@/lib/client/StatsMath";
 import { useEffect, useState } from "react";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type SpeedTestResponse = { 
   [key: string]: number,

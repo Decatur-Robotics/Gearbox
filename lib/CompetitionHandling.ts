@@ -1,18 +1,17 @@
-import { getDatabase } from "@/lib/MongoDB";
 import {
   Competition,
   Match,
   Team,
   Report,
   AllianceColor,
-  QuantData,
   League,
 } from "./Types";
-import { ObjectId } from "mongodb";
-import { rotateArray, shuffleArray } from "./client/ClientUtils";
+import { ObjectId } from "bson";
+import { rotateArray } from "./client/ClientUtils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import CollectionId from "./client/CollectionId";
+import DbInterface from './client/dbinterfaces/DbInterface';
 
 type ScheduleMatch = {
   subjectiveScouter?: string;
@@ -41,10 +40,10 @@ export function generateSchedule(scouters: string[], subjectiveScouters: string[
 }
 
 export async function AssignScoutersToCompetitionMatches(
+  db: DbInterface,
   teamId: string,
   competitionId: string,
 ) {
-  const db = await getDatabase();
   const comp = await db.findObjectById<Competition>(
     CollectionId.Competitions,
     new ObjectId(competitionId),
@@ -55,6 +54,10 @@ export async function AssignScoutersToCompetitionMatches(
     new ObjectId(teamId),
   );
 
+  if (!comp || !team) {
+    throw new Error("Competition or team not found");
+  }
+
   team.scouters = team.scouters.filter((s) => team.users.includes(s));
   team.subjectiveScouters = team.subjectiveScouters.filter((s) => team.users.includes(s));
 
@@ -63,20 +66,25 @@ export async function AssignScoutersToCompetitionMatches(
   const promises: Promise<any>[] = [];
   for (let i = 0; i < comp.matches.length; i++) {
     // Filter out the subjective scouter that will be assigned to this match
-    promises.push(generateReportsForMatch(comp.matches[i], comp.gameId, schedule[i]));
+    promises.push(generateReportsForMatch(db, comp.matches[i], comp.gameId, schedule[i]));
   }
 
   await Promise.all(promises);
   return "Success";
 }
 
-export async function generateReportsForMatch(match: string | Match, gameId: GameId, schedule?: ScheduleMatch) {
-  const db = await getDatabase();
+export async function generateReportsForMatch(db: DbInterface, match: string | Match, gameId: GameId, schedule?: ScheduleMatch) {
   if (typeof match === "string") {
-    match = await db.findObjectById<Match>(
+    const foundMatch = await db.findObjectById<Match>(
       CollectionId.Matches,
       new ObjectId(match),
     );
+
+    if (!foundMatch) {
+      throw new Error("Match not found");
+    }
+
+    match = foundMatch;
   }
 
   match.subjectiveScouter = schedule?.subjectiveScouter;
@@ -94,7 +102,7 @@ export async function generateReportsForMatch(match: string | Match, gameId: Gam
       ? AllianceColor.Blue
       : AllianceColor.Red;
 
-    const oldReport = existingReports.find((r) => r.robotNumber === teamNumber);
+    const oldReport = existingReports.find((r) => r?.robotNumber === teamNumber);
 
     if (!oldReport) {
       // Create a new report

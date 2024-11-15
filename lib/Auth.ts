@@ -4,7 +4,7 @@ import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { getDatabase, clientPromise } from "./MongoDB";
-import { Admin, ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
@@ -28,7 +28,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(CollectionId.Users, profile.name),
+          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
           [],
           []
         );
@@ -56,7 +56,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(CollectionId.Users, profile.name),
+          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
           [],
           [],
           profile.sub,
@@ -85,6 +85,7 @@ export const AuthenticationOptions: AuthOptions = {
         CollectionId.Users,
         new ObjectId(user.id)
       );
+
       return session;
     },
 
@@ -94,19 +95,30 @@ export const AuthenticationOptions: AuthOptions = {
 
     async signIn({ user }) {
       Analytics.signIn(user.name ?? "Unknown User");
-      ResendUtils.createContact(user);
+      new ResendUtils().createContact(user);
 
-      const typedUser = user as User;
+      let typedUser = user as Partial<User>;
       if (!typedUser.slug) {
         console.log("User is incomplete, filling in missing fields");
-        // User is incomplete, fill in the missing fields
-        typedUser.name = typedUser.name ?? typedUser.email?.split("@")[0];
-        typedUser.image = typedUser.image ?? "https://4026.org/user.jpg";
-        typedUser.slug = await GenerateSlug(CollectionId.Users, typedUser.name!);
-        typedUser.teams = [];
-        typedUser.owner = [];
 
-        console.log("Updating user with missing fields", typedUser);
+        const name = typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
+        
+        // User is incomplete, fill in the missing fields
+        typedUser = {
+          _id: typedUser._id ?? new ObjectId(typedUser.id),
+          name,
+          image: typedUser.image ?? "https://4026.org/user.jpg",
+          slug: await GenerateSlug(await getDatabase(), CollectionId.Users, name),
+          teams: typedUser.teams ?? [],
+          owner: typedUser.owner ?? [],
+          slackId: typedUser.slackId ?? "",
+          onboardingComplete: typedUser.onboardingComplete ?? false,
+          admin: typedUser.admin ?? false,
+          xp: typedUser.xp ?? 0,
+          level: typedUser.level ?? 0,
+          ...typedUser,
+        } as User;
+
         await (await db).updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), typedUser);
       }
 

@@ -11,12 +11,12 @@ import PicklistScreen from "@/components/stats/Picklist";
 import { FaSync } from "react-icons/fa";
 import { TimeString } from "@/lib/client/FormatTime";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { team } from "slack";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import StatsPage, { StatsPageProps } from "@/components/stats/StatsPage";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
 export default function Stats(props: StatsPageProps) {
   return <StatsPage {...props} />;
@@ -24,22 +24,26 @@ export default function Stats(props: StatsPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const url = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 3);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
   const reports = await db.findObjects<Report>(CollectionId.Reports, {
-    match: { $in: url.competition?.matches },
+    match: { $in: resolved.competition?.matches },
     submitted: true,
   });
   
-  const pitReports = await db.findObjects<Pitreport>(CollectionId.Pitreports, {
-    _id: { $in: url.competition?.pitReports },
+  const pitReports = await db.findObjects<Pitreport>(CollectionId.PitReports, {
+    _id: { $in: resolved.competition?.pitReports },
   });
 
   const subjectiveReports = await db.findObjects<SubjectiveReport>(CollectionId.SubjectiveReports, {
-    match: { $in: url.competition?.matches },
+    match: { $in: resolved.competition?.matches },
   });
 
-  const picklists = await db.findObjectById<DbPicklist>(CollectionId.Picklists, new ObjectId(url.competition?.picklist));
-  console.log("Found picklists:", url.competition?.picklist, picklists);
+  const picklists = await db.findObjectById<DbPicklist>(CollectionId.Picklists, new ObjectId(resolved.competition?.picklist));
+  console.log("Found picklists:", resolved.competition?.picklist, picklists);
 
   return {
     props: {
@@ -47,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       pitReports: SerializeDatabaseObjects(pitReports),
       subjectiveReports: SerializeDatabaseObjects(subjectiveReports),
       picklists: SerializeDatabaseObject(picklists),
-      competition: url.competition,
+      competition: resolved.competition,
     },
   };
 };
