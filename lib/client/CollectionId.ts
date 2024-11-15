@@ -8,7 +8,7 @@ enum CollectionId {
   Accounts = "accounts",
   Sessions = "sessions",
   Forms = "Forms",
-  Pitreports = "Pitreports",
+  PitReports = "Pitreports",
   Picklists = "Picklists",
   SubjectiveReports = "SubjectiveReports",
   SlackInstallations = "SlackInstallations",

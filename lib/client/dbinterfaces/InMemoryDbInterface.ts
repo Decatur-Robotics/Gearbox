@@ -3,6 +3,30 @@ import CollectionId from "@/lib/client/CollectionId";
 import DbInterface from "@/lib/client/dbinterfaces/DbInterface";
 import { MemoryDb } from "minimongo";
 
+/**
+ * Remove undefined values or EJSON will convert them to null
+ */
+function removeUndefinedValues(obj: { [key: string]: any }): { [key: string]: any } {
+  const newObj = { ...obj };
+
+  for (const key in newObj) {
+    if (newObj[key] === undefined) {
+      delete newObj[key];
+    } else if (Array.isArray(newObj[key])) {
+      newObj[key] = newObj[key].map((item: any) => {
+        if (typeof item === "object") {
+          return removeUndefinedValues(item);
+        }
+        return item;
+      });
+    } else if (newObj[key] !== undefined && !(newObj[key] instanceof ObjectId) && newObj[key] !== null && typeof newObj[key] === "object") {
+      newObj[key] = removeUndefinedValues(newObj[key]);
+    }
+  }
+
+  return newObj;
+}
+
 function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): { [key: string]: any } {
   const newObj = { ...obj };
 
@@ -10,9 +34,7 @@ function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): 
     if (idsToString && key === "_id") {
       newObj["_id"] = newObj._id.$oid;
     } else if (!idsToString && key === "_id") {
-      newObj._id = new ObjectId(newObj._id);
-    } else if (typeof newObj[key] === "object") {
-      newObj[key] = replaceOidOperator(newObj[key], idsToString);
+      newObj._id = new ObjectId(newObj._id.toString());
     } else if (Array.isArray(newObj[key])) {
       newObj[key] = newObj[key].map((item: any) => {
         if (typeof item === "object") {
@@ -20,14 +42,20 @@ function replaceOidOperator(obj: { [key: string]: any }, idsToString: boolean): 
         }
         return item;
       });
+    } else if (newObj[key] !== undefined && !(newObj[key] instanceof ObjectId) && newObj[key] !== null && typeof newObj[key] === "object") {
+      newObj[key] = replaceOidOperator(newObj[key], idsToString);
     }
   }
 
   return newObj;
 }
 
-function serialize(obj: any): any {
-  return replaceOidOperator(EJSON.serialize(obj), true);
+/**
+ * @param removeUndefined pass false if you're serializing a query where undefined values are important 
+ * (this is most of the time that you're serializing a query)
+ */
+function serialize(obj: any, removeUndefined: boolean = true): any {
+  return replaceOidOperator(EJSON.serialize(removeUndefined ? removeUndefinedValues(obj) : obj), true);
 }
 
 function deserialize(obj: any): any {
@@ -70,7 +98,10 @@ export default class InMemoryDbInterface implements DbInterface {
 
   addObject<Type extends Document>(collection: CollectionId, object: any): Promise<Type>
   {
-    return deserialize(this.backingDb.collections[collection].upsert(serialize(object)));
+    if (!object._id)
+      object._id = new ObjectId();
+
+    return this.backingDb.collections[collection].upsert(serialize(object)).then(deserialize);
   }
 
   deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>
@@ -91,26 +122,33 @@ export default class InMemoryDbInterface implements DbInterface {
     })
   }
 
-  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined | null>
+  findObjectById<Type extends Document>(collection: CollectionId, id: ObjectId): Promise<Type | undefined>
   {
     return this.findObject(collection, { _id: id });
   }
 
-  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined | null>
+  findObject<Type extends Document>(collection: CollectionId, query: object): Promise<Type | undefined>
   {
-    return this.backingDb.collections[collection].findOne(serialize(query)).then(deserialize);
+    return this.backingDb.collections[collection].findOne(serialize(query, false)).then(deserialize).then((obj: Type) => {
+      if (Object.keys(obj).length === 0)
+      {
+        return undefined;
+      }
+
+      return obj;
+    });
   }
 
   findObjects<Type extends Document>(collection: CollectionId, query: object): Promise<Type[]>
   {
-    return this.backingDb.collections[collection].find(serialize(query)).fetch().then((res: { [index: string]: object }) => {
+    return this.backingDb.collections[collection].find(serialize(query, false)).fetch().then((res: { [index: string]: object }) => {
       return Object.values(res).map(deserialize);
     });
   }
 
   countObjects(collection: CollectionId, query: object): Promise<number | undefined>
   {
-    return (this.backingDb.collections[collection].find(EJSON.serialize(query)).fetch() as Promise<unknown>)
+    return (this.backingDb.collections[collection].find(serialize(query, false)).fetch() as Promise<unknown>)
               .then((objects) => {
                 return Object.keys(objects as any).length;
               });

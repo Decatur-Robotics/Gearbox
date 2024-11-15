@@ -2,10 +2,10 @@ import {
   Db,
   MongoClient,
   MongoClientOptions,
-  ObjectId,
-  UpdateResult,
 } from "mongodb";
+import { ObjectId } from "bson";
 import CollectionId from "./client/CollectionId";
+import DbInterface from "./client/dbinterfaces/DbInterface";
 
 if (!process.env.MONGODB_URI) {
   // Necessary to allow connections from files running outside of Next
@@ -42,7 +42,7 @@ export async function getDatabase(): Promise<MongoDBInterface> {
   return global.interface;
 }
 
-export class MongoDBInterface {
+export class MongoDBInterface implements DbInterface {
   promise: Promise<MongoClient> | undefined;
   client: MongoClient | undefined;
   db: Db | undefined;
@@ -84,10 +84,10 @@ export class MongoDBInterface {
     collection: CollectionId,
     id: ObjectId,
     newValues: Partial<Type> | { [key: string]: any }
-  ): Promise<UpdateResult<Document> | undefined> {
+  ) {
     var query = { _id: id };
     var updated = { $set: newValues };
-    return this?.db
+    this?.db
       ?.collection(collection)
       .updateOne(query, updated);
   }
@@ -96,8 +96,7 @@ export class MongoDBInterface {
     collection: CollectionId,
     id: ObjectId
   ): Promise<Type> {
-    var query = { _id: id };
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
+    return (await this?.db?.collection(collection).findOne({ _id: id })) as Type;
   }
 
   async findObject<Type>(

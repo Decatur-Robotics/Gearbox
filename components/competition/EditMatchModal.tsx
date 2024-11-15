@@ -1,8 +1,8 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { Competition, Match, Report, User } from "@/lib/Types";
 import { ChangeEvent } from "react";
 
-const api = new ClientAPI("gearboxiscool")
+const api = new ClientApi();
 
 export default function EditMatchModal(props: { 
     close: () => void,
@@ -29,7 +29,7 @@ export default function EditMatchModal(props: {
     if (!userId || !report || !report._id) return;
 
     console.log(`Changing scouter for report ${report._id} to ${userId}`);
-    api.changeScouterForReport(report._id, userId, comp?._id ?? "").then(loadReports);
+    api.changeScouterForReport(report._id, userId).then(loadReports);
   }
 
   function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
@@ -39,7 +39,7 @@ export default function EditMatchModal(props: {
     if (!userId || !props.match?._id) return;
 
     console.log(`Changing subjective scouter for match ${props.match?._id} to ${userId}`);
-    api.setSubjectiveScouterForMatch(props.match?._id, userId, comp?._id ?? "").then(loadMatches);
+    api.setSubjectiveScouterForMatch(props.match?._id, userId).then(loadMatches);
   }
 
   return (

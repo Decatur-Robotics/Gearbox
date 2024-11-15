@@ -5,7 +5,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { BiMenu, BiPlus, BiHome, BiSolidPhone } from "react-icons/bi";
 import { IoSunny, IoMoon, IoCloudOffline } from "react-icons/io5";
 import { BsGearFill } from "react-icons/bs";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import Footer from "./Footer";
 import { FaDiscord, FaSearch } from "react-icons/fa";
 import useCheckMobile from "@/lib/client/useCheckMobile";
@@ -18,7 +18,7 @@ import useIsOnline from "@/lib/client/useIsOnline";
 import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type ContainerProps = {
   children: ReactNode;
@@ -111,7 +111,9 @@ export default function Container(props: ContainerProps) {
       }
       
       for (const season of selectedTeam?.seasons) {
-        newSeasons.push(await api.findSeasonById(season));
+        const seasonObj = await api.findSeasonById(season).catch(() => undefined);
+        if (seasonObj)
+          newSeasons.push(seasonObj);
       }
 
       setSelectedTeamSeasons(newSeasons);
@@ -317,7 +319,7 @@ export default function Container(props: ContainerProps) {
                         "w-16 h-16 btn btn-ghost " +
                         (selected ? "border-2 border-accent" : "border-2")
                       }
-                      key={team._id}
+                      key={team._id.toString()}
                       onClick={() => {
                         setSelectedTeamIndex(index);
                       }}
