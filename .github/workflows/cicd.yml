@@ -69,5 +69,8 @@ jobs:
           docker load --input /tmp/gearbox.tar
           docker image ls -a
 
+      - name: Sign in to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u decatur-robotics --password-stdin
+
       - name: Push to GHCR
         run: docker push ghcr.io/decatur-robotics/gearbox:latest
