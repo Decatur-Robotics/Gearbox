@@ -70,4 +70,4 @@ jobs:
           docker image ls -a
 
       - name: Push to GHCR
-        run: docker push ghcr.io/Decatur-Robotics/gearbox:latest
+        run: docker push ghcr.io/decatur-robotics/gearbox:latest
