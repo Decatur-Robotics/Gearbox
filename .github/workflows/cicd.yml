@@ -68,3 +68,6 @@ jobs:
         run: |
           docker load --input /tmp/gearbox.tar
           docker image ls -a
+
+      - name: Push to GHCR
+        run: docker push ghcr.io/Decatur-Robotics/gearbox:latest
