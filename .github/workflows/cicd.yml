@@ -22,7 +22,7 @@ jobs:
       - name: Build and export
         uses: docker/build-push-action@v6
         with:
-          tags: gearbox:latest
+          tags: ghcr.io/decatur-robotics/gearbox:latest
           outputs: type=docker,dest=/tmp/gearbox.tar
 
       - name: Upload artifact
@@ -68,6 +68,9 @@ jobs:
         run: |
           docker load --input /tmp/gearbox.tar
           docker image ls -a
+
+      - name: Sign in to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u decatur-robotics --password-stdin
 
       - name: Push to GHCR
         run: docker push ghcr.io/decatur-robotics/gearbox:latest
