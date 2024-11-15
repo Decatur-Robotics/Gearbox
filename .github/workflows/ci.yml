@@ -15,22 +15,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build and export
+        uses: docker/build-push-action@v6
         with:
-          node-version: '20'
-      - name: Build Docker Image
-        run: npm run docker-build
+          tags: gearbox:latest
+          outputs: type=docker,dest=/tmp/gearbox.tar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gearbox
+          path: /tmp/gearbox.tar
+
   unit_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20'
+
       - name: Install dependencies
         run: npm install
+
       - name: Unit Tests
         run: npm run test

@@ -9,7 +9,7 @@ import Loading from "../Loading";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
 const api = new ClientApi();
-awd
+
 export default function DownloadModal(props: { 
     open: boolean, 
     close: () => void, 
