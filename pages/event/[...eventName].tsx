@@ -5,12 +5,12 @@ import Container from "@/components/Container";
 import { DateString } from "@/lib/client/FormatTime";
 import { Statbotics } from "@/lib/Statbotics";
 import { useEffect, useRef, useState } from "react";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { FaX } from "react-icons/fa6";
 import { start } from "repl";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function PublicEvent() {
   const { session, status } = useCurrentSession();

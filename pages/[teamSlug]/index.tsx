@@ -5,7 +5,7 @@ import UrlResolver, {
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { Competition, League, Season, Team, User } from "@/lib/Types";
 import Container from "@/components/Container";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -14,7 +14,7 @@ import Link from "next/link";
 import { MdOutlineOpenInNew, MdOutlinePersonRemove } from "react-icons/md";
 import { getDatabase } from "@/lib/MongoDB";
 import CollectionId from "@/lib/client/CollectionId";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import {
@@ -35,8 +35,10 @@ import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
 import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
+import { redirect } from 'next/dist/server/api-utils';
+import { makeObjSerializeable } from '../../lib/client/ClientUtils';
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type TeamPageProps = {
   team: Team | undefined;
@@ -120,7 +122,9 @@ function Roster(props: TeamPageProps) {
       setLoadingRequests(true);
       var newData: User[] = [];
       for (const i in team?.requests) {
-        newData.push(await api.findUserById(team?.requests[Number(i)]));
+        const user = await api.findUserById(team?.requests[Number(i)]);
+        if (user)
+          newData.push(user);
       }
       setRequests(newData);
       setLoadingRequests(false);
@@ -130,7 +134,7 @@ function Roster(props: TeamPageProps) {
   }, []);
 
   const handleTeamRequest = async (userId: string, accept: boolean) => {
-    await api.handleRequest(accept, userId as string, team?._id as string);
+    await api.handleRequest(accept, userId as string, team?._id.toString() ?? "");
 
     const reqClone = structuredClone(requests);
     const userIndex = reqClone.findIndex((user) => userId === user._id);
@@ -155,7 +159,7 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ scouters }, team?._id);
+    await api.updateTeam({ scouters }, team?._id.toString()!);
     setTeam(teamClone);
   };
 
@@ -171,7 +175,7 @@ function Roster(props: TeamPageProps) {
       scouters?.push(userId);
     }
 
-    await api.updateTeam({ subjectiveScouters: scouters }, team?._id);
+    await api.updateTeam({ subjectiveScouters: scouters }, team?._id.toString()!);
     setTeam(teamClone);
   };
 
@@ -184,7 +188,7 @@ function Roster(props: TeamPageProps) {
       owners?.push(userId);
     }
 
-    await api.updateTeam({ owners }, team?._id);
+    await api.updateTeam({ owners }, team?._id.toString()!);
     setTeam(teamClone);
   };
 
@@ -193,7 +197,7 @@ function Roster(props: TeamPageProps) {
       return;
     }
     
-    const { team: newTeam } = await api.removeUserFromTeam(userId, team?._id as string);
+    const { team: newTeam } = await api.removeUserFromTeam(userId, team?._id.toString() ?? "");
     setTeam(newTeam);
     setUsers(users.filter((user) => user._id !== userId));
   };
@@ -350,7 +354,7 @@ function Settings(props: TeamPageProps) {
       return;
     }
 
-    await api.updateTeam({ name: teamName }, props.team?._id);
+    await api.updateTeam({ name: teamName }, props.team?._id.toString()!);
     location.reload();
   };
 
@@ -491,7 +495,10 @@ export default function TeamIndex(props: TeamPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 1);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
 
   const seasonIds = resolved.team?.seasons.map(
     (seasonId) => new ObjectId(seasonId)
@@ -526,7 +533,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       team: resolved.team,
-      users: users,
+      users: makeObjSerializeable(users),
       currentCompetition: SerializeDatabaseObject(comp),
       currentSeason: SerializeDatabaseObject(currentSeason),
       pastSeasons: SerializeDatabaseObjects(seasons),
