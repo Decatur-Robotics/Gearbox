@@ -1,12 +1,13 @@
 import Card from "@/components/Card";
 import Container from "@/components/Container";
 import Loading from "@/components/Loading";
-import ClientAPI from "@/lib/client/ClientAPI";
 import { useEffect, useState } from "react";
 import { Chart } from "react-chartjs-2";
 import "chart.js/auto"; // Necessary to make react-chartjs-2 work
+import ClientApi from "@/lib/api/ClientApi";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function UserAnalytics() {
   const [signInDates, setSignInDates] = useState<{ [team: string]: { date: Date, count: number }[] }>();
@@ -61,17 +62,29 @@ export default function UserAnalytics() {
               </div>
               <div className="mt-8 flex flex-col gap-4">
                 { signInDates
-                    ? Object.entries(signInDates).map(([label, dates]) => 
-                        <div key={label}>
-                          <h1 className="text-2xl">{label}</h1>
-                          <div className="h-1/4">
-                            <Chart type="bar" data={{
+                    ? Object.entries(signInDates).sort((a, b) => {
+                      if (a[0] === "All")
+                        return -1;
+                      if (b[0] === "All")
+                        return 1;
+                      return +a[0] - +b[0];
+                    }).map(([label, dates]) => 
+                      <div key={label}>
+                        <h1 className="text-2xl">{label}</h1>
+                        <div className="h-1/4">
+                          <Chart 
+                            type="bar" 
+                            data={{
                               datasets: [{
                                 data: dates.map(date => ({ x: date.date, y: date.count }))
-                              }]
-                            }} />
-                          </div>
-                        </div>)
+                              }],
+                            }}
+                            options={{
+                              maintainAspectRatio: false
+                            }}
+                          />
+                        </div>
+                      </div>)
                     : <Loading />
                 }
               </div>

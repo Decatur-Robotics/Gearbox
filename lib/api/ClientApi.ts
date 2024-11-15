@@ -1250,7 +1250,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       }))
     );
 
-    userAnalytcs = ApiLib.createRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
+    getUserAnalyticsData = ApiLib.createRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
       isAuthorized: AccessLevels.IfDeveloper,
       handler: async (req, res, { db: dbPromise }, authData, args) => {
         const db = await dbPromise;
@@ -1263,10 +1263,10 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         const signInDatesByTeam: { [team: string]: LinkedList<{ date: Date, count: number }> } = teams.reduce((acc, team) => {
           acc[team._id!.toString()] = new LinkedList<{ date: Date, count: number }>();
           return acc;
-        }, { all: new LinkedList() } as { [team: string]: LinkedList<{ date: Date, count: number }> });
+        }, { All: new LinkedList() } as { [team: string]: LinkedList<{ date: Date, count: number }> });
   
         for (const user of users) {
-          for (const team of [...user.teams, "all"]) {
+          for (const team of [...user.teams, "All"]) {
             const signInDates = signInDatesByTeam[team];
   
             // Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
@@ -1292,7 +1292,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   
         // We mixed up the types for this object in Criterion B
         const responseObj: { [team: string]: { date: Date, count: number }[] } = {};
-        for (const obj of [...teams, "all"]) {
+        for (const obj of [...teams, "All"]) {
           const id = typeof obj === "object" ? obj._id!.toString() : obj;
           const label = typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
   
