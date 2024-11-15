@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import {
   AllianceColor,
   Match,
@@ -47,7 +47,7 @@ import InsightsAndSettingsCard from "./InsightsAndSettingsCard";
 import MatchScheduleCard from "./MatchScheduleCard";
 import PitScoutingCard from "./PitScoutingCard";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function CompetitionIndex(props: {
   team: Team | undefined,
@@ -121,7 +121,7 @@ export default function CompetitionIndex(props: {
 
   const [ranking, setRanking] = useState<{
     place: number | string;
-    max: number;
+    max: number | string;
   } | null>(null);
 
   const [matchBeingEdited, setMatchBeingEdited] = useState<string | undefined>();
@@ -169,7 +169,7 @@ export default function CompetitionIndex(props: {
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
-      .regeneratePitReports(comp?.tbaId, comp?._id)
+      .regeneratePitReports(comp?._id!)
       .then(({ pitReports }: { pitReports: string[] }) => {
         setAttemptedRegeneratingPitReports(true);
         setLoadingPitreports(true);
@@ -181,7 +181,7 @@ export default function CompetitionIndex(props: {
 
         Promise.all(pitReportPromises).then((reports) => {
           console.log("Got all pit reports");
-          setPitreports(reports);
+          setPitreports(reports.filter((r) => r !== undefined) as Pitreport[]);
           setLoadingPitreports(false);
         });
       });
@@ -208,7 +208,7 @@ export default function CompetitionIndex(props: {
       setLoadingMatches(true);
     
     window.location.hash = "";
-    let matches: Match[] = await api.allCompetitionMatches(comp?._id, fallbackData?.matches) ?? fallbackData?.matches;
+    let matches: Match[] = await api.allCompetitionMatches(comp?._id!) ?? fallbackData?.matches;
     if (matches.length === 0)
       matches = fallbackData?.matches ?? [];
 
@@ -225,7 +225,7 @@ export default function CompetitionIndex(props: {
 
     setMatches(matches);
 
-    api.getSubjectiveReportsFromMatches(comp?._id ?? "", matches, fallbackData?.subjectiveReports).then((reports) => {
+    api.getSubjectiveReportsFromMatches(comp?._id ?? "", matches).then((reports) => {
       setSubjectiveReports(reports);
 
       const newReportIds: { [key: string]: SubjectiveReport } = {};
@@ -262,10 +262,9 @@ export default function CompetitionIndex(props: {
       setLoadingReports(true);
 
     let newReports: Report[] = await api.competitionReports(
-      comp?._id,
+      comp?._id!,
       false,
-      false,
-      fallbackData?.quantReports
+      false
     );
 
     if (!newReports || newReports.length === 0)
@@ -306,7 +305,7 @@ export default function CompetitionIndex(props: {
       const newUsersById: { [key: string]: User } = {};
       const promises: Promise<any>[] = [];
       for (const userId of team.users) {
-        promises.push(api.findUserById(userId, fallbackData?.users[userId])
+        promises.push(api.findUserById(userId)
           .then((user) => {
             if (user) {
               newUsersById[userId] = user;
@@ -369,7 +368,7 @@ export default function CompetitionIndex(props: {
 
     // Load picklists
     if (comp?._id)
-      api.getPicklist(comp?._id).then(setPicklists).catch(console.error);
+      api.getPicklistFromComp(comp?._id).then(setPicklists).catch(console.error);
 
     // Resync pit reports if none are present
     if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
@@ -379,9 +378,9 @@ export default function CompetitionIndex(props: {
 
   const assignScouters = async () => {
     setAssigningMatches(true);
-    const res = await api.assignScouters(team?._id, comp?._id, true, props.fallbackData);
+    const res = await api.assignScouters(comp?._id!, true);
 
-    if (props.fallbackData && res === props.fallbackData) {
+    if (props.fallbackData && (res as any) === props.fallbackData) {
       location.reload();
       return;
     }
@@ -403,7 +402,7 @@ export default function CompetitionIndex(props: {
     alert("Reloading competition...");
 
     setUpdatingComp("Checking for Updates...");
-    const res = await api.reloadCompetition(comp?._id, comp?.tbaId);
+    const res = await api.reloadCompetition(comp?._id!);
     if (res.result === "success") {
       window.location.reload();
     } else {
@@ -414,8 +413,9 @@ export default function CompetitionIndex(props: {
   const createMatch = async () => {
     try {
       await api.createMatch(
-        comp?._id,
+        comp?._id!,
         Number(matchNumber),
+        0,
         MatchType.Qualifying,
         blueAlliance as number[],
         redAlliance as number[]
@@ -475,18 +475,19 @@ export default function CompetitionIndex(props: {
   const exportAsCsv = async () => {
     setExportPending(true);
 
-    const res = await api.exportCompAsCsv(comp?._id).catch((e) => {
+    const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
       console.error(e);
+      return { csv: undefined };
     });
+
+    if (!res) {
+      console.error("failed to export");
+    }
 
     if (res.csv) {
       download(`${comp?.name ?? "Competition"}.csv`, res.csv, "text/csv");
     } else {
       console.error("No CSV data returned from server");
-
-      alert(
-        res.error ?? "An error occurred while exporting the competition data"
-      );
     }
 
     setExportPending(false);
@@ -516,7 +517,7 @@ export default function CompetitionIndex(props: {
     
   function remindUserOnSlack(slackId: string) {
     if (slackId && session?.user?.slackId && team?._id && isManager && confirm("Remind scouter on Slack?"))
-      api.remindSlack(slackId, session?.user?.slackId, team._id);
+      api.remindSlack(team._id.toString(), slackId);
   }
 
   function addTeam() {
@@ -533,8 +534,8 @@ export default function CompetitionIndex(props: {
     if (!comp?.tbaId || !comp?.name || !comp?._id) return;
 
     let tbaId = newCompTbaId;
-    const autoFillData = await api.getCompetitionAutofillData(tbaId ?? "");
-    if (!autoFillData.name && !confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
+    const autoFillData = await api.competitionAutofill(tbaId ?? "");
+    if (!autoFillData?.name && !confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`))
         return;
 
     await api.updateCompNameAndTbaId(comp?._id, newCompName ?? "Unnamed", tbaId ?? NotLinkedToTba);

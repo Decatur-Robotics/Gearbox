@@ -1,7 +1,7 @@
 import Container from "@/components/Container";
 import Loading from "@/components/Loading";
 import { League, Season, Team } from "@/lib/Types";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
@@ -11,7 +11,7 @@ import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
-const api = new ClientAPI("gearboxiscool")
+const api = new ClientApi();
 
 export default function Onboarding() {
   const { session, status } = useCurrentSession();
@@ -68,15 +68,22 @@ export default function Onboarding() {
     console.log("Changed team # to", number);
     setTeamNumber(number);
 
-    if (!number || isNaN(number)) setTeam(undefined);
+    if (!number || isNaN(number)) {
+      console.log("Resetting team");
+      setTeam(undefined);
+    }
 
     const team = await api.findTeamByNumberAndLeague(number, league ?? League.FRC)
-                          .then(team => team.name ? team : api.getTeamAutofillData(number, league).catch(() => ({
-                            number,
-                            name: "",
-                          })));
+      .then(team => {
+        if (team?.name) return team;
 
-    setTeam(team);
+        return api.getTeamAutofillData(number, league ?? League.FRC);
+      }) ?? { number, name: "" };
+
+    setTeam({
+      ...team,
+      _id: (team as any)._id?.toString(),
+    });
     setJoinRequestStatus("requests" in team && (team.requests?.includes(session?.user?._id ?? "") ?? false) 
       ? JoinRequestStatus.Requested : JoinRequestStatus.NotRequested);
   }
@@ -85,7 +92,7 @@ export default function Onboarding() {
     if (!session?.user?._id || !teamNumber) return;
 
     setJoinRequestStatus(JoinRequestStatus.Requested);
-    await api.requestToJoinTeam(session?.user?._id, team?._id);
+    await api.requestToJoinTeam(team?._id!);
   }
 
   async function updateTeamRequestStatus() {
@@ -97,6 +104,11 @@ export default function Onboarding() {
     console.log("Checking team request status for", teamNumber, league);
 
     const team = await api.findTeamByNumberAndLeague(teamNumber, league);
+
+    if (!team) {
+      console.error("No team found for", teamNumber, league);
+      return;
+    }
 
     const requestPending = team.requests?.includes(session?.user?._id ?? "") ?? false;
     if (joinRequestStatus === JoinRequestStatus.Requested && (team?.users?.includes(session?.user?._id ?? "") ?? false))
@@ -120,18 +132,27 @@ export default function Onboarding() {
     }
 
     if (!session?.user?._id || !teamNumber || !league) {
-      console.error("Missing required fields to create team");
+      setErrorMsg("Missing required fields to create team");
       return;
     }
 
-    setTeam(await api.createTeam(team?.name, teamNumber, session?.user?._id, team?.tbaId ?? NotLinkedToTba, league));
+    const newTeam = await api.createTeam(team?.name, team?.tbaId ?? NotLinkedToTba, teamNumber, league);
+    if (!newTeam) {
+      setErrorMsg("Failed to create team");
+      return;
+    }
+
+    setTeam({
+      ...newTeam,
+      _id: (newTeam as any)._id?.toString(),
+    });
     setJoinRequestStatus(JoinRequestStatus.CreatedTeam);
   }
 
   async function createSeason() {
     if (!session?.user?._id || !team?._id) return;
 
-    setSeason(await api.createSeason(game.name, game.year, gameId, team?._id));
+    setSeason(await api.createSeason(game.name, game.year, team?._id!, gameId));
     setSeasonCreated(true);
   }
 
@@ -173,8 +194,8 @@ export default function Onboarding() {
                         { team &&
                             <div>
                               <div className="text-lg mt-2">
-                                Team <span className="text-accent">{teamNumber}</span> 
-                                {" "}- {" "}
+                                Team <span className="text-accent">{team.number}</span> 
+                                {" "}-{" "}
                                 {team.name 
                                   ? <span className="text-accent">{team.name}</span> 
                                   : <><span className="text-secondary">Unknown Team</span> (you&apos;ll enter your team name on the next screen)</>

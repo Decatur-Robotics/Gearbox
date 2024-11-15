@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Formidable } from "formidable";
 import * as fs from "fs";
-import { API } from "@/lib/API";
 
 export const config = {
   api: {
@@ -15,9 +14,6 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      if (req.headers[API.GearboxHeader]?.toString() !== process.env.API_KEY) {
-        res.send({ status: 400, message: "Invalid Request" });
-      }
       const form: any = await new Promise((resolve, reject) => {
         const form = new Formidable();
         form.parse(req, (err: any, fields: any, files: any) => {
@@ -33,7 +29,7 @@ export default async function handler(
       console.log(process.env.IMAGE_UPLOAD_DIR + filename);
       console.log(process.env.IMAGE_UPLOAD_DIR);
 
-      var tempFile = fs.readFileSync(file.filepath);
+      var tempFile = fs.readFileSync(file.filepath, { encoding: "base64" });
       fs.writeFile(process.env.IMAGE_UPLOAD_DIR + filename, tempFile, (err) => {
         res.send({ status: 200, filename: filename });
       });

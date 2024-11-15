@@ -3,12 +3,9 @@
  * @remarks
  * This is a general collection of commonly used functions
  */
-
-import { RedirectType } from "next/navigation";
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
-import { getDatabase } from "./MongoDB";
-import { redirect } from 'next/dist/server/api-utils';
+import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Redirect } from "next";
 
 /**
@@ -24,22 +21,21 @@ import { Redirect } from "next";
  * @returns - A Unique SLUG
  */
 export async function GenerateSlug(
+  db: DbInterface,
   collection: CollectionId,
   name: string,
   index: number = 0,
 ): Promise<string> {
-  const db = getDatabase();
-
-  var finalName;
+  let finalName;
   if (index === 0) {
     finalName = removeWhitespaceAndMakeLowerCase(name);
   } else {
     finalName = name + index.toString();
   }
 
-  var result = await (await db).findObject(collection, { slug: finalName });
+  const result = await db.findObject(collection, { slug: finalName });
   if (result) {
-    return GenerateSlug(collection, index === 0 ? finalName : name, index + 1);
+    return GenerateSlug(db, collection, index === 0 ? finalName : name, index + 1);
   }
 
   return finalName;
@@ -52,4 +48,8 @@ export function createRedirect(destination: string, query: Record<string, any> =
       permanent: false,
     }
   };
+}
+
+export function isDeveloper(email: string | undefined) {
+  return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(email ?? "");
 }

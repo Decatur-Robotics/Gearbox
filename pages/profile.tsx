@@ -1,7 +1,7 @@
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState } from "react";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { Team } from "@/lib/Types";
 import Container from "@/components/Container";
 import Link from "next/link";
@@ -20,7 +20,7 @@ import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
 import { signOut } from "next-auth/react";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function Profile(props: { teamList: Team[] }) {
   const { session, status } = useCurrentSession();
@@ -42,7 +42,9 @@ export default function Profile(props: { teamList: Team[] }) {
       setLoadingTeams(true);
       var newTeams: Team[] = [];
       for (const id in user?.teams) {
-        newTeams.push(await api.findTeamById(user?.teams[Number(id)]));
+        const team = await api.findTeamById(user?.teams[Number(id)]);
+        if (team)
+          newTeams.push(team);
       }
       setTeams(newTeams);
       setLoadingTeams(false);
@@ -55,7 +57,7 @@ export default function Profile(props: { teamList: Team[] }) {
 
   const requestTeam = async (teamId: string, teamNumber: number) => {
     setLoadingRequest(true);
-    await api.requestToJoinTeam(user?._id, teamId);
+    await api.requestToJoinTeam(teamId);
     setLoadingRequest(false);
     setSentRequest(true);
 
@@ -116,7 +118,7 @@ export default function Profile(props: { teamList: Team[] }) {
                   <Link
                     href={"/" + team.slug}
                     className="w-full"
-                    key={team._id}
+                    key={team._id.toString()}
                   >
                     <TeamCard team={team} />
                   </Link>
@@ -156,7 +158,7 @@ export default function Profile(props: { teamList: Team[] }) {
                               onClick={() => {
                                 requestTeam(String(team._id), team.number);
                               }}
-                              key={team._id}
+                              key={team._id.toString()}
                             >
                               <h1 className="max-sm:text-sm h-10">
                                 {team.tbaId ? "FRC" : "FTC"}{" "}

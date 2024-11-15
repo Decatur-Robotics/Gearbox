@@ -1,6 +1,6 @@
 import CollectionId from "@/lib/client/CollectionId";
 import InMemoryDbInterface from "@/lib/client/dbinterfaces/InMemoryDbInterface";
-import { EJSON, ObjectId } from "bson";
+import { ObjectId } from "bson";
 
 async function getDb() {
   const db = new InMemoryDbInterface();

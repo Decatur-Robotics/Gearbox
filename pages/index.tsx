@@ -5,33 +5,26 @@ import Link from "next/link";
 import { FaCodePullRequest, FaDatabase, FaUserGroup } from "react-icons/fa6";
 import { FaDiscord, FaUser, FaWifi } from "react-icons/fa";
 import { BsGearFill } from "react-icons/bs";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { IoPhonePortrait, IoPhonePortraitOutline } from "react-icons/io5";
 import useIsVisible from "@/lib/client/useIsVisible";
 import SignIn from "./signin";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function Homepage() {
   const { session, status } = useCurrentSession();
-  const [counterData, setCounterData] = useState<{
-    teams: number | null;
-    users: number | null;
-    datapoints: number | null;
-    competitions: number | null;
-  }>({
-    teams: null,
-    users: null,
-    datapoints: null,
-    competitions: null,
-  });
+  const [counterData, setCounterData] = useState<Partial<{
+    teams: number;
+    users: number;
+    datapoints: number;
+    competitions: number;
+  }>>({});
 
   useEffect(() => {
-    if (counterData.teams !== null) return;
+    if (counterData.teams != null) return;
 
-    api.getMainPageCounterData().then((data) => {
-      setCounterData(data);
-    });
+    api.getMainPageCounterData().then(setCounterData);
   });
 
   function formatDataPoint(num: number | null): string {
@@ -151,7 +144,7 @@ export default function Homepage() {
                   <div className="stat-figure text-primary">
                     <FaUserGroup size={30}></FaUserGroup>
                   </div>
-                  {counterData.teams === null ? (
+                  {!counterData.teams ? (
                     <div className="stat-value loading loading-spinner text-primary"></div>
                   ) : (
                     <div className="stat-value text-primary">
@@ -166,7 +159,7 @@ export default function Homepage() {
                     <FaUser size={30}></FaUser>
                   </div>
                   <div className="stat-title">Users</div>
-                  {counterData.teams === null ? (
+                  {!counterData.users ? (
                     <div className="stat-value loading loading-spinner text-secondary"></div>
                   ) : (
                     <div className="stat-value text-secondary">
@@ -181,7 +174,7 @@ export default function Homepage() {
                     <FaDatabase size={30}></FaDatabase>
                   </div>
                   <div className="stat-title">Net Datapoints</div>
-                  {counterData.teams === null ? (
+                  {!counterData.datapoints ? (
                     <div className="stat-value loading loading-spinner text-accent"></div>
                   ) : (
                     <div className="stat-value text-accent">

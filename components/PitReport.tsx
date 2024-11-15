@@ -1,4 +1,4 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { FormLayout, FormElement, BlockElement } from "@/lib/Layout";
 import { AllianceColor, FieldPos, Game, Pitreport, PitReportData } from "@/lib/Types";
@@ -16,7 +16,7 @@ import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 import FieldPositionSelector from "./forms/FieldPositionSelector";
 import { GameId } from "@/lib/client/GameId";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function PitReportForm(props: { pitReport: Pitreport, layout: FormLayout<PitReportData>, compId?: string, 
     usersteamNumber?: number, compName?: string, username?: string, game: Game }) {
@@ -41,7 +41,7 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
     const { _id, ...report } = pitreport;
 
     console.log("Submitting pitreport", report);
-    api.updatePitreport(props.pitReport?._id, {
+    api.updatePitreport(props.pitReport?._id!, {
       ...report,
       submitted: true,
       submitter: session?.user?._id
