@@ -1,12 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+  workflow_call:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
@@ -41,12 +39,3 @@ jobs:
 
       - name: Unit Tests
         run: npm run test
-
-  deploy:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    needs:
-      - build
-      - unit_test
-    uses: ./.github/workflows/cd.yml
-    secrets:
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
