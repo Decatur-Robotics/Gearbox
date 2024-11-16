@@ -16,6 +16,14 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Write file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: test.txt
+          contents: |
+            Hello World!
+          write-mode: overwrite
         
       - name: Build and export
         uses: docker/build-push-action@v6
