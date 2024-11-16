@@ -31,6 +31,7 @@ jobs:
         with:
           tags: ghcr.io/decatur-robotics/gearbox:latest
           outputs: type=docker,dest=/tmp/gearbox.tar
+          context: . # Needed for Docker to find files made during the workflow
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
