@@ -16,3 +16,4 @@ jobs:
     uses: ./.github/workflows/cd.yml
     secrets:
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      TEST_SECRET: ${{ secrets.TEST_SECRET }}
