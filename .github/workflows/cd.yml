@@ -3,7 +3,7 @@ name: CD
 on:
   workflow_call:
     secrets:
-      GHCR_TOKEN:
+      GITHUB_TOKEN:
         required: true
       TEST_SECRET:
         required: true
@@ -38,7 +38,7 @@ jobs:
           docker image ls -a
 
       - name: Sign in to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u decatur-robotics --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u decatur-robotics --password-stdin
 
       - name: Push to GHCR
         run: docker push ghcr.io/decatur-robotics/gearbox:latest
