@@ -3,7 +3,11 @@ name: CD
 on:
   workflow_call:
     secrets:
-      TEST_SECRET:
+      SSL_KEY:
+        required: true
+      SSL_CERT:
+        required: true
+      ENV_FILE:
         required: true
   workflow_dispatch: # Allows manual triggering of the workflow
 
@@ -21,8 +25,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Write file
-        run: echo "${{ secrets.TEST_SECRET }}" > test.txt
+      - name: Write ENV file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Write SSL key
+        run: echo "${{ secrets.SSL_KEY }}" > certs/ssl.key
+
+      - name: Write SSL cert
+        run: echo "${{ secrets.SSL_CERT }}" > certs/ssl.cert
         
       - name: Build and export
         uses: docker/build-push-action@v6
