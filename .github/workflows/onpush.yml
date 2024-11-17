@@ -6,9 +6,6 @@ on:
       - main
   workflow_dispatch: # Allows manual triggering of the workflow
 
-permissions:
-  packages: write
-
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
@@ -18,5 +15,4 @@ jobs:
       - ci
     uses: ./.github/workflows/cd.yml
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TEST_SECRET: ${{ secrets.TEST_SECRET }}

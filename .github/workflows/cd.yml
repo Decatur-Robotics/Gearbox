@@ -3,11 +3,12 @@ name: CD
 on:
   workflow_call:
     secrets:
-      GITHUB_TOKEN:
-        required: true
       TEST_SECRET:
         required: true
   workflow_dispatch: # Allows manual triggering of the workflow
+
+permissions:
+  packages: write
 
 jobs:
   build_and_push:
