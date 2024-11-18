@@ -15,8 +15,32 @@ export default function UserAnalytics() {
   const [maxDaysSinceSignInToBeActive, setMaxDaysSinceSignInToBeActive] = useState<number>(14);
   const [errorMessage, setErrorMessage] = useState<string>();
 
+  function isTeamActive(team: { date: Date, count: number }[]) {
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() - maxDaysSinceSignInToBeActive);
+
+    let usersActive = 0;
+    for (const date of team) {
+      if (date.date >= threshold)
+        usersActive += date.count;
+    }
+
+    return usersActive >= minimumUsersToBeActive
+  }
+
   useEffect(() => {
-    api.getUserAnalyticsData().then(setSignInDates);
+    // Check that this section matches criterion B!
+    api.getUserAnalyticsData()
+      .then((teams) => {
+        for (const team in teams) {
+          for (const date of teams[team]) {
+            date.date = new Date(date.date);
+          }
+        }
+
+        setSignInDates(teams);
+      })
+      .catch(e => setErrorMessage(e));
   }, []);
 
   return (
@@ -70,14 +94,20 @@ export default function UserAnalytics() {
                       return +a[0] - +b[0];
                     }).map(([label, dates]) => 
                       <div key={label}>
-                        <h1 className="text-2xl">{label}</h1>
+                        <h1 className="text-2xl">
+                          {label} -{" "}
+                          {isTeamActive(dates) 
+                            ? <span className="text-success">Active</span>
+                            : <span className="text-error">Inactive</span>
+                          }
+                        </h1>
                         <div className="h-1/4">
                           <Chart 
                             type="bar" 
                             data={{
                               datasets: [{
-                                data: dates.map(date => ({ x: date.date, y: date.count }))
-                              }],
+                                data: dates.reverse().map(date => ({ x: date.date.toDateString(), y: date.count }))
+                              }]
                             }}
                             options={{
                               maintainAspectRatio: false

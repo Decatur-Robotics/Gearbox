@@ -123,7 +123,7 @@ export const AuthenticationOptions: AuthOptions = {
       }
       
       const today = new Date();
-      if ((user as User).lastSignInDate?.toDateString() !== today.toDateString()) {
+      if ((user as User).lastSignInDateTime?.toDateString() !== today.toDateString()) {
         // We use user.id since user._id strangely doesn't exist on user.
         await getDatabase()
           .then(db => db.updateObjectById(CollectionId.Users, new ObjectId(user.id), {

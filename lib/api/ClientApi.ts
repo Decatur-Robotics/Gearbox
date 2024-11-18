@@ -1257,13 +1257,13 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
         const [teams, users] = await Promise.all([
           db.findObjects<Team>(CollectionId.Teams, {}),
-          db.findObjects<User>(CollectionId.Users, { lastSignInDate: { $exists: true } })
+          db.findObjects<User>(CollectionId.Users, { lastSignInDateTime: { $exists: true } })
         ]);
   
-        const signInDatesByTeam: { [team: string]: LinkedList<{ date: Date, count: number }> } = teams.reduce((acc, team) => {
-          acc[team._id!.toString()] = new LinkedList<{ date: Date, count: number }>();
+        const signInDatesByTeam: { [team: string]: LinkedList<{ date: string, count: number }> } = teams.reduce((acc, team) => {
+          acc[team._id!.toString()] = new LinkedList<{ date: string, count: number }>();
           return acc;
-        }, { All: new LinkedList() } as { [team: string]: LinkedList<{ date: Date, count: number }> });
+        }, { All: new LinkedList() } as { [team: string]: LinkedList<{ date: string, count: number }> });
   
         for (const user of users) {
           for (const team of [...user.teams, "All"]) {
@@ -1273,17 +1273,17 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
             for(let node = signInDates.first(); true; node = node.next) {
               if (!node) {
                 // Can't just update signInDates, as that will reference a new object and not change the old one!
-                signInDates.setHead({ date: user.lastSignInDate!, count: 1 });
+                signInDates.setHead({ date: user.lastSignInDateTime!.toDateString(), count: 1 });
                 break;
               }
   
-              if (node && node?.date === user.lastSignInDate) {
+              if (node && node?.date === user.lastSignInDateTime!.toDateString()) {
                 node.count++;
                 break;
               }
   
-              if (!node?.next || user.lastSignInDate! < node.next.date) {
-                signInDates.insertAfter(node!, { date: user.lastSignInDate!, count: 1 });
+              if (!node?.next || new Date(user.lastSignInDateTime!.toDateString())! < new Date(node.next.date)) {
+                signInDates.insertAfter(node!, { date: user.lastSignInDateTime!.toDateString(), count: 1 });
                 break;
               }
             }
@@ -1297,9 +1297,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
           const label = typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
   
           responseObj[label] = signInDatesByTeam[id]
-            .map((node) => ({ date: node.date, count: node.count }));
+            .map((node) => ({ date: new Date(node.date), count: node.count }));
         }
-  
+
         res.status(200).send(responseObj);
       }
     })
