@@ -2,7 +2,7 @@ import { join } from "path";
 import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
-import fs from "fs";
+import fs, { readFileSync } from "fs";
 import { App } from "@slack/bolt";
 import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, ServerResponse, request } from "http";
@@ -18,12 +18,8 @@ const handle = app.getRequestHandler();
 console.log("Constants set");
 
 const httpsOptions = {
-  key: dev
-    ? fs.readFileSync("./certs/localhost-key.pem")
-    : fs.readFileSync("./certs/production-key.pem"),
-  cert: dev
-    ? fs.readFileSync("./certs/localhost.pem")
-    : fs.readFileSync("./certs/production.pem"),
+  key: readFileSync("./certs/key.pem"),
+  cert: readFileSync("./certs/cert.pem"),
 };
 
 console.log("HTTPS options set");
