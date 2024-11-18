@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { Chart } from "react-chartjs-2";
 import "chart.js/auto"; // Necessary to make react-chartjs-2 work
 import ClientApi from "@/lib/api/ClientApi";
-import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 
 const api = new ClientApi();
 
@@ -25,7 +24,7 @@ export default function UserAnalytics() {
         usersActive += date.count;
     }
 
-    return usersActive >= minimumUsersToBeActive
+    return usersActive >= minimumUsersToBeActive;
   }
 
   useEffect(() => {
@@ -36,6 +35,7 @@ export default function UserAnalytics() {
           for (const date of teams[team]) {
             date.date = new Date(date.date);
           }
+          teams[team].reverse();
         }
 
         setSignInDates(teams);
@@ -106,7 +106,7 @@ export default function UserAnalytics() {
                             type="bar" 
                             data={{
                               datasets: [{
-                                data: dates.reverse().map(date => ({ x: date.date.toDateString(), y: date.count }))
+                                data: dates.map(date => ({ x: date.date.toDateString(), y: date.count }))
                               }]
                             }}
                             options={{
