@@ -39,12 +39,7 @@ export default function CreateTeam() {
     }
 
     const findResult = await api.findTeamByNumberAndLeague(Number(team?.number), team.league);
-    if (!findResult) {
-      setError("Failed to check if team already exists. Please try again later.");
-      return;
-    }
-
-    if (findResult._id) {
+    if (findResult?._id) {
       setError("This Team Already Exists");
       return;
     }

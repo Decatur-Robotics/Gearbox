@@ -24,7 +24,7 @@ const httpsOptions = {
 
 console.log("HTTPS options set");
 
-startSlackApp();
+// startSlackApp();
 
 console.log("App preparing...");
 app.prepare().then(() => {
