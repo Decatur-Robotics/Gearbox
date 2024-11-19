@@ -1,12 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+  workflow_call:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
@@ -22,14 +20,8 @@ jobs:
       - name: Build and export
         uses: docker/build-push-action@v6
         with:
-          tags: gearbox:latest
+          tags: ghcr.io/decatur-robotics/gearbox:latest
           outputs: type=docker,dest=/tmp/gearbox.tar
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gearbox
-          path: /tmp/gearbox.tar
 
   unit_test:
     runs-on: ubuntu-latest

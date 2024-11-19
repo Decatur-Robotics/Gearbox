@@ -312,7 +312,6 @@ export namespace TheBlueAlliance {
 
     async loadCompetitionPairings() {
       if (global?.compIdPairs) {
-        console.log("using cache...");
         this.competitionPairings = global.compIdPairs;
       } else {
         console.log("Loading Pairings For Competition Searches...");
