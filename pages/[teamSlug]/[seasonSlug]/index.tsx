@@ -1,4 +1,4 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { Competition, Season, Team } from "@/lib/Types";
@@ -12,9 +12,9 @@ import CollectionId from "@/lib/client/CollectionId";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type SeasonPageProps = {
   team: Team;
@@ -75,7 +75,11 @@ export default function Home(props: SeasonPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 2);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+  
   const team = resolved.team;
   const season = resolved.season;
 

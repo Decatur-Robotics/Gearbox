@@ -6,8 +6,9 @@ import {
 } from "next-auth";
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
-import { Defense, Drivetrain, Motors, SwerveLevel } from "./Enums";
+import { Defense, FrcDrivetrain, Motors, SwerveLevel } from "./Enums";
 import { FormLayoutProps, FormLayout, Badge, PitStatsLayout, StatsLayout } from './Layout';
+import { ObjectId } from "bson";
 
 /**
  * Standard Account Type
@@ -74,7 +75,7 @@ export class FieldPos {
 }
 
 export class Team {
-  _id: string | undefined;
+  _id: ObjectId;
   name: string;
   slug: string | undefined;
   tbaId: string | undefined;
@@ -105,6 +106,7 @@ export class Team {
     seasons: string[] = [],
     slackChannel: string | undefined = undefined
   ) {
+    this._id = new ObjectId();
     this.name = name;
     this.slug = slug;
     this.tbaId = tbaId;
@@ -129,7 +131,7 @@ export abstract class QuantData {
 
   Defense: Defense = Defense.None;
 
-  drivetrain: Drivetrain = Drivetrain.Tank;
+  drivetrain: FrcDrivetrain = FrcDrivetrain.Tank;
 
   comments: string = "";
 }
@@ -192,7 +194,7 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
     this.pitDataType = pitDataType;
 
     this.pitReportLayout = Game.mergePitLayoutWithBaseLayout(pitReportLayout, new pitDataType(), league);
-    this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(quantitativeReportLayout, new quantDataType());
+    this.quantitativeReportLayout = Game.mergeQuantitativeLayoutWithBaseLayout(league, quantitativeReportLayout, new quantDataType());
     this.statsLayout = Game.mergeStatsLayoutWithBaseLayout(statsLayout);
     this.pitStatsLayout = Game.mergePitStatsLayoutWithBaseLayout(pitStatsLayout);
 
@@ -218,10 +220,10 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
 
     finalLayout["Comments"] = ["comments"];
 
-    return FormLayout.fromProps(finalLayout, exampleData);
+    return FormLayout.fromProps(league, finalLayout, exampleData);
   }
   
-  private static mergeQuantitativeLayoutWithBaseLayout<TData extends QuantData>(layout: FormLayoutProps<TData>, exampleData: TData) {
+  private static mergeQuantitativeLayoutWithBaseLayout<TData extends QuantData>(league: League, layout: FormLayoutProps<TData>, exampleData: TData) {
     const finalLayout: typeof layout = {
       "Pre-Match": [{ key: "Presented", label: "Robot Present" }, { key: "AutoStartX", type: "startingPos" }],
     };
@@ -235,7 +237,7 @@ export class Game<TQuantData extends QuantData = QuantData, TPitData extends Pit
     const keys = Object.keys(layout);
     finalLayout[keys[keys.length - 1]]?.push("comments");
 
-    return FormLayout.fromProps(finalLayout, exampleData);
+    return FormLayout.fromProps(league, finalLayout, exampleData);
   }
 
   private static mergeStatsLayoutWithBaseLayout<TPitData extends PitReportData, TQuantData extends QuantData>
@@ -316,7 +318,7 @@ export abstract class PitReportData {
   [key: string]: any;
 
   image: string = "/robot.jpg";
-  drivetrain: Drivetrain = Drivetrain.Tank;
+  drivetrain: FrcDrivetrain = FrcDrivetrain.Tank;
   motorType: Motors = Motors.Talons;
   swerveLevel: SwerveLevel = SwerveLevel.None;
   comments: string = "";
@@ -553,3 +555,10 @@ export type DbPicklist = {
     [name: string]: number[];
   };
 }
+
+/**
+ * Taken from https://stackoverflow.com/a/62502740/22099600
+ */
+export type OmitCallSignature<T> =
+  { [K in keyof T]: T[K] } &
+  (T extends new (...args: infer R) => infer S ? new (...args: R) => S : unknown)

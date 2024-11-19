@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import Container from "@/components/Container";
 import Card from "@/components/Card";
 import Flex from "@/components/Flex";
 import { Analytics } from "@/lib/client/Analytics";
+import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();;
 
 export default function CreateTeam() {
   const { session, status } = useCurrentSession();
@@ -38,19 +39,22 @@ export default function CreateTeam() {
     }
 
     const findResult = await api.findTeamByNumberAndLeague(Number(team?.number), team.league);
-    console.log(findResult);
-    if (findResult._id) {
+    if (findResult?._id) {
       setError("This Team Already Exists");
       return;
     }
 
     const newTeam = await api.createTeam(
       team.name,
+      team.tbaId ?? NotLinkedToTba,
       team.number,
-      session.user._id,
-      team.number.toString(),
       team.league
     );
+
+    if (!newTeam) {
+      setError("Failed to create team. Please try again later.");
+      return;
+    }
 
     Analytics.teamCreated(team.number, team.league, session?.user?.name ?? "Unknown User");
 
@@ -59,7 +63,7 @@ export default function CreateTeam() {
   };
 
   useEffect(() => {
-    api.getTeamAutofillData(team.number, team.league ?? League.FRC)
+    api.getTeamAutofillData(team.number!, team.league ?? League.FRC)
       .catch(() => null)
       .then((data) => {
         if (data)

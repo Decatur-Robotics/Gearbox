@@ -3,7 +3,7 @@ import SubjectiveReportForm from "@/components/SubjectiveReportForm";
 import { Match, SubjectiveReportSubmissionType } from "@/lib/Types";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { Analytics } from "@/lib/client/Analytics";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useInterval from "@/lib/client/useInterval";
 import { GetServerSideProps } from "next";
@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { useEffect, useState } from "react";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function Subjective(props: ResolvedUrlData) {
   const router = useRouter();

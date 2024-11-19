@@ -24,10 +24,8 @@ Features full feature parity with SJ2, whilst remaining simpler, faster and cool
 - NPM
 - A MongoDB instance
   - We use Atlas
-- An SSL certificate saved as `localhost-key.pem` and `localhost.pem`
+- An SSL certificate saved as `certs/key.pem` and `certs/cert.pem`
   - Can be generated with OpenSSL
-- An SSL certificate saved as `production-key.pem` and `production.pem`
-  - This can be the same as the development certificate above
 - Secrets:
   - A Blue Alliance API key
   - An Orange Alliance API key

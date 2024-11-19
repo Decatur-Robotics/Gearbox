@@ -1,5 +1,5 @@
 import { AckFn, RespondArguments, RespondFn, SlashCommand } from "@slack/bolt";
-import { Db, ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 import { getDatabase } from "./MongoDB";
 import { Team, User } from "./Types";
 import CollectionId from "./client/CollectionId";

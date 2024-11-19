@@ -13,12 +13,16 @@ export default function CompetitionPage(props: ResolvedUrlData) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  var ctx = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 3);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+  
   return {
     props: {
-      competition: ctx.competition ? makeObjSerializeable(ctx.competition) : null,
-      team: ctx.team ? makeObjSerializeable(ctx.team) : null,
-      season: ctx.season ? makeObjSerializeable(ctx.season) : null,
+      competition: resolved.competition ? makeObjSerializeable(resolved.competition) : null,
+      team: resolved.team ? makeObjSerializeable(resolved.team) : null,
+      season: resolved.season ? makeObjSerializeable(resolved.season) : null,
     },
   };
 };
