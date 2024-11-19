@@ -35,13 +35,10 @@ import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, download, getIdsInProgressFromTimestamps } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
-import { saveCompToLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import { toDict } from "@/lib/client/ClientUtils";
 import { BiExport } from "react-icons/bi";
-import DownloadModal from "./DownloadModal";
 import EditMatchModal from "./EditMatchModal";
 import { BSON } from "bson";
-import useIsOnline from "@/lib/client/useIsOnline";
 import CompHeaderCard from "./CompHeaderCard";
 import InsightsAndSettingsCard from "./InsightsAndSettingsCard";
 import MatchScheduleCard from "./MatchScheduleCard";
@@ -130,10 +127,6 @@ export default function CompetitionIndex(props: {
 
   const [newCompName, setNewCompName] = useState(comp?.name);
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
-
-  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
-
-  const isOnline = useIsOnline();
 
   useEffect(() => {
     if (!fallbackData) {
@@ -422,19 +415,6 @@ export default function CompetitionIndex(props: {
       );
     } catch (e) {
       console.error(e);
-
-      // Save match to local storage
-      const savedComp = getSavedCompetition();
-      if (!savedComp) return;
-
-      const match = new Match(Number(matchNumber), "", "", Date.now(), MatchType.Qualifying, 
-        blueAlliance as number[], redAlliance as number[]);
-      match._id = new BSON.ObjectId().toHexString();
-
-      savedComp.matches[match._id] = match;
-      savedComp?.comp.matches.push(match._id);
-
-      saveCompToLocalStorage(savedComp);
     }
 
     location.reload();
@@ -505,7 +485,6 @@ export default function CompetitionIndex(props: {
     (document.getElementById("edit-match-modal") as HTMLDialogElement | undefined)?.showModal();
     
     setMatchBeingEdited(match._id);
-    closeDownloadModal();
   }
 
   useInterval(() => loadMatches(true), 5000);
@@ -564,41 +543,11 @@ export default function CompetitionIndex(props: {
     return savedComp;
   }
 
-  function setSavedCompetition(comp: SavedCompetition) {
-    saveCompToLocalStorage(comp);
-
-    location.reload();
-  }
-
-  useEffect(() => {
-    const comp = getSavedCompetition();
-    if (comp) {
-      console.log("Saving competition to local storage... Comp:", comp);
-      saveCompToLocalStorage(comp);
-    }
-  }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
-
-  // Offline mode
-  useEffect(() => {
-    const savedComp = getSavedCompetition();
-
-    if (savedComp)
-      saveCompToLocalStorage(savedComp);
-  }, [comp, matches, reports, pitreports, subjectiveReports, usersById]);
-
-  function openDownloadModal() {
-    setDownloadModalOpen(true);
-  }
-
-  function closeDownloadModal() {
-    setDownloadModalOpen(false);
-  }
-
   return (
     <>
       <div className="min-h-screen w-full flex flex-col sm:flex-row flex-grow justify-center sm:space-x-6 my-4">
         <div className="w-full sm:w-2/5 flex flex-col items-center flex-grow justify-center space-y-4 h-full">
-          <CompHeaderCard comp={comp} openDownloadModal={openDownloadModal} isOnline={isOnline} />
+          <CompHeaderCard comp={comp} />
           <InsightsAndSettingsCard 
             showSettings={showSettings} setShowSettings={setShowSettings} isManager={isManager} comp={comp}
             newCompName={newCompName} setNewCompName={setNewCompName} newCompTbaId={newCompTbaId} setNewCompTbaId={setNewCompTbaId}
@@ -619,7 +568,7 @@ export default function CompetitionIndex(props: {
             usersById={usersById} reportsById={reportsById} comp={comp} isManager={isManager} openEditMatchModal={openEditMatchModal}
             loadingMatches={loadingMatches} loadingReports={loadingReports}
             loadingUsers={loadingUsers} team={team} ranking={ranking} noMatches={noMatches}
-            isOnline={isOnline} matchesAssigned={matchesAssigned} assignScouters={assignScouters}
+            matchesAssigned={matchesAssigned} assignScouters={assignScouters}
             assigningMatches={assigningMatches} remindUserOnSlack={remindUserOnSlack}
             reloadCompetition={reloadCompetition} seasonSlug={seasonSlug} updatingComp={updatingComp}
             session={session} showSubmittedMatches={showSubmittedMatches}
@@ -637,16 +586,6 @@ export default function CompetitionIndex(props: {
             loadReports={loadReports}
             loadMatches={loadMatches}
           /> 
-        }
-        { (team && comp && downloadModalOpen) &&
-            <DownloadModal 
-              open={downloadModalOpen} 
-              close={() => setDownloadModalOpen(false)} 
-              team={team} 
-              comp={comp} 
-              getSavedComp={getSavedCompetition}
-              setSavedComp={setSavedCompetition}
-            />
         }
       </div>
     </>
