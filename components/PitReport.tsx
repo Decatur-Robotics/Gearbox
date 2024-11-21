@@ -8,7 +8,6 @@ import Flex from "./Flex";
 import Checkbox from "./forms/Checkboxes";
 import ImageUpload from "./forms/ImageUpload";
 import Card from "./Card";
-import { getCompFromLocalStorage, updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import QRCode from "react-qr-code";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "./QrCode";
@@ -45,26 +44,6 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
       ...report,
       submitted: true,
       submitter: session?.user?._id
-    })
-    .catch((e) => {
-      console.error("Error submitting pitreport", e);
-
-      if (!props.compId || !pitreport._id) return;
-
-      updateCompInLocalStorage(props.compId, (comp) => {
-        if (!pitreport._id) {
-          console.error("Pitreport has no _id");
-          return;
-        }
-
-        console.log("Updating pitreport in local storage");
-
-        comp.pitReports[pitreport._id] = {
-          ...pitreport,
-          submitted: true,
-          submitter: session?.user?._id
-        };
-      });
     })
     .then(() => {
       Analytics.pitReportSubmitted(pitreport.teamNumber, props.usersteamNumber ?? -1, props.compName ?? "Unknown", props.username ?? "Unknown");
