@@ -17,7 +17,6 @@ import Flex from "@/components/Flex";
 import Checkbox from "@/components/forms/Checkboxes";
 import FieldPositionSelector from "@/components/forms/FieldPositionSelector";
 import ImageUpload from "@/components/forms/ImageUpload";
-import QrCode from "@/components/QrCode";
 import Card from "@/components/Card";
 
 const api = new ClientApi();
@@ -196,17 +195,6 @@ export default function PitReportForm(props: { pitReport: Pitreport, layout: For
         <button className="btn btn-primary " onClick={submit}>
           Submit
         </button>
-      </Card>
-      <Card title="Share while offline">
-        <div className="w-full flex justify-center">
-          <QrCode value={JSON.stringify({
-            pitReport: {
-              ...pitreport,
-              submitted: true,
-              submitter: session?.user?._id
-            }
-          })} />
-        </div>
       </Card>
     </Flex>
   );

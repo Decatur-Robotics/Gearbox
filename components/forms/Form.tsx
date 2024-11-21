@@ -13,9 +13,7 @@ import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import Loading from "../Loading";
-import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
-import QrCode from "../QrCode";
 
 const api = new ClientApi();
 
@@ -216,15 +214,6 @@ export default function Form(props: FormProps) {
       <button className={`btn btn-wide btn-${submitting ? "disabled" : "primary"} text-xl mb-6`} onClick={submitForm}>
         {submitting ? <Loading bg="" size={8} /> : "Submit"}
       </button>
-      <Card className="justify-center w-fit bg-base-300" title="Share while offline">
-        <QrCode value={JSON.stringify({
-          quantReport: {
-            ...props.report,
-            data: formData,
-            submitted: true
-          }
-        })} />
-      </Card>
     </FormPage>
   );
 
