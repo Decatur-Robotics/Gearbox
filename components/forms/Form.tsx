@@ -2,10 +2,8 @@ import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
 import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
-
 import ClientApi from "@/lib/api/ClientApi";
 import Checkbox from "./Checkboxes";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
