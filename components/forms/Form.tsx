@@ -14,7 +14,6 @@ import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
-import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import Loading from "../Loading";
 import QRCode from "react-qr-code";
 import Card from "../Card";
@@ -50,21 +49,6 @@ export default function Form(props: FormProps) {
     api.submitForm(props.report?._id!, formData)
       .then(() => {
         console.log("Submitted form successfully!");
-      })
-      .catch((e) => {
-        console.error(e);
-  
-        if (!props.compId)
-          return;
-
-        updateCompInLocalStorage(props.compId, (comp) => {
-          const report = comp.quantReports[props.report._id ?? ""]
-
-          report.data = formData;
-          report.submitted = true;
-
-          return comp;
-        });
       })
       .finally(() => {
         if (location.href.includes("offline"))
