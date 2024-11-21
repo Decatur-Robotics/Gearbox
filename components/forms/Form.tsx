@@ -15,7 +15,6 @@ import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import Loading from "../Loading";
-import QRCode from "react-qr-code";
 import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "../QrCode";
