@@ -3,9 +3,7 @@ import { DbPicklist, Report } from "@/lib/Types";
 import { useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
-import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
 import ClientApi from "@/lib/api/ClientApi";
-import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 
 type CardData = { 
   number: number;
@@ -188,8 +186,6 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
       picklists: {}
     });
 
-    updateCompInLocalStorage(props.compId, (comp) => comp.picklists = picklistDict);
-    
     api.updatePicklist(picklistDict);
   }
 
