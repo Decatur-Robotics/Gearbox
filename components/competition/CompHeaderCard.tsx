@@ -23,7 +23,7 @@ export default function CompHeaderCard({ comp }: { comp: Competition | undefined
           <div className="divider divider-horizontal"></div>
           <a
             className="max-sm:w-full btn btn-secondary"
-            href={`${comp?._id}/stats`}
+            href={`${comp?.slug}/stats`}
           >
             Stats <MdQueryStats size={30} />
           </a>

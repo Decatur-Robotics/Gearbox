@@ -3,7 +3,7 @@ import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
 import ApiLib from './ApiLib';
-import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report, SavedCompetition } from "@/lib/Types";
+import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import { addXp, generatePitReports, getTeamFromMatch, getTeamFromReport, onTeam, ownsTeam } from "./ApiUtils";
 import { TheOrangeAlliance } from "../TheOrangeAlliance";
@@ -479,9 +479,6 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     handler: async (req, res, { db: dbPromise, userPromise }, { team, report }, [reportId]) => {
       const db = await dbPromise;
 
-      if (!onTeam(team, await userPromise))
-        return res.status(403).send({ error: "Unauthorized" });
-
       await db.updateObjectById<Report>(
         CollectionId.Reports,
         new ObjectId(reportId),
@@ -497,11 +494,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     handler: async (req, res, { db: dbPromise, userPromise }, { match }, [matchId]) => {
       const db = await dbPromise;
 
-      const team = await getTeamFromMatch(db, match);
       const user = await userPromise;
-
-      if (!onTeam(team, user))
-        return res.status(403).send({ error: "Unauthorized" });
 
       const update: { [key: string]: any } = {};
       update[`subjectiveReportsCheckInTimestamps.${user?._id?.toString()}`] = new Date().toISOString();
@@ -820,7 +813,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
   submitSubjectiveReport = ApiLib.createRoute<[SubjectiveReport, string], { result: string }, ApiDependencies, { team: Team, match: Match }>({
     isAuthorized: (req, res, deps, [report, matchId]) => AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, matchId),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [report, matchId]) => {
+    handler: async (req, res, { db: dbPromise, userPromise }, { team, match }, [report]) => {
       const db = await dbPromise;
       const rawReport = report as SubjectiveReport;
 
@@ -983,37 +976,6 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       });
 
       return res.status(200).send(reports);
-    }
-  });
-
-  uploadSavedComp = ApiLib.createRoute<[SavedCompetition], { result: string }, ApiDependencies, { team: Team, comp: Competition }>({
-    isAuthorized: (req, res, deps, [save]) => AccessLevels.IfCompOwner(req, res, deps, save.comp._id?.toString() ?? ""),
-    handler: async (req, res, { db: dbPromise, userPromise }, { team }, [save]) => {
-      const db = await dbPromise;
-
-      const { comp, matches, quantReports: reports, pitReports, subjectiveReports } = save;
-
-      const promises: Promise<any>[] = [];
-      promises.push(db.updateObjectById<Competition>(CollectionId.Competitions, new ObjectId(comp._id), comp));
-
-      for (const match of Object.values(matches)) {
-        promises.push(db.updateObjectById<Match>(CollectionId.Matches, new ObjectId(match._id), match));
-      }
-
-      for (const report of Object.values(reports)) {
-        promises.push(db.updateObjectById<Report>(CollectionId.Reports, new ObjectId(report._id), report));
-      }
-
-      for (const report of Object.values(subjectiveReports)) {
-        promises.push(db.updateObjectById<SubjectiveReport>(CollectionId.SubjectiveReports, new ObjectId(report._id), report));
-      }
-
-      for (const report of Object.values(pitReports)) {
-        promises.push(db.updateObjectById<Pitreport>(CollectionId.PitReports, new ObjectId(report._id), report));
-      }
-
-      await Promise.all(promises);
-      return res.status(200).send({ result: "success" });
     }
   });
 

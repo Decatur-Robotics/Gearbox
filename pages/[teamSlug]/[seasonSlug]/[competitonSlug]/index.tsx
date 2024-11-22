@@ -1,43 +1,23 @@
-import { ChangeEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 import ClientApi from "@/lib/api/ClientApi";
 import {
-  AllianceColor,
   Match,
   MatchType,
   Pitreport,
   Report,
-  SavedCompetition,
   SubjectiveReport,
   User,
   Team,
   Competition,
-  League,
-  DbPicklist
+  DbPicklist,
+  Season
 } from "@/lib/Types";
-
-import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-
-import {
-  MdAutoGraph,
-  MdCoPresent,
-  MdErrorOutline,
-  MdQueryStats,
-} from "react-icons/md";
-import { BsClipboard2Check, BsGearFill, BsQrCode, BsQrCodeScan } from "react-icons/bs";
-import { FaBinoculars, FaDatabase, FaSync, FaUserCheck } from "react-icons/fa";
-import { FaCheck, FaRobot, FaUserGroup } from "react-icons/fa6";
-import { Round } from "@/lib/client/StatsMath";
-import Avatar from "@/components/Avatar";
-import Loading from "@/components/Loading";
 import useInterval from "@/lib/client/useInterval";
 import { NotLinkedToTba, download, getIdsInProgressFromTimestamps, makeObjSerializeable } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { defaultGameId } from "@/lib/client/GameId";
-import { toDict } from "@/lib/client/ClientUtils";
-import { BiExport } from "react-icons/bi";
-import { BSON } from "bson";
 import { GetServerSideProps } from "next";
 import UrlResolver from "@/lib/UrlResolver";
 import Container from "@/components/Container";
@@ -49,30 +29,14 @@ import PitScoutingCard from "@/components/competition/PitScoutingCard";
 
 const api = new ClientApi();
 
-export default function CompetitionIndex(props: {
+export default function CompetitionIndex({ team, competition: comp, season }: {
   team: Team | undefined,
   competition: Competition | undefined,
-  seasonSlug: string | undefined,
-  fallbackData?: SavedCompetition
-  overrideIsManager?: boolean
+  season: Season | undefined,
 }) {
-  const team = props.team;
-  const seasonSlug = props.seasonSlug;
-  const comp = props.competition;
-  const fallbackData = props.fallbackData
-    ? {
-        users: props.fallbackData.users,
-        matches: Object.values(props.fallbackData.matches),
-        quantReports: Object.values(props.fallbackData.quantReports),
-        subjectiveReports: Object.values(props.fallbackData.subjectiveReports),
-        pitReports: Object.values(props.fallbackData.pitReports),
-    }
-    : undefined;
 
   const { session, status } = useCurrentSession();
-  const isManager = session?.user?._id
-    ? team?.owners.includes(session.user?._id) || props.overrideIsManager
-    : false || props.overrideIsManager;
+  const isManager = (session?.user?._id !== undefined && team?.owners.includes(session?.user?._id)) ?? false;
 
   const [showSettings, setShowSettings] = useState(false);
   const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
@@ -131,37 +95,6 @@ export default function CompetitionIndex(props: {
   const [newCompName, setNewCompName] = useState(comp?.name);
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
 
-  useEffect(() => {
-    if (!fallbackData) {
-      console.log("No fallback data provided");
-
-      return;
-    }
-
-    console.log("Initially loading fallback data:", fallbackData);
-
-    if (!matches || matches.length === 0)
-      setMatches(fallbackData.matches);
-    if (!reports || reports.length === 0) {
-      setReports(fallbackData.quantReports);
-      setReportsById(toDict(fallbackData.quantReports));
-    }
-    if (!pitreports || pitreports.length === 0) {
-      setPitreports(fallbackData.pitReports);
-      setLoadingPitreports(false);
-    }
-    if (!subjectiveReports || subjectiveReports.length === 0)
-      setSubjectiveReports(fallbackData.subjectiveReports);
-    console.log(usersById);
-    if (!usersById || Object.keys(usersById).length === 0) {
-      console.log("Setting users by id", fallbackData.users);
-      setUsersById(fallbackData.users);
-      setLoadingUsers(false);
-    }
-    if (!picklists)
-      setPicklists(props.fallbackData?.picklists);
-  }, [props.fallbackData?.comp._id]);
-
   const regeneratePitReports = async () => {
     console.log("Regenerating pit reports...");
     api
@@ -204,9 +137,7 @@ export default function CompetitionIndex(props: {
       setLoadingMatches(true);
     
     window.location.hash = "";
-    let matches: Match[] = await api.allCompetitionMatches(comp?._id!) ?? fallbackData?.matches;
-    if (matches.length === 0)
-      matches = fallbackData?.matches ?? [];
+    let matches: Match[] = await api.allCompetitionMatches(comp?._id!);
 
     if (!matches || matches.length === 0) {
       setNoMatches(true);
@@ -263,9 +194,6 @@ export default function CompetitionIndex(props: {
       false
     );
 
-    if (!newReports || newReports.length === 0)
-      newReports = fallbackData?.quantReports ?? [];
-
     setReports(newReports);
 
     const newReportsById: { [key: string]: Report } = {};
@@ -307,10 +235,6 @@ export default function CompetitionIndex(props: {
               newUsersById[userId] = user;
             }
           })
-          .catch((e) => {
-            if (fallbackData?.users[userId])
-              newUsersById[userId] = fallbackData.users[userId];
-          })
         );
       }
 
@@ -334,7 +258,6 @@ export default function CompetitionIndex(props: {
       const promises: Promise<any>[] = [];
       for (const pitreportId of comp?.pitReports) {
         promises.push(api.findPitreportById(pitreportId)
-          .catch((e) => fallbackData?.pitReports.find((r) => r._id === pitreportId))
           .then((pitreport) => {
             if (!pitreport) {
               return;
@@ -375,11 +298,6 @@ export default function CompetitionIndex(props: {
   const assignScouters = async () => {
     setAssigningMatches(true);
     const res = await api.assignScouters(comp?._id!, true);
-
-    if (props.fallbackData && (res as any) === props.fallbackData) {
-      location.reload();
-      return;
-    }
 
     if ((res.result as string).toLowerCase() !== "success") {
       alert(res.result);
@@ -529,25 +447,8 @@ export default function CompetitionIndex(props: {
     allianceIndices.push(i);
   }
 
-  function getSavedCompetition() {
-    if (!comp || !team) return;
-
-    // Save comp to local storage
-    const savedComp = new SavedCompetition(comp, games[comp?.gameId ?? defaultGameId], team, usersById, seasonSlug);
-    savedComp.lastAccessTime = Date.now();
-
-    savedComp.matches = toDict(matches);
-    savedComp.quantReports = toDict(reports);
-    savedComp.pitReports = toDict(pitreports);
-    savedComp.subjectiveReports = toDict(subjectiveReports);
-
-    savedComp.picklists = picklists;
-    
-    return savedComp;
-  }
-
   return (
-    <Container requireAuthentication title={props.competition?.name ?? "Competition Loading"}>
+    <Container requireAuthentication title={comp?.name ?? "Competition Loading"}>
       <div className="min-h-screen w-full flex flex-col sm:flex-row flex-grow justify-center sm:space-x-6 my-4">
         <div className="w-full sm:w-2/5 flex flex-col items-center flex-grow justify-center space-y-4 h-full">
           <CompHeaderCard comp={comp} />
@@ -558,7 +459,7 @@ export default function CompetitionIndex(props: {
             exportPending={exportPending} regeneratePitReports={regeneratePitReports} reloadCompetition={reloadCompetition}
             toggleShowSubmittedMatches={toggleShowSubmittedMatches} showSubmittedMatches={showSubmittedMatches}
             pitreports={pitreports} submittedPitreports={submittedPitreports} addTeam={addTeam} teamToAdd={teamToAdd} 
-            setTeamToAdd={setTeamToAdd} seasonSlug={seasonSlug} assignScouters={assignScouters} assigningMatches={assigningMatches}
+            setTeamToAdd={setTeamToAdd} seasonSlug={season?.slug} assignScouters={assignScouters} assigningMatches={assigningMatches}
             redAlliance={redAlliance} setRedAlliance={setRedAlliance} blueAlliance={blueAlliance} setBlueAlliance={setBlueAlliance}
             matchNumber={matchNumber} setMatchNumber={setMatchNumber} createMatch={createMatch} allianceIndices={allianceIndices}
             submittedReports={submittedReports} team={team} reports={reports} loadingScoutStats={loadingScoutStats}
@@ -573,7 +474,7 @@ export default function CompetitionIndex(props: {
             loadingUsers={loadingUsers} team={team} ranking={ranking} noMatches={noMatches}
             matchesAssigned={matchesAssigned} assignScouters={assignScouters}
             assigningMatches={assigningMatches} remindUserOnSlack={remindUserOnSlack}
-            reloadCompetition={reloadCompetition} seasonSlug={seasonSlug} updatingComp={updatingComp}
+            reloadCompetition={reloadCompetition} seasonSlug={season?.slug} updatingComp={updatingComp}
             session={session} showSubmittedMatches={showSubmittedMatches}
           />
           <PitScoutingCard pitreports={pitreports} loadingPitreports={loadingPitreports} comp={comp} />
@@ -600,7 +501,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if ("redirect" in resolved) {
     return resolved;
   }
-  
+
   return {
     props: {
       competition: resolved.competition ? makeObjSerializeable(resolved.competition) : null,
