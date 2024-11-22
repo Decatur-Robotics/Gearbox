@@ -53,7 +53,7 @@ Features full feature parity with SJ2, whilst remaining simpler, faster and cool
 1. Run `npm run test`
 
 ## Contributing
-You've made it past set up and are ready to contibure to the future scouting - here's how.
+You've made it past set up and are ready to contibure to the future of scouting - here's how.
 
 We recommend you start with issues labelled `good first issue` to get a feel for the codebase. Fork the repo (unless you're part of Decatur Robotics, in which case make a new branch) and then make a pull request to the main branch. We'll review it and, if it looks good, merge it.
 
