@@ -178,8 +178,7 @@ export default function MatchScheduleCard(props: {
                         <div className="w-full flex flex-row items-center space-x-2">
                           {match.reports.map((reportId) => {
                             const report = reportsById[reportId];
-                            //@ts-ignore
-                            const user = usersById[report?.user];
+                            const user = usersById[report?.user!];
 
                             return (
                               <div
@@ -194,7 +193,7 @@ export default function MatchScheduleCard(props: {
                                     imgHeightOverride="h-12"
                                     showLevel={false}
                                     borderThickness={2}
-                                    onClick={() => remindUserOnSlack(user._id)}
+                                    onClick={() => remindUserOnSlack(user._id!)}
                                   />
                                   : <div className="w-12 h-12"></div>
                                 }
@@ -215,7 +214,7 @@ export default function MatchScheduleCard(props: {
                                     <div className="tooltip" data-tip="Scouting in progress"><Loading size={24}/></div>}
                                 { isManager && usersById[match.subjectiveScouter ?? ""]?.slackId
                                   ? <button className="text-primary hover:underline mb-1" 
-                                        onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?.slackId)}>
+                                        onClick={() => remindUserOnSlack(usersById[match.subjectiveScouter ?? ""]?._id!)}>
                                       Subjective Scouter: {usersById[match.subjectiveScouter].name}
                                     </button>
                                   : <div>Subjective Scouter: {usersById[match.subjectiveScouter ?? ""].name}</div>
