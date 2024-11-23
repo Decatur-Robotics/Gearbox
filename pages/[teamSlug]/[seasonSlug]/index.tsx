@@ -44,8 +44,8 @@ export default function Home(props: SeasonPageProps) {
           {!comps 
             ? <div className="w-full h-32"><Loading /></div>
             : comps.length === 0
-            ? <p>No competitions have been created yet.</p>
-            : <></>
+              ? <p>No competitions have been created yet.</p>
+              : <></>
           }
           {comps.map((comp) => (
             <Link
