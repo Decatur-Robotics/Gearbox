@@ -2,13 +2,6 @@ name: CD
 
 on:
   workflow_call:
-    secrets:
-      SSL_KEY:
-        required: true
-      SSL_CERT:
-        required: true
-      ENV_FILE:
-        required: true
   workflow_dispatch: # Allows manual triggering of the workflow
 
 permissions:
@@ -27,15 +20,6 @@ jobs:
 
       - name: Create certs directory
         run: mkdir certs
-
-      - name: Write SSL key
-        run: echo "${{ secrets.SSL_KEY }}" > certs/ssl.key
-
-      - name: Write SSL cert
-        run: echo "${{ secrets.SSL_CERT }}" > certs/ssl.cert
-
-      - name: Write ENV file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
         
       - name: Build and export
         uses: docker/build-push-action@v6
