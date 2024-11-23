@@ -69,7 +69,7 @@ function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Pi
   return (
     <div
       className={`w-${props.width ?? "[150px]"} h-${props.height ?? "[100px]"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary`}
-      ref={dragRef!}
+      ref={dragRef}
     >
       <h1>
         {props.rank !== undefined ? `${props.rank + 1}. ` : ""}<span className="max-sm:hidden">Team</span> <span className="text-accent">#{teamNumber}</span>
