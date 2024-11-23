@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { OmitCallSignature } from "@/lib/Types";
+import toast from "react-hot-toast";
 
 /**
  * @tested_by tests/lib/api/ApiLib.test.ts
@@ -108,7 +109,7 @@ namespace ApiLib {
 
     if (res?.error) {
       if (res.error === "Unauthorized") {
-        alert(`Unauthorized API request: ${subUrl}. If this is an error, please contact the developers.`);
+        toast.error(`Unauthorized API request: ${subUrl}. If this is an error, please contact the developers.`);
       }
       throw new Error(`${subUrl}: ${res.error}`);
     }
