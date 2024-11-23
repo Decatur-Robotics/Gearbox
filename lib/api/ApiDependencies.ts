@@ -2,13 +2,13 @@ import DbInterface from "../client/dbinterfaces/DbInterface";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { User } from "../Types";
 import { ResendInterface } from "../ResendUtils";
-import SlackClient from "../SlackClient";
+import SlackClient, { SlackInterface } from "../SlackClient";
 
 type ApiDependencies = {
   db: Promise<DbInterface>;
   tba: TheBlueAlliance.Interface;
   userPromise: Promise<User | undefined>;
-  slackClient: SlackClient;
+  slackClient: SlackInterface;
   resend: ResendInterface;
 }
 

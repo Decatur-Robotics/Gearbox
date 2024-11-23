@@ -565,7 +565,15 @@ export type OmitCallSignature<T> =
   { [K in keyof T]: T[K] } &
   (T extends new (...args: infer R) => infer S ? new (...args: R) => S : unknown)
 
-export type WebhookHolder = {
+/**
+ * DO NOT GIVE TO CLIENTS!
+ */
+export class WebhookHolder {
   _id: ObjectId;
-  webhook: string;
+  url: string;
+
+  constructor(url: string) {
+    this._id = new ObjectId();
+    this.url = url;
+  }
 }

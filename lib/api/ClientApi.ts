@@ -532,7 +532,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         return res.status(400).send({ error: "User not found" });
       }
 
-      await slackClient.sendMsg(webhookHolder.webhook, 
+      await slackClient.sendMsg(webhookHolder.url, 
         `${mentionUserInSlack(targetUser)}, please report to our section and prepare for scouting. Sent by ${mentionUserInSlack(user)}.`);
 
       return res.status(200).send({ result: "success" });
@@ -541,22 +541,19 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
   setSlackWebhook = ApiLib.createRoute<[string, string], { result: string }, ApiDependencies, Team>({
     isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
-    handler: async (req, res, { db, userPromise }, team, [teamId, webhookUrl]) => {
+    handler: async (req, res, { db, userPromise, slackClient }, team, [teamId, webhookUrl]) => {
       const user = (await userPromise)!;
 
       // Check that the webhook works
-      fetch(webhookUrl, {
-        method: "POST",
-        body: JSON.stringify({ text: `Gearbox integration for ${team.name} was added by ${mentionUserInSlack(user)}.` }),
-      })
+      slackClient.sendMsg(webhookUrl, `Gearbox integration for ${team.name} was added by ${mentionUserInSlack(user)}.`)
         .catch(() => {
           return res.status(400).send({ error: "Invalid webhook" });
         });
 
       if (team.slackWebhook) {
-        (await db).updateObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(team.slackWebhook), { webhook: webhookUrl });
+        (await db).updateObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(team.slackWebhook), { url: webhookUrl });
       } else {
-        const webhook = await (await db).addObject<WebhookHolder>(CollectionId.Webhooks, { webhook: webhookUrl });
+        const webhook = await (await db).addObject<WebhookHolder>(CollectionId.Webhooks, { url: webhookUrl });
         team.slackWebhook = webhook._id.toString();
         (await db).updateObjectById<Team>(CollectionId.Teams, new ObjectId(teamId), team);
       }
