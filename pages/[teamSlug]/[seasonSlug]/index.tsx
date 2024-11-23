@@ -26,7 +26,7 @@ export default function Home(props: SeasonPageProps) {
   const { session, status } = useCurrentSession();
   const team = props.team;
   const season = props.season;
-  const comp = props.competitions;
+  const comps = props.competitions;
   const owner = team?.owners.includes(session?.user?._id as string);
 
   return (
@@ -41,14 +41,13 @@ export default function Home(props: SeasonPageProps) {
 
         <Card title={"Season Overview"}>
           <h1 className="font-semibold text-lg">Select a Competition</h1>
-          {comp?.length === 0 || !comp ? (
-            <div className="w-full h-32">
-              <Loading></Loading>
-            </div>
-          ) : (
-            <></>
-          )}
-          {comp.map((comp) => (
+          {!comps 
+            ? <div className="w-full h-32"><Loading /></div>
+            : comps.length === 0
+            ? <p>No competitions have been created yet.</p>
+            : <></>
+          }
+          {comps.map((comp) => (
             <Link
               key={comp._id}
               href={`/${team.slug}/${season.slug}/${comp.slug}`}
