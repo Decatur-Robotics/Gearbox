@@ -1,8 +1,10 @@
 import { Team, User } from "../Types";
-import { getDatabase, Collections } from "../MongoDB";
+import { getDatabase } from "../MongoDB";
 import { GenerateSlug } from "../Utils";
 import { randomArrayValue } from "../client/ClientUtils";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
+import CollectionId from "../client/CollectionId";
+import DbInterface from "../client/dbinterfaces/DbInterface";
 
 const firstNameMaleURL = "https://www.randomlists.com/data/names-male.json";
 const firstNameFemaleURL = "https://www.randomlists.com/data/names-female.json";
@@ -34,41 +36,44 @@ async function randomName(): Promise<string> {
   return randomArrayValue(first) + " " + randomArrayValue(last);
 }
 
-export async function fakeUser(teamId: string | undefined): Promise<User> {
-  const db = await getDatabase();
+export async function fakeUser(teamId: string | undefined, db: DbInterface): Promise<User> {
   const name = await randomName();
   const user = new User(
     name,
     "totallyrealemail@gmail.com",
     "https://media.npr.org/assets/img/2015/06/15/gettyimages-1445210_custom-9cff1c641fe4451adaf1bcd3750bf4a11fb5d4e9.jpg",
     false,
-    await GenerateSlug(Collections.Users, name),
+    await GenerateSlug(db, CollectionId.Users, name),
     teamId ? [teamId] : [],
     [],
     "",
     10,
   );
-  return await db.addObject<User>(Collections.Users, user);
+  return await db.addObject<User>(CollectionId.Users, user);
 }
 
 export async function fillTeamWithFakeUsers(
   n: number,
   teamId: string | undefined,
+  db: DbInterface
 ): Promise<Team> {
-  console.log("Filling with fake users...");
-  const db = await getDatabase();
-  var users: any[] = [];
+  const users: any[] = [];
   for (let i = 0; i < n; i++) {
-    users.push((await fakeUser(teamId))._id?.toString());
+    users.push((await fakeUser(teamId, db))._id?.toString());
   }
 
   const team = await db.findObjectById<Team>(
-    Collections.Teams,
-    new ObjectId(teamId),
+    CollectionId.Teams,
+    new ObjectId(teamId?.toString()),
   );
+
+  if (!team) {
+    throw new Error("Team not found");
+  }
+
   team.users = team.users.concat(users);
   team.scouters = team.scouters.concat(users);
 
-  await db.updateObjectById(Collections.Teams, new ObjectId(team._id), team);
+  await db.updateObjectById(CollectionId.Teams, new ObjectId(team._id), team);
   return team;
 }

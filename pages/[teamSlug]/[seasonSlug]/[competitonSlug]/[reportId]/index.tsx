@@ -9,9 +9,9 @@ import { QuantData, Report } from "@/lib/Types";
 import { FormLayout } from "@/lib/Layout";
 import { makeObjSerializeable } from "@/lib/client/ClientUtils";
 import { useEffect } from "react";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function Homepage(props: FormProps) {
   const { session, status } = useCurrentSession();
@@ -19,7 +19,7 @@ export default function Homepage(props: FormProps) {
 
   useEffect(() => {
     if (props.report)
-      setInterval(() => api.checkInForReport(props.report._id), 5000);
+      setInterval(() => api.checkInForReport(props.report._id!), 5000);
   }, []);
 
   return (
@@ -34,16 +34,20 @@ export default function Homepage(props: FormProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const resolver = await UrlResolver(context);
-  const season = resolver.season;
+  const resolved = await UrlResolver(context, 4);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
+  const season = resolved.season;
 
   return {
     props: {
-      report: resolver.report,
+      report: resolved.report,
       layout: makeObjSerializeable(games[season?.gameId ?? defaultGameId].quantitativeReportLayout),
       fieldImagePrefix: games[season?.gameId ?? defaultGameId].fieldImagePrefix,
-      teamNumber: resolver.team?.number,
-      compName: resolver.competition?.name,
+      teamNumber: resolved.team?.number,
+      compName: resolved.competition?.name,
     }
   } as { props: FormProps };
 };

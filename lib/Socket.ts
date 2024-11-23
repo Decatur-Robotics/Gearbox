@@ -2,9 +2,9 @@ import { Socket } from "net";
 import { NextRequest, NextResponse } from "next/server";
 import { Server as HTTPServer } from "http";
 import { Server } from "socket.io";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export interface SocketServer extends HTTPServer {
   io?: Server | undefined;

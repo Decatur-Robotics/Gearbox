@@ -1,7 +1,7 @@
 import { CompetitonNameIdPair as CompetitionNameIdPair } from "@/lib/Types";
 import React, { useEffect, useState } from "react";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
@@ -12,7 +12,7 @@ import { defaultGameId } from "@/lib/client/GameId";
 import { Analytics } from "@/lib/client/Analytics";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function CreateComp(props: ResolvedUrlData) {
   const { session } = useCurrentSession();
@@ -50,18 +50,18 @@ export default function CreateComp(props: ResolvedUrlData) {
 
     // Can't just do selection ? because 0 is a valid selection, but will evaluate to false
     const selectedId = selection !== undefined ? results[selection].pair.tbaId : undefined;
-    const autofill = selectedId ? await api.getCompetitionAutofillData(
+    const autofill = selectedId ? await api.competitionAutofill(
       selectedId
     ) : undefined;
 
     const now = new Date().getTime();
 
     const comp = await api.createCompetition(
-      autofill?.name ?? name,
       autofill?.tbaId ?? NotLinkedToTba,
       autofill?.start ?? now,
       autofill?.end ?? now,
-      season?._id,
+      autofill?.name ?? name,
+      season?._id!,
       usePublicData,
     );
     var win: Window = window;
@@ -152,7 +152,13 @@ export default function CreateComp(props: ResolvedUrlData) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const resolved = await UrlResolver(context, 2);
+
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+
   return {
-    props: await UrlResolver(context),
+    props: resolved,
   };
 };

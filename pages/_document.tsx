@@ -7,6 +7,7 @@ export default function Document() {
       <Head>
         <PwaConfig />
         <meta name="slack-app-id" content="A07BWTTLWDQ" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
       <body>
         <Main />

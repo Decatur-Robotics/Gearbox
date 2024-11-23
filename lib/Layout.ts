@@ -1,7 +1,7 @@
 import { Dot } from "@/components/stats/Heatmap";
 import { camelCaseToTitleCase } from "./client/ClientUtils";
-import { IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, CenterStageEnums, IntoTheDeepEnums } from "./Enums";
-import { PitReportData, QuantData, Pitreport, Report } from "./Types";
+import { IntakeTypes, Defense, FrcDrivetrain, Motors, SwerveLevel, CenterStageEnums, IntoTheDeepEnums, FtcDrivetrain } from "./Enums";
+import { PitReportData, QuantData, Pitreport, Report, League } from "./Types";
 
 export type StringKeyedObject = { [key: string]: any };
 
@@ -18,26 +18,29 @@ export class FormElement<TData extends StringKeyedObject> {
   label: string;
   type?: ElementType
 
-  constructor(key: keyof TData, dataExample: TData, label?: string, type?: ElementType) {
+  constructor(league: League, key: keyof TData, dataExample: TData, label?: string, type?: ElementType) {
     this.key = key;
     this.label = label ?? camelCaseToTitleCase(key as string);
-    this.type = type ?? keyToType(key as string, dataExample);
+    this.type = type ?? keyToType(league, key as string, dataExample);
   }
 
-  static fromProps<TData extends StringKeyedObject>(props: FormElementProps<TData>, dataExample: TData): FormElement<TData> {
+  /**
+   * @tested_by tests/lib/Layout.test.ts
+   */
+  static fromProps<TData extends StringKeyedObject>(league: League, props: FormElementProps<TData>, dataExample: TData): FormElement<TData> {
     if (typeof props === "string")
-      return new FormElement(props, dataExample);
+      return new FormElement(league, props, dataExample);
     if (typeof props !== "object")
       throw new Error("Invalid FormElementProps: " + props.toString());
-    return new FormElement(props.key, dataExample, props.label, props.type);
+    return new FormElement(league, props.key, dataExample, props.label, props.type);
   }
 }
 
 export type BlockElementProps<TData extends StringKeyedObject> = FormElementProps<TData>[][];
 
 export class BlockElement<TData extends StringKeyedObject> extends Array<Array<FormElement<TData>>> {
-  constructor(elements: BlockElementProps<TData>, dataExample: TData) {
-    const genElements = elements.map(c => c.map(e => FormElement.fromProps(e, dataExample)));
+  constructor(league: League, elements: BlockElementProps<TData>, dataExample: TData) {
+    const genElements = elements.map(c => c.map(e => FormElement.fromProps(league, e, dataExample)));
     super(...genElements);
   }
 
@@ -52,21 +55,19 @@ export type FormLayoutProps<TData extends StringKeyedObject> =
 export class FormLayout<TData extends StringKeyedObject> {
   [header: string]: (FormElement<TData> | BlockElement<TData>)[];
 
-  static fromProps<TData extends StringKeyedObject>(props: FormLayoutProps<TData>, dataExample: TData): FormLayout<TData> {
+  static fromProps<TData extends StringKeyedObject>(league: League, props: FormLayoutProps<TData>, dataExample: TData): FormLayout<TData> {
     const layout = new FormLayout<TData>();
     for (const header in props) {
       layout[header] = props[header].map(e => {
         if (!Array.isArray(e))
-          return FormElement.fromProps(e, dataExample);
-        return new BlockElement(e, dataExample);
+          return FormElement.fromProps(league, e, dataExample);
+        return new BlockElement(league, e, dataExample);
       });
     }
 
     return layout;
   }
 }
-
-
 
 export type Badge = {
   text: string;
@@ -98,7 +99,10 @@ export type PitStatsLayout<TPitData extends PitReportData, TQuantData extends Qu
   graphStat: Stat<TPitData, TQuantData>;
 }
 
-export function keyToType(key: string, exampleData: StringKeyedObject): ElementType {
+/**
+ * @tested_by tests/lib/Layout.test.ts
+ */
+export function keyToType(league: League, key: string, exampleData: StringKeyedObject): ElementType {
   if (key === "image")
     return "image";
 
@@ -111,7 +115,7 @@ export function keyToType(key: string, exampleData: StringKeyedObject): ElementT
     return type as ElementType;
 
   const enums = [
-    IntakeTypes, Defense, Drivetrain, Motors, SwerveLevel, 
+    IntakeTypes, Defense, league === League.FRC ? FrcDrivetrain : FtcDrivetrain, Motors, SwerveLevel, 
     CenterStageEnums.CenterStageParkingLocation, CenterStageEnums.AutoAdjustable, CenterStageEnums.AutoSidePreference,
     IntoTheDeepEnums.StartedWith, IntoTheDeepEnums.EndgameLevelClimbed
   ];

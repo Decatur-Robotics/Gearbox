@@ -1,13 +1,14 @@
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
-import { Competition, Match, Team, User, Report } from "@/lib/Types";
+import { getDatabase } from "@/lib/MongoDB";
+import { Competition, Match, Team, User, Report, SubjectiveReport } from "@/lib/Types";
 import { SerializeDatabaseObject } from "@/lib/UrlResolver";
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
+import CollectionId from "@/lib/client/CollectionId";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function Scouters(props: { team: Team | null, competition: Competition | null}) {
   const team = props.team;
@@ -46,7 +47,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
       setLoading(true);
 
       console.log("Loading scouter data...");
-      api.findScouterManagementData(comp?._id ?? "", team?.scouters ?? []).then((data) => {
+      api.findScouterManagementData(comp?._id!).then((data) => {
         console.log("Loaded scouter data");
 
         // Load scouters
@@ -81,7 +82,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
           return flag;
         }
 
-        async function removeComment(commentId: string | undefined, func: (c: Comment) => Promise<void>): Promise<void> {
+        async function removeComment(commentId: string | undefined, func: (c: Comment) => Promise<any>): Promise<void> {
           // Hacky way of getting the latest state when the function is being called from lambdas
           setComments((comments) => {
             const comment = comments?.find((c) => c.dbId === commentId);
@@ -100,7 +101,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         }
       
         function removeQuantitativeComment(comment: Comment) {
-          let promise: Promise<void> | undefined;
+          let promise: Promise<any> | undefined;
 
           setReports((reports) => {
             if (!reports) return reports;
@@ -119,7 +120,7 @@ export default function Scouters(props: { team: Team | null, competition: Compet
         }
 
         function removeSubjectiveComment(comment: Comment) {
-          return api.updateSubjectiveReport(comment.dbId, { wholeMatchComment: "", robotComments: {} });
+          return api.updateSubjectiveReport({ _id: comment.dbId, wholeMatchComment: "", robotComments: {} } as SubjectiveReport);
         }
 
         // Load reports and comments
@@ -323,10 +324,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
 
   const teamSlug = context.params?.teamSlug as string;
-  const team = await db.findObject(Collections.Teams, { slug: teamSlug });
+  const team = await db.findObject(CollectionId.Teams, { slug: teamSlug });
 
   const compSlug = context.params?.competitonSlug as string;
-  const comp = await db.findObject(Collections.Competitions, {
+  const comp = await db.findObject(CollectionId.Competitions, {
     slug: compSlug,
   });
 

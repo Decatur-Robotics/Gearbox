@@ -1,11 +1,11 @@
 import { Season, Team } from "../../lib/Types";
-import ClientAPI from "../../lib/client/ClientAPI";
 import UrlResolver, {
   SerializeDatabaseObjects,
 } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import CollectionId from "@/lib/client/CollectionId";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
 import { FaPlus } from "react-icons/fa";
@@ -13,8 +13,9 @@ import { GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import ClientApi from "@/lib/api/ClientApi";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type CreateSeasonProps = { team: Team; existingSeasons: Season[] };
 
@@ -29,8 +30,8 @@ export default function CreateSeason(props: CreateSeasonProps) {
     const s = await api.createSeason(
       game.name,
       game.year,
-      gameId,
-      team?._id as string
+      team?._id.toString(),
+      gameId
     );
     const win: Window = window;
     win.location = `/${team?.slug}/${s.slug}`;
@@ -76,8 +77,12 @@ export default function CreateSeason(props: CreateSeasonProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
-  const existingSeasons = await db.findObjects(Collections.Seasons, {
+  const resolved = await UrlResolver(context, 1);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+  
+  const existingSeasons = await db.findObjects(CollectionId.Seasons, {
     _id: { $in: resolved.team?.seasons },
   });
   return {

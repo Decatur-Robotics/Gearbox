@@ -1,6 +1,7 @@
 import { SlashCommand, AckFn, RespondArguments, RespondFn, App, Installation } from "@slack/bolt";
 import SlackCommands from "./SlackCommands";
-import { Collections, getDatabase } from "./MongoDB";
+import { getDatabase } from "./MongoDB";
+import CollectionId from "./client/CollectionId";
 
 const slackApp = new App({
   // token: process.env.SLACK_BOT_TOKEN,
@@ -22,13 +23,13 @@ const slackApp = new App({
 
       const db = await getDatabase();
 
-      db.addObject(Collections.SlackInstallations, installation);
+      db.addObject(CollectionId.SlackInstallations, installation);
     },
     fetchInstallation: async (InstallQuery) => {
       const db = await getDatabase();
 
       console.log("Fetching installation: " + InstallQuery.teamId);
-      const installation = await db.findObject<Installation>(Collections.SlackInstallations, {
+      const installation = await db.findObject<Installation>(CollectionId.SlackInstallations, {
         userId: InstallQuery.userId,
         team: {
           id: InstallQuery.teamId,

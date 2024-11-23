@@ -6,7 +6,7 @@ import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import Checkbox from "./Checkboxes";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 import FieldPositionSelector from "./FieldPositionSelector";
@@ -21,7 +21,7 @@ import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
 import QrCode from "../QrCode";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export type FormProps = {
   report: Report;
@@ -47,7 +47,7 @@ export default function Form(props: FormProps) {
 
     setSubmitting(true);
 
-    api.submitForm(props.report?._id, formData, session?.user?._id)
+    api.submitForm(props.report?._id!, formData)
       .then(() => {
         console.log("Submitted form successfully!");
       })
@@ -78,7 +78,7 @@ export default function Form(props: FormProps) {
 
   const sync = async () => {
     setSyncing(true);
-    await api.updateReport({ data: formData }, props.report?._id);
+    await api.updateReport({ data: formData }, props.report?._id!);
     setSyncing(false);
   };
 

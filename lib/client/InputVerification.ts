@@ -1,18 +1,25 @@
 export const ValidRegex = /^[0-9a-z]+$/;
+export const ValidRegexWithSpaces = /^[0-9a-z ]+$/;
 export const MinimumNameLength = 3;
 
-export function validName(name: string): boolean {
-  if (!name.match(/^[a-z ,.'-]+$/i)) {
+/**
+ * @tested_by tests/lib/client/InputValidation.test.ts
+ */
+export function validName(name: string, allowSpaces: boolean = false): boolean {
+  if (!name.match(allowSpaces ? ValidRegexWithSpaces : ValidRegex)) {
     return false;
   }
 
-  if (name.length < 3) {
+  if (name.length < MinimumNameLength) {
     return false;
   }
 
   return true;
 }
 
+/**
+ * @tested_by tests/lib/client/InputValidation.test.ts
+ */
 export function validEmail(email: string): boolean {
   if (
     !email.match(

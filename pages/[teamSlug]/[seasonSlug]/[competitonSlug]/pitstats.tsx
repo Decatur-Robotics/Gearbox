@@ -12,17 +12,18 @@ import { SerializeDatabaseObject } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { useEffect, useRef, useState } from "react";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
 import { MostCommonValue, NumericalAverage, StandardDeviation } from "@/lib/client/StatsMath";
 
 import { TheBlueAlliance } from "@/lib/TheBlueAlliance";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { PitStatsLayout, Badge } from "@/lib/Layout";
+import CollectionId from "@/lib/client/CollectionId";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type PitReportPair = { [team: number]: Pitreport };
 
@@ -187,12 +188,12 @@ export default function Pitstats(props: { competition: Competition }) {
 
   const loadReports = async () => {
     const newReports = (await api.competitionReports(
-      comp._id,
+      comp._id!,
       true,
       usePublicData
     )) as Report[];
 
-    const rankings = await api.compRankings(comp.tbaId);
+    const rankings = await api.compRankings(comp.tbaId!);
 
     const allReports: typeof reports = {};
 
@@ -206,9 +207,12 @@ export default function Pitstats(props: { competition: Competition }) {
       allReports[n].quant.push(report);
     });
 
-    var newPits: PitReportPair = {};
-    for (var rid of comp?.pitReports) {
-      const pitReport = await api.findPitreportById(rid);
+    const newPits: PitReportPair = {};
+    for (const id of comp?.pitReports) {
+      const pitReport = await api.findPitreportById(id);
+      if (!pitReport)
+        continue;
+
       newPits[pitReport.teamNumber] = pitReport;
 
       if (!Object.keys(allReports).includes(pitReport.teamNumber.toString())) {
@@ -271,7 +275,7 @@ export default function Pitstats(props: { competition: Competition }) {
           getBadges={games[comp.gameId].getBadges}
           stats={stats.map(stat => ({
               label: stat.label,
-              value: stat.values.filter(v => v.team == key)[0].value,
+              value: stat.values.filter(v => v.team == key)[0]?.value,
               mean: stat.mean,
               stDev: stat.stDev,
               rank: stat.rankings.indexOf(key) + 1,
@@ -402,7 +406,7 @@ export default function Pitstats(props: { competition: Competition }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
   const compSlug = context.resolvedUrl.split("/")[3];
-  const comp = await db.findObject(Collections.Competitions, {
+  const comp = await db.findObject(CollectionId.Competitions, {
     slug: compSlug,
   });
 

@@ -8,6 +8,9 @@ export function getIdsInProgressFromTimestamps(timestamps: { [id: string]: strin
 
 export const NotLinkedToTba = "not-linked";
 
+/**
+ * @tested_by tests/lib/client/ClientUtils.test.ts
+ */
 export function camelCaseToTitleCase(str: string) {
   if (typeof str !== "string") return "";
 
@@ -27,6 +30,7 @@ export function forceOfflineMode() {
 /**
  * @param arr an array of objects with an _id field
  * @returns a dictionary of the array with the _id as the key
+ * @tested_by tests/lib/client/ClientUtils.test.ts
  */
 export function toDict<TElement extends { _id: string | undefined }>(arr: TElement[]) {
   const dict: { [_id: string]: TElement } = {};
@@ -54,6 +58,7 @@ export function download(filename: string, content: string, type: string = "text
  * Removes duplicate elements from an array. **Not in place.**
  * @param arr the arr to remove duplicates from. Flattens and recurses on the array.
  * @returns A new array with no duplicates.
+ * @tested_by tests/lib/client/ClientUtils.test.ts
  */
 export function removeDuplicates(...arr: any[]) {
   arr = arr.map((a) => Array.isArray(a) ? removeDuplicates(...a) : a).flat();
@@ -86,9 +91,10 @@ export function shuffleArray(array: any[]) {
 }
 
 /**
- * Circularly rotates an array (first element goes to the end, the rest shift up by 1) in place
+ * Circularly rotates an array to the left (first element goes to the end, the rest shift up by 1) **in place**
  * @param array - The array to rotate
  * @returns - The rotated array
+ * @tested_by tests/lib/client/ClientUtils.test.ts
  */
 export function rotateArray(array: any[]) {
   return array.push(array.shift());
@@ -101,4 +107,24 @@ export function rotateArray(array: any[]) {
  */
 export function makeObjSerializeable(obj: Object) {
   return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * Removes whitespace from a string and makes it lower case.
+ * @param str - The string to remove whitespace from
+ * @returns - A "filtered" string
+ * @tested_by tests/lib/client/ClientUtils.test.ts
+ */
+export function removeWhitespaceAndMakeLowerCase(str: string): string {
+  return str.replace(/\s/g, "").toLowerCase();
+}
+
+/**
+* @tested_by tests/lib/clien/tClientUtils.test.ts
+*/
+export function promisify<TReturn>(func: (...args: any[]) => TReturn): (...args: any[]) => Promise<TReturn> {
+  return (...args: any[]) => 
+    new Promise<TReturn>((resolve, reject) => {
+      func(...args, (val: TReturn) => resolve(val), (err: any) => reject(err));
+    });
 }

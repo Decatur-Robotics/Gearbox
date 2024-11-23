@@ -6,7 +6,7 @@ export default function TeamCard(props: { team: Team | undefined }) {
   return (
     <Card
       title={team?.name}
-      key={team?._id}
+      key={team?._id.toString()}
       className="w-full bg-base-300 border-4 border-base-300 transition ease-in hover:border-primary"
     >
       <h1 className="font-semibold max-sm:text-sm">

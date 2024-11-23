@@ -4,7 +4,7 @@ import { useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 
 type CardData = { 
@@ -72,7 +72,7 @@ function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Pi
       ref={dragRef}
     >
       <h1>
-        {props.rank !== undefined ? `${props.rank + 1}. ` : ""}Team <span className="text-accent">#{teamNumber}</span>
+        {props.rank !== undefined ? `${props.rank + 1}. ` : ""}<span className="max-sm:hidden">Team</span> <span className="text-accent">#{teamNumber}</span>
       </h1>
       {
         props.rank !== undefined && props.lastRank && props.picklist ? (
@@ -114,10 +114,11 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
 
   return (
     <div
-      className="bg-base-200 max-h-[30rem] rounded-lg w-1/6 min-h-32 flex flex-col items-center space-y-2 p-4"
+      className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
       ref={dropRef}
     >
-      <input defaultValue={picklist.name} className="w-[95%] input input-sm" onChange={changeName}></input>
+      <input defaultValue={picklist.name} className="w-[95%] input input-sm max-sm:hidden" onChange={changeName} />
+      <h1 className="w-[95%] input input-sm input-disabled sm:hidden">{picklist.name}</h1>
       {picklist.teams.map((team, index) => (
         <TeamCard
           cardData={team}
@@ -149,12 +150,12 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
   return (
     <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
       {
-        props.teams.map((team) => (
+        props.teams.sort((a, b) => a.number - b.number).map((team) => (
           <TeamCard
             draggable={true}
             cardData={team}
             key={team.number}
-          ></TeamCard>
+          />
         ))
       }
       { props.teams.length !== props.expectedTeamCount &&
@@ -163,7 +164,7 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
     </div>);
 }
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklist: DbPicklist, compId: string }) {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
@@ -229,7 +230,11 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
 
     console.log(props);
     setLoadingPicklists(LoadState.Loading);
-    api.getPicklist(props.picklist?._id).then(loadDbPicklist);
+    api.getPicklist(props.picklist?._id).then((picklist) => {
+      if (picklist) {
+        loadDbPicklist(picklist);
+      }
+    });
     loadDbPicklist(props.picklist);
 
     setLoadingPicklists(LoadState.Loaded);
@@ -252,7 +257,7 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
     <div className="w-full h-fit flex flex-col space-y-2">
       <TeamList teams={teams} picklists={picklists} expectedTeamCount={props.expectedTeamCount}></TeamList>
 
-      <div className="w-full h-[30rem] px-4 py-2 flex flex-row space-x-3">
+      <div className="w-full min-h-[30rem] h-fit px-4 py-2 flex flex-row space-x-3">
         {
           loadingPicklists === LoadState.Loading
           ?  <div className="w-full h-full flex items-center justify-center">
@@ -275,7 +280,7 @@ export default function PicklistScreen(props: { teams: number[], reports: Report
 
       { loadingPicklists !== LoadState.Loading &&
         <button
-          className="btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
+          className="max-sm:hidden btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
           onClick={addPicklist}
         >
           <FaPlus></FaPlus>

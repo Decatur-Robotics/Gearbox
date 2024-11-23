@@ -1,15 +1,15 @@
 /*
-import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
+import { GetDatabase, MongoDBInterface, CollectionId} from "./MongoDB";
 
-import { GetDatabase, MongoDBInterface, Collections} from "./MongoDB";
+import { GetDatabase, MongoDBInterface, CollectionId} from "./MongoDB";
 import { ObjectId } from "mongodb";
 import { Competition, Match, Team, CompetitonNameIdPair, MatchType, Alliance, Report } from "./Types";
 
 export namespace ExportData {
     export const CompetitionToCSV = async (compId: string) => {
         const db = await GetDatabase();
-        const comp = await db.findObjectById<Competition>(Collections.Competitions, new ObjectId(compId));
-        const reports = await db.findObjects<Report[]>(Collections.Reports, {"match": {"$in": comp.matches}, "submitted": true});
+        const comp = await db.findObjectById<Competition>(CollectionId.Competitions, new ObjectId(compId));
+        const reports = await db.findObjects<Report[]>(CollectionId.Reports, {"match": {"$in": comp.matches}, "submitted": true});
         
         var headers: string[] = ["id"];
         var lines: string[] = []

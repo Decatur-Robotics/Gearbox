@@ -1,4 +1,4 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { Competition, Season, Team } from "@/lib/Types";
@@ -7,13 +7,14 @@ import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { Collections, getDatabase } from "@/lib/MongoDB";
+import { getDatabase } from "@/lib/MongoDB";
+import CollectionId from "@/lib/client/CollectionId";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 type SeasonPageProps = {
   team: Team;
@@ -74,11 +75,15 @@ export default function Home(props: SeasonPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const db = await getDatabase();
-  const resolved = await UrlResolver(context);
+  const resolved = await UrlResolver(context, 2);
+  if ("redirect" in resolved) {
+    return resolved;
+  }
+  
   const team = resolved.team;
   const season = resolved.season;
 
-  const comp = await db.findObjects(Collections.Competitions, {
+  const comp = await db.findObjects(CollectionId.Competitions, {
     _id: { $in: season?.competitions.map((id) => new ObjectId(id)) },
   });
 

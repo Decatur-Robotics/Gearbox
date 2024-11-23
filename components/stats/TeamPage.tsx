@@ -14,7 +14,7 @@ import SmallGraph from "@/components/stats/SmallGraph";
 import Loading from "../Loading";
 import { Crescendo, games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
-import { Drivetrain } from "@/lib/Enums";
+import { FrcDrivetrain } from "@/lib/Enums";
 
 function TeamCard(props: {
   number: number;
@@ -72,7 +72,7 @@ function TeamCard(props: {
 
   let drivetrainColor = "outline";
   if (pitReport?.submitted) {
-    drivetrainColor = data?.drivetrain === Drivetrain.Swerve ? "accent" : "warning";
+    drivetrainColor = data?.drivetrain === FrcDrivetrain.Swerve ? "accent" : "warning";
   }
 
   return (
@@ -183,8 +183,8 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
   const missingTeams = teamNumbers.filter((team) => !teamRanking.includes(team));
 
   return (
-    <div className="w-full h-min flex flex-row space-x-4">
-      <div className="w-1/5 h-[50rem] flex flex-col space-y-4 overflow-y-scroll">
+    <div className="w-full h-min flex flex-col sm:flex-row space-x-4">
+      <div className="w-full sm:w-1/5 h-1/6 sm:h-[50rem] flex flex-row sm:flex-col sm:space-y-4 max-sm:overflow-x-scroll sm:overflow-y-scroll">
         {teamRanking.concat(missingTeams).map((number, index) => (
           <TeamCard
             key={number}
@@ -211,7 +211,7 @@ export default function TeamPage(props: { reports: Report[], pitReports: Pitrepo
         layout={game.statsLayout}
       />
 
-      <div className="w-5/12 h-full flex flex-col space-y-4">
+      <div className="w-5/12 h-full flex flex-col space-y-4 max-sm:hidden">
         <div className="w-full h-[300px] flex flex-row justify-end mt-2">
           <div className="w-3/4 p-2 h-full bg-base-300 rounded-l-lg">
             <Summary selectedReports={selectedReports} dots={game.statsLayout.getGraphDots(selectedReports, pitReports[selectedTeam ?? 0])} />

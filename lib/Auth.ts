@@ -3,13 +3,14 @@ import Google from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import { Collections, getDatabase, clientPromise } from "./MongoDB";
-import { Admin, ObjectId } from "mongodb";
+import { getDatabase, clientPromise } from "./MongoDB";
+import { ObjectId } from "bson";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { Analytics } from '@/lib/client/Analytics';
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
+import CollectionId from "./client/CollectionId";
 
 var db = getDatabase();
 
@@ -27,7 +28,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(Collections.Users, profile.name),
+          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
           [],
           []
         );
@@ -40,7 +41,7 @@ export const AuthenticationOptions: AuthOptions = {
           clientId: process.env.GITHUB_ID as string,
           clientSecret: process.env.GITHUB_SECRET as string,
           profile: async (profile) => {
-            const user = new User(profile.login, profile.email, profile.avatar_url, false, await GenerateSlug(Collections.Users, profile.login), [], []);
+            const user = new User(profile.login, profile.email, profile.avatar_url, false, await GenerateSlug(CollectionId.Users, profile.login), [], []);
             user.id = profile.id;
             return user;
         },
@@ -55,7 +56,7 @@ export const AuthenticationOptions: AuthOptions = {
           profile.email,
           profile.picture,
           false,
-          await GenerateSlug(Collections.Users, profile.name),
+          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
           [],
           [],
           profile.sub,
@@ -81,9 +82,10 @@ export const AuthenticationOptions: AuthOptions = {
   callbacks: {
     async session({ session, user }) {
       session.user = await (await db).findObjectById(
-        Collections.Users,
+        CollectionId.Users,
         new ObjectId(user.id)
       );
+
       return session;
     },
 
@@ -93,7 +95,32 @@ export const AuthenticationOptions: AuthOptions = {
 
     async signIn({ user }) {
       Analytics.signIn(user.name ?? "Unknown User");
-      ResendUtils.createContact(user);
+      new ResendUtils().createContact(user);
+
+      let typedUser = user as Partial<User>;
+      if (!typedUser.slug) {
+        console.log("User is incomplete, filling in missing fields");
+
+        const name = typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
+        
+        // User is incomplete, fill in the missing fields
+        typedUser = {
+          _id: typedUser._id ?? new ObjectId(typedUser.id),
+          name,
+          image: typedUser.image ?? "https://4026.org/user.jpg",
+          slug: await GenerateSlug(await getDatabase(), CollectionId.Users, name),
+          teams: typedUser.teams ?? [],
+          owner: typedUser.owner ?? [],
+          slackId: typedUser.slackId ?? "",
+          onboardingComplete: typedUser.onboardingComplete ?? false,
+          admin: typedUser.admin ?? false,
+          xp: typedUser.xp ?? 0,
+          level: typedUser.level ?? 0,
+          ...typedUser,
+        } as User;
+
+        await (await db).updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), typedUser);
+      }
 
       return true;
     }

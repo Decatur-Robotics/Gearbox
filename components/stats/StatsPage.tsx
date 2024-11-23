@@ -1,15 +1,15 @@
-import ClientAPI from "@/lib/client/ClientAPI";
+import ClientApi from "@/lib/api/ClientApi";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import { Competition, Pitreport, SubjectiveReport, Report, DbPicklist } from "@/lib/Types";
 import { useState, useEffect } from "react";
 import Container from "@/components/Container";
-import PicklistScreen from "./stats/Picklist";
-import TeamPage from "./stats/TeamPage";
-import PredictionScreen from "./stats/PredictionScreen";
+import PicklistScreen from "./Picklist";
+import TeamPage from "./TeamPage";
+import PredictionScreen from "./PredictionScreen";
 import { games } from "@/lib/games";
 
-const api = new ClientAPI("gearboxiscool");
+const api = new ClientApi();
 
 export type StatsPageProps = {
   reports: Report[];
@@ -43,10 +43,10 @@ export default function Stats(props: StatsPageProps) {
 
     const promises = [
       api
-        .competitionReports(props.competition._id, true, usePublicData)
+        .competitionReports(props.competition._id!, true, usePublicData)
         .then((data) => setReports(data)),
-      pitReports.length === 0 &&
-        api.getPitReports(props.competition.pitReports).then((data) => {
+      pitReports.length === 0 && props.competition._id &&
+        api.getPitReports(props.competition._id).then((data) => {
             setPitReports(data);
           }),
       api.getSubjectiveReportsForComp(props.competition._id!).then(setSubjectiveReports),
@@ -76,7 +76,6 @@ export default function Stats(props: StatsPageProps) {
     <Container
       requireAuthentication={false}
       hideMenu={true}
-      notForMobile={true}
       title="Stats"
     >
       <div className="flex flex-row items-center p-1 pl-2 space-x-2 bg-base-200">

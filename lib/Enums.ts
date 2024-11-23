@@ -1,5 +1,3 @@
-import { StringKeyedObject, ElementType } from "./Layout";
-
 export enum Defense {
   None = "None",
   Partial = "Partial",
@@ -21,10 +19,15 @@ export enum IntakeTypes {
   Both = "Both",
 }
 
-export enum Drivetrain {
+export enum FrcDrivetrain {
   Tank = "Tank",
   Swerve = "Swerve",
   Mecanum = "Mecanum",
+}
+
+export enum FtcDrivetrain {
+  Tank = FrcDrivetrain.Tank, // Reference the other enum to allow interoperability
+  Mecanum = FrcDrivetrain.Mecanum,
 }
 
 export enum Motors {

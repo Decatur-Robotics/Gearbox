@@ -1,0 +1,42 @@
+name: CD
+
+on:
+  workflow_call:
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+permissions:
+  packages: write
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    environment: Test 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create certs directory
+        run: mkdir certs
+        
+      - name: Build and export
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          tags: ghcr.io/decatur-robotics/gearbox:latest
+          outputs: type=docker,dest=/tmp/gearbox.tar
+          context: . # Needed for Docker to find files made during the workflow
+          
+      - name: Load image
+        run: |
+          docker load --input /tmp/gearbox.tar
+          docker image ls -a
+
+      - name: Sign in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u decatur-robotics --password-stdin
+
+      - name: Push to GHCR
+        run: docker push ghcr.io/decatur-robotics/gearbox:latest

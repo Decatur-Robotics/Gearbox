@@ -12,7 +12,7 @@ export default function PitScoutingCard(props: {
   const { pitreports, loadingPitreports, comp } = props;
 
   return (
-    <div className="max-w-screen-md max-sm:w-11/12 card bg-base-200 shadow-xl h-56">
+    <div className="w-full card bg-base-200 shadow-xl h-56">
       {pitreports.length === 0 && !loadingPitreports ? (
         <div className="flex flex-col items-center justify-center h-full">
           <h1 className="text-2xl sm:text-3xl font-bold">
