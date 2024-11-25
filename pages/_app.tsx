@@ -9,6 +9,12 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { NextSeo } from "next-seo";
 
 import ReactGA from "react-ga4";
+import { Toaster } from "react-hot-toast";
+
+import resolveConfig from "tailwindcss/resolveConfig";
+import tailwindConfig from "../tailwind.config.js";
+
+const tailwind = resolveConfig(tailwindConfig);
 
 if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
   ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
@@ -17,6 +23,8 @@ export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }: AppProps<{ session: Session }>) {
+  console.log(tailwind.theme);
+
   return (
     <SessionProvider session={session}>
       <DndProvider backend={HTML5Backend}>
@@ -40,7 +48,14 @@ export default function App({
             siteName: "Gearbox",
           }}
         />
-
+        <Toaster 
+          toastOptions={{
+            style: {
+              background: (tailwind.theme.backgroundColor["zinc"] as any)[900].toString(),
+              color: tailwind.theme.textColor["base-100"].toString(),
+            },
+          }}
+        />
         <Component {...pageProps} />
       </DndProvider>
     </SessionProvider>
