@@ -23,8 +23,6 @@ export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }: AppProps<{ session: Session }>) {
-  console.log(tailwind.theme);
-
   return (
     <SessionProvider session={session}>
       <DndProvider backend={HTML5Backend}>
