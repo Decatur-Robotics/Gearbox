@@ -68,8 +68,6 @@ namespace AccessLevels {
       return { authorized: false, authData: undefined };
     }
 
-    console.log(team.owners, user._id?.toString());
-
     return { authorized: team.owners.includes(user._id?.toString()!), authData: { team, comp } };
   }
 
@@ -241,8 +239,6 @@ namespace AccessLevels {
   }
 
   export async function IfOnTeamThatOwnsPicklist(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise, db }: UserAndDb, picklistId: string) {
-    console.log("IfOnTeamThatOwnsPicklist", picklistId);
-
     const user = await userPromise;
     if (!user) {
       return { authorized: false, authData: undefined };
@@ -258,7 +254,6 @@ namespace AccessLevels {
       return { authorized: false, authData: undefined };
     }
 
-    console.log(team.users, user._id?.toString());
     return { authorized: team.users.includes(user._id?.toString()!), authData: { team, picklist } };
   }
 }
