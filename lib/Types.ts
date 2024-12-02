@@ -563,7 +563,7 @@ type LinkedNode<T> = T & {
 }
 
 /**
- * @tested_by tests/lib/types/LinkedList.test.ts
+ * @tested_by tests/lib/Types.test.ts
  */
 export class LinkedList<T> {
   private head?: LinkedNode<T> = undefined;
