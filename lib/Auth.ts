@@ -13,7 +13,7 @@ import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 
-var db = getDatabase();
+const db = getDatabase();
 
 const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
 
@@ -109,7 +109,7 @@ export const AuthenticationOptions: AuthOptions = {
           _id: typedUser._id ?? new ObjectId(typedUser.id),
           name,
           image: typedUser.image ?? "https://4026.org/user.jpg",
-          slug: await GenerateSlug(await getDatabase(), CollectionId.Users, name),
+          slug: await GenerateSlug(await db, CollectionId.Users, name),
           teams: typedUser.teams ?? [],
           owner: typedUser.owner ?? [],
           slackId: typedUser.slackId ?? "",
