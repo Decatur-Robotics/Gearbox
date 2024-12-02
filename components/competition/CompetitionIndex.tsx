@@ -46,6 +46,7 @@ import CompHeaderCard from "./CompHeaderCard";
 import InsightsAndSettingsCard from "./InsightsAndSettingsCard";
 import MatchScheduleCard from "./MatchScheduleCard";
 import PitScoutingCard from "./PitScoutingCard";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -386,7 +387,7 @@ export default function CompetitionIndex(props: {
     }
 
     if ((res.result as string).toLowerCase() !== "success") {
-      alert(res.result);
+      toast.error(res.result);
     }
 
     setAssigningMatches(false);
@@ -395,11 +396,11 @@ export default function CompetitionIndex(props: {
   const reloadCompetition = async () => {
     const num = Math.floor(Math.random() * 1000000);
     if(prompt(`Are you sure you want to reload the competition? This will overwrite ALL your data. We CANNOT recover your data. If you are sure, type '${num}'`) !== String(num)) {
-      alert("Cancelled");
+      toast("Cancelled");
       return;
     }
 
-    alert("Reloading competition...");
+    toast("Reloading competition...");
 
     setUpdatingComp("Checking for Updates...");
     const res = await api.reloadCompetition(comp?._id!);

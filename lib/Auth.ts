@@ -11,6 +11,7 @@ import { Analytics } from '@/lib/client/Analytics';
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
+import { AdapterUser } from "next-auth/adapters";
 
 var db = getDatabase();
 
@@ -137,7 +138,7 @@ export const AuthenticationOptions: AuthOptions = {
   debug: false,
   adapter: {
     ...adapter,
-    createUser: async (user) => {
+    createUser: async (user: Omit<AdapterUser, "id">) => {
       const createdUser = await adapter.createUser!(user);
 
       Analytics.newSignUp(user.name ?? "Unknown User");
