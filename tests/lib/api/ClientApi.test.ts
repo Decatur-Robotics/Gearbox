@@ -2,7 +2,7 @@ import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
 import { GameId } from "@/lib/client/GameId";
 import { getTestApiParams, getTestApiUtils } from "@/lib/testutils/TestUtils";
-import { AllianceColor, League, Match, MatchType, QuantData, Report, Season, Team, User, WebhookHolder } from "@/lib/Types";
+import { AllianceColor, Competition, League, Match, MatchType, Pitreport, PitReportData, QuantData, Report, Season, Team, User, WebhookHolder } from "@/lib/Types";
 import { EJSON, ObjectId } from "bson";
 
 const api = new ClientApi();
@@ -14,9 +14,8 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
     const teamId = new ObjectId();
 
     await db.addObject(CollectionId.Teams, {
-      _id: teamId,
-      users: [user._id!.toString()],
-      requests: []
+      ...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()], [user._id!.toString()]),
+      _id: teamId
     });
 
     await api.requestToJoinTeam.handler(...await getTestApiParams(res, { db, user }, [teamId.toString()]));
@@ -34,9 +33,8 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
     const teamId = new ObjectId();
 
     await db.addObject(CollectionId.Teams, {
-      _id: teamId,
-      users: [],
-      requests: []
+      ...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC),
+      _id: teamId
     });
 
     await api.requestToJoinTeam.handler(...await getTestApiParams(res, { db, user }, [teamId.toString()]));
@@ -78,11 +76,8 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
     const userId = new ObjectId();
 
     await db.addObject(CollectionId.Teams, {
-      _id: teamId,
-      users: [],
-      requests: [],
-      owners: [],
-      scouters: []
+      ...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC),
+      _id: teamId
     });
 
     await api.handleTeamJoinRequest.handler(...await getTestApiParams(res, { db, user }, [true, teamId.toString(), userId.toString()]));
@@ -94,27 +89,20 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
     const { db, res, user } = await getTestApiUtils();
 
     const teamId = new ObjectId();
-    const userId = new ObjectId();
 
     await db.addObject(CollectionId.Teams, {
+      ...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]),
       _id: teamId,
-      users: [],
-      requests: [],
-      owners: [user._id!.toString()],
-      scouters: []
     });
 
-    await db.addObject(CollectionId.Users, {
-      _id: userId,
-      teams: []
-    });
+    await db.addObject(CollectionId.Users, user);
 
-    await api.handleTeamJoinRequest.handler(...await getTestApiParams(res, { db, user }, [true, teamId.toString(), userId.toString()]));
+    await api.handleTeamJoinRequest.handler(...await getTestApiParams(res, { db, user }, [true, teamId.toString(), user._id!.toString()]));
 
     const team = await db.findObjectById<Team>(CollectionId.Teams, teamId);
-    expect(team?.users).toEqual([userId.toString()]);
+    expect(team?.users).toEqual([user._id!.toString()]);
 
-    const foundUser = await db.findObjectById<User>(CollectionId.Users, userId);
+    const foundUser = await db.findObjectById<User>(CollectionId.Users, user._id! as any as ObjectId);
     expect(foundUser?.teams).toEqual([teamId.toString()]);
   });
 
@@ -124,11 +112,8 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
     const teamId = new ObjectId();
 
     await db.addObject(CollectionId.Teams, {
+      ...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]),
       _id: teamId,
-      users: [],
-      requests: [],
-      owners: [user._id!.toString()],
-      scouters: []
     });
 
     await api.handleTeamJoinRequest.handler(...await getTestApiParams(res, { db, user }, [false, teamId.toString(), new ObjectId().toString()]));
@@ -144,14 +129,8 @@ describe(`${ClientApi.name}.${api.createTeam.name}`, () => {
     const { db, res, user } = await getTestApiUtils();
 
     const promises = [
-      db.addObject(CollectionId.Teams, {
-        number: 1,
-        league: League.FRC
-      }),
-      db.addObject(CollectionId.Teams, {
-        number: 2,
-        league: League.FTC
-      }),
+      db.addObject(CollectionId.Teams, new Team("Test Team", "test-team", "tbaId", 1, League.FRC)),
+      db.addObject(CollectionId.Teams, new Team("Test Team", "test-team", "tbaId", 2, League.FTC)),
       db.addObject(CollectionId.Users, user)
     ];
     await Promise.all(promises);
@@ -294,7 +273,10 @@ describe(`${ClientApi.name}.${api.findCompetitionById.name}`, () => {
   test(`${ClientApi.name}.${api.findCompetitionById.name}: Returns competition if found`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const competition = { _id: new ObjectId(), name: "Test Competition", slug: "test-competition", tbaId: "test-tbaId", start: 0, end: 0, pitReports: [], matches: [], picklist: "", publicData: false, gameId: "test-game" };
+    const competition = {
+      ...new Competition("Test Competition", "test-competition", "test-tbaId", 0, 0, [], [], "", false),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.Competitions, competition);
 
     await api.findCompetitionById.handler(...await getTestApiParams(res, { db, user }, [competition._id!.toString()]));
@@ -317,7 +299,10 @@ describe(`${ClientApi.name}.${api.findMatchById.name}`, () => {
   test(`${ClientApi.name}.${api.findMatchById.name}: Returns match if found`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const match = { _id: new ObjectId(), slug: "test-match", tbaId: "test-tbaId", type: "test-type", number: 1, blueAlliance: [], redAlliance: [], time: 0, reports: [], subjectiveScouter: "", subjectiveReports: [], subjectiveReportsCheckInTimestamps: {}, assignedSubjectiveScouterHasSubmitted: false };
+    const match = { 
+      ...new Match(0, "test-match", "test-tbaId", 0, MatchType.Qualifying, [], [], []),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.Matches, match);
 
     await api.findMatchById.handler(...await getTestApiParams(res, { db, user }, [match._id!.toString()]));
@@ -340,7 +325,10 @@ describe(`${ClientApi.name}.${api.findReportById.name}`, () => {
   test(`${ClientApi.name}.${api.findReportById.name}: Returns report if found`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: "test-match", submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
+    const report = { 
+      ...new Report("", {} as QuantData, 0, AllianceColor.Blue, "", 1, ""),
+      _id: new ObjectId()
+     };
     await db.addObject(CollectionId.Reports, report);
 
     await api.findReportById.handler(...await getTestApiParams(res, { db, user }, [report._id!.toString()]));
@@ -363,7 +351,10 @@ describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
   test(`${ClientApi.name}.${api.findPitreportById.name}: Returns pitreport if found`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    const pitreport = { 
+      ...new Pitreport(0, {} as PitReportData),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.PitReports, pitreport);
 
     await api.findPitreportById.handler(...await getTestApiParams(res, { db, user }, [pitreport._id!.toString()]));
@@ -476,7 +467,10 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
   test(`${ClientApi.name}.${api.updateReport.name}: Check if user is on team`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const report = { _id: new ObjectId(), timestamp: 0, user: "test-user", submitter: "test-submitter", color: "test-color", robotNumber: 1, match: "test-match", submitted: false, data: {}, checkInTimestamp: "test-checkInTimestamp" };
+    const report = { 
+      ...new Report("", {} as QuantData, 0, AllianceColor.Blue, "", 1, ""),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.Reports, report);
 
     const newValues = { data: { updated: true } };
@@ -493,10 +487,16 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
     const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
     await db.addObject(CollectionId.Teams, team);
 
-    const competition = { _id: new ObjectId(), name: "Test Competition", slug: "test-competition", tbaId: "test-tbaId", start: 0, end: 0, pitReports: [], matches: [], picklist: "", publicData: false, gameId: "test-game" };
+    const competition = { 
+      ...new Competition("Test Competition", "test-competition", "test-tbaId", 0, 0, [], [], "", false),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.Competitions, competition);
 
-    const pitreport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    const pitreport = { 
+      ...new Pitreport(0, {} as PitReportData),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.PitReports, pitreport);
 
     const newValues = { data: { updated: true } };
@@ -509,7 +509,10 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
   test(`${ClientApi.name}.${api.updatePitreport.name}: Check if user is on team`, async () => {
     const { db, res, user } = await getTestApiUtils();
 
-    const pitReport = { _id: new ObjectId(), teamNumber: 1, submitted: false, submitter: "test-submitter", data: {} };
+    const pitReport = {
+      ...new Pitreport(0, {} as PitReportData),
+      _id: new ObjectId()
+    };
     await db.addObject(CollectionId.PitReports, pitReport);
 
     const newValues = { data: { updated: true } };
