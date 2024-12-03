@@ -1,7 +1,7 @@
 import AccessLevels from "@/lib/api/AccessLevels";
 import CollectionId from "@/lib/client/CollectionId";
 import DbInterface from "@/lib/client/dbinterfaces/DbInterface";
-import { getTestApiUtils } from "@/lib/TestUtils";
+import { getTestApiUtils } from "@/lib/testutils/TestUtils";
 import { SubjectiveReport, Team, User } from "@/lib/Types";
 import { ObjectId } from "bson";
 
