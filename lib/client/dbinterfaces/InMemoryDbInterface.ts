@@ -109,7 +109,7 @@ export default class InMemoryDbInterface implements DbInterface {
     return this.backingDb.collections[collection].remove(serialize({ _id: id }));
   }
 
-  updateObjectById<Type extends Document>(collection: CollectionId, id: ObjectId, newValues: Partial<Type>): Promise<void>
+  updateObjectById<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(collection: TId, id: ObjectId, newValues: Partial<TObj>): Promise<void>
   {
     return this.backingDb.collections[collection].findOne(serialize({ _id: id })).then((existingDoc) => {
       if (!existingDoc)

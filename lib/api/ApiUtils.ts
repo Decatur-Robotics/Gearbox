@@ -107,7 +107,7 @@ export async function generatePitReports(tba: TheBlueAlliance.Interface, db: DbI
 }
 
 export async function addXp(db: DbInterface, userId: string, xp: number) {
-  const user = await db.findObjectById<User>(CollectionId.Users, new ObjectId(userId));
+  const user = await db.findObjectById(CollectionId.Users, new ObjectId(userId));
 
   if (!user)
     return;
@@ -115,7 +115,7 @@ export async function addXp(db: DbInterface, userId: string, xp: number) {
   const newXp = user.xp + xp
   const newLevel = xpToLevel(newXp);
 
-  await db.updateObjectById<User>(
+  await db.updateObjectById(
     CollectionId.Users,
     new ObjectId(userId),
     { xp: newXp, level: newLevel }

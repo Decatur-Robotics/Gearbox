@@ -46,7 +46,7 @@ const SlackCommands: SlackCommandDict = {
       return;
     }
 
-    await db.updateObjectById<Team>(CollectionId.Teams, new ObjectId(team._id!), {
+    await db.updateObjectById(CollectionId.Teams, new ObjectId(team._id!), {
       slackChannel: command.channel_id
     });
   

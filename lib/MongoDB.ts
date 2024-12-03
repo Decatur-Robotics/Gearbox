@@ -83,16 +83,14 @@ export class MongoDBInterface implements DbInterface {
     await this?.db?.collection(collection).deleteOne(query);
   }
 
-  async updateObjectById<Type>(
-    collection: CollectionId,
-    id: ObjectId,
-    newValues: Partial<Type> | { [key: string]: any }
-  ) {
+  updateObjectById<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(collection: TId, id: ObjectId, newValues: Partial<TObj>): Promise<void> {
     var query = { _id: id };
     var updated = { $set: newValues };
     this?.db
       ?.collection(collection)
       .updateOne(query, updated);
+
+    return Promise.resolve();
   }
 
   async findObjectById<Type>(
