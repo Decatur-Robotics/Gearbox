@@ -16,7 +16,7 @@ namespace AccessLevels {
   }
 
   export async function IfSignedIn(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise }: UserAndDb) {
-    return { authorized: (await userPromise) !== undefined, authData: undefined };
+    return { authorized: (await userPromise) != undefined, authData: undefined };
   }
 
   export async function IfDeveloper(req: NextApiRequest, res: ApiLib.ApiResponse<any>, { userPromise }: UserAndDb) {
