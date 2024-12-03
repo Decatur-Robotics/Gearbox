@@ -67,7 +67,7 @@ function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Pi
   return (
     <div
       className={`w-${props.width ?? "[150px]"} h-${props.height ?? "[100px]"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary`}
-      ref={dragRef}
+      ref={dragRef as unknown as () => void}
     >
       <h1>
         {props.rank !== undefined ? `${props.rank + 1}. ` : ""}<span className="max-sm:hidden">Team</span> <span className="text-accent">#{teamNumber}</span>
@@ -113,7 +113,7 @@ function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
   return (
     <div
       className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
-      ref={dropRef}
+      ref={dropRef as unknown as () => void}
     >
       <input defaultValue={picklist.name} className="w-[95%] input input-sm max-sm:hidden" onChange={changeName} />
       <h1 className="w-[95%] input input-sm input-disabled sm:hidden">{picklist.name}</h1>
@@ -146,7 +146,7 @@ export function TeamList(props: { teams: CardData[], picklists: Picklist[], expe
   });
   
   return (
-    <div ref={dropRef} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
+    <div ref={dropRef as unknown as () => void} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
       {
         props.teams.sort((a, b) => a.number - b.number).map((team) => (
           <TeamCard
