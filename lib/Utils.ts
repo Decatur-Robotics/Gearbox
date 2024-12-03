@@ -7,6 +7,7 @@ import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Redirect } from "next";
+import { User } from "./Types";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -52,4 +53,8 @@ export function createRedirect(destination: string, query: Record<string, any> =
 
 export function isDeveloper(email: string | undefined) {
   return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(email ?? "");
+}
+
+export function mentionUserInSlack(user: User) {
+  return user?.slackId ? `<@${user!.slackId}>` : user!.name;
 }
