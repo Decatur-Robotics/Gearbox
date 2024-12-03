@@ -14,6 +14,7 @@ enum CollectionId {
   Picklists = "Picklists",
   SubjectiveReports = "SubjectiveReports",
   SlackInstallations = "SlackInstallations",
+  Webhooks = "Webhooks",
   Misc = "Misc", 
 }
 

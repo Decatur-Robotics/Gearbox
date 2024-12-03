@@ -1,12 +1,13 @@
 import { NextApiResponse } from "next";
-import ApiLib from "./api/ApiLib";
-import InMemoryDbInterface from "./client/dbinterfaces/InMemoryDbInterface";
-import ApiDependencies from "./api/ApiDependencies";
-import DbInterface from "./client/dbinterfaces/DbInterface";
-import { User } from "./Types";
-import { ResendInterface } from "./ResendUtils";
 import { ObjectId } from "bson";
-import CollectionId from "./client/CollectionId";
+import { User } from "../Types";
+import ApiDependencies from "../api/ApiDependencies";
+import ApiLib from "../api/ApiLib";
+import CollectionId from "../client/CollectionId";
+import DbInterface from "../client/dbinterfaces/DbInterface";
+import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
+import { ResendInterface } from "../ResendUtils";
+import { SlackInterface } from "../SlackClient";
 
 export class TestRes extends ApiLib.ApiResponse<any> {
   status = jest.fn((code) => this);
@@ -25,6 +26,10 @@ export class TestRes extends ApiLib.ApiResponse<any> {
 export class TestResend implements ResendInterface {
   createContact = jest.fn();
   emailDevelopers = jest.fn();
+}
+
+export class TestSlackClient implements SlackInterface {
+  sendMsg = jest.fn(() => Promise.resolve());
 }
 
 function getTestUser() {
@@ -74,7 +79,7 @@ export async function getTestApiParams<TArgs extends Array<any>, TAuthData = und
     res,
     {
       db: Promise.resolve(db),
-      slackClient: undefined,
+      slackClient: new TestSlackClient(),
       userPromise: Promise.resolve(user),
       tba: undefined,
       resend: deps.resend ?? new TestResend(),

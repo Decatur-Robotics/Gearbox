@@ -3,10 +3,7 @@ import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
 import fs, { readFileSync } from "fs";
-import { App } from "@slack/bolt";
-import SlackCommands from "./lib/SlackCommands";
 import { IncomingMessage, ServerResponse, request } from "http";
-import { startSlackApp } from "./lib/Slack";
 
 console.log("Starting server...");
 
@@ -23,8 +20,6 @@ const httpsOptions = {
 };
 
 console.log("HTTPS options set");
-
-// startSlackApp();
 
 console.log("App preparing...");
 app.prepare().then(() => {

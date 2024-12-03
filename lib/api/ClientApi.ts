@@ -3,11 +3,11 @@ import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
 import ApiLib from './ApiLib';
-import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report, SavedCompetition } from "@/lib/Types";
+import { Alliance, Competition, CompetitonNameIdPair, DbPicklist, League, Match, MatchType, Pitreport, QuantData, Season, SubjectiveReport, SubjectiveReportSubmissionType, Team, User, Report, SavedCompetition, WebhookHolder } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import { addXp, generatePitReports, getTeamFromMatch, getTeamFromReport, onTeam, ownsTeam } from "./ApiUtils";
 import { TheOrangeAlliance } from "../TheOrangeAlliance";
-import { GenerateSlug, isDeveloper } from "../Utils";
+import { GenerateSlug, isDeveloper, mentionUserInSlack } from "../Utils";
 import { fillTeamWithFakeUsers } from "../dev/FakeData";
 import { GameId } from "../client/GameId";
 import { AssignScoutersToCompetitionMatches, generateReportsForMatch } from "../CompetitionHandling";
@@ -15,6 +15,7 @@ import { games } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { request } from 'http';
+import { SlackNotLinkedError } from "./Errors";
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
@@ -510,22 +511,53 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     }
   });
 
-  remindSlack = ApiLib.createRoute<[string, string], { result: string, msgRes: any }, ApiDependencies, { team: Team }>({
-    isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfCompOwner(req, res, deps, teamId),
-    handler: async (req, res, { db: dbPromise, slackClient, userPromise }, { team }, [teamId, slackId]) => {
+  remindSlack = ApiLib.createRoute<[string, string], { result: string }, ApiDependencies, Team>({
+    isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
+    handler: async (req, res, { db: dbPromise, slackClient, userPromise }, team, [teamId, targetUserId]) => {
       const db = await dbPromise;
-      const user = await userPromise;
+      const targetUserPromise = db.findObjectById<User>(CollectionId.Users, new ObjectId(targetUserId));
 
-      if (!team.slackChannel)
-        return res.status(200).send({ error: "Team has not linked their Slack channel" });
+      if (!team.slackWebhook)
+        throw new SlackNotLinkedError(res);
 
-      const msgRes = await slackClient.chat.postMessage({
-        token: process.env.SLACK_BOT_TOKEN,
-        channel: team.slackChannel,
-        text: `<@${slackId}>, please report to our section and prepare for scouting. Sent by <@${user?.slackId}>`,
-      });
+      const webhookHolder = await db.findObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(team.slackWebhook)); 
+      if (!webhookHolder)
+        throw new SlackNotLinkedError(res);
 
-      return res.status(200).send({ result: "success", msgRes });
+      const user = (await userPromise)!;
+      const targetUser = await targetUserPromise;
+
+      if (!targetUser || team.users.indexOf(targetUser._id?.toString() ?? "") === -1) {
+        return res.status(400).send({ error: "User not found" });
+      }
+
+      await slackClient.sendMsg(webhookHolder.url, 
+        `${mentionUserInSlack(targetUser)}, please report to our section and prepare for scouting. Sent by ${mentionUserInSlack(user)}.`);
+
+      return res.status(200).send({ result: "success" });
+    }
+  });
+
+  setSlackWebhook = ApiLib.createRoute<[string, string], { result: string }, ApiDependencies, Team>({
+    isAuthorized: (req, res, deps, [teamId]) => AccessLevels.IfTeamOwner(req, res, deps, teamId),
+    handler: async (req, res, { db, userPromise, slackClient }, team, [teamId, webhookUrl]) => {
+      const user = (await userPromise)!;
+
+      // Check that the webhook works
+      slackClient.sendMsg(webhookUrl, `Gearbox integration for ${team.name} was added by ${mentionUserInSlack(user)}.`)
+        .catch(() => {
+          return res.status(400).send({ error: "Invalid webhook" });
+        });
+
+      if (team.slackWebhook) {
+        (await db).updateObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(team.slackWebhook), { url: webhookUrl });
+      } else {
+        const webhook = await (await db).addObject<WebhookHolder>(CollectionId.Webhooks, { url: webhookUrl });
+        team.slackWebhook = webhook._id.toString();
+        (await db).updateObjectById<Team>(CollectionId.Teams, new ObjectId(teamId), team);
+      }
+
+      return res.status(200).send({ result: "success" });
     }
   });
 

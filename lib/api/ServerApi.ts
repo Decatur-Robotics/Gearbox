@@ -9,6 +9,7 @@ import { AuthenticationOptions } from "../Auth";
 import { User } from "../Types";
 import ClientApi from "@/lib/api/ClientApi";
 import ResendUtils from "../ResendUtils";
+import SlackClient from "../SlackClient";
 
 export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
   constructor(clientApi?: ApiLib.ApiTemplate<ApiDependencies>) {
@@ -20,7 +21,7 @@ export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
     return {
       db: getDatabase(),
       tba: new TheBlueAlliance.Interface(),
-      slackClient: new WebClient(process.env.SLACK_CLIENT_SECRET),
+      slackClient: new SlackClient(),
       userPromise: getServerSession(req, res.innerRes, AuthenticationOptions).then((s) => s?.user as User | undefined),
       resend: new ResendUtils()
     };
