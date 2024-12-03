@@ -1,8 +1,8 @@
 import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
 import { GameId } from "@/lib/client/GameId";
-import { getTestApiParams, getTestApiUtils } from "@/lib/TestUtils";
-import { AllianceColor, League, Match, MatchType, QuantData, Report, Season, Team, User } from "@/lib/Types";
+import { getTestApiParams, getTestApiUtils } from "@/lib/testutils/TestUtils";
+import { AllianceColor, League, Match, MatchType, QuantData, Report, Season, Team, User, WebhookHolder } from "@/lib/Types";
 import { EJSON, ObjectId } from "bson";
 
 const api = new ClientApi();
@@ -516,5 +516,55 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
     const args = await getTestApiParams(res, { db, user }, [pitReport._id!.toString(), newValues]);
     
     expect((await api.updatePitreport.isAuthorized(args[0], args[1], args[2], args[4])).authorized).toBe(false);
+  });
+});
+
+describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
+  test(`${ClientApi.name}.${api.setSlackWebhook.name}: Sets webhook URL when team does not already have one`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+    
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
+    await db.addObject(CollectionId.Teams, team);
+
+    const webhookUrl = "test-webhook-url";
+
+    const params = await getTestApiParams(res, { db, user }, [team._id!.toString(), webhookUrl], team);
+
+    await api.setSlackWebhook.handler(...params);
+
+    expect((params[2].slackClient.sendMsg as jest.Mock).mock.calls[0][0]).toBe(webhookUrl);
+
+    const updatedTeam = await db.findObjectById<Team>(CollectionId.Teams, new ObjectId(team._id!));
+    expect(updatedTeam?.slackWebhook).not.toBe(undefined);
+
+    const webhook = await db.findObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(updatedTeam!.slackWebhook!));
+    expect(webhook?.url).toEqual(webhookUrl);
+  });
+
+  test(`${ClientApi.name}.${api.setSlackWebhook.name}: Updates webhook URL when team already has one`, async () => {
+    const { db, res, user } = await getTestApiUtils();
+    
+    const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [user._id!.toString()]);
+    await db.addObject(CollectionId.Teams, team);
+
+    const webhookUrl = "test-webhook-url";
+
+    const webhook = new WebhookHolder(webhookUrl);
+    await db.addObject(CollectionId.Webhooks, webhook);
+
+    team.slackWebhook = webhook._id!.toString();
+    await db.updateObjectById(CollectionId.Teams, team._id, team);
+
+    const params = await getTestApiParams(res, { db, user }, [team._id!.toString(), webhookUrl], team);
+
+    await api.setSlackWebhook.handler(...params);
+
+    expect((params[2].slackClient.sendMsg as jest.Mock).mock.calls[0][0]).toBe(webhookUrl);
+
+    const updatedTeam = await db.findObjectById<Team>(CollectionId.Teams, new ObjectId(team._id!));
+    expect(updatedTeam?.slackWebhook).toEqual(webhook._id!.toString());
+
+    const updatedWebhook = await db.findObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(updatedTeam!.slackWebhook!));
+    expect(updatedWebhook?.url).toEqual(webhookUrl);
   });
 });

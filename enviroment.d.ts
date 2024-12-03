@@ -30,13 +30,8 @@ declare global {
       IMAGE_UPLOAD_DIR: string;
       FILL_TEAMS: string;
 
-      SLACK_BOT_TOKEN: string;
       NEXT_PUBLIC_SLACK_CLIENT_ID: string;
       SLACK_CLIENT_SECRET: string;
-      SLACK_APP_TOKEN: string;
-      SLACK_SIGNING_SECRET: string;
-      SLACK_STATE_SECRET: string;
-      SLACK_PORT: string;
 
       NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: string;
 
