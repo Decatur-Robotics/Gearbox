@@ -55,11 +55,18 @@ function Overview(props: TeamPageProps) {
       <Flex mode="row" className=" min-h-[12rem] mb-8 max-sm:flex-col">
         <div className="w-full md:w-1/2">
           <h1 className="font-semibold text-lg mb-2">Latest Competition:</h1>
-          <Link
-            href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
-          >
-            <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
-          </Link>
+          { props.currentCompetition 
+            ? <Link
+                href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
+              >
+                <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
+              </Link>
+            : <p>
+                No competitions.{" "}
+                <Link href={`/${props.team?.slug}/createSeason`} className="link link-accent">Create a season</Link>
+                {" "}to get started.
+              </p>
+          }
         </div>
         <div className="divider divider-horizontal max-sm:divider-vertical"></div>
         <div className="w-full md:w-1/2">
