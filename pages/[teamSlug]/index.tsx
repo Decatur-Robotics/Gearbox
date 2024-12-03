@@ -55,11 +55,18 @@ function Overview(props: TeamPageProps) {
       <Flex mode="row" className=" min-h-[12rem] mb-8 max-sm:flex-col">
         <div className="w-full md:w-1/2">
           <h1 className="font-semibold text-lg mb-2">Latest Competition:</h1>
-          <Link
-            href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
-          >
-            <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
-          </Link>
+          { props.currentCompetition 
+            ? <Link
+                href={`/${props.team?.slug}/${props.currentSeason?.slug}/${props.currentCompetition?.slug}`}
+              >
+                <CompetitionCard comp={props.currentCompetition}></CompetitionCard>
+              </Link>
+            : <p>
+                No competitions.{" "}
+                <Link href={`/${props.team?.slug}/createSeason`} className="link link-accent">Create a season</Link>
+                {" "}to get started.
+              </p>
+          }
         </div>
         <div className="divider divider-horizontal max-sm:divider-vertical"></div>
         <div className="w-full md:w-1/2">
@@ -426,22 +433,14 @@ export default function TeamIndex(props: TeamPageProps) {
               </div>
             </Link>
           </Flex>
-          <div className="flex flex-row items-center space-x-1">
-            <BsSlack color={team?.slackChannel ? "green" : "red"} />
+          <div className="flex flex-row items-center space-x-2">
+            <BsSlack color={team?.slackWebhook ? "green" : "red"} />
             {
-              team?.slackChannel 
+              team?.slackWebhook 
                 ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
-                : <div>
-                    Not linked to Slack.
-                    { team?.owners.includes(session?.user?._id ?? "") && 
-                      <>
-                        {" "}<AddToSlack />
-                        , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
-                        {" "}<span className="text-accent">/invite @Gearbox</span> in Slack to link notifications.
-                      </>
-                    }
-                  </div>
+                : <div>Not linked to Slack.</div>
             }
+            { team?.owners.includes(session?.user?._id ?? "") && <AddToSlack edit={team?.slackWebhook !== undefined} teamId={team._id.toString()} /> }
           </div>
         </Card>
 

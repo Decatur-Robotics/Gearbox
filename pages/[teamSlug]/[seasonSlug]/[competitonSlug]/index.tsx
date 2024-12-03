@@ -415,9 +415,9 @@ export default function CompetitionIndex({ team, competition: comp, season }: {
     api.setCompPublicData(comp?._id, e.target.checked);
   }
     
-  function remindUserOnSlack(slackId: string) {
-    if (slackId && session?.user?.slackId && team?._id && isManager && confirm("Remind scouter on Slack?"))
-      api.remindSlack(team._id.toString(), slackId);
+  function remindUserOnSlack(userId: string) {
+    if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))
+      api.remindSlack(team._id.toString(), userId);
   }
 
   function addTeam() {
