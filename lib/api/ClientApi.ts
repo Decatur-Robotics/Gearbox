@@ -550,11 +550,11 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         });
 
       if (team.slackWebhook) {
-        (await db).updateObjectById<WebhookHolder>(CollectionId.Webhooks, new ObjectId(team.slackWebhook), { url: webhookUrl });
+        (await db).updateObjectById(CollectionId.Webhooks, new ObjectId(team.slackWebhook), { url: webhookUrl });
       } else {
-        const webhook = await (await db).addObject<WebhookHolder>(CollectionId.Webhooks, { url: webhookUrl });
+        const webhook = await (await db).addObject(CollectionId.Webhooks, { url: webhookUrl });
         team.slackWebhook = webhook._id.toString();
-        (await db).updateObjectById<Team>(CollectionId.Teams, new ObjectId(teamId), team);
+        (await db).updateObjectById(CollectionId.Teams, new ObjectId(teamId), team);
       }
 
       return res.status(200).send({ result: "success" });

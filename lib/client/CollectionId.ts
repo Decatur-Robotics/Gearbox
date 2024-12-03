@@ -1,4 +1,4 @@
-import { Season, Competition, Match, SubjectiveReport, Team, Report, User, Account, Session, Pitreport, DbPicklist,  } from "../Types";
+import { Season, Competition, Match, SubjectiveReport, Team, Report, User, Account, Session, Pitreport, DbPicklist, WebhookHolder,  } from "../Types";
 
 enum CollectionId {
   Seasons = "Seasons",
@@ -33,5 +33,6 @@ export type CollectionIdToType<Id extends CollectionId> =
   Id extends CollectionId.PitReports ? Pitreport :
   Id extends CollectionId.Picklists ? DbPicklist :
   Id extends CollectionId.SubjectiveReports ? SubjectiveReport :
+  Id extends CollectionId.Webhooks ? WebhookHolder :
   Id extends CollectionId.Misc ? any :
   any;
