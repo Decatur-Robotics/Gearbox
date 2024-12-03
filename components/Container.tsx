@@ -14,7 +14,6 @@ import { RiWifiOffLine } from "react-icons/ri";
 import Avatar from "./Avatar";
 import Banner, { DiscordBanner } from "./Banner";
 import { stat } from "fs";
-import useIsOnline from "@/lib/client/useIsOnline";
 import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
 
@@ -34,7 +33,6 @@ type ContainerProps = {
 export default function Container(props: ContainerProps) {
   const { session, status } = useCurrentSession();
   const user = session?.user;
-  const isOnline = useIsOnline();
   const authenticated = !forceOfflineMode() && status === "authenticated";
 
   const [loadingTeams, setLoadingTeams] = useState<boolean>(false);
@@ -208,7 +206,7 @@ export default function Container(props: ContainerProps) {
                     borderThickness={2}
                   />
                 </Link>
-              ) : isOnline ? (
+              ) : (
                 <a
                   href={"/api/auth/signin"}
                   rel="noopener noreferrer"
@@ -216,13 +214,6 @@ export default function Container(props: ContainerProps) {
                 >
                   <button className="btn btn-primary sm:mr-4">Sign In</button>
                 </a>
-              ) : (
-                <Link href="/offline" className="btn btn-ghost flex flex-row sm:mr-4">
-                  <div className="tooltip tooltip-left" data-tip="You are offline.">
-                    <RiWifiOffLine className="text-2xl" />
-                  </div>
-                  <span>Go to offline scouting</span>
-                </Link>
               )}
 
               {/*

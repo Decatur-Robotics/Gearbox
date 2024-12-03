@@ -17,7 +17,6 @@ export default function MatchScheduleCard(props: {
   loadingUsers: boolean;
   noMatches: boolean;
   isManager: boolean | undefined;
-  isOnline: boolean;
   matchesAssigned: boolean | undefined;
   assigningMatches: boolean;
   assignScouters: () => void;
@@ -41,7 +40,6 @@ export default function MatchScheduleCard(props: {
     loadingUsers,
     noMatches,
     isManager,
-    isOnline,
     matchesAssigned,
     assigningMatches,
     assignScouters,
@@ -159,10 +157,7 @@ export default function MatchScheduleCard(props: {
                         
                             return (
                               <Link
-                                href={isOnline 
-                                  ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`
-                                  : `/offline/${comp?._id}/quant/${reportId}`
-                                }
+                                href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
                                 key={reportId}
                                 className={`${color} ${mine && !submitted ? "border-4": "border-2"} 
                                   ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
@@ -224,10 +219,7 @@ export default function MatchScheduleCard(props: {
                         }
                         </div>
                       <Link className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`} 
-                        href={isOnline 
-                                ? `/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`
-                                : `/offline/${comp?._id}/subjective/${match._id}`
-                        }>
+                        href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}>
                         Add Subjective Report ({`${match.subjectiveReports ? match.subjectiveReports.length : 0} submitted, 
                           ${match.subjectiveReportsCheckInTimestamps 
                             ? getIdsInProgressFromTimestamps(match.subjectiveReportsCheckInTimestamps).length 
