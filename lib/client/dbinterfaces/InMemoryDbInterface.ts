@@ -1,6 +1,6 @@
 import { Document, EJSON, ObjectId } from "bson";
-import CollectionId from "@/lib/client/CollectionId";
-import DbInterface from "@/lib/client/dbinterfaces/DbInterface";
+import CollectionId, { CollectionIdToType } from "@/lib/client/CollectionId";
+import DbInterface, { WithStringOrObjectIdId } from "@/lib/client/dbinterfaces/DbInterface";
 import { MemoryDb } from "minimongo";
 
 /**
@@ -96,7 +96,7 @@ export default class InMemoryDbInterface implements DbInterface {
     return promise as Promise<void>;
   }
 
-  addObject<Type extends Document>(collection: CollectionId, object: any): Promise<Type>
+  addObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(collection: TId, object: WithStringOrObjectIdId<TObj>): Promise<TObj>
   {
     if (!object._id)
       object._id = new ObjectId();

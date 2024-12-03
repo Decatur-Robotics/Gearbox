@@ -101,7 +101,7 @@ export async function getTeamFromSubjectiveReport(db: DbInterface, report: Subje
 
 export async function generatePitReports(tba: TheBlueAlliance.Interface, db: DbInterface, tbaId: string, gameId: GameId): Promise<string[]> {
   var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
-  pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.PitReports, report))._id)
+  pitreports.map(async (report) => (await db.addObject(CollectionId.PitReports, report))._id)
 
   return pitreports.map((pit) => String(pit._id));
 }

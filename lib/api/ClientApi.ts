@@ -182,7 +182,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         [user._id!.toString()],
         [user._id!.toString()]
       );
-      const team = await db.addObject<Team>(CollectionId.Teams, newTeamObj);
+      const team = await db.addObject(CollectionId.Teams, newTeamObj);
 
       user.teams = removeDuplicates(...user.teams, team._id!.toString());
       user.owner = removeDuplicates(...user.owner, team._id!.toString());
@@ -213,7 +213,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
         return res.status(403).send({ error: "Unauthorized" });
       }
 
-      const season = await db.addObject<Season>(
+      const season = await db.addObject(
         CollectionId.Seasons,
         new Season(
           name,
@@ -248,7 +248,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
       matches.map(
         async (match) =>
-          (await db.addObject<Match>(CollectionId.Matches, match))._id
+          (await db.addObject(CollectionId.Matches, match))._id
       );
 
       if (!comp.tbaId || comp.tbaId === NotLinkedToTba) {
@@ -277,17 +277,16 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       const matches = await tba.getCompetitionMatches(tbaId);
       matches.map(
         async (match) =>
-          (await db.addObject<Match>(CollectionId.Matches, match))._id,
+          (await db.addObject(CollectionId.Matches, match))._id,
       );
       
       const pitReports = await generatePitReports(tba, db, tbaId, season.gameId);
 
-      const picklist = await db.addObject<DbPicklist>(CollectionId.Picklists, {
-        _id: new ObjectId(),
+      const picklist = await db.addObject(CollectionId.Picklists, {
         picklists: {},
       });
 
-      const comp = await db.addObject<Competition>(
+      const comp = await db.addObject(
         CollectionId.Competitions,
         new Competition(
           name,
@@ -326,7 +325,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
     handler: async (req, res, { db: dbPromise, userPromise }, { team, comp }, [compId, number, time, type, redAlliance, blueAlliance]) => {
       const db = await dbPromise;
 
-      const match = await db.addObject<Match>(
+      const match = await db.addObject(
         CollectionId.Matches,
         new Match(
           number,
@@ -847,8 +846,8 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       if (match.subjectiveScouter === user!._id!.toString())
         update.assignedSubjectiveScouterHasSubmitted = true;
 
-      const insertReportPromise = db.addObject<SubjectiveReport>(CollectionId.SubjectiveReports, newReport);
-      const updateMatchPromise = db.updateObjectById<Match>(CollectionId.Matches, new ObjectId(match._id), update);
+      const insertReportPromise = db.addObject(CollectionId.SubjectiveReports, newReport);
+      const updateMatchPromise = db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), update);
 
       addXp(db, user!._id!, match.subjectiveScouter === user!._id!.toString() ? 10 : 5);
 
@@ -923,7 +922,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
       const db = await dbPromise;
 
       const pitReport = new Pitreport(teamNumber, games[comp.gameId].createPitReportData());
-      const pitReportId = (await db.addObject<Pitreport>(CollectionId.PitReports, pitReport))._id?.toString();
+      const pitReportId = (await db.addObject(CollectionId.PitReports, pitReport))._id?.toString();
 
       if (!pitReportId)
         return res.status(500).send({ error: "Failed to create pit report" });

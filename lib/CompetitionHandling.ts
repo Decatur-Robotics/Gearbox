@@ -117,7 +117,7 @@ export async function generateReportsForMatch(db: DbInterface, match: string | M
       );
 
       reports.push(
-        String((await db.addObject<Report>(CollectionId.Reports, newReport))._id),
+        String((await db.addObject(CollectionId.Reports, newReport))._id),
       );
     }
     else {
