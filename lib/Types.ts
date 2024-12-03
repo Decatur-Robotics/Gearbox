@@ -90,7 +90,11 @@ export class Team {
 
   seasons: string[];
 
-  slackChannel: string | undefined;
+  /**
+   * ID of the WebhookHolder object
+   * @see WebhookHolder
+   */
+  slackWebhook: string | undefined;
 
   constructor(
     name: string,
@@ -104,7 +108,6 @@ export class Team {
     subjectiveScouters: string[] = [],
     requests: string[] = [],
     seasons: string[] = [],
-    slackChannel: string | undefined = undefined
   ) {
     this._id = new ObjectId();
     this.name = name;
@@ -118,7 +121,6 @@ export class Team {
     this.subjectiveScouters = subjectiveScouters;
     this.seasons = seasons;
     this.requests = requests;
-    this.slackChannel = slackChannel;
   }
 }
 
@@ -562,3 +564,16 @@ export type DbPicklist = {
 export type OmitCallSignature<T> =
   { [K in keyof T]: T[K] } &
   (T extends new (...args: infer R) => infer S ? new (...args: R) => S : unknown)
+
+/**
+ * DO NOT GIVE TO CLIENTS!
+ */
+export class WebhookHolder {
+  _id: ObjectId;
+  url: string;
+
+  constructor(url: string) {
+    this._id = new ObjectId();
+    this.url = url;
+  }
+}

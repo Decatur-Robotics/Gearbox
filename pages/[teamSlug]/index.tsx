@@ -426,22 +426,14 @@ export default function TeamIndex(props: TeamPageProps) {
               </div>
             </Link>
           </Flex>
-          <div className="flex flex-row items-center space-x-1">
-            <BsSlack color={team?.slackChannel ? "green" : "red"} />
+          <div className="flex flex-row items-center space-x-2">
+            <BsSlack color={team?.slackWebhook ? "green" : "red"} />
             {
-              team?.slackChannel 
+              team?.slackWebhook 
                 ? <div>Linked to Slack. Notifications are available for team members who sign in with Slack.</div> 
-                : <div>
-                    Not linked to Slack.
-                    { team?.owners.includes(session?.user?._id ?? "") && 
-                      <>
-                        {" "}<AddToSlack />
-                        , then run <span className="text-accent">/link-notifications {team.number}</span> followed by 
-                        {" "}<span className="text-accent">/invite @Gearbox</span> in Slack to link notifications.
-                      </>
-                    }
-                  </div>
+                : <div>Not linked to Slack.</div>
             }
+            { team?.owners.includes(session?.user?._id ?? "") && <AddToSlack edit={team?.slackWebhook !== undefined} teamId={team._id.toString()} /> }
           </div>
         </Card>
 

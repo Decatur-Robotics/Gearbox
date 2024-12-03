@@ -1,5 +1,5 @@
 import ApiLib from '@/lib/api/ApiLib';
-import { TestRes } from '@/lib/TestUtils';
+import { TestRes } from '@/lib/testutils/TestUtils';
 
 const API_PREFIX = "api/";
 
