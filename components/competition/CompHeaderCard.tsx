@@ -3,9 +3,7 @@ import { Competition } from "@/lib/Types";
 import { BiExport } from "react-icons/bi";
 import { MdAutoGraph, MdQueryStats, MdCoPresent } from "react-icons/md";
 
-export default function CompHeaderCard(props: { comp: Competition | undefined, openDownloadModal: () => void, isOnline: boolean }) {
-  const { comp, openDownloadModal, isOnline } = props;
-
+export default function CompHeaderCard({ comp }: { comp: Competition | undefined }) {
   return (
     <div className="w-full card bg-base-200 shadow-xl">
       <div className="card-body">
@@ -13,12 +11,6 @@ export default function CompHeaderCard(props: { comp: Competition | undefined, o
           <h1 className="card-title text-3xl font-bold">
             {comp?.name}
           </h1>
-          <button onClick={openDownloadModal} className="btn btn-ghost flex flex-row">
-            <BiExport size={30} />
-            <div className="max-sm:hidden">
-              Import/Export
-            </div>
-          </button>
         </div>
         <div className="divider"></div>
         <div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
@@ -31,7 +23,7 @@ export default function CompHeaderCard(props: { comp: Competition | undefined, o
           <div className="divider divider-horizontal"></div>
           <a
             className="max-sm:w-full btn btn-secondary"
-            href={`${isOnline ? comp?.slug : comp?._id}/stats`}
+            href={`${comp?.slug}/stats`}
           >
             Stats <MdQueryStats size={30} />
           </a>

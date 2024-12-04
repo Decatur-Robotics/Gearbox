@@ -2,10 +2,8 @@ import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
 import { useCallback, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
-
 import ClientApi from "@/lib/api/ClientApi";
 import Checkbox from "./Checkboxes";
 import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
@@ -14,12 +12,8 @@ import { CommentBox } from "./Comment";
 import { IncrementButton } from "./Buttons";
 import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
-import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
 import Loading from "../Loading";
-import QRCode from "react-qr-code";
-import Card from "../Card";
 import { Analytics } from "@/lib/client/Analytics";
-import QrCode from "../QrCode";
 
 const api = new ClientApi();
 
@@ -50,21 +44,6 @@ export default function Form(props: FormProps) {
     api.submitForm(props.report?._id!, formData)
       .then(() => {
         console.log("Submitted form successfully!");
-      })
-      .catch((e) => {
-        console.error(e);
-  
-        if (!props.compId)
-          return;
-
-        updateCompInLocalStorage(props.compId, (comp) => {
-          const report = comp.quantReports[props.report._id ?? ""]
-
-          report.data = formData;
-          report.submitted = true;
-
-          return comp;
-        });
       })
       .finally(() => {
         if (location.href.includes("offline"))
@@ -235,15 +214,6 @@ export default function Form(props: FormProps) {
       <button className={`btn btn-wide btn-${submitting ? "disabled" : "primary"} text-xl mb-6`} onClick={submitForm}>
         {submitting ? <Loading bg="" size={8} /> : "Submit"}
       </button>
-      <Card className="justify-center w-fit bg-base-300" title="Share while offline">
-        <QrCode value={JSON.stringify({
-          quantReport: {
-            ...props.report,
-            data: formData,
-            submitted: true
-          }
-        })} />
-      </Card>
     </FormPage>
   );
 
