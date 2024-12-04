@@ -1187,120 +1187,120 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
   });
 
   speedTest = ApiLib.createRoute<
-      [], 
-      { 
-        requestTime: number, 
-        authTime: number, 
-        insertTime: number, 
-        findTime: number, 
-        updateTime: number, 
-        deleteTime: number, 
-        responseTimestamp: number
-      }, 
-      ApiDependencies, void
-    >(
-      {
-        isAuthorized: AccessLevels.AlwaysAuthorized,
-        handler: async (req, res, { userPromise, db: dbPromise }, authData, args) => {
-          const [requestTimestamp] = (args as unknown as [number]);
-          
-          const authStart = Date.now();
-          const user = await userPromise;
-          if (!user || !isDeveloper(user.email))
-            return res.status(403).send({ error: "Unauthorized" });
+    [], 
+    { 
+      requestTime: number, 
+      authTime: number, 
+      insertTime: number, 
+      findTime: number, 
+      updateTime: number, 
+      deleteTime: number, 
+      responseTimestamp: number
+    }, 
+    ApiDependencies, void
+  >(
+    {
+      isAuthorized: AccessLevels.AlwaysAuthorized,
+      handler: async (req, res, { userPromise, db: dbPromise }, authData, args) => {
+        const [requestTimestamp] = (args as unknown as [number]);
+        
+        const authStart = Date.now();
+        const user = await userPromise;
+        if (!user || !isDeveloper(user.email))
+          return res.status(403).send({ error: "Unauthorized" });
 
-          const resObj = {
-            requestTime: Math.max(Date.now() - requestTimestamp, 0),
-            authTime: Date.now() - authStart,
-            insertTime: 0,
-            findTime: 0,
-            updateTime: 0,
-            deleteTime: 0,
-            responseTimestamp: Date.now(),
-          }
-
-          const db = await dbPromise;
-
-          const testObject = {
-            _id: new ObjectId(),
-          }
-          const insertStart = Date.now();
-          await db.addObject(CollectionId.Misc, testObject);
-          resObj.insertTime = Date.now() - insertStart;
-
-          const findStart = Date.now();
-          await db.findObjectById(CollectionId.Misc, testObject._id);
-          resObj.findTime = Date.now() - findStart;
-
-          const updateStart = Date.now();
-          await db.updateObjectById(CollectionId.Misc, testObject._id, {name: "test"});
-          resObj.updateTime = Date.now() - updateStart;
-
-          const deleteStart = Date.now();
-          await db.deleteObjectById(CollectionId.Misc, testObject._id);
-          resObj.deleteTime = Date.now() - deleteStart;
-
-          resObj.responseTimestamp = Date.now();
-          return res.status(200).send(resObj);
+        const resObj = {
+          requestTime: Math.max(Date.now() - requestTimestamp, 0),
+          authTime: Date.now() - authStart,
+          insertTime: 0,
+          findTime: 0,
+          updateTime: 0,
+          deleteTime: 0,
+          responseTimestamp: Date.now(),
         }
-      },
-      () => ApiLib.request("/speedTest", [Date.now()]).then((times) => ({
-        ...times,
-        responseTime: Date.now() - times.responseTimestamp,
-      }))
-    );
 
-    getUserAnalyticsData = ApiLib.createRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
-      isAuthorized: AccessLevels.IfDeveloper,
-      handler: async (req, res, { db: dbPromise }, authData, args) => {
         const db = await dbPromise;
 
-        const [teams, users] = await Promise.all([
-          db.findObjects<Team>(CollectionId.Teams, {}),
-          db.findObjects<User>(CollectionId.Users, { lastSignInDateTime: { $exists: true } })
-        ]);
-  
-        const signInDatesByTeam: { [team: string]: LinkedList<{ date: string, count: number }> } = teams.reduce((acc, team) => {
-          acc[team._id!.toString()] = new LinkedList<{ date: string, count: number }>();
-          return acc;
-        }, { All: new LinkedList() } as { [team: string]: LinkedList<{ date: string, count: number }> });
-  
-        for (const user of users) {
-          for (const team of [...user.teams, "All"]) {
-            const signInDates = signInDatesByTeam[team];
-  
-            // Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
-            for(let node = signInDates.first(); true; node = node.next) {
-              if (!node) {
-                // Can't just update signInDates, as that will reference a new object and not change the old one!
-                signInDates.setHead({ date: user.lastSignInDateTime!.toDateString(), count: 1 });
-                break;
-              }
-  
-              if (node && node?.date === user.lastSignInDateTime!.toDateString()) {
-                node.count++;
-                break;
-              }
-  
-              if (!node?.next || new Date(user.lastSignInDateTime!.toDateString())! < new Date(node.next.date)) {
-                signInDates.insertAfter(node!, { date: user.lastSignInDateTime!.toDateString(), count: 1 });
-                break;
-              }
+        const testObject = {
+          _id: new ObjectId(),
+        }
+        const insertStart = Date.now();
+        await db.addObject(CollectionId.Misc, testObject);
+        resObj.insertTime = Date.now() - insertStart;
+
+        const findStart = Date.now();
+        await db.findObjectById(CollectionId.Misc, testObject._id);
+        resObj.findTime = Date.now() - findStart;
+
+        const updateStart = Date.now();
+        await db.updateObjectById(CollectionId.Misc, testObject._id, {name: "test"});
+        resObj.updateTime = Date.now() - updateStart;
+
+        const deleteStart = Date.now();
+        await db.deleteObjectById(CollectionId.Misc, testObject._id);
+        resObj.deleteTime = Date.now() - deleteStart;
+
+        resObj.responseTimestamp = Date.now();
+        return res.status(200).send(resObj);
+      }
+    },
+    () => ApiLib.request("/speedTest", [Date.now()]).then((times) => ({
+      ...times,
+      responseTime: Date.now() - times.responseTimestamp,
+    }))
+  );
+
+  getUserAnalyticsData = ApiLib.createRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
+    isAuthorized: AccessLevels.IfDeveloper,
+    handler: async (req, res, { db: dbPromise }, authData, args) => {
+      const db = await dbPromise;
+
+      const [teams, users] = await Promise.all([
+        db.findObjects<Team>(CollectionId.Teams, {}),
+        db.findObjects<User>(CollectionId.Users, { lastSignInDateTime: { $exists: true } })
+      ]);
+
+      const signInDatesByTeam: { [team: string]: LinkedList<{ date: string, count: number }> } = teams.reduce((acc, team) => {
+        acc[team._id!.toString()] = new LinkedList<{ date: string, count: number }>();
+        return acc;
+      }, { All: new LinkedList() } as { [team: string]: LinkedList<{ date: string, count: number }> });
+
+      for (const user of users) {
+        for (const team of [...user.teams, "All"]) {
+          const signInDates = signInDatesByTeam[team];
+
+          // Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
+          for(let node = signInDates.first(); true; node = node.next) {
+            if (!node) {
+              // Can't just update signInDates, as that will reference a new object and not change the old one!
+              signInDates.setHead({ date: user.lastSignInDateTime!.toDateString(), count: 1 });
+              break;
+            }
+
+            if (node && node?.date === user.lastSignInDateTime!.toDateString()) {
+              node.count++;
+              break;
+            }
+
+            if (!node?.next || new Date(user.lastSignInDateTime!.toDateString())! < new Date(node.next.date)) {
+              signInDates.insertAfter(node!, { date: user.lastSignInDateTime!.toDateString(), count: 1 });
+              break;
             }
           }
         }
-  
-        // We mixed up the types for this object in Criterion B
-        const responseObj: { [team: string]: { date: Date, count: number }[] } = {};
-        for (const obj of [...teams, "All"]) {
-          const id = typeof obj === "object" ? obj._id!.toString() : obj;
-          const label = typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
-  
-          responseObj[label] = signInDatesByTeam[id]
-            .map((node) => ({ date: new Date(node.date), count: node.count }));
-        }
-
-        res.status(200).send(responseObj);
       }
-    })
+
+      // We mixed up the types for this object in Criterion B
+      const responseObj: { [team: string]: { date: Date, count: number }[] } = {};
+      for (const obj of [...teams, "All"]) {
+        const id = typeof obj === "object" ? obj._id!.toString() : obj;
+        const label = typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
+
+        responseObj[label] = signInDatesByTeam[id]
+          .map((node) => ({ date: new Date(node.date), count: node.count }));
+      }
+
+      res.status(200).send(responseObj);
+    }
+  });
 }
