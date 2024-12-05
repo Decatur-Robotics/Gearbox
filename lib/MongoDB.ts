@@ -3,9 +3,9 @@ import {
   MongoClient,
   MongoClientOptions,
 } from "mongodb";
-import { ObjectId } from "bson";
-import CollectionId from "./client/CollectionId";
-import DbInterface from "./client/dbinterfaces/DbInterface";
+import { ObjectId, Document } from "bson";
+import CollectionId, { CollectionIdToType } from "./client/CollectionId";
+import DbInterface, { WithStringOrObjectIdId } from "./client/dbinterfaces/DbInterface";
 
 if (!process.env.MONGODB_URI) {
   // Necessary to allow connections from files running outside of Next
@@ -69,10 +69,13 @@ export class MongoDBInterface implements DbInterface {
     }
   }
 
-  async addObject<Type>(collection: CollectionId, object: any): Promise<Type> {
-    const ack = await this?.db?.collection(collection).insertOne(object);
+  async addObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(collection: TId, object: WithStringOrObjectIdId<TObj>): Promise<TObj> {
+    if (object._id && typeof object._id === "string")
+      object._id = new ObjectId(object._id);
+
+    const ack = await this?.db?.collection(collection).insertOne(object as Document & { _id?: ObjectId });
     object._id = ack?.insertedId;
-    return object as Type;
+    return object as TObj;
   }
 
   async deleteObjectById(collection: CollectionId, id: ObjectId) {
@@ -80,16 +83,14 @@ export class MongoDBInterface implements DbInterface {
     await this?.db?.collection(collection).deleteOne(query);
   }
 
-  async updateObjectById<Type>(
-    collection: CollectionId,
-    id: ObjectId,
-    newValues: Partial<Type> | { [key: string]: any }
-  ) {
+  updateObjectById<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(collection: TId, id: ObjectId, newValues: Partial<TObj>): Promise<void> {
     var query = { _id: id };
     var updated = { $set: newValues };
     this?.db
       ?.collection(collection)
       .updateOne(query, updated);
+
+    return Promise.resolve();
   }
 
   async findObjectById<Type>(

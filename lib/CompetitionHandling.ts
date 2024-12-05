@@ -117,14 +117,14 @@ export async function generateReportsForMatch(db: DbInterface, match: string | M
       );
 
       reports.push(
-        String((await db.addObject<Report>(CollectionId.Reports, newReport))._id),
+        String((await db.addObject(CollectionId.Reports, newReport))._id),
       );
     }
     else {
       // Update existing report
       oldReport.user = scouter;
 
-      await db.updateObjectById<Report>(
+      await db.updateObjectById(
         CollectionId.Reports,
         new ObjectId(oldReport._id),
         oldReport,
@@ -134,7 +134,7 @@ export async function generateReportsForMatch(db: DbInterface, match: string | M
   }
 
   match.reports = reports.filter((r) => r !== undefined) as string[];
-  await db.updateObjectById<Match>(
+  await db.updateObjectById(
     CollectionId.Matches,
     new ObjectId(match._id),
     match,
