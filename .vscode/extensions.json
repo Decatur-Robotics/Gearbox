@@ -1,6 +1,11 @@
 {
   "recommendations": [
     "ms-azuretools.vscode-docker",
-    "formulahendry.docker-explorer"
+    "formulahendry.docker-explorer",
+    "github.vscode-github-actions",
+    "mongodb.mongodb-vscode",
+    "pmneo.tsimporter",
+    "austenc.tailwind-docs",
+    "bradlc.vscode-tailwindcss",
   ]
 }
