@@ -1,8 +1,6 @@
 name: CD
 
-on:
-  workflow_call:
-  workflow_dispatch: # Allows manual triggering of the workflow
+on: [workflow_call, workflow_dispatch]
 
 permissions:
   packages: write
