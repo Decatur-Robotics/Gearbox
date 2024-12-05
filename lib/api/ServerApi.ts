@@ -12,18 +12,24 @@ import ResendUtils from "../ResendUtils";
 import SlackClient from "../SlackClient";
 
 export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
-  constructor(clientApi?: ApiLib.ApiTemplate<ApiDependencies>) {
-    super(clientApi ?? new ClientApi(), "/api/");
-  }
+	constructor(clientApi?: ApiLib.ApiTemplate<ApiDependencies>) {
+		super(clientApi ?? new ClientApi(), "/api/");
+	}
 
-  getDependencies(req: NextApiRequest, res: ApiLib.ApiResponse<any>): ApiDependencies
-  {
-    return {
-      db: getDatabase(),
-      tba: new TheBlueAlliance.Interface(),
-      slackClient: new SlackClient(),
-      userPromise: getServerSession(req, res.innerRes, AuthenticationOptions).then((s) => s?.user as User | undefined),
-      resend: new ResendUtils()
-    };
-  }
+	getDependencies(
+		req: NextApiRequest,
+		res: ApiLib.ApiResponse<any>,
+	): ApiDependencies {
+		return {
+			db: getDatabase(),
+			tba: new TheBlueAlliance.Interface(),
+			slackClient: new SlackClient(),
+			userPromise: getServerSession(
+				req,
+				res.innerRes,
+				AuthenticationOptions,
+			).then((s) => s?.user as User | undefined),
+			resend: new ResendUtils(),
+		};
+	}
 }

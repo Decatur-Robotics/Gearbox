@@ -1,6 +1,6 @@
 declare global {
-  var clientPromise;
-  var interface;
-  var compIdPairs;
+	var clientPromise;
+	var interface;
+	var compIdPairs;
 }
 export {};
