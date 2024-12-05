@@ -1,0 +1,23 @@
+name: Check Formatting
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check Formatting
+        uses: creyD/prettier_action@v4.3
+        with:
+          prettier_options: --check
+          dry: true
+
