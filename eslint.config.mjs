@@ -16,4 +16,7 @@ export default [...compat.extends("next/core-web-vitals"), {
         "@next/next/no-img-element": "off",
         "@next/next/no-html-link-for-pages": "off",
     },
+    plugins: [
+        "@typescript-eslint"
+    ]
 }];
