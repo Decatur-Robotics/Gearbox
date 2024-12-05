@@ -101,13 +101,13 @@ export async function getTeamFromSubjectiveReport(db: DbInterface, report: Subje
 
 export async function generatePitReports(tba: TheBlueAlliance.Interface, db: DbInterface, tbaId: string, gameId: GameId): Promise<string[]> {
   var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
-  pitreports.map(async (report) => (await db.addObject<Pitreport>(CollectionId.PitReports, report))._id)
+  pitreports.map(async (report) => (await db.addObject(CollectionId.PitReports, report))._id)
 
   return pitreports.map((pit) => String(pit._id));
 }
 
 export async function addXp(db: DbInterface, userId: string, xp: number) {
-  const user = await db.findObjectById<User>(CollectionId.Users, new ObjectId(userId));
+  const user = await db.findObjectById(CollectionId.Users, new ObjectId(userId));
 
   if (!user)
     return;
@@ -115,7 +115,7 @@ export async function addXp(db: DbInterface, userId: string, xp: number) {
   const newXp = user.xp + xp
   const newLevel = xpToLevel(newXp);
 
-  await db.updateObjectById<User>(
+  await db.updateObjectById(
     CollectionId.Users,
     new ObjectId(userId),
     { xp: newXp, level: newLevel }

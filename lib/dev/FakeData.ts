@@ -49,7 +49,7 @@ export async function fakeUser(teamId: string | undefined, db: DbInterface): Pro
     "",
     10,
   );
-  return await db.addObject<User>(CollectionId.Users, user);
+  return await db.addObject(CollectionId.Users, user);
 }
 
 export async function fillTeamWithFakeUsers(
