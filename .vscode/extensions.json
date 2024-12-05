@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "ms-azuretools.vscode-docker",
-    "formulahendry.docker-explorer"
+    "formulahendry.docker-explorer",
+    "esbenp.prettier-vscode"
   ]
 }
