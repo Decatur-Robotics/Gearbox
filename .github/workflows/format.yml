@@ -15,9 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Check Formatting
-        uses: creyD/prettier_action@v4.3
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          prettier_options: --check
-          dry: true
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check formatting
+        run: npm run prettier-check
 
