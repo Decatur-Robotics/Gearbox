@@ -3,5 +3,10 @@
     "ms-azuretools.vscode-docker",
     "formulahendry.docker-explorer",
     "esbenp.prettier-vscode"
+    "github.vscode-github-actions",
+    "mongodb.mongodb-vscode",
+    "pmneo.tsimporter",
+    "austenc.tailwind-docs",
+    "bradlc.vscode-tailwindcss",
   ]
 }
