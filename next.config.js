@@ -15,6 +15,9 @@ const nextConfig = {
   },
   env: {
     NEXT_PUBLIC_BUILD_TIME: Date.now().toString(),
+  },
+  eslint: {
+    dirs: ["pages", "components", "lib", "tests"],
   }
 };
 
