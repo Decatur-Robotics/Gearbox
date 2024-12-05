@@ -1,10 +1,9 @@
 name: On Push
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch: # Allows manual triggering of the workflow
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   ci:
