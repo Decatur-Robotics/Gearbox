@@ -262,9 +262,9 @@ export namespace TheBlueAlliance {
         return [];
 
       let matches = (await this.req.getCompetitionMatches(tbaId)).map(
-        (data) =>
-          new Match(
-            data.match_number,
+        (data, index) => {
+          return new Match(
+            index + 1,
             undefined,
             data.key,
             data.time,
@@ -272,6 +272,7 @@ export namespace TheBlueAlliance {
             tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
             tbaIdsToTeamNumbers(data.alliances.red.team_keys)
           )
+        }
       ) ?? [];
       return matches;
     }
