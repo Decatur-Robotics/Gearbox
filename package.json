@@ -11,7 +11,8 @@
     "docker-start": "docker run -i -t -p 443:443 gearbox",
     "docker-prune": "docker container prune",
     "lint": "eslint . --max-warnings=0",
-    "prettier": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
+    "prettier-fix": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
+    "prettier-check": "prettier --check ./**/*.{js,tsx,jsx,json,ts}",
     "test": "jest"
   },
   "dependencies": {
