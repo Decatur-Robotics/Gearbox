@@ -257,11 +257,11 @@ export namespace TheBlueAlliance {
       );
     }
 
-    async getCompetitionMatches(tbaId: string): Promise<Match[]> {
+    async getCompetitionQualifyingMatches(tbaId: string): Promise<Match[]> {
       if (tbaId === NotLinkedToTba)
         return [];
 
-      let matches = (await this.req.getCompetitionMatches(tbaId)).map(
+      let matches = (await this.req.getCompetitionMatches(tbaId)).filter(match => match.comp_level === CompetitionLevel.QM).map(
         (data, index) => {
           return new Match(
             index + 1,
