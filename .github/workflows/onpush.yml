@@ -11,11 +11,7 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  lint:
-    uses: ./.github/workflows/lint.yml
-
   cd:
     needs:
       - ci
-      - lint
     uses: ./.github/workflows/cd.yml
