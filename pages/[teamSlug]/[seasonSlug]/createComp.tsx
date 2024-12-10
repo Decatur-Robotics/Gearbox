@@ -11,7 +11,7 @@ import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import { Analytics } from "@/lib/client/Analytics";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 const api = new ClientApi();
 

@@ -283,7 +283,13 @@ export default function Scouters(props: {
 			setScouters(scouterDict);
 			setShouldRegenerateScouterData(false);
 		}
-	}, [shouldRegenerateScouterData, lastCountedMatch, matches, reports, scouters]);
+	}, [
+		shouldRegenerateScouterData,
+		lastCountedMatch,
+		matches,
+		reports,
+		scouters,
+	]);
 
 	return (
 		<Container

@@ -327,7 +327,14 @@ export default function Pitstats(props: { competition: Competition }) {
 			);
 		});
 		setSlides(newSlides);
-	}, [comp._id, comp.gameId, comp.pitReports, comp.tbaId, layout, usePublicData]);
+	}, [
+		comp._id,
+		comp.gameId,
+		comp.pitReports,
+		comp.tbaId,
+		layout,
+		usePublicData,
+	]);
 
 	useEffect(() => {
 		loadReports();
@@ -351,19 +358,25 @@ export default function Pitstats(props: { competition: Competition }) {
 		});
 	}
 
-	const nextSlide = useCallback((automatic: boolean = false) => {
-		changeSlide(
-			(n) => (n < slidesRef.current.length - 1 ? n + 1 : -1),
-			automatic,
-		);
-	}, [slidesRef]);
+	const nextSlide = useCallback(
+		(automatic: boolean = false) => {
+			changeSlide(
+				(n) => (n < slidesRef.current.length - 1 ? n + 1 : -1),
+				automatic,
+			);
+		},
+		[slidesRef],
+	);
 
-	const prevSlide = useCallback(async (automatic: boolean = false) => {
-		changeSlide(
-			(n) => (n >= 0 ? n - 1 : slidesRef.current.length - 1),
-			automatic,
-		);
-	}, [slidesRef]);
+	const prevSlide = useCallback(
+		async (automatic: boolean = false) => {
+			changeSlide(
+				(n) => (n >= 0 ? n - 1 : slidesRef.current.length - 1),
+				automatic,
+			);
+		},
+		[slidesRef],
+	);
 
 	useEffect(() => {
 		if (slides.length > 0 && cycleSlidesAutomatically) {

@@ -225,56 +225,65 @@ export default function PicklistScreen(props: {
 
 	const teams = props.teams.map((team) => ({ number: team }));
 
-	const savePicklists = useCallback((picklists: Picklist[]) => {
-		const picklistDict = picklists.reduce<DbPicklist>(
-			(acc, picklist) => {
-				acc.picklists[picklist.name] = picklist.teams.map(
-					(team) => team.number,
-				);
-				return acc;
-			},
-			{
-				_id: props.picklist._id,
-				picklists: {},
-			},
-		);
+	const savePicklists = useCallback(
+		(picklists: Picklist[]) => {
+			const picklistDict = picklists.reduce<DbPicklist>(
+				(acc, picklist) => {
+					acc.picklists[picklist.name] = picklist.teams.map(
+						(team) => team.number,
+					);
+					return acc;
+				},
+				{
+					_id: props.picklist._id,
+					picklists: {},
+				},
+			);
 
-		api.updatePicklist(picklistDict);
-	}, [props.picklist._id]);
+			api.updatePicklist(picklistDict);
+		},
+		[props.picklist._id],
+	);
 
-	const updatePicklist = useCallback((picklist: Picklist) => {
-		setPicklists((old) => {
-			const newPicklists = old.map((p) => {
-				if (p.index === picklist.index) {
-					return picklist;
-				} else {
-					return p;
-				}
+	const updatePicklist = useCallback(
+		(picklist: Picklist) => {
+			setPicklists((old) => {
+				const newPicklists = old.map((p) => {
+					if (p.index === picklist.index) {
+						return picklist;
+					} else {
+						return p;
+					}
+				});
+
+				savePicklists(newPicklists);
+				return newPicklists;
 			});
+		},
+		[setPicklists, savePicklists],
+	);
 
-			savePicklists(newPicklists);
-			return newPicklists;
-		});
-	}, [setPicklists, savePicklists]);
+	const loadDbPicklist = useCallback(
+		(picklistDict: DbPicklist) => {
+			setPicklists(
+				Object.entries(picklistDict.picklists).map((picklist, index) => {
+					const newPicklist: Picklist = {
+						index,
+						name: picklist[0],
+						teams: picklist[1].map((team: number) => ({ number: team })),
+						update: updatePicklist,
+					};
 
-	const loadDbPicklist = useCallback((picklistDict: DbPicklist) => {
-		setPicklists(
-			Object.entries(picklistDict.picklists).map((picklist, index) => {
-				const newPicklist: Picklist = {
-					index,
-					name: picklist[0],
-					teams: picklist[1].map((team: number) => ({ number: team })),
-					update: updatePicklist,
-				};
+					for (const team of newPicklist.teams) {
+						team.picklistIndex = newPicklist.index;
+					}
 
-				for (const team of newPicklist.teams) {
-					team.picklistIndex = newPicklist.index;
-				}
-
-				return newPicklist;
-			}),
-		);
-	}, [updatePicklist]);
+					return newPicklist;
+				}),
+			);
+		},
+		[updatePicklist],
+	);
 
 	useEffect(() => {
 		if (loadingPicklists !== LoadState.NotLoaded) return;
@@ -288,7 +297,14 @@ export default function PicklistScreen(props: {
 		loadDbPicklist(props.picklist);
 
 		setLoadingPicklists(LoadState.Loaded);
-	}, [loadingPicklists, LoadState.NotLoaded, LoadState.Loading, LoadState.Loaded, props.picklist, loadDbPicklist]);
+	}, [
+		loadingPicklists,
+		LoadState.NotLoaded,
+		LoadState.Loading,
+		LoadState.Loaded,
+		props.picklist,
+		loadDbPicklist,
+	]);
 
 	const addPicklist = () => {
 		const newPicklist: Picklist = {

@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState, useCallback } from 'react';
+import { ChangeEvent, useEffect, useState, useCallback } from "react";
 
 import ClientApi from "@/lib/api/ClientApi";
 import {
@@ -146,80 +146,86 @@ export default function CompetitionIndex({
 		setMatchesAssigned(matchesAssigned);
 	}, [reports]);
 
-	const loadMatches = useCallback(async (silent: boolean = false) => {
-		if (!silent) setLoadingMatches(true);
+	const loadMatches = useCallback(
+		async (silent: boolean = false) => {
+			if (!silent) setLoadingMatches(true);
 
-		window.location.hash = "";
-		let matches: Match[] = await api.allCompetitionMatches(comp?._id!);
+			window.location.hash = "";
+			let matches: Match[] = await api.allCompetitionMatches(comp?._id!);
 
-		if (!matches || matches.length === 0) {
-			setNoMatches(true);
+			if (!matches || matches.length === 0) {
+				setNoMatches(true);
 
-			if (!silent) setLoadingMatches(false);
+				if (!silent) setLoadingMatches(false);
 
-			return;
-		}
-
-		matches?.sort((a, b) => a.number - b.number);
-
-		setMatches(matches);
-
-		api
-			.getSubjectiveReportsFromMatches(comp?._id ?? "", matches)
-			.then((reports) => {
-				setSubjectiveReports(reports);
-
-				const newReportIds: { [key: string]: SubjectiveReport } = {};
-				reports.forEach((report) => {
-					if (!report._id) {
-						return;
-					}
-					newReportIds[report._id] = report;
-				});
-				setSubjectiveReportsById(newReportIds);
-			});
-
-		if (!silent) setLoadingMatches(false);
-	}, [comp?._id]);
-
-	const loadReports = useCallback(async (silent: boolean = false) => {
-		const scoutingStats = (reps: Report[]) => {
-			if (!silent) setLoadingScoutStats(true);
-			let submittedCount = 0;
-			reps.forEach((report) => {
-				if (report.submitted) {
-					submittedCount++;
-				}
-			});
-
-			setSubmittedReports(submittedCount);
-			if (!silent) setLoadingScoutStats(false);
-		};
-
-		if (!silent) setLoadingReports(true);
-
-		let newReports: Report[] = await api.competitionReports(
-			comp?._id!,
-			false,
-			false,
-		);
-
-		setReports(newReports);
-
-		const newReportsById: { [key: string]: Report } = {};
-		newReports?.forEach((report) => {
-			if (!report._id) {
 				return;
 			}
-			newReportsById[report._id] = report;
-		});
 
-		setReportsById(newReportsById);
+			matches?.sort((a, b) => a.number - b.number);
 
-		if (!silent) setLoadingReports(false);
+			setMatches(matches);
 
-		scoutingStats(newReports);
-	}, [comp?._id]);
+			api
+				.getSubjectiveReportsFromMatches(comp?._id ?? "", matches)
+				.then((reports) => {
+					setSubjectiveReports(reports);
+
+					const newReportIds: { [key: string]: SubjectiveReport } = {};
+					reports.forEach((report) => {
+						if (!report._id) {
+							return;
+						}
+						newReportIds[report._id] = report;
+					});
+					setSubjectiveReportsById(newReportIds);
+				});
+
+			if (!silent) setLoadingMatches(false);
+		},
+		[comp?._id],
+	);
+
+	const loadReports = useCallback(
+		async (silent: boolean = false) => {
+			const scoutingStats = (reps: Report[]) => {
+				if (!silent) setLoadingScoutStats(true);
+				let submittedCount = 0;
+				reps.forEach((report) => {
+					if (report.submitted) {
+						submittedCount++;
+					}
+				});
+
+				setSubmittedReports(submittedCount);
+				if (!silent) setLoadingScoutStats(false);
+			};
+
+			if (!silent) setLoadingReports(true);
+
+			let newReports: Report[] = await api.competitionReports(
+				comp?._id!,
+				false,
+				false,
+			);
+
+			setReports(newReports);
+
+			const newReportsById: { [key: string]: Report } = {};
+			newReports?.forEach((report) => {
+				if (!report._id) {
+					return;
+				}
+				newReportsById[report._id] = report;
+			});
+
+			setReportsById(newReportsById);
+
+			if (!silent) setLoadingReports(false);
+
+			scoutingStats(newReports);
+		},
+		[comp?._id],
+	);
 
 	useEffect(() => {
 		setInterval(() => loadReports(true), 5000);
@@ -305,7 +311,20 @@ export default function CompetitionIndex({
 		if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
 			regeneratePitReports();
 		}
-	}, [assigningMatches, attemptedRegeneratingPitReports, comp?._id, comp?.pitReports, loadMatches, loadReports, matches, pitreports, regeneratePitReports, reports, team, usersById]);
+	}, [
+		assigningMatches,
+		attemptedRegeneratingPitReports,
+		comp?._id,
+		comp?.pitReports,
+		loadMatches,
+		loadReports,
+		matches,
+		pitreports,
+		regeneratePitReports,
+		reports,
+		team,
+		usersById,
+	]);
 
 	const assignScouters = async () => {
 		setAssigningMatches(true);

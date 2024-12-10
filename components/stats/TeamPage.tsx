@@ -151,7 +151,7 @@ export default function TeamPage(props: {
 
 	const game = games[props.gameId];
 
-		useEffect(() => {
+	useEffect(() => {
 		const subjectiveReports: typeof teamSubjectiveReports = {};
 		props.subjectiveReports.forEach((subjectiveReport) => {
 			for (const teamNumber of Object.keys(subjectiveReport.robotComments)) {

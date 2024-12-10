@@ -11,7 +11,12 @@ const Sketch = dynamic(() => import("react-p5").then((mod) => mod.default), {
 let bg: p5Types.Image;
 let dropped = false;
 
-export default function FieldPositionSelector({ alliance, fieldImagePrefix, initialPos, callback }: {
+export default function FieldPositionSelector({
+	alliance,
+	fieldImagePrefix,
+	initialPos,
+	callback,
+}: {
 	alliance: AllianceColor;
 	fieldImagePrefix: string;
 	initialPos: FieldPos;

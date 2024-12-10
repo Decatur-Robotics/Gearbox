@@ -139,7 +139,7 @@ export default function TeamStats(props: {
 		props.selectedReports,
 		props.subjectiveReports,
 		props.pitReport,
-		pitReport
+		pitReport,
 	]);
 
 	if (!props.selectedTeam) {
