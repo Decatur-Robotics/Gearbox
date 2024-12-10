@@ -14,40 +14,42 @@ import ClientApi from "@/lib/api/ClientApi";
 const api = new ClientApi();
 
 export default function Homepage(props: FormProps) {
-  const { session, status } = useCurrentSession();
-  const hide = status === "authenticated";
+	const { session, status } = useCurrentSession();
+	const hide = status === "authenticated";
 
-  useEffect(() => {
-    if (props.report)
-      setInterval(() => api.checkInForReport(props.report._id!), 5000);
-  }, []);
+	useEffect(() => {
+		if (props.report)
+			setInterval(() => api.checkInForReport(props.report._id!), 5000);
+	}, []);
 
-  return (
-    <Container requireAuthentication={false} hideMenu={!hide} title={`${props.report.robotNumber} | Quant Scouting`}>
-      {props.report ? (
-        <Form {...props} />
-      ) : (
-        <p className="text-error">Welp.</p>
-      )}
-    </Container>
-  );
+	return (
+		<Container
+			requireAuthentication={false}
+			hideMenu={!hide}
+			title={`${props.report.robotNumber} | Quant Scouting`}
+		>
+			{props.report ? <Form {...props} /> : <p className="text-error">Welp.</p>}
+		</Container>
+	);
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const resolved = await UrlResolver(context, 4);
-  if ("redirect" in resolved) {
-    return resolved;
-  }
+	const resolved = await UrlResolver(context, 4);
+	if ("redirect" in resolved) {
+		return resolved;
+	}
 
-  const season = resolved.season;
+	const season = resolved.season;
 
-  return {
-    props: {
-      report: resolved.report,
-      layout: makeObjSerializeable(games[season?.gameId ?? defaultGameId].quantitativeReportLayout),
-      fieldImagePrefix: games[season?.gameId ?? defaultGameId].fieldImagePrefix,
-      teamNumber: resolved.team?.number,
-      compName: resolved.competition?.name,
-    }
-  } as { props: FormProps };
+	return {
+		props: {
+			report: resolved.report,
+			layout: makeObjSerializeable(
+				games[season?.gameId ?? defaultGameId].quantitativeReportLayout,
+			),
+			fieldImagePrefix: games[season?.gameId ?? defaultGameId].fieldImagePrefix,
+			teamNumber: resolved.team?.number,
+			compName: resolved.competition?.name,
+		},
+	} as { props: FormProps };
 };

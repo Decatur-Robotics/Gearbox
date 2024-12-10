@@ -1214,15 +1214,13 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			await Promise.all(promises);
 
-			return res
-				.status(200)
-				.send({
-					scouters,
-					matches,
-					quantitativeReports,
-					pitReports,
-					subjectiveReports,
-				});
+			return res.status(200).send({
+				scouters,
+				matches,
+				quantitativeReports,
+				pitReports,
+				subjectiveReports,
+			});
 		},
 	});
 

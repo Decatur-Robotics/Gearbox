@@ -16,46 +16,51 @@ import tailwindConfig from "../tailwind.config.js";
 
 const tailwind = resolveConfig(tailwindConfig);
 
-if (process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined && process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== "")
-  ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
+if (
+	process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined &&
+	process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== ""
+)
+	ReactGA.initialize(process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID);
 
 export default function App({
-  Component,
-  pageProps: { session, ...pageProps },
+	Component,
+	pageProps: { session, ...pageProps },
 }: AppProps<{ session: Session }>) {
-  return (
-    <SessionProvider session={session}>
-      <DndProvider backend={HTML5Backend}>
-        <NextSeo
-          title="Gearbox"
-          description="The best FIRST Scouting App"
-          canonical="https://4026.org/"
-          openGraph={{
-            url: "https://4026.org/",
-            title: "Gearbox",
-            description: "The best FIRST Scouting App",
-            images: [
-              {
-                url: "https://4026.org/art/4026Bench.svg",
-                width: 800,
-                height: 600,
-                alt: "Og Image Alt",
-                type: "image/jpeg",
-              },
-            ],
-            siteName: "Gearbox",
-          }}
-        />
-        <Toaster 
-          toastOptions={{
-            style: {
-              background: (tailwind.theme.backgroundColor["zinc"] as any)[900].toString(),
-              color: tailwind.theme.textColor["base-100"].toString(),
-            },
-          }}
-        />
-        <Component {...pageProps} />
-      </DndProvider>
-    </SessionProvider>
-  );
+	return (
+		<SessionProvider session={session}>
+			<DndProvider backend={HTML5Backend}>
+				<NextSeo
+					title="Gearbox"
+					description="The best FIRST Scouting App"
+					canonical="https://4026.org/"
+					openGraph={{
+						url: "https://4026.org/",
+						title: "Gearbox",
+						description: "The best FIRST Scouting App",
+						images: [
+							{
+								url: "https://4026.org/art/4026Bench.svg",
+								width: 800,
+								height: 600,
+								alt: "Og Image Alt",
+								type: "image/jpeg",
+							},
+						],
+						siteName: "Gearbox",
+					}}
+				/>
+				<Toaster
+					toastOptions={{
+						style: {
+							background: (
+								tailwind.theme.backgroundColor["zinc"] as any
+							)[900].toString(),
+							color: tailwind.theme.textColor["base-100"].toString(),
+						},
+					}}
+				/>
+				<Component {...pageProps} />
+			</DndProvider>
+		</SessionProvider>
+	);
 }

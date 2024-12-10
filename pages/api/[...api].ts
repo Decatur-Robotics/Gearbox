@@ -5,15 +5,15 @@ import { NextApiRequest, NextApiResponse } from "next";
 const api = new ServerApi(new ClientApi());
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
+	req: NextApiRequest,
+	res: NextApiResponse,
 ) {
-  api.handle(req, res);
+	api.handle(req, res);
 }
 
 export const config = {
-  api: {
-    bodyParser: true,
-    externalResolver: true,
-  },
+	api: {
+		bodyParser: true,
+		externalResolver: true,
+	},
 };
