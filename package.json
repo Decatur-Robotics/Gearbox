@@ -56,7 +56,7 @@
     "resend": "^4.0.0",
     "slack": "^11.0.2",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.7.2",
+    "socket.io-client": "^4.8.1",
     "string-similarity-js": "^2.1.4",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
