@@ -11,27 +11,32 @@ const Sketch = dynamic(() => import("react-p5").then((mod) => mod.default), {
 let bg: p5Types.Image;
 let dropped = false;
 
-export default function FieldPositionSelector(props: {
+export default function FieldPositionSelector({
+	alliance,
+	fieldImagePrefix,
+	initialPos,
+	callback,
+}: {
 	alliance: AllianceColor;
 	fieldImagePrefix: string;
 	initialPos: FieldPos;
 	callback: (key: string, value: FieldPos) => void;
 }) {
-	const [mx, setMx, getMx] = useDynamicState(props.initialPos?.x ?? 0);
-	const [my, setMy, getMy] = useDynamicState(props.initialPos?.y ?? 0);
-	const [a, setA, getA] = useDynamicState(props.initialPos?.angle ?? 0);
+	const [mx, setMx, getMx] = useDynamicState(initialPos?.x ?? 0);
+	const [my, setMy, getMy] = useDynamicState(initialPos?.y ?? 0);
+	const [a, setA, getA] = useDynamicState(initialPos?.angle ?? 0);
 	const [ax, setAx] = useState(0);
 	const [ay, setAy] = useState(0);
 
 	useEffect(() => {
-		props.callback("AutoStart", { x: mx ?? 0, y: my ?? 0, angle: a ?? 0 });
-	}, [mx, my, a, ax, ay]);
+		callback("AutoStart", { x: mx ?? 0, y: my ?? 0, angle: a ?? 0 });
+	}, [mx, my, a, ax, ay, callback]);
 
 	const setup = (p5: p5Types, canvasParentRef: Element) => {
 		bg = p5.loadImage(
-			props.alliance === AllianceColor.Blue
-				? `/fields/${props.fieldImagePrefix}Blue.png`
-				: `/fields/${props.fieldImagePrefix}Red.png`,
+			alliance === AllianceColor.Blue
+				? `/fields/${fieldImagePrefix}Blue.png`
+				: `/fields/${fieldImagePrefix}Red.png`,
 		);
 
 		const ctx = p5.createCanvas(350, 300).parent(canvasParentRef);

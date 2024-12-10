@@ -13,7 +13,7 @@ export default function useInterval(
 	useEffect(() => {
 		setId(setInterval(func, interval));
 		return () => clearInterval(id);
-	}, [func.name, interval, ...deps]);
+	}, [func.name, interval, func, id, deps]);
 
 	return id;
 }

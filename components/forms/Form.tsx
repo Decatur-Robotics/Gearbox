@@ -64,11 +64,11 @@ export default function Form(props: FormProps) {
 		);
 	}
 
-	const sync = async () => {
+	const sync = useCallback(async () => {
 		setSyncing(true);
 		await api.updateReport({ data: formData }, props.report?._id!);
 		setSyncing(false);
-	};
+	}, [formData, props.report?._id]);
 
 	const setCallback = useCallback(
 		(key: any, value: boolean | string | number | object) => {
@@ -79,7 +79,7 @@ export default function Form(props: FormProps) {
 				return copy;
 			});
 		},
-		[],
+		[sync],
 	);
 
 	useCallback(() => {
@@ -91,7 +91,7 @@ export default function Form(props: FormProps) {
 		}
 
 		setFormData(formData);
-	}, [props.report?.data]);
+	}, [formData, setCallback]);
 
 	function elementToNode(element: FormElement<QuantData>) {
 		const key = element.key as string;

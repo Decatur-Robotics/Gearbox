@@ -33,6 +33,13 @@ export default function TeamStats(props: {
 		{ matchNum: number; content: { order: number; jsx: ReactNode }[] }[] | null
 	>(null);
 
+	const pitReport = props.pitReport;
+	const badges = props.getBadges(
+		pitReport ?? undefined,
+		props.selectedReports,
+		false,
+	);
+
 	useEffect(() => {
 		if (!props.selectedTeam) return;
 		setComments(null);
@@ -132,6 +139,7 @@ export default function TeamStats(props: {
 		props.selectedReports,
 		props.subjectiveReports,
 		props.pitReport,
+		pitReport,
 	]);
 
 	if (!props.selectedTeam) {
@@ -143,13 +151,6 @@ export default function TeamStats(props: {
 			</div>
 		);
 	}
-
-	const pitReport = props.pitReport;
-	const badges = props.getBadges(
-		pitReport ?? undefined,
-		props.selectedReports,
-		false,
-	);
 
 	function getSections(
 		header: string,

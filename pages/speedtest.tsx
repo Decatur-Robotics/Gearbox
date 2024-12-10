@@ -1,7 +1,7 @@
 import Container from "@/components/Container";
 import ClientApi from "@/lib/api/ClientApi";
 import { Round } from "@/lib/client/StatsMath";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const api = new ClientApi();
 
@@ -29,7 +29,7 @@ export default function SpeedTest() {
 	);
 	const [trialCountByThread, setTrialCountByThread] = useState<number[]>();
 
-	async function runSpeedTest() {
+	const runSpeedTest = useCallback(async () => {
 		setResultsCompleted(undefined);
 
 		const newResults: SpeedTestResponse[] = [];
@@ -100,11 +100,11 @@ export default function SpeedTest() {
 
 		setTimes(avgTimes);
 		setResultsCompleted(undefined);
-	}
+	}, []);
 
 	useEffect(() => {
 		runSpeedTest();
-	}, []);
+	}, [runSpeedTest]);
 
 	return (
 		<Container

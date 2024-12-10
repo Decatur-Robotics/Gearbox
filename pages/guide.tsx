@@ -34,6 +34,7 @@ export default function Guide() {
 					<img
 						src="/team.png"
 						className="w-1/2"
+						alt="Team creation"
 					></img>
 					<p>
 						The first thing to do is become part of your team. If your team is
@@ -70,6 +71,7 @@ export default function Guide() {
 					<img
 						src="/roster.png"
 						className="w-1/2"
+						alt="Team management"
 					></img>
 					<p>
 						Team managers have the ability to appoint other managers, this means
@@ -84,6 +86,7 @@ export default function Guide() {
 					<img
 						src="/season.png"
 						className="w-1/2"
+						alt="Season selection"
 					></img>
 					<p>
 						Gearbox divides your competitions into various seasons in order to
@@ -102,6 +105,7 @@ export default function Guide() {
 					<img
 						src="/createComp.png"
 						className="w-1/2"
+						alt="Competition creation"
 					></img>
 					<p>
 						Competitions hold all of the relavant data concerning your current
@@ -127,6 +131,7 @@ export default function Guide() {
 					<img
 						src="/createComp.png"
 						className="w-1/2"
+						alt="Competition creation"
 					></img>
 					<p>
 						In the event that gearbox does not have access to match data

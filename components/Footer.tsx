@@ -58,6 +58,7 @@ export default function Footer() {
 				<img
 					src="/art/4026Bench.svg"
 					className="w-32"
+					alt="4026 Bench"
 				></img>
 				<p className="text-lg">
 					Made with <span className="">❤️</span> by{" "}
@@ -181,7 +182,7 @@ export default function Footer() {
 						src="/statbotics.webp"
 						width="15"
 						height="25"
-						alt="tba"
+						alt="Statbotics Logo"
 						className="mr-6"
 					/>
 					Statbotics
@@ -195,7 +196,7 @@ export default function Footer() {
 						src="/FIRST.png"
 						width="90"
 						height="25"
-						alt="tba"
+						alt="FIRST Logo"
 					/>
 				</Link>
 			</div>

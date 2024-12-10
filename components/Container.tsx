@@ -125,7 +125,7 @@ export default function Container(props: ContainerProps) {
 		};
 
 		loadSelectedSeasons();
-	}, [selectedTeamIndex, teams]);
+	}, [selectedTeamIndex, teams, selectedTeam]);
 
 	let showAuthBlock = false;
 	if (props.requireAuthentication) {

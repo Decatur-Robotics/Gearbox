@@ -13,7 +13,7 @@ import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
 
 import ClientApi from "@/lib/api/ClientApi";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getDatabase } from "@/lib/MongoDB";
 import {
 	MostCommonValue,
@@ -190,6 +190,7 @@ function TeamSlide(props: {
 					<img
 						src={pit.data?.image}
 						className="rounded-xl w-1/3 h-auto"
+						alt={pit.teamNumber.toString()}
 					></img>
 				) : (
 					<></>
@@ -220,7 +221,7 @@ export default function Pitstats(props: { competition: Competition }) {
 
 	const layout = games[comp.gameId].pitStatsLayout;
 
-	const loadReports = async () => {
+	const loadReports = useCallback(async () => {
 		const newReports = (await api.competitionReports(
 			comp._id!,
 			true,
@@ -326,18 +327,25 @@ export default function Pitstats(props: { competition: Competition }) {
 			);
 		});
 		setSlides(newSlides);
-	};
+	}, [
+		comp._id,
+		comp.gameId,
+		comp.pitReports,
+		comp.tbaId,
+		layout,
+		usePublicData,
+	]);
 
 	useEffect(() => {
 		loadReports();
-	}, [usePublicData]);
+	}, [usePublicData, loadReports]);
 
 	useEffect(() => {
 		const i = setInterval(() => {
 			loadReports();
 		}, 60 * 1000);
 		return () => clearInterval(i);
-	}, [usePublicData]);
+	}, [usePublicData, loadReports]);
 
 	function changeSlide(
 		nextSlide: (prev: number) => number,
@@ -350,26 +358,32 @@ export default function Pitstats(props: { competition: Competition }) {
 		});
 	}
 
-	function nextSlide(automatic: boolean = false) {
-		changeSlide(
-			(n) => (n < slidesRef.current.length - 1 ? n + 1 : -1),
-			automatic,
-		);
-	}
+	const nextSlide = useCallback(
+		(automatic: boolean = false) => {
+			changeSlide(
+				(n) => (n < slidesRef.current.length - 1 ? n + 1 : -1),
+				automatic,
+			);
+		},
+		[slidesRef],
+	);
 
-	function prevSlide(automatic: boolean = false) {
-		changeSlide(
-			(n) => (n >= 0 ? n - 1 : slidesRef.current.length - 1),
-			automatic,
-		);
-	}
+	const prevSlide = useCallback(
+		async (automatic: boolean = false) => {
+			changeSlide(
+				(n) => (n >= 0 ? n - 1 : slidesRef.current.length - 1),
+				automatic,
+			);
+		},
+		[slidesRef],
+	);
 
 	useEffect(() => {
 		if (slides.length > 0 && cycleSlidesAutomatically) {
 			const timer = setInterval(() => nextSlide(true), 5000);
 			return () => clearInterval(timer);
 		}
-	}, [slides, cycleSlidesAutomatically]);
+	}, [slides, cycleSlidesAutomatically, nextSlide]);
 
 	useEffect(() => {
 		if (!addedKeyListeners) {
@@ -382,13 +396,13 @@ export default function Pitstats(props: { competition: Competition }) {
 			});
 			setAddedKeyListeners(true);
 		}
-	});
+	}, [addedKeyListeners, nextSlide, prevSlide]);
 
 	useEffect(() => {
 		const msg =
 			"Would you like to include public data? (Ok = Yes, Cancel = No)";
 		setUsePublicData(comp.tbaId !== NotLinkedToTba && confirm(msg));
-	}, []);
+	}, [comp.tbaId]);
 
 	function OverallSlide() {
 		const graphs = layout.overallSlideStats.map((stat) => {

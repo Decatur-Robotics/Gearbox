@@ -9,7 +9,7 @@ import { Dispatch, SetStateAction, useState } from "react";
  *  a parameter.
  * @todo Rework this! The forced undefined return type and the forced callback makes me want to barf.
  */
-export default function <T>(
+function useDefaultState<T>(
 	initialState?: T,
 ): [
 	T | undefined,
@@ -29,3 +29,5 @@ export default function <T>(
 		},
 	];
 }
+
+export default useDefaultState;

@@ -27,7 +27,7 @@ export default function Homepage() {
 		if (counterData.teams != null) return;
 
 		api.getMainPageCounterData().then(setCounterData);
-	});
+	}, [counterData.teams]);
 
 	function formatDataPoint(num: number | null): string {
 		if (num === null || num === undefined) return "?";
@@ -337,6 +337,7 @@ export default function Homepage() {
 							<img
 								src="/art/ShootingRobot.svg"
 								className="grayscale opacity-20 w-1/2"
+								alt="Shooting robot"
 							></img>
 							<p className="text-2xl font-bold">Insightful Visualizations</p>
 							<div className="divider"></div>
@@ -349,6 +350,7 @@ export default function Homepage() {
 							<img
 								src="/art/BrokenRobot.svg"
 								className="grayscale opacity-20 w-1/2"
+								alt="Broken robot"
 							></img>
 							<p className="text-2xl font-bold">Minimal UI/UX</p>
 							<div className="divider"></div>
@@ -361,6 +363,7 @@ export default function Homepage() {
 							<img
 								src="/art/4026.svg"
 								className="grayscale opacity-20 w-1/2"
+								alt="Team 4026 logo"
 							></img>
 							<p className="text-2xl font-bold">Integrated Team Management</p>
 							<div className="divider"></div>

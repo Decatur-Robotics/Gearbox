@@ -126,7 +126,7 @@ export default function SmallGraph(props: {
 				);
 			});
 		}
-	}, [key]);
+	}, [key, currentTeam, datapoints, props.selectedReports, props.team]);
 
 	if (!props.selectedReports) {
 		return <></>;

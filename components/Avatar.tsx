@@ -33,6 +33,7 @@ export default function Avatar(props: {
 			>
 				<img
 					src={image}
+					alt={"Avatar"}
 					onClick={props.onClick}
 				></img>
 			</div>

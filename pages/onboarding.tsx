@@ -5,7 +5,7 @@ import ClientApi from "@/lib/api/ClientApi";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useDynamicState from "@/lib/client/useDynamicState";
 import { useRouter } from "next/router";
-import { ChangeEvent, Fragment, useEffect, useState } from "react";
+import { ChangeEvent, Fragment, useCallback, useEffect, useState } from "react";
 import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
@@ -32,7 +32,7 @@ export default function Onboarding() {
 	}>();
 	const [teamConfirmed, setTeamConfirmed] = useState<boolean>(false);
 
-	enum JoinRequestStatus {
+	const enum JoinRequestStatus {
 		NotRequested,
 		Requested,
 		Rejected,
@@ -52,22 +52,23 @@ export default function Onboarding() {
 
 	useEffect(() => {
 		if (session?.user?.teams.length ?? 0 > 0) router.push(`/profile`);
-	}, [session?.user?.email]);
+	}, [session?.user?.email, session?.user?.teams.length, router]);
 
-	async function completeOnboarding(redirect: string = "/profile") {
-		console.log("Season:", season);
+	const completeOnboarding = useCallback(
+		async (redirect: string = "/profile") => {
+			if (!session?.user?._id) return;
 
-		if (!session?.user?._id) return;
+			api.setOnboardingCompleted(session?.user?._id);
+			router.push(redirect);
 
-		api.setOnboardingCompleted(session?.user?._id);
-		router.push(redirect);
-
-		Analytics.onboardingCompleted(
-			session?.user?.name ?? "Unknown User",
-			teamNumber ?? -1,
-			league ?? League.FRC,
-		);
-	}
+			Analytics.onboardingCompleted(
+				session?.user?.name ?? "Unknown User",
+				teamNumber ?? -1,
+				league ?? League.FRC,
+			);
+		},
+		[session?.user?._id, session?.user?.name, teamNumber, league, router],
+	);
 
 	async function teamNumberChanged(e: ChangeEvent<HTMLInputElement>) {
 		const number = parseInt(e.target.value);
@@ -106,7 +107,7 @@ export default function Onboarding() {
 		await api.requestToJoinTeam(team?._id!);
 	}
 
-	async function updateTeamRequestStatus() {
+	const updateTeamRequestStatus = useCallback(async () => {
 		if (!session?.user?._id || !teamNumber || !league) {
 			console.error(
 				"Missing required fields to update team request status:",
@@ -137,12 +138,26 @@ export default function Onboarding() {
 		if (requestPending) setJoinRequestStatus(JoinRequestStatus.Requested);
 		else if (joinRequestStatus === JoinRequestStatus.Requested)
 			setJoinRequestStatus(JoinRequestStatus.Rejected);
-	}
+	}, [
+		session?.user?._id,
+		teamNumber,
+		league,
+		joinRequestStatus,
+		completeOnboarding,
+		JoinRequestStatus.Rejected,
+		JoinRequestStatus.Requested,
+	]);
 
 	useEffect(() => {
 		const id = setInterval(updateTeamRequestStatus, 5000);
 		return () => clearInterval(id);
-	}, [session?.user?._id, teamNumber, league, joinRequestStatus]);
+	}, [
+		session?.user?._id,
+		teamNumber,
+		league,
+		joinRequestStatus,
+		updateTeamRequestStatus,
+	]);
 
 	async function createTeam() {
 		if (!team?.name) {

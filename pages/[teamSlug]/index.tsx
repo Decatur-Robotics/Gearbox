@@ -158,7 +158,7 @@ function Roster(props: TeamPageProps) {
 		};
 
 		loadRequests();
-	}, []);
+	}, [team?.requests]);
 
 	const handleTeamRequest = async (userId: string, accept: boolean) => {
 		await api.handleRequest(
@@ -283,6 +283,7 @@ function Roster(props: TeamPageProps) {
 												<img
 													src={user.image}
 													className="w-10 h-10 rounded-lg"
+													alt={user.name}
 												></img>
 												<h1>{user.name}</h1>
 											</div>

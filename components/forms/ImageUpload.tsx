@@ -67,6 +67,7 @@ export default function ImageUpload(props: {
 				<img
 					src={imageUrl}
 					className="w-64 h-64 rounded-lg"
+					alt="Uploaded robot image"
 				></img>
 			)}
 			{uploadProgress > 0 ? (
