@@ -71,6 +71,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
 								<img
 									className="w-fit h-auto"
 									src={game.coverImage}
+									alt={game.name}
 								/>
 							</div>
 							<button

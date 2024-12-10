@@ -3,7 +3,7 @@ function Error({ statusCode }) {
 		<div className="w-screen h-screen bg-base-300 flex items-center justify-center">
 			<div className="card w-5/6 md:w-1/4 bg-base-100 shadow-xl rounded-xl">
 				<div className="card-body flex items-center justify-center">
-					<img src="/art/BrokenRobotExtra.svg"></img>
+					<img src="/art/BrokenRobotExtra.svg" alt="Broken robot"></img>
 					<h1 className="text-8xl font-bold text-error">{statusCode}</h1>
 					<h1 className="card-title text-4xl">😔➡️🤖➡️💥</h1>
 					<p className="font-mono">Page not found...</p>

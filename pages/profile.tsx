@@ -210,6 +210,7 @@ export default function Profile(props: { teamList: Team[] }) {
 											<img
 												src="/art/4026.svg"
 												className="w-1/2 h-auto"
+												alt="Team 4026"
 											></img>
 											<Link
 												href={"/createTeam"}

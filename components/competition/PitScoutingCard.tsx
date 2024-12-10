@@ -50,7 +50,7 @@ export default function PitScoutingCard(props: {
 										<div className="absolute rounded z-10 translate-y-4 flex justify-center items-center">
 											{report.submitted ? (
 												<img
-													alt="img"
+													alt={`Team ${report.teamNumber}'s robot`}
 													src={report.data?.image}
 													loading="lazy"
 													style={{ imageResolution: "72dpi" }}

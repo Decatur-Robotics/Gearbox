@@ -190,6 +190,7 @@ function TeamSlide(props: {
 					<img
 						src={pit.data?.image}
 						className="rounded-xl w-1/3 h-auto"
+						alt={pit.teamNumber.toString()}
 					></img>
 				) : (
 					<></>

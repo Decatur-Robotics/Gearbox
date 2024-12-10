@@ -46,6 +46,7 @@ function News() {
 				<img
 					src="/art/BrokenRobot.svg"
 					className="w-1/2"
+					alt="Broken Robot"
 				></img>
 			</Flex>
 			<h3 className="font-bold text-lg">Whats New?</h3>
