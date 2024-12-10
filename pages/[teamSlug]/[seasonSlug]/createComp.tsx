@@ -11,6 +11,7 @@ import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import { Analytics } from "@/lib/client/Analytics";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { useCallback } from 'react';
 
 const api = new ClientApi();
 
@@ -29,7 +30,7 @@ export default function CreateComp(props: ResolvedUrlData) {
 	const [creatingComp, setCreatingComp] = useState(false);
 	const [usePublicData, setUsePublicData] = useState(true);
 
-	const searchComp = async () => {
+	const searchComp = useCallback(async () => {
 		if (!name) {
 			return;
 		}
@@ -43,7 +44,7 @@ export default function CreateComp(props: ResolvedUrlData) {
 		}
 
 		setLoading(false);
-	};
+	}, [name]);
 
 	const createComp = async () => {
 		setCreatingComp(true);
@@ -79,7 +80,7 @@ export default function CreateComp(props: ResolvedUrlData) {
 
 	useEffect(() => {
 		searchComp();
-	}, [name]);
+	}, [name, searchComp]);
 
 	return (
 		<Container

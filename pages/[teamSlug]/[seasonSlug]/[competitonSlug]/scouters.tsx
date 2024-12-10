@@ -230,7 +230,7 @@ export default function Scouters(props: {
 			setShouldRegenerateScouterData(true);
 			setLoading(false);
 		});
-	});
+	}, [scouters, matches, reports, loading, comp?._id]);
 
 	useEffect(() => {
 		if (shouldRegenerateScouterData && scouters && matches && reports) {
@@ -283,7 +283,7 @@ export default function Scouters(props: {
 			setScouters(scouterDict);
 			setShouldRegenerateScouterData(false);
 		}
-	}, [shouldRegenerateScouterData, lastCountedMatch]);
+	}, [shouldRegenerateScouterData, lastCountedMatch, matches, reports, scouters]);
 
 	return (
 		<Container

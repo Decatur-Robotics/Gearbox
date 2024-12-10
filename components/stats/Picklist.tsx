@@ -1,7 +1,7 @@
 import { DbPicklist, Report } from "@/lib/Types";
 
 import { useDrag, useDrop } from "react-dnd";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
 
@@ -225,7 +225,7 @@ export default function PicklistScreen(props: {
 
 	const teams = props.teams.map((team) => ({ number: team }));
 
-	function savePicklists(picklists: Picklist[]) {
+	const savePicklists = useCallback((picklists: Picklist[]) => {
 		const picklistDict = picklists.reduce<DbPicklist>(
 			(acc, picklist) => {
 				acc.picklists[picklist.name] = picklist.teams.map(
@@ -240,9 +240,9 @@ export default function PicklistScreen(props: {
 		);
 
 		api.updatePicklist(picklistDict);
-	}
+	}, [props.picklist._id]);
 
-	function updatePicklist(picklist: Picklist) {
+	const updatePicklist = useCallback((picklist: Picklist) => {
 		setPicklists((old) => {
 			const newPicklists = old.map((p) => {
 				if (p.index === picklist.index) {
@@ -255,9 +255,9 @@ export default function PicklistScreen(props: {
 			savePicklists(newPicklists);
 			return newPicklists;
 		});
-	}
+	}, [setPicklists, savePicklists]);
 
-	function loadDbPicklist(picklistDict: DbPicklist) {
+	const loadDbPicklist = useCallback((picklistDict: DbPicklist) => {
 		setPicklists(
 			Object.entries(picklistDict.picklists).map((picklist, index) => {
 				const newPicklist: Picklist = {
@@ -274,12 +274,11 @@ export default function PicklistScreen(props: {
 				return newPicklist;
 			}),
 		);
-	}
+	}, [updatePicklist]);
 
 	useEffect(() => {
 		if (loadingPicklists !== LoadState.NotLoaded) return;
 
-		console.log(props);
 		setLoadingPicklists(LoadState.Loading);
 		api.getPicklist(props.picklist?._id).then((picklist) => {
 			if (picklist) {
@@ -289,7 +288,7 @@ export default function PicklistScreen(props: {
 		loadDbPicklist(props.picklist);
 
 		setLoadingPicklists(LoadState.Loaded);
-	});
+	}, [loadingPicklists, LoadState.NotLoaded, LoadState.Loading, LoadState.Loaded, props.picklist, loadDbPicklist]);
 
 	const addPicklist = () => {
 		const newPicklist: Picklist = {

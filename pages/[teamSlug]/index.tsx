@@ -158,7 +158,7 @@ function Roster(props: TeamPageProps) {
 		};
 
 		loadRequests();
-	}, []);
+	}, [team?.requests]);
 
 	const handleTeamRequest = async (userId: string, accept: boolean) => {
 		await api.handleRequest(

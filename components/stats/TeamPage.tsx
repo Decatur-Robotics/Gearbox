@@ -151,7 +151,26 @@ export default function TeamPage(props: {
 
 	const game = games[props.gameId];
 
-	const associateTeams = () => {
+		useEffect(() => {
+		const subjectiveReports: typeof teamSubjectiveReports = {};
+		props.subjectiveReports.forEach((subjectiveReport) => {
+			for (const teamNumber of Object.keys(subjectiveReport.robotComments)) {
+				if (!Object.keys(subjectiveReports).includes(teamNumber)) {
+					subjectiveReports[Number(teamNumber)] = [subjectiveReport];
+				} else {
+					subjectiveReports[Number(teamNumber)].push(subjectiveReport);
+				}
+			}
+		});
+		setTeamSubjectiveReports(subjectiveReports);
+	}, [props.subjectiveReports]);
+
+	const pointTotals = reports.map((report) => game.getAvgPoints([report]));
+	const avgPoints = game.getAvgPoints(reports);
+	const stDev = StandardDeviation(pointTotals);
+
+	useEffect(() => {
+		console.log("Associating teams...");
 		const newTeamReports: typeof teamReports = {};
 		reports.forEach((report) => {
 			if (!(report.robotNumber in newTeamReports)) {
@@ -179,29 +198,6 @@ export default function TeamPage(props: {
 			}
 		});
 		setTeamSubjectiveReports(subjectiveReports);
-	};
-
-	useEffect(() => {
-		const subjectiveReports: typeof teamSubjectiveReports = {};
-		props.subjectiveReports.forEach((subjectiveReport) => {
-			for (const teamNumber of Object.keys(subjectiveReport.robotComments)) {
-				if (!Object.keys(subjectiveReports).includes(teamNumber)) {
-					subjectiveReports[Number(teamNumber)] = [subjectiveReport];
-				} else {
-					subjectiveReports[Number(teamNumber)].push(subjectiveReport);
-				}
-			}
-		});
-		setTeamSubjectiveReports(subjectiveReports);
-	}, [props.subjectiveReports]);
-
-	const pointTotals = reports.map((report) => game.getAvgPoints([report]));
-	const avgPoints = game.getAvgPoints(reports);
-	const stDev = StandardDeviation(pointTotals);
-
-	useEffect(() => {
-		console.log("Associating teams...");
-		associateTeams();
 	}, [reports, props.pitReports, props.subjectiveReports]);
 
 	// Associate pit reports

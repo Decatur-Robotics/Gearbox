@@ -11,10 +11,12 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default [...compat.extends("next/core-web-vitals"), {
+const config = [...compat.extends("next/core-web-vitals"), {
     rules: {
         "@next/next/no-img-element": "off",
         "@next/next/no-html-link-for-pages": "off",
     },
     ignores: ["node_modules/*", "coverage/*"]
 }];
+
+export default config;

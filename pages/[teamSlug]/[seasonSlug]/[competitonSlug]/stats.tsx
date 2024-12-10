@@ -8,7 +8,7 @@ import {
 	Report,
 	DbPicklist,
 } from "@/lib/Types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Container from "@/components/Container";
 import { games } from "@/lib/games";
 import CollectionId from "@/lib/client/CollectionId";
@@ -51,7 +51,7 @@ export default function Stats(props: {
 		};
 	});
 
-	const resync = async () => {
+	const resync = useCallback(async () => {
 		console.log("Resyncing...");
 		setUpdating(true);
 
@@ -73,11 +73,11 @@ export default function Stats(props: {
 
 		setUpdate(Date.now());
 		setUpdating(false);
-	};
+	}, [pitReports.length, props.competition._id, usePublicData]);
 
 	useEffect(() => {
 		resync();
-	}, [usePublicData]);
+	}, [usePublicData, resync]);
 
 	const teams: Set<number> = new Set();
 	reports.forEach((r) => teams.add(r.robotNumber));

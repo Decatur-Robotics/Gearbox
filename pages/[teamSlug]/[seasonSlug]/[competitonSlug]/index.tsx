@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState, useCallback } from 'react';
 
 import ClientApi from "@/lib/api/ClientApi";
 import {
@@ -112,7 +112,7 @@ export default function CompetitionIndex({
 	const [newCompName, setNewCompName] = useState(comp?.name);
 	const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
 
-	const regeneratePitReports = async () => {
+	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
 		api
 			.regeneratePitReports(comp?._id!)
@@ -129,7 +129,7 @@ export default function CompetitionIndex({
 					setLoadingPitreports(false);
 				});
 			});
-	};
+	}, [comp?._id]);
 
 	useEffect(() => {
 		if (!reports) return;
@@ -146,7 +146,7 @@ export default function CompetitionIndex({
 		setMatchesAssigned(matchesAssigned);
 	}, [reports]);
 
-	const loadMatches = async (silent: boolean = false) => {
+	const loadMatches = useCallback(async (silent: boolean = false) => {
 		if (!silent) setLoadingMatches(true);
 
 		window.location.hash = "";
@@ -180,9 +180,9 @@ export default function CompetitionIndex({
 			});
 
 		if (!silent) setLoadingMatches(false);
-	};
+	}, [comp?._id]);
 
-	const loadReports = async (silent: boolean = false) => {
+	const loadReports = useCallback(async (silent: boolean = false) => {
 		const scoutingStats = (reps: Report[]) => {
 			if (!silent) setLoadingScoutStats(true);
 			let submittedCount = 0;
@@ -213,16 +213,17 @@ export default function CompetitionIndex({
 			}
 			newReportsById[report._id] = report;
 		});
+
 		setReportsById(newReportsById);
 
 		if (!silent) setLoadingReports(false);
 
 		scoutingStats(newReports);
-	};
+	}, [comp?._id]);
 
 	useEffect(() => {
 		setInterval(() => loadReports(true), 5000);
-	}, []);
+	}, [loadReports]);
 
 	useEffect(() => {
 		const loadUsers = async (silent: boolean = false) => {
@@ -304,7 +305,7 @@ export default function CompetitionIndex({
 		if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
 			regeneratePitReports();
 		}
-	}, [assigningMatches]);
+	}, [assigningMatches, attemptedRegeneratingPitReports, comp?._id, comp?.pitReports, loadMatches, loadReports, matches, pitreports, regeneratePitReports, reports, team, usersById]);
 
 	const assignScouters = async () => {
 		setAssigningMatches(true);

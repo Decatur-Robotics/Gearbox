@@ -52,7 +52,7 @@ export default function Profile(props: { teamList: Team[] }) {
 		if (user?.teams) {
 			loadTeams();
 		}
-	}, [session?.user]);
+	}, [session?.user, user?.teams]);
 
 	const requestTeam = async (teamId: string, teamNumber: number) => {
 		setLoadingRequest(true);

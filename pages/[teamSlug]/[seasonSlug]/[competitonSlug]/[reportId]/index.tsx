@@ -20,7 +20,7 @@ export default function Homepage(props: FormProps) {
 	useEffect(() => {
 		if (props.report)
 			setInterval(() => api.checkInForReport(props.report._id!), 5000);
-	}, []);
+	}, [props.report]);
 
 	return (
 		<Container

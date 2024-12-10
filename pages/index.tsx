@@ -27,7 +27,7 @@ export default function Homepage() {
 		if (counterData.teams != null) return;
 
 		api.getMainPageCounterData().then(setCounterData);
-	});
+	}, [counterData.teams]);
 
 	function formatDataPoint(num: number | null): string {
 		if (num === null || num === undefined) return "?";
