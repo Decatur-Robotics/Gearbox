@@ -329,7 +329,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			{ comp, team },
 			[compId],
 		) => {
-			const matches = await tba.getCompetitionMatches(comp.tbaId!);
+			const matches = await tba.getCompetitionQualifyingMatches(comp.tbaId!);
 			if (!matches || matches.length <= 0) {
 				res.status(200).send({ result: "none" });
 				return;
@@ -381,7 +381,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const matches = await tba.getCompetitionMatches(tbaId);
+			const matches = await tba.getCompetitionQualifyingMatches(tbaId);
 			matches.map(
 				async (match) => (await db.addObject(CollectionId.Matches, match))._id,
 			);

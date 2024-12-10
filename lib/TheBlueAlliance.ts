@@ -257,24 +257,25 @@ export namespace TheBlueAlliance {
 			);
 		}
 
-		async getCompetitionMatches(tbaId: string): Promise<Match[]> {
-			if (tbaId === NotLinkedToTba) return [];
+		async getCompetitionQualifyingMatches(tbaId: string): Promise<Match[]> {
+      if (tbaId === NotLinkedToTba)
+        return [];
 
-			let matches =
-				(await this.req.getCompetitionMatches(tbaId)).map(
-					(data) =>
-						new Match(
-							data.match_number,
-							undefined,
-							data.key,
-							data.time,
-							competitionLevelToMatchType(data.comp_level),
-							tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
-							tbaIdsToTeamNumbers(data.alliances.red.team_keys),
-						),
-				) ?? [];
-			return matches;
-		}
+      let matches = (await this.req.getCompetitionMatches(tbaId)).filter(match => match.comp_level === CompetitionLevel.QM).map(
+        (data, index) => {
+          return new Match(
+            index + 1,
+            undefined,
+            data.key,
+            data.time,
+            competitionLevelToMatchType(data.comp_level),
+            tbaIdsToTeamNumbers(data.alliances.blue.team_keys),
+            tbaIdsToTeamNumbers(data.alliances.red.team_keys)
+          )
+        }
+      ) ?? [];
+      return matches;
+    }
 
 		async getCompetitionPitreports(
 			tbaId: string,
