@@ -32,48 +32,7 @@ app.prepare().then(() => {
 				if (!req.url) return;
 
 				const parsedUrl = parse(req.url, true);
-				const { pathname } = parsedUrl;
-
-				if (
-					pathname &&
-					(pathname === "/sw.js" ||
-						/^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname))
-				) {
-					console.log("Service worker request received: " + parsedUrl.pathname);
-					const filePath = join(__dirname, "public", pathname);
-					const file = fs.readFileSync(filePath, "utf8");
-
-					res.writeHead(200, { "Content-Type": "application/javascript" });
-					res.write(file, (err) =>
-						console.log(
-							err
-								? "Service worker write error: " + err
-								: "Service worker written",
-						),
-					);
-				} else if (pathname && pathname.startsWith("/slack")) {
-					console.log("Slack event received: " + parsedUrl.pathname);
-
-					// Pipe request to slack app
-					const newReq = request(
-						Object.assign(
-							{},
-							parse("http://localhost:" + process.env.SLACK_PORT + req.url),
-							{
-								method: req.method,
-								path: req.url,
-							},
-						),
-						(newRes) => {
-							res.writeHead(newRes.statusCode || 200, newRes.headers);
-							newRes.pipe(res);
-						},
-					);
-
-					req.pipe(newReq);
-				} else {
-					handle(req, res, parsedUrl);
-				}
+				handle(req, res, parsedUrl);
 			},
 		)
 			.listen(port, () => {
