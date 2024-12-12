@@ -4,17 +4,14 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows manual triggering of the workflow
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  cd:
-    needs:
-      - ci
-    uses: ./.github/workflows/cd.yml
-    secrets:
-      SSL_KEY: ${{ secrets.SSL_KEY }}
-      SSL_CERT: ${{ secrets.SSL_CERT }}
-      ENV_FILE: ${{ secrets.ENV_FILE }}
+  # cd:
+  #   needs:
+  #     - ci
+  #   uses: ./.github/workflows/cd.yml

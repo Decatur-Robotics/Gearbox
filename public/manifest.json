@@ -1,17 +1,17 @@
 {
-  "name": "Gearbox",
-  "short_name": "Gearbox",
-  "icons": [
-    {
-      "src": "/favicon.png",
-      "sizes": "220x220",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ],
-  "theme_color": "#FFFFFF",
-  "background_color": "#FFFFFF",
-  "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait"
+	"name": "Gearbox",
+	"short_name": "Gearbox",
+	"icons": [
+		{
+			"src": "/favicon.png",
+			"sizes": "220x220",
+			"type": "image/png",
+			"purpose": "any"
+		}
+	],
+	"theme_color": "#FFFFFF",
+	"background_color": "#FFFFFF",
+	"start_url": "/",
+	"display": "standalone",
+	"orientation": "portrait"
 }

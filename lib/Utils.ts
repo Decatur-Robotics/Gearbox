@@ -7,6 +7,7 @@ import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Redirect } from "next";
+import { User } from "./Types";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -21,35 +22,51 @@ import { Redirect } from "next";
  * @returns - A Unique SLUG
  */
 export async function GenerateSlug(
-  db: DbInterface,
-  collection: CollectionId,
-  name: string,
-  index: number = 0,
+	db: DbInterface,
+	collection: CollectionId,
+	name: string,
+	index: number = 0,
 ): Promise<string> {
-  let finalName;
-  if (index === 0) {
-    finalName = removeWhitespaceAndMakeLowerCase(name);
-  } else {
-    finalName = name + index.toString();
-  }
+	let finalName;
+	if (index === 0) {
+		finalName = removeWhitespaceAndMakeLowerCase(name);
+	} else {
+		finalName = name + index.toString();
+	}
 
-  const result = await db.findObject(collection, { slug: finalName });
-  if (result) {
-    return GenerateSlug(db, collection, index === 0 ? finalName : name, index + 1);
-  }
+	const result = await db.findObject(collection, { slug: finalName });
+	if (result) {
+		return GenerateSlug(
+			db,
+			collection,
+			index === 0 ? finalName : name,
+			index + 1,
+		);
+	}
 
-  return finalName;
+	return finalName;
 }
 
-export function createRedirect(destination: string, query: Record<string, any> = {}): { redirect: Redirect } {
-  return { 
-    redirect: {
-      destination: `${destination}?${Object.keys(query).map((key) => `${key}=${query[key]}`).join("&")}`,
-      permanent: false,
-    }
-  };
+export function createRedirect(
+	destination: string,
+	query: Record<string, any> = {},
+): { redirect: Redirect } {
+	return {
+		redirect: {
+			destination: `${destination}?${Object.keys(query)
+				.map((key) => `${key}=${query[key]}`)
+				.join("&")}`,
+			permanent: false,
+		},
+	};
 }
 
 export function isDeveloper(email: string | undefined) {
-  return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(email ?? "");
+	return (JSON.parse(process.env.DEVELOPER_EMAILS) as string[]).includes(
+		email ?? "",
+	);
+}
+
+export function mentionUserInSlack(user: User) {
+	return user?.slackId ? `<@${user!.slackId}>` : user!.name;
 }
