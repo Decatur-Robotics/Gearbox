@@ -1,6 +1,8 @@
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { Competition, Pitreport } from "@/lib/Types";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { Button } from "react-bootstrap";
 import { BsGearFill } from "react-icons/bs";
 import { FaRobot } from "react-icons/fa";
 
@@ -10,6 +12,8 @@ export default function PitScoutingCard(props: {
 	comp: Competition | undefined;
 }) {
 	const { pitreports, loadingPitreports, comp } = props;
+
+	const router = useRouter();
 
 	return (
 		<div className="w-full card bg-base-200 shadow-xl h-56">
@@ -39,9 +43,9 @@ export default function PitScoutingCard(props: {
 							pitreports
 								?.sort((a, b) => a.teamNumber - b.teamNumber)
 								?.map((report) => (
-									<Link
+									<Button
 										className="card mt-2 bg-base-100 hover:bg-base-200 p-2 h-3/4"
-										href={`${window.location.pathname}/pit/${report._id}`}
+										onClick={() => router.push(`/pit/${report._id}`)}
 										key={report._id}
 									>
 										<div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
@@ -60,7 +64,7 @@ export default function PitScoutingCard(props: {
 												<FaRobot size={64} />
 											)}
 										</div>
-									</Link>
+									</Button>
 								))
 						)}
 					</div>
