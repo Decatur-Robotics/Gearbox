@@ -511,29 +511,43 @@ describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
 	test(`${ClientApi.name}.${api.findPitreportById.name}: Returns pitreport if found`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const pitreport = {
+		const pitReport = {
 			...new Pitreport(0, {} as PitReportData),
 			_id: new ObjectId(),
 		};
-		await db.addObject(CollectionId.PitReports, pitreport);
+		await db.addObject(CollectionId.PitReports, pitReport);
 
 		await api.findPitreportById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				pitreport._id!.toString(),
-			])),
+			...(await getTestApiParams(
+				res,
+				{ db, user },
+				[pitReport._id!.toString()],
+				{
+					pitReport: pitReport as any,
+					team: undefined as any,
+					comp: undefined as any,
+				},
+			)),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
-		expect(res.send).toHaveBeenCalledWith(pitreport);
+		expect(res.send).toHaveBeenCalledWith(pitReport);
 	});
 
 	test(`${ClientApi.name}.${api.findPitreportById.name}: Returns undefined if pitreport not found`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findPitreportById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(
+				res,
+				{ db, user },
+				[new ObjectId().toString()],
+				{
+					pitReport: undefined as any,
+					team: undefined as any,
+					comp: undefined as any,
+				},
+			)),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
