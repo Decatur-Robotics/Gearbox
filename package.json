@@ -7,13 +7,15 @@
 		"build": "next build",
 		"start": "cross-env NODE_ENV=production npx tsx index.ts",
 		"restart": "next build && cross-env NODE_ENV=production npx tsx index.ts",
+		"test": "jest",
 		"docker-build": "docker build -t gearbox .",
 		"docker-start": "docker run -i -t -p 443:443 gearbox",
 		"docker-prune": "docker container prune",
+		"docker-tag": "docker tag gearbox us-east1-docker.pkg.dev/gearbox-442221/gearbox-test/gearbox",
+		"docker-push": "docker push us-east1-docker.pkg.dev/gearbox-442221/gearbox-test/gearbox/latest",
 		"lint": "eslint . --max-warnings=0 --ignore-pattern \"coverage/**/*\"",
 		"prettier-fix": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
-		"prettier-check": "prettier --check ./**/*.{js,tsx,jsx,json,ts}",
-		"test": "jest"
+		"prettier-check": "prettier --check ./**/*.{js,tsx,jsx,json,ts}"
 	},
 	"dependencies": {
 		"@next-auth/mongodb-adapter": "^1.1.3",

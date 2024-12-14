@@ -15,4 +15,5 @@ RUN npm run build
 
 EXPOSE 443
 
-CMD npm run start
+# ENTRYPOINT [ "bash" ] # Uncomment to operate the terminal in the container
+CMD ["/usr/local/bin/npm", "run", "start"]
