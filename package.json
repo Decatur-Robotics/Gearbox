@@ -10,7 +10,7 @@
 		"docker-build": "docker build -t gearbox .",
 		"docker-start": "docker run -i -t -p 443:443 gearbox",
 		"docker-prune": "docker container prune",
-		"lint": "eslint . --max-warnings=0 --ignore-pattern \"coverage/**/*\"",
+		"lint": "eslint . --max-warnings=0",
 		"prettier-fix": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
 		"prettier-check": "prettier --check ./**/*.{js,tsx,jsx,json,ts}",
 		"test": "jest"

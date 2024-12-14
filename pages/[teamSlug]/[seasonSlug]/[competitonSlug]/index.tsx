@@ -94,8 +94,6 @@ export default function CompetitionIndex({
 	const [attemptedRegeneratingPitReports, setAttemptedRegeneratingPitReports] =
 		useState(false);
 
-	const [picklists, setPicklists] = useState<DbPicklist | undefined>();
-
 	const [updatingComp, setUpdatingComp] = useState("");
 
 	const [ranking, setRanking] = useState<{
@@ -114,21 +112,17 @@ export default function CompetitionIndex({
 
 	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
-		api
-			.regeneratePitReports(comp?._id!)
-			.then(({ pitReports }: { pitReports: string[] }) => {
-				setAttemptedRegeneratingPitReports(true);
-				setLoadingPitreports(true);
+		const { pitReports: pitReportIds } = await api.regeneratePitReports(
+			comp?._id!,
+		);
 
-				// Fetch pit reports
-				const pitReportPromises = pitReports.map(api.findPitreportById);
+		setAttemptedRegeneratingPitReports(true);
+		setLoadingPitreports(true);
 
-				Promise.all(pitReportPromises).then((reports) => {
-					console.log("Got all pit reports");
-					setPitreports(reports.filter((r) => r !== undefined) as Pitreport[]);
-					setLoadingPitreports(false);
-				});
-			});
+		const pitReports = await api.findBulkPitReportsById(pitReportIds);
+		setPitreports(pitReports.filter((r) => r !== undefined) as Pitreport[]);
+
+		setLoadingPitreports(false);
 	}, [comp?._id]);
 
 	useEffect(() => {
@@ -231,8 +225,50 @@ export default function CompetitionIndex({
 		setInterval(() => loadReports(true), 5000);
 	}, [loadReports]);
 
+	const loadPitreports = useCallback(
+		async (silent: boolean = false) => {
+			console.log("Loading pit reports... Current:", pitreports);
+			if (pitreports.length === 0 && !silent) setLoadingPitreports(true);
+
+			if (!comp?.pitReports) {
+				setLoadingPitreports(false);
+				return;
+			}
+			const newPitReports: Pitreport[] = await api.findBulkPitReportsById(
+				comp.pitReports,
+			);
+			let submitted = 0;
+
+			setSubmittedPitreports(submitted);
+			setPitreports(newPitReports);
+			setLoadingPitreports(false);
+		},
+		[comp?.pitReports, pitreports],
+	);
+
 	useEffect(() => {
-		const loadUsers = async (silent: boolean = false) => {
+		if (comp?.pitReports.every((id) => pitreports.some((r) => r._id === id)))
+			return;
+
+		loadPitreports(pitreports.length > 0);
+
+		// Resync pit reports if none are present
+		if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
+			regeneratePitReports();
+		}
+	}, [
+		comp?.pitReports,
+		pitreports,
+		attemptedRegeneratingPitReports,
+		loadPitreports,
+		regeneratePitReports,
+	]);
+
+	// We have this function in the dependency array of a useEffect, so we need useCallback to avoid recreating it every render
+	// and thus retrigerring the useEffect
+	// Read this for a more detailed explanation: https://stackoverflow.com/a/71265201/22099600
+	const loadUsers = useCallback(
+		async (silent: boolean = false) => {
 			console.log("Loading users...");
 
 			if (Object.keys(usersById).length === 0 && !silent) setLoadingUsers(true);
@@ -241,89 +277,42 @@ export default function CompetitionIndex({
 				return;
 			}
 
-			const newUsersById: { [key: string]: User } = {};
-			const promises: Promise<any>[] = [];
-			for (const userId of team.users) {
-				promises.push(
-					api.findUserById(userId).then((user) => {
-						if (user) {
-							newUsersById[userId] = user;
-						}
-					}),
-				);
-			}
-
-			await Promise.all(promises);
-
-			setUsersById(newUsersById);
+			setUsersById(
+				(await api.findBulkUsersById(team.users)).reduce(
+					(acc, user) => {
+						acc[user._id!.toString()] = user;
+						return acc;
+					},
+					{} as { [key: string]: User },
+				),
+			);
 			setLoadingUsers(false);
-		};
+		},
+		[team, usersById],
+	);
 
-		const loadPitreports = async (silent: boolean = false) => {
-			console.log("Loading pit reports... Current:", pitreports);
-			if (pitreports.length === 0 && !silent) setLoadingPitreports(true);
+	useEffect(() => {
+		if (team?.users.every((id) => usersById[id.toString()])) return;
+		loadUsers((team?.users.length ?? 0) > 0);
+	}, [team, usersById, loadUsers]);
 
-			if (!comp?.pitReports) {
-				setLoadingPitreports(false);
-				return;
-			}
-			const newPitReports: Pitreport[] = [];
-			let submitted = 0;
-			const promises: Promise<any>[] = [];
-			for (const pitreportId of comp?.pitReports) {
-				promises.push(
-					api.findPitreportById(pitreportId).then((pitreport) => {
-						if (!pitreport) {
-							return;
-						}
-
-						if (pitreport.submitted) {
-							submitted++;
-						}
-						newPitReports.push(pitreport);
-					}),
-				);
-			}
-
-			await Promise.all(promises);
-
-			console.log("Loaded pit reports:", newPitReports);
-			setSubmittedPitreports(submitted);
-			setPitreports(newPitReports);
-			setLoadingPitreports(false);
-		};
-
+	useEffect(() => {
 		if (!assigningMatches) {
-			loadUsers(true);
-			loadMatches(matches !== undefined);
-			loadReports(reports !== undefined);
-			loadPitreports(true);
-		}
+			if (!comp?.matches.every((m) => matches.some((m2) => m2._id === m)))
+				loadMatches(matches !== undefined);
 
-		// Load picklists
-		if (comp?._id)
-			api
-				.getPicklistFromComp(comp?._id)
-				.then(setPicklists)
-				.catch(console.error);
-
-		// Resync pit reports if none are present
-		if (!attemptedRegeneratingPitReports && comp?.pitReports.length === 0) {
-			regeneratePitReports();
+			if (!matches.every((m) => m.reports.every((r) => reportsById[r])))
+				loadReports(reports !== undefined);
 		}
 	}, [
 		assigningMatches,
-		attemptedRegeneratingPitReports,
 		comp?._id,
-		comp?.pitReports,
 		loadMatches,
 		loadReports,
 		matches,
-		pitreports,
-		regeneratePitReports,
 		reports,
-		team,
-		usersById,
+		comp?.matches,
+		reportsById,
 	]);
 
 	const assignScouters = async () => {
@@ -435,7 +424,7 @@ export default function CompetitionIndex({
 		api.teamCompRanking(comp?.tbaId, team?.number).then((res) => {
 			setRanking(res);
 		});
-	});
+	}, [comp?.tbaId, team?.number, ranking]);
 
 	function openEditMatchModal(match: Match) {
 		(
