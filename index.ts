@@ -2,7 +2,7 @@ import { join } from "path";
 import { createServer } from "https";
 import { parse } from "url";
 import next from "next";
-import fs, { readFileSync } from "fs";
+import fs, { existsSync, readFileSync } from "fs";
 import { IncomingMessage, ServerResponse, request } from "http";
 
 console.log("Starting server...");
@@ -14,10 +14,13 @@ const handle = app.getRequestHandler();
 
 console.log("Constants set");
 
-const httpsOptions = {
-	key: readFileSync("./certs/key.pem"),
-	cert: readFileSync("./certs/cert.pem"),
-};
+const httpsOptions =
+	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem")
+		? {
+				key: readFileSync("./certs/key.pem"),
+				cert: readFileSync("./certs/cert.pem"),
+			}
+		: {};
 
 console.log("HTTPS options set");
 
