@@ -21,10 +21,6 @@ export default function InsightsAndSettingsCard(props: {
 	toggleShowSubmittedMatches: () => void;
 	assigningMatches: boolean;
 	regeneratePitReports: () => void;
-	redAlliance: number[];
-	setRedAlliance: (value: number[]) => void;
-	matchNumber: number | undefined;
-	setMatchNumber: (value: number) => void;
 	submittedReports: number | undefined;
 	reports: Report[];
 	loadingScoutStats: boolean;
@@ -32,7 +28,6 @@ export default function InsightsAndSettingsCard(props: {
 	submittedPitreports: number | undefined;
 	seasonSlug: string | undefined;
 	team: Team | undefined;
-	allianceIndices: number[];
 }) {
   const [showSettings, setShowSettings] = useState(false);
 	const {
@@ -43,10 +38,6 @@ export default function InsightsAndSettingsCard(props: {
 		showSubmittedMatches,
 		toggleShowSubmittedMatches,
 		assigningMatches,
-		redAlliance,
-		setRedAlliance,
-		matchNumber,
-		setMatchNumber,
 		submittedReports,
 		reports,
 		loadingScoutStats,
@@ -54,13 +45,14 @@ export default function InsightsAndSettingsCard(props: {
 		submittedPitreports,
 		seasonSlug,
 		team,
-		allianceIndices,
 	} = props;
   const [newCompName, setNewCompName] = useState(comp?.name);
   const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
   const [exportPending, setExportPending] = useState(false);
   const [teamToAdd, setTeamToAdd] = useState<number>(0);
   const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
+  const [redAlliance, setRedAlliance] = useState<number[]>([]);
+  const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined,);
 
   const exportAsCsv = async () => {
 		setExportPending(true);
@@ -99,6 +91,15 @@ export default function InsightsAndSettingsCard(props: {
 
 		location.reload();
 	};
+
+  	const allianceIndices: number[] = [];
+		for (
+			let i = 0;
+			i < games[comp?.gameId ?? defaultGameId].allianceSize;
+			i++
+		) {
+			allianceIndices.push(i);
+		}
 
 	async function saveCompChanges() {
 		// Check if tbaId is valid

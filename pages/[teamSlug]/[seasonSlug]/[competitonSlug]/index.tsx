@@ -50,10 +50,6 @@ export default function CompetitionIndex({
 		false;
 
 
-	const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
-
-	const [redAlliance, setRedAlliance] = useState<number[]>([]);
-
 	const [matches, setMatches] = useState<Match[]>([]);
 
 	const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
@@ -398,10 +394,6 @@ export default function CompetitionIndex({
 			api.remindSlack(team._id.toString(), userId);
 	}
 
-	const allianceIndices: number[] = [];
-	for (let i = 0; i < games[comp?.gameId ?? defaultGameId].allianceSize; i++) {
-		allianceIndices.push(i);
-	}
 
 	return (
 		<Container
@@ -423,11 +415,6 @@ export default function CompetitionIndex({
 						seasonSlug={season?.slug}
 						assignScouters={assignScouters}
 						assigningMatches={assigningMatches}
-						redAlliance={redAlliance}
-						setRedAlliance={setRedAlliance}
-						matchNumber={matchNumber}
-						setMatchNumber={setMatchNumber}
-						allianceIndices={allianceIndices}
 						submittedReports={submittedReports}
 						team={team}
 						reports={reports}
