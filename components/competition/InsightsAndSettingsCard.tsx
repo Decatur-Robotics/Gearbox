@@ -1,89 +1,139 @@
-import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { download, NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import { Round } from "@/lib/client/StatsMath";
 import { games } from "@/lib/games";
-import { Competition, Pitreport, Report, Team } from "@/lib/Types";
+import { Competition, MatchType, Pitreport, Report, Team } from "@/lib/Types";
 import Link from "next/link";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import { BsGearFill, BsClipboard2Check } from "react-icons/bs";
 import { FaSync, FaBinoculars, FaUserCheck, FaDatabase } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
+import ClientApi from "@/lib/api/ClientApi";
+
+const api = new ClientApi();
 
 export default function InsightsAndSettingsCard(props: {
-	showSettings: boolean;
-	setShowSettings: (value: boolean) => void;
 	isManager: boolean | undefined;
 	comp: Competition | undefined;
 	reloadCompetition: () => void;
 	assignScouters: () => void;
-	exportAsCsv: () => void;
-	exportPending: boolean;
 	showSubmittedMatches: boolean;
 	toggleShowSubmittedMatches: () => void;
 	assigningMatches: boolean;
 	regeneratePitReports: () => void;
-	newCompName: string | undefined;
-	setNewCompName: (value: string) => void;
-	newCompTbaId: string | undefined;
-	setNewCompTbaId: (value: string) => void;
-	saveCompChanges: () => void;
 	redAlliance: number[];
 	setRedAlliance: (value: number[]) => void;
-	blueAlliance: number[];
-	setBlueAlliance: (value: number[]) => void;
 	matchNumber: number | undefined;
 	setMatchNumber: (value: number) => void;
-	createMatch: () => void;
-	teamToAdd: number;
-	setTeamToAdd: (value: number) => void;
-	addTeam: () => void;
 	submittedReports: number | undefined;
 	reports: Report[];
 	loadingScoutStats: boolean;
 	pitreports: Pitreport[];
 	submittedPitreports: number | undefined;
-	togglePublicData: (e: ChangeEvent<HTMLInputElement>) => void;
 	seasonSlug: string | undefined;
 	team: Team | undefined;
 	allianceIndices: number[];
 }) {
+  const [showSettings, setShowSettings] = useState(false);
 	const {
-		showSettings,
-		setShowSettings,
 		isManager,
 		comp,
 		reloadCompetition,
 		assignScouters,
-		exportAsCsv,
-		exportPending,
 		showSubmittedMatches,
 		toggleShowSubmittedMatches,
 		assigningMatches,
-		newCompName,
-		setNewCompName,
-		newCompTbaId,
-		setNewCompTbaId,
-		saveCompChanges,
 		redAlliance,
 		setRedAlliance,
-		blueAlliance,
-		setBlueAlliance,
 		matchNumber,
 		setMatchNumber,
-		createMatch,
-		teamToAdd,
-		setTeamToAdd,
-		addTeam,
 		submittedReports,
 		reports,
 		loadingScoutStats,
 		pitreports,
 		submittedPitreports,
-		togglePublicData,
 		seasonSlug,
 		team,
 		allianceIndices,
 	} = props;
+  const [newCompName, setNewCompName] = useState(comp?.name);
+  const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
+  const [exportPending, setExportPending] = useState(false);
+  const [teamToAdd, setTeamToAdd] = useState<number>(0);
+  const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
+
+  const exportAsCsv = async () => {
+		setExportPending(true);
+
+		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
+			console.error(e);
+			return { csv: undefined };
+		});
+
+		if (!res) {
+			console.error("failed to export");
+		}
+
+		if (res.csv) {
+			download(`${comp?.name ?? "Competition"}.csv`, res.csv, "text/csv");
+		} else {
+			console.error("No CSV data returned from server");
+		}
+
+		setExportPending(false);
+	};
+
+  const createMatch = async () => {
+		try {
+			await api.createMatch(
+				comp?._id!,
+				Number(matchNumber),
+				0,
+				MatchType.Qualifying,
+				blueAlliance as number[],
+				redAlliance as number[],
+			);
+		} catch (e) {
+			console.error(e);
+		}
+
+		location.reload();
+	};
+
+	async function saveCompChanges() {
+		// Check if tbaId is valid
+		if (!comp?.tbaId || !comp?.name || !comp?._id) return;
+
+		let tbaId = newCompTbaId;
+		const autoFillData = await api.competitionAutofill(tbaId ?? "");
+		if (
+			!autoFillData?.name &&
+			!confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`)
+		)
+			return;
+
+		await api.updateCompNameAndTbaId(
+			comp?._id,
+			newCompName ?? "Unnamed",
+			tbaId ?? NotLinkedToTba,
+		);
+		location.reload();
+	}
+
+  function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
+		if (!comp?._id) return;
+		api.setCompPublicData(comp?._id, e.target.checked);
+	}
+
+  function addTeam() {
+		console.log("Adding pit report for team", teamToAdd);
+		if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
+
+		api
+			.createPitReportForTeam(teamToAdd, comp?._id)
+			// We can't just pass location.reload, it will throw "illegal invocation." I don't know why. -Renato
+			.finally(() => location.reload());
+	}
 
 	return (
 		<div className="w-full card bg-base-200 shadow-xl">
