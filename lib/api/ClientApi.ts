@@ -43,6 +43,7 @@ import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { request } from "http";
 import { SlackNotLinkedError } from "./Errors";
+import { _id } from "@next-auth/mongodb-adapter";
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
@@ -1214,15 +1215,13 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			await Promise.all(promises);
 
-			return res
-				.status(200)
-				.send({
-					scouters,
-					matches,
-					quantitativeReports,
-					pitReports,
-					subjectiveReports,
-				});
+			return res.status(200).send({
+				scouters,
+				matches,
+				quantitativeReports,
+				pitReports,
+				subjectiveReports,
+			});
 		},
 	});
 
@@ -1732,6 +1731,22 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
+	findBulkUsersById = ApiLib.createRoute<
+		[string[]],
+		User[],
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.AlwaysAuthorized,
+		handler: async (req, res, { db: dbPromise }, authData, [ids]) => {
+			const db = await dbPromise;
+			const users = await db.findObjects<User>(CollectionId.Users, {
+				_id: { $in: ids.map((id) => new ObjectId(id)) },
+			});
+			return res.status(200).send(users);
+		},
+	});
+
 	findTeamById = ApiLib.createRoute<
 		[string],
 		Team | undefined,
@@ -1851,16 +1866,35 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		[string],
 		Pitreport | undefined,
 		ApiDependencies,
-		void
+		{ team: Team; comp: Competition; pitReport: Pitreport }
 	>({
-		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
-			const db = await dbPromise;
-			const pitreport = await db.findObjectById<Pitreport>(
-				CollectionId.PitReports,
-				new ObjectId(id),
+		isAuthorized: (req, res, deps, [id]) =>
+			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
+		handler: async (req, res, deps, { pitReport }, args) => {
+			return res.status(200).send(pitReport);
+		},
+	});
+
+	findBulkPitReportsById = ApiLib.createRoute<
+		[string[]],
+		Pitreport[],
+		ApiDependencies,
+		{ team: Team; comp: Competition; pitReport: Pitreport }[]
+	>({
+		isAuthorized: async (req, res, deps, [ids]) => {
+			const reports = await Promise.all(
+				ids.map((id) =>
+					AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
+				),
 			);
-			return res.status(200).send(pitreport);
+
+			return {
+				authorized: reports.every((report) => report.authorized),
+				authData: reports.map((report) => report.authData!),
+			};
+		},
+		handler: async (req, res, deps, authData, args) => {
+			return res.status(200).send(authData.map((report) => report.pitReport));
 		},
 	});
 
