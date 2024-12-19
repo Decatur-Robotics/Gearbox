@@ -163,8 +163,8 @@ function Roster(props: TeamPageProps) {
 	const handleTeamRequest = async (userId: string, accept: boolean) => {
 		await api.handleTeamJoinRequest(
 			accept,
-			userId as string,
 			team?._id.toString() ?? "",
+			userId as string,
 		);
 
 		const reqClone = structuredClone(requests);
