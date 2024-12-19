@@ -161,7 +161,7 @@ function Roster(props: TeamPageProps) {
 	}, [team?.requests]);
 
 	const handleTeamRequest = async (userId: string, accept: boolean) => {
-		await api.handleRequest(
+		await api.handleTeamJoinRequest(
 			accept,
 			userId as string,
 			team?._id.toString() ?? "",

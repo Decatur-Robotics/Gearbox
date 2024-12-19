@@ -195,14 +195,6 @@ export default function Onboarding() {
 		setSeasonCreated(true);
 	}
 
-	console.log(
-		"Onboarding render",
-		session,
-		team,
-		teamConfirmed,
-		joinRequestStatus,
-	);
-
 	return (
 		<Container
 			requireAuthentication={true}
