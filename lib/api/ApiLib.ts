@@ -171,7 +171,7 @@ namespace ApiLib {
 	};
 
 	export abstract class ApiTemplate<TDependencies> {
-		[route: string]: any;
+		// [route: string]: any;
 
 		private initSegment(segment: Segment<any>, subUrl: string) {
 			for (const [key, value] of Object.entries(segment)) {
@@ -194,7 +194,7 @@ namespace ApiLib {
 		}
 
 		protected init() {
-			this.initSegment(this as Segment<any>, "");
+			this.initSegment(this as unknown as Segment<any>, "");
 		}
 
 		/**
@@ -232,7 +232,7 @@ namespace ApiLib {
 
 			try {
 				const route = path.reduce(
-					(segment, route) => segment[route],
+					(segment, route) => Object(segment)[route],
 					this.api,
 				) as unknown as Route<any, any, TDependencies, any> | undefined;
 

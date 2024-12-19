@@ -86,7 +86,7 @@ test(`ApiLib.${ApiLib.ApiTemplate.name}.init: Sets subUrl`, () => {
 	);
 });
 
-test(`ApiLib.${ApiLib.ApiTemplate.prototype.name}.init: Sets caller`, async () => {
+test(`ApiLib.${ApiLib.ApiTemplate.name}.init: Sets caller`, async () => {
 	expect(clientApi.segment.routeWithPresetCaller.call).toBeDefined();
 });
 

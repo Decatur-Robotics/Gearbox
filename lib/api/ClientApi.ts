@@ -82,10 +82,6 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				await db
 			).findObjectById<Team>(CollectionId.Teams, new ObjectId(teamId));
 
-			console.log(
-				`${(await userPromise)?.name} requested to join ${team?.league} ${team?.number}`,
-			);
-
 			if (!team) {
 				return res.error(404, "Team not found");
 			}
@@ -98,8 +94,6 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				...team.requests,
 				(await userPromise)?._id?.toString(),
 			]);
-
-			console.log("Request is valid!");
 
 			await (
 				await db
@@ -521,7 +515,6 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				compId,
 			);
 
-			console.log(result);
 			return res.status(200).send({ result: result });
 		},
 	});
