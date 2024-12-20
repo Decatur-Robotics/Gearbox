@@ -38,7 +38,7 @@ namespace AccessLevels {
 
 	export async function IfSignedIn(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise }: UserAndDb,
 	) {
 		return {
@@ -49,7 +49,7 @@ namespace AccessLevels {
 
 	export async function IfDeveloper(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise }: UserAndDb,
 	) {
 		const user = await userPromise;
@@ -58,7 +58,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeam(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		teamId: string,
 	) {
@@ -82,7 +82,7 @@ namespace AccessLevels {
 
 	export async function IfTeamOwner(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		teamId: string,
 	) {
@@ -106,7 +106,7 @@ namespace AccessLevels {
 
 	export async function IfCompOwner(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		compId: string,
 	) {
@@ -138,7 +138,7 @@ namespace AccessLevels {
 
 	export async function IfSeasonOwner(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		seasonId: string,
 	) {
@@ -167,7 +167,7 @@ namespace AccessLevels {
 
 	export async function IfMatchOwner(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		matchId: string,
 	) {
@@ -201,7 +201,7 @@ namespace AccessLevels {
 
 	export async function IfReportOwner(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		reportId: string,
 	) {
@@ -230,7 +230,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsComp(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		compId: string,
 	) {
@@ -262,7 +262,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsMatch(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		matchId: string,
 	) {
@@ -296,7 +296,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsPitReport(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		pitReportId: string,
 	) {
@@ -333,7 +333,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsReport(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		reportId: string,
 	) {
@@ -362,7 +362,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsSubjectiveReport(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		reportId: string,
 	) {
@@ -394,7 +394,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsPicklist(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		picklistId: string,
 	) {

@@ -18,7 +18,7 @@ export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
 
 	getDependencies(
 		req: NextApiRequest,
-		res: ApiLib.ApiResponse<any>,
+		res: ApiLib.NextResponse<any>,
 	): ApiDependencies {
 		return {
 			db: getDatabase(),
