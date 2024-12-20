@@ -566,14 +566,6 @@ export type DbPicklist = {
 	};
 };
 
-/**
- * Taken from https://stackoverflow.com/a/62502740/22099600
- */
-export type OmitCallSignature<T> = { [K in keyof T]: T[K] } & (T extends new (
-	...args: infer R
-) => infer S
-	? new (...args: R) => S
-	: unknown);
 
 /**
  * DO NOT GIVE TO CLIENTS!

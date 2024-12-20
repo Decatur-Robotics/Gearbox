@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { OmitCallSignature } from "@/lib/Types";
+import OmitCallSignature from "omit-call-signature";
 import toast from "react-hot-toast";
 
 /**
