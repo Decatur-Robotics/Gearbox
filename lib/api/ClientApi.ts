@@ -41,14 +41,17 @@ import {
 import { games } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
-import { request } from "http";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
+import { NextApiRequest } from "next";
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
  */
-export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
+export default class ClientApi extends ApiLib.ApiTemplate<
+	ApiDependencies,
+	NextApiRequest
+> {
 	constructor() {
 		super(false);
 		this.init();

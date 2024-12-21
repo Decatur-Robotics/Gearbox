@@ -9,7 +9,7 @@ import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
 import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
 
-export class TestRes extends ApiLib.ApiResponse<any> {
+export class TestRes extends ApiLib.NextResponse<any> {
 	status = jest.fn((code) => this);
 	send = jest.fn((obj) => this);
 	error = jest.fn((code, message) => {

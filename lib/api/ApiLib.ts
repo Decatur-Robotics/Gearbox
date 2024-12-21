@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import OmitCallSignature from "omit-call-signature";
+import { NextApiResponse } from "next";
 import toast from "react-hot-toast";
 
 /**
@@ -59,23 +59,15 @@ namespace ApiLib {
 		}
 	}
 
-	export class ApiResponse<TSend> {
-		constructor(public innerRes: NextApiResponse) {}
+	export interface HttpRequest {
+		url?: string;
+		body: any;
+	}
 
-		send(data: TSend | Errors.ErrorType) {
-			this.innerRes.send(data);
-			return this;
-		}
-
-		status(code: number) {
-			this.innerRes.status(code);
-			return this;
-		}
-
-		error(code: number, message: string) {
-			this.innerRes.status(code).send({ error: message });
-			return this;
-		}
+	export interface ApiResponse<TSend> {
+		send(data: TSend | Errors.ErrorType): ApiResponse<TSend>;
+		status(code: number): ApiResponse<TSend>;
+		error(code: number, message: string): ApiResponse<TSend>;
 	}
 
 	export type Route<
@@ -83,14 +75,16 @@ namespace ApiLib {
 		TReturn,
 		TDependencies,
 		TDataFetchedDuringAuth,
+		TRequest extends HttpRequest = HttpRequest,
+		TResponse extends ApiResponse<TReturn> = ApiResponse<TReturn>,
 	> = {
 		subUrl: string;
 
 		(...args: TArgs): Promise<TReturn>;
 
 		isAuthorized: (
-			req: NextApiRequest,
-			res: ApiResponse<TReturn>,
+			req: TRequest,
+			res: TResponse,
 			deps: TDependencies,
 			args: TArgs,
 		) => Promise<{
@@ -98,8 +92,8 @@ namespace ApiLib {
 			authData: TDataFetchedDuringAuth | undefined;
 		}>;
 		handler: (
-			req: NextApiRequest,
-			res: ApiResponse<TReturn>,
+			req: TRequest,
+			res: TResponse,
 			deps: TDependencies,
 			authData: TDataFetchedDuringAuth,
 			args: TArgs,
@@ -149,15 +143,16 @@ namespace ApiLib {
 		TReturn,
 		TDependencies,
 		TFetchedDuringAuth,
+		TRequest extends HttpRequest = HttpRequest,
 	>(
 		server: Omit<
 			OmitCallSignature<
-				Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth>
+				Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth, TRequest>
 			>,
 			"subUrl"
 		>,
 		clientHandler?: (...args: any) => Promise<any>,
-	): Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth> {
+	): Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth, TRequest> {
 		return Object.assign(
 			clientHandler ?? { subUrl: "newRoute" },
 			server,
@@ -170,16 +165,17 @@ namespace ApiLib {
 			| Route<any, any, TDependencies, any>;
 	};
 
-	export abstract class ApiTemplate<TDependencies> {
-		// [route: string]: any;
-
+	export abstract class ApiTemplate<
+		TDependencies,
+		TRequest extends HttpRequest = HttpRequest,
+	> {
 		private initSegment(segment: Segment<any>, subUrl: string) {
 			for (const [key, value] of Object.entries(segment)) {
 				if (typeof value === "function") {
 					value.subUrl = subUrl + "/" + key;
 				} else if (
-					(value as unknown as Route<any, any, TDependencies, any>).subUrl ===
-					"newRoute"
+					(value as unknown as Route<any, any, TDependencies, any, TRequest>)
+						.subUrl === "newRoute"
 				) {
 					const route = value as unknown as Route<any, any, TDependencies, any>;
 					route.subUrl = subUrl + "/" + key;
@@ -214,15 +210,19 @@ namespace ApiLib {
 		None,
 	}
 
-	export abstract class ServerApi<TDependencies> {
+	export abstract class ServerApi<
+		TDependencies,
+		TRequest extends HttpRequest = HttpRequest,
+		TResponse extends ApiResponse<any> = ApiResponse<any>,
+	> {
 		constructor(
 			private api: ApiTemplate<TDependencies>,
 			private urlPrefix: string,
 			private errorLogMode: ErrorLogMode = ErrorLogMode.Log,
 		) {}
 
-		async handle(req: NextApiRequest, rawRes: NextApiResponse) {
-			const res = new ApiResponse(rawRes);
+		async handle(req: TRequest, rawRes: any) {
+			const res = this.parseRawResponse(rawRes);
 
 			if (!req.url) {
 				throw new Errors.InvalidRequestError(res);
@@ -266,14 +266,15 @@ namespace ApiLib {
 					return;
 				}
 
-				new Errors.InternalServerError(new ApiResponse(rawRes));
+				new Errors.InternalServerError(res);
 			}
 		}
 
-		abstract getDependencies(
-			req: NextApiRequest,
-			res: ApiResponse<any>,
-		): TDependencies;
+		protected parseRawResponse(rawRes: any): TResponse {
+			return rawRes;
+		}
+
+		abstract getDependencies(req: TRequest, res: TResponse): TDependencies;
 	}
 }
 
