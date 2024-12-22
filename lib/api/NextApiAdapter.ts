@@ -1,8 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import ApiLib from "./ApiLib";
-import { OmitCallSignature } from "../Types";
+import OmitCallSignature from "omit-call-signature";
 
 namespace NextApiAdapter {
+	export abstract class ApiTemplate<TDependencies> extends ApiLib.ApiTemplate<
+		TDependencies,
+		NextApiRequest
+	> {}
+
 	export class NextResponse<TSend> implements ApiLib.ApiResponse<TSend> {
 		constructor(public innerRes: NextApiResponse) {}
 
@@ -35,7 +40,8 @@ namespace NextApiAdapter {
 					TReturn,
 					TDependencies,
 					TFetchedDuringAuth,
-					NextApiRequest
+					NextApiRequest,
+					NextResponse<TReturn>
 				>
 			>,
 			"subUrl"
@@ -46,7 +52,8 @@ namespace NextApiAdapter {
 		TReturn,
 		TDependencies,
 		TFetchedDuringAuth,
-		NextApiRequest
+		NextApiRequest,
+		NextResponse<TReturn>
 	> {
 		return ApiLib.createRoute(server, clientHandler);
 	}
@@ -61,3 +68,5 @@ namespace NextApiAdapter {
 		}
 	}
 }
+
+export default NextApiAdapter;

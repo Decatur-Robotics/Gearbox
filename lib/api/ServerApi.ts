@@ -10,6 +10,7 @@ import { User } from "../Types";
 import ClientApi from "@/lib/api/ClientApi";
 import ResendUtils from "../ResendUtils";
 import SlackClient from "../SlackClient";
+import NextApiAdapter from "./NextApiAdapter";
 
 export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
 	constructor(clientApi?: ApiLib.ApiTemplate<ApiDependencies>) {
@@ -18,7 +19,7 @@ export default class ServerApi extends ApiLib.ServerApi<ApiDependencies> {
 
 	getDependencies(
 		req: NextApiRequest,
-		res: ApiLib.NextResponse<any>,
+		res: NextApiAdapter.NextResponse<any>,
 	): ApiDependencies {
 		return {
 			db: getDatabase(),

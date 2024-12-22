@@ -56,7 +56,8 @@ class TestApi extends ApiLib.ApiTemplate<TestDependencies> {
 	});
 
 	constructor() {
-		super(false);
+		const requestHelper = new ApiLib.RequestHelper(API_PREFIX, () => {});
+		super(requestHelper, false);
 		this.init();
 	}
 }

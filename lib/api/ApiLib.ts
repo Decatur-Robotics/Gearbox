@@ -1,6 +1,6 @@
 import OmitCallSignature from "omit-call-signature";
-import { NextApiResponse } from "next";
 import toast from "react-hot-toast";
+import { request } from "http";
 
 /**
  * @tested_by tests/lib/api/ApiLib.test.ts
@@ -105,34 +105,39 @@ namespace ApiLib {
 		GET = "GET",
 	}
 
-	export async function request(
-		subUrl: string,
-		body: any,
-		method: RequestMethod = RequestMethod.POST,
-	) {
-		const rawResponse = await fetch(process.env.NEXT_PUBLIC_API_URL + subUrl, {
-			method: method,
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(body),
-		});
+	export class RequestHelper {
+		constructor(
+			private baseUrl: string,
+			private onUnauthorized: (url: string) => void,
+		) {}
 
-		// Null or undefined are sent as an empty string that we can't parse as JSON
-		const text = await rawResponse.text();
-		const res = text.length ? JSON.parse(text) : undefined;
+		async request(
+			url: string,
+			body: any,
+			method: RequestMethod = RequestMethod.POST,
+		) {
+			const rawResponse = await fetch(this.baseUrl + url, {
+				method: method,
+				headers: {
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(body),
+			});
 
-		if (res?.error) {
-			if (res.error === "Unauthorized") {
-				toast.error(
-					`Unauthorized API request: ${subUrl}. If this is an error, please contact the developers.`,
-				);
+			// Null or undefined are sent as an empty string that we can't parse as JSON
+			const text = await rawResponse.text();
+			const res = text.length ? JSON.parse(text) : undefined;
+
+			if (res?.error) {
+				if (res.error === "Unauthorized") {
+					this.onUnauthorized(url);
+				}
+				throw new Error(`${url}: ${res.error}`);
 			}
-			throw new Error(`${subUrl}: ${res.error}`);
-		}
 
-		return res;
+			return res;
+		}
 	}
 
 	/**
@@ -144,15 +149,30 @@ namespace ApiLib {
 		TDependencies,
 		TFetchedDuringAuth,
 		TRequest extends HttpRequest = HttpRequest,
+		TResponse extends ApiResponse<TReturn> = ApiResponse<TReturn>,
 	>(
 		server: Omit<
 			OmitCallSignature<
-				Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth, TRequest>
+				Route<
+					TArgs,
+					TReturn,
+					TDependencies,
+					TFetchedDuringAuth,
+					TRequest,
+					TResponse
+				>
 			>,
 			"subUrl"
 		>,
 		clientHandler?: (...args: any) => Promise<any>,
-	): Route<TArgs, TReturn, TDependencies, TFetchedDuringAuth, TRequest> {
+	): Route<
+		TArgs,
+		TReturn,
+		TDependencies,
+		TFetchedDuringAuth,
+		TRequest,
+		TResponse
+	> {
 		return Object.assign(
 			clientHandler ?? { subUrl: "newRoute" },
 			server,
@@ -169,7 +189,24 @@ namespace ApiLib {
 		TDependencies,
 		TRequest extends HttpRequest = HttpRequest,
 	> {
-		private initSegment(segment: Segment<any>, subUrl: string) {
+		/**
+		 * You need to pass false in subclasses and then call this.init()
+		 * @param init Whether to call init() on construction. Pass false if calling super()
+		 */
+		constructor(
+			private requestHelper: RequestHelper,
+			init = true,
+		) {
+			if (init) {
+				this.init();
+			}
+		}
+
+		private initSegment(
+			requestHelper: RequestHelper,
+			segment: Segment<any>,
+			subUrl: string,
+		) {
 			for (const [key, value] of Object.entries(segment)) {
 				if (typeof value === "function") {
 					value.subUrl = subUrl + "/" + key;
@@ -181,26 +218,16 @@ namespace ApiLib {
 					route.subUrl = subUrl + "/" + key;
 
 					segment[key] = createRoute(route, (...args: any[]) =>
-						request(route.subUrl, args),
+						requestHelper.request(route.subUrl, args),
 					);
 				} else if (typeof value === "object") {
-					this.initSegment(value, subUrl + "/" + key);
+					this.initSegment(requestHelper, value, subUrl + "/" + key);
 				}
 			}
 		}
 
 		protected init() {
-			this.initSegment(this as unknown as Segment<any>, "");
-		}
-
-		/**
-		 * You need to pass false in subclasses and then call this.init()
-		 * @param init Whether to call init() on construction. Pass false if calling super()
-		 */
-		constructor(init = true) {
-			if (init) {
-				this.init();
-			}
+			this.initSegment(this.requestHelper, this as unknown as Segment<any>, "");
 		}
 	}
 
