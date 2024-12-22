@@ -1,0 +1,36 @@
+name: Increment Version
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [opened]
+
+jobs:
+  increment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }} # We need to checkout the head branch, not the temporary merge branch
+          persist-credentials: false
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.1.0
+
+      - name: Set name
+        run: git config user.name "Gearbox Bot"
+
+      - name: Set email
+        run: git config user.email "gearbox@decaturrobotics.org"
+
+      - name: Increment patch number
+        run: npm version patch
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          github_token: ${{ secrets.GIT_PUSH_TOKEN }}
+          branch: ${{ github.head_ref }}
