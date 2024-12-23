@@ -566,7 +566,6 @@ export type DbPicklist = {
 	};
 };
 
-
 /**
  * DO NOT GIVE TO CLIENTS!
  */
