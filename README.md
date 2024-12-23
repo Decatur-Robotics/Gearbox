@@ -17,6 +17,11 @@ Features full feature parity with SJ2, whilst remaining simpler, faster and cool
 - Public data sharing (optional)
 - Sub-5-minute setup
 
+## Status
+![CI Checks](https://github.com/Decatur-Robotics/Gearbox/actions/workflows/ci.yml/badge.svg)
+![Formatting](https://github.com/Decatur-Robotics/Gearbox/actions/workflows/format.yml/badge.svg)
+![Autoversioning](https://github.com/Decatur-Robotics/Gearbox/actions/workflows/increment_version.yml/badge.svg)
+
 ## Setup
 
 ### Prerequisites
