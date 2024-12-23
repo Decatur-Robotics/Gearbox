@@ -3,6 +3,7 @@
 	"version": "1.1.1",
 	"private": true,
 	"repository": "https://github.com/Decatur-Robotics/Gearbox",
+	"license": "CC BY-NC-SA 4.0",
 	"scripts": {
 		"dev": "cross-env NODE_ENV=development npx tsx index.ts",
 		"build": "next build",
