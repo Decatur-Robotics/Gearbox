@@ -77,7 +77,7 @@
 		"cross-env": "^7.0.3",
 		"daisyui": "^4.12.22",
 		"jest": "^29.7.0",
-		"postcss": "^8.4.47",
+		"postcss": "^8.4.49",
 		"prettier": "3.3.3",
 		"tailwindcss": "^3.3.2",
 		"ts-jest": "^29.2.5"
