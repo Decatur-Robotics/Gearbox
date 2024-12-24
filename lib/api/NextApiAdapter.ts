@@ -1,17 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import ApiLib from "./ApiLib";
 import OmitCallSignature from "omit-call-signature";
+import * as UnifiedApi from "unified-api";
 
 namespace NextApiAdapter {
-	export abstract class ApiTemplate<TDependencies> extends ApiLib.ApiTemplate<
+	export abstract class ApiTemplate<TDependencies> extends UnifiedApi.ApiTemplate<
 		TDependencies,
 		NextApiRequest
 	> {}
 
-	export class NextResponse<TSend> implements ApiLib.ApiResponse<TSend> {
+	export class NextResponse<TSend> implements UnifiedApi.ApiResponse<TSend> {
 		constructor(public innerRes: NextApiResponse) {}
 
-		send(data: TSend | ApiLib.Errors.ErrorType) {
+		send(data: TSend | UnifiedApi.ApiErrors.ErrorType) {
 			this.innerRes.send(data);
 			return this;
 		}
@@ -35,7 +35,7 @@ namespace NextApiAdapter {
 	>(
 		server: Omit<
 			OmitCallSignature<
-				ApiLib.Route<
+				UnifiedApi.Route<
 					TArgs,
 					TReturn,
 					TDependencies,
@@ -47,7 +47,7 @@ namespace NextApiAdapter {
 			"subUrl"
 		>,
 		clientHandler?: (...args: any) => Promise<any>,
-	): ApiLib.Route<
+	): UnifiedApi.Route<
 		TArgs,
 		TReturn,
 		TDependencies,
@@ -55,10 +55,10 @@ namespace NextApiAdapter {
 		NextApiRequest,
 		NextResponse<TReturn>
 	> {
-		return ApiLib.createRoute(server, clientHandler);
+		return UnifiedApi.createRoute(server, clientHandler);
 	}
 
-	export abstract class ServerApi<TDependencies> extends ApiLib.ServerApi<
+	export abstract class ServerApi<TDependencies> extends UnifiedApi.ServerApi<
 		TDependencies,
 		NextApiRequest,
 		NextResponse<unknown>

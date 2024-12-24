@@ -43,11 +43,10 @@ import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
-import { NextApiRequest } from "next";
-import ApiLib from "./ApiLib";
 import toast from "react-hot-toast";
+import { RequestHelper } from "unified-api";
 
-const requestHelper = new ApiLib.RequestHelper(
+const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL,
 	(url) =>
 		toast.error(

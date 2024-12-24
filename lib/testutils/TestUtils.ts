@@ -2,7 +2,6 @@ import { NextApiResponse } from "next";
 import { ObjectId } from "bson";
 import { User } from "../Types";
 import ApiDependencies from "../api/ApiDependencies";
-import ApiLib from "../api/ApiLib";
 import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
 import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
