@@ -8,16 +8,16 @@ import { User } from "../Types";
 import ClientApi from "@/lib/api/ClientApi";
 import ResendUtils from "../ResendUtils";
 import SlackClient from "../SlackClient";
-import NextApiAdapter from "./NextApiAdapter";
+import { NextServerApi, NextApiTemplate, NextResponse } from "unified-api-nextjs";
 
-export default class ServerApi extends NextApiAdapter.ServerApi<ApiDependencies> {
-	constructor(clientApi?: NextApiAdapter.ApiTemplate<ApiDependencies>) {
+export default class ServerApi extends NextServerApi<ApiDependencies> {
+	constructor(clientApi?: NextApiTemplate<ApiDependencies>) {
 		super(clientApi ?? new ClientApi());
 	}
 
 	getDependencies(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 	): ApiDependencies {
 		return {
 			db: getDatabase(),

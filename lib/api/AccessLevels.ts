@@ -10,8 +10,6 @@ import {
 	Team,
 	User,
 } from "../Types";
-import NextApiAdapter from "./NextApiAdapter";
-import ApiDependencies from "./ApiDependencies";
 import CollectionId from "../client/CollectionId";
 import { ObjectId } from "bson";
 import {
@@ -25,6 +23,7 @@ import {
 } from "./ApiUtils";
 import DbInterface from "../client/dbinterfaces/DbInterface";
 import { isDeveloper } from "../Utils";
+import { NextResponse } from "unified-api-nextjs";
 
 type UserAndDb = {
 	userPromise: Promise<User | undefined>;
@@ -38,7 +37,7 @@ namespace AccessLevels {
 
 	export async function IfSignedIn(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise }: UserAndDb,
 	) {
 		return {
@@ -49,7 +48,7 @@ namespace AccessLevels {
 
 	export async function IfDeveloper(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise }: UserAndDb,
 	) {
 		const user = await userPromise;
@@ -58,7 +57,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeam(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		teamId: string,
 	) {
@@ -82,7 +81,7 @@ namespace AccessLevels {
 
 	export async function IfTeamOwner(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		teamId: string,
 	) {
@@ -106,7 +105,7 @@ namespace AccessLevels {
 
 	export async function IfCompOwner(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		compId: string,
 	) {
@@ -138,7 +137,7 @@ namespace AccessLevels {
 
 	export async function IfSeasonOwner(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		seasonId: string,
 	) {
@@ -167,7 +166,7 @@ namespace AccessLevels {
 
 	export async function IfMatchOwner(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		matchId: string,
 	) {
@@ -201,7 +200,7 @@ namespace AccessLevels {
 
 	export async function IfReportOwner(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		reportId: string,
 	) {
@@ -230,7 +229,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsComp(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		compId: string,
 	) {
@@ -262,7 +261,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsMatch(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		matchId: string,
 	) {
@@ -296,7 +295,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsPitReport(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		pitReportId: string,
 	) {
@@ -333,7 +332,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsReport(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		reportId: string,
 	) {
@@ -362,7 +361,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsSubjectiveReport(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		reportId: string,
 	) {
@@ -394,7 +393,7 @@ namespace AccessLevels {
 
 	export async function IfOnTeamThatOwnsPicklist(
 		req: NextApiRequest,
-		res: NextApiAdapter.NextResponse<any>,
+		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
 		picklistId: string,
 	) {

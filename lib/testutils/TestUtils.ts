@@ -7,9 +7,9 @@ import DbInterface from "../client/dbinterfaces/DbInterface";
 import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
 import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
-import NextApiAdapter from "../api/NextApiAdapter";
+import { NextResponse } from "unified-api-nextjs";
 
-export class TestRes extends NextApiAdapter.NextResponse<any> {
+export class TestRes extends NextResponse<any> {
 	status = jest.fn((code) => this);
 	send = jest.fn((obj) => this);
 	error = jest.fn((code, message) => {
