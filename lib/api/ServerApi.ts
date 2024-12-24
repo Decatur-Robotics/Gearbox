@@ -8,7 +8,11 @@ import { User } from "../Types";
 import ClientApi from "@/lib/api/ClientApi";
 import ResendUtils from "../ResendUtils";
 import SlackClient from "../SlackClient";
-import { NextServerApi, NextApiTemplate, NextResponse } from "unified-api-nextjs";
+import {
+	NextServerApi,
+	NextApiTemplate,
+	NextResponse,
+} from "unified-api-nextjs";
 
 export default class ServerApi extends NextServerApi<ApiDependencies> {
 	constructor(clientApi?: NextApiTemplate<ApiDependencies>) {

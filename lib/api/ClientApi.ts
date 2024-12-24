@@ -1622,12 +1622,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
-	ping = createNextRoute<
-		[],
-		{ result: string },
-		ApiDependencies,
-		void
-	>({
+	ping = createNextRoute<[], { result: string }, ApiDependencies, void>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, authData, args) => {
 			return res.status(200).send({ result: "success" });
