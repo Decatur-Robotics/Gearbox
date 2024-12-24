@@ -23,7 +23,6 @@ declare global {
 			TOA_KEY: string;
 			TOA_APP_ID: string;
 
-			API_URL: string;
 			API_KEY: string;
 
 			DEFAULT_IMAGE: string;

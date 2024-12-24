@@ -2,14 +2,14 @@ import { NextApiResponse } from "next";
 import { ObjectId } from "bson";
 import { User } from "../Types";
 import ApiDependencies from "../api/ApiDependencies";
-import ApiLib from "../api/ApiLib";
 import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
 import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
 import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
+import { NextResponse } from "unified-api-nextjs";
 
-export class TestRes extends ApiLib.ApiResponse<any> {
+export class TestRes extends NextResponse<any> {
 	status = jest.fn((code) => this);
 	send = jest.fn((obj) => this);
 	error = jest.fn((code, message) => {

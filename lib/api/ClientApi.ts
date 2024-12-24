@@ -2,7 +2,6 @@ import { ObjectId } from "bson";
 import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
-import ApiLib from "./ApiLib";
 import {
 	Alliance,
 	Competition,
@@ -41,20 +40,30 @@ import {
 import { games } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
-import { request } from "http";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
+import toast from "react-hot-toast";
+import { RequestHelper } from "unified-api";
+import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
+
+const requestHelper = new RequestHelper(
+	process.env.NEXT_PUBLIC_API_URL,
+	(url) =>
+		toast.error(
+			`Unauthorized API request: ${url}. If this is an error, please contact the developers.`,
+		),
+);
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
  */
-export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
+export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	constructor() {
-		super(false);
+		super(requestHelper, false);
 		this.init();
 	}
 
-	hello = ApiLib.createRoute<
+	hello = createNextRoute<
 		[],
 		{ message: string; db: string; data: any },
 		ApiDependencies,
@@ -70,7 +79,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	requestToJoinTeam = ApiLib.createRoute<
+	requestToJoinTeam = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -103,7 +112,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	handleTeamJoinRequest = ApiLib.createRoute<
+	handleTeamJoinRequest = createNextRoute<
 		[boolean, string, string],
 		Team,
 		ApiDependencies,
@@ -164,7 +173,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getTeamAutofillData = ApiLib.createRoute<
+	getTeamAutofillData = createNextRoute<
 		[number, League],
 		Team | undefined,
 		ApiDependencies,
@@ -186,7 +195,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	competitionAutofill = ApiLib.createRoute<
+	competitionAutofill = createNextRoute<
 		[string],
 		Competition | undefined,
 		ApiDependencies,
@@ -198,7 +207,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	competitionMatches = ApiLib.createRoute<
+	competitionMatches = createNextRoute<
 		[string],
 		Match | undefined,
 		ApiDependencies,
@@ -210,7 +219,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createTeam = ApiLib.createRoute<
+	createTeam = createNextRoute<
 		[string, string, number, League],
 		Team | undefined,
 		ApiDependencies,
@@ -273,7 +282,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createSeason = ApiLib.createRoute<
+	createSeason = createNextRoute<
 		[string, number, string, GameId],
 		Season,
 		ApiDependencies,
@@ -315,7 +324,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	reloadCompetition = ApiLib.createRoute<
+	reloadCompetition = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -365,7 +374,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createCompetition = ApiLib.createRoute<
+	createCompetition = createNextRoute<
 		[string, number, number, string, string, boolean],
 		Competition,
 		ApiDependencies,
@@ -432,7 +441,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createMatch = ApiLib.createRoute<
+	createMatch = createNextRoute<
 		[string, number, number, MatchType, Alliance, Alliance],
 		Match,
 		ApiDependencies,
@@ -478,7 +487,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	searchCompetitionByName = ApiLib.createRoute<
+	searchCompetitionByName = createNextRoute<
 		[string],
 		{ value: number; pair: CompetitonNameIdPair }[],
 		ApiDependencies,
@@ -490,7 +499,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	assignScouters = ApiLib.createRoute<
+	assignScouters = createNextRoute<
 		[string, boolean],
 		{ result: string },
 		ApiDependencies,
@@ -519,7 +528,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	submitForm = ApiLib.createRoute<
+	submitForm = createNextRoute<
 		[string, QuantData],
 		{ result: string },
 		ApiDependencies,
@@ -562,7 +571,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	competitionReports = ApiLib.createRoute<
+	competitionReports = createNextRoute<
 		[string, boolean, boolean],
 		Report[],
 		ApiDependencies,
@@ -606,7 +615,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	allCompetitionMatches = ApiLib.createRoute<
+	allCompetitionMatches = createNextRoute<
 		[string],
 		Match[],
 		ApiDependencies,
@@ -630,7 +639,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	matchReports = ApiLib.createRoute<
+	matchReports = createNextRoute<
 		[string],
 		Report[],
 		ApiDependencies,
@@ -654,7 +663,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	changePFP = ApiLib.createRoute<
+	changePFP = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -681,7 +690,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	checkInForReport = ApiLib.createRoute<
+	checkInForReport = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -706,7 +715,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	checkInForSubjectiveReport = ApiLib.createRoute<
+	checkInForSubjectiveReport = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -738,7 +747,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	remindSlack = ApiLib.createRoute<
+	remindSlack = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -786,7 +795,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setSlackWebhook = ApiLib.createRoute<
+	setSlackWebhook = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -835,7 +844,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setSlackId = ApiLib.createRoute<
+	setSlackId = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -862,7 +871,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	initialEventData = ApiLib.createRoute<
+	initialEventData = createNextRoute<
 		[string],
 		{
 			firstRanking: TheBlueAlliance.SimpleRank[];
@@ -886,7 +895,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	compRankings = ApiLib.createRoute<
+	compRankings = createNextRoute<
 		[string],
 		TheBlueAlliance.SimpleRank[],
 		ApiDependencies,
@@ -899,7 +908,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	statboticsTeamEvent = ApiLib.createRoute<
+	statboticsTeamEvent = createNextRoute<
 		[string, string],
 		Statbotics.TeamEvent,
 		ApiDependencies,
@@ -912,7 +921,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getMainPageCounterData = ApiLib.createRoute<
+	getMainPageCounterData = createNextRoute<
 		[],
 		{
 			teams: number | undefined;
@@ -967,7 +976,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	exportCompAsCsv = ApiLib.createRoute<
+	exportCompAsCsv = createNextRoute<
 		[string],
 		{ csv: string },
 		ApiDependencies,
@@ -1027,7 +1036,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	teamCompRanking = ApiLib.createRoute<
+	teamCompRanking = createNextRoute<
 		[string, number],
 		{ place: number | string; max: number | string },
 		ApiDependencies,
@@ -1062,7 +1071,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getPitReports = ApiLib.createRoute<
+	getPitReports = createNextRoute<
 		[string],
 		Pitreport[],
 		ApiDependencies,
@@ -1090,7 +1099,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	changeScouterForReport = ApiLib.createRoute<
+	changeScouterForReport = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -1115,7 +1124,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getCompReports = ApiLib.createRoute<
+	getCompReports = createNextRoute<
 		[string],
 		Report[],
 		ApiDependencies,
@@ -1140,7 +1149,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findScouterManagementData = ApiLib.createRoute<
+	findScouterManagementData = createNextRoute<
 		[string],
 		{
 			scouters: User[];
@@ -1224,7 +1233,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getPicklistFromComp = ApiLib.createRoute<
+	getPicklistFromComp = createNextRoute<
 		[string],
 		DbPicklist | undefined,
 		ApiDependencies,
@@ -1244,7 +1253,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getPicklist = ApiLib.createRoute<
+	getPicklist = createNextRoute<
 		[string],
 		DbPicklist | undefined,
 		ApiDependencies,
@@ -1257,7 +1266,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updatePicklist = ApiLib.createRoute<
+	updatePicklist = createNextRoute<
 		[DbPicklist],
 		{ result: string },
 		ApiDependencies,
@@ -1284,7 +1293,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setCompPublicData = ApiLib.createRoute<
+	setCompPublicData = createNextRoute<
 		[string, boolean],
 		{ result: string },
 		ApiDependencies,
@@ -1310,7 +1319,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setOnboardingCompleted = ApiLib.createRoute<
+	setOnboardingCompleted = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -1335,7 +1344,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	submitSubjectiveReport = ApiLib.createRoute<
+	submitSubjectiveReport = createNextRoute<
 		[SubjectiveReport, string],
 		{ result: string },
 		ApiDependencies,
@@ -1403,7 +1412,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getSubjectiveReportsForComp = ApiLib.createRoute<
+	getSubjectiveReportsForComp = createNextRoute<
 		[string],
 		SubjectiveReport[],
 		ApiDependencies,
@@ -1431,7 +1440,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateSubjectiveReport = ApiLib.createRoute<
+	updateSubjectiveReport = createNextRoute<
 		[SubjectiveReport],
 		{ result: string },
 		ApiDependencies,
@@ -1462,7 +1471,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setSubjectiveScouterForMatch = ApiLib.createRoute<
+	setSubjectiveScouterForMatch = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -1491,7 +1500,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	regeneratePitReports = ApiLib.createRoute<
+	regeneratePitReports = createNextRoute<
 		[string],
 		{ result: string; pitReports: string[] },
 		ApiDependencies,
@@ -1528,7 +1537,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createPitReportForTeam = ApiLib.createRoute<
+	createPitReportForTeam = createNextRoute<
 		[number, string],
 		{ result: string },
 		ApiDependencies,
@@ -1570,7 +1579,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateCompNameAndTbaId = ApiLib.createRoute<
+	updateCompNameAndTbaId = createNextRoute<
 		[string, string, string],
 		{ result: string },
 		ApiDependencies,
@@ -1600,7 +1609,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getFtcTeamAutofillData = ApiLib.createRoute<
+	getFtcTeamAutofillData = createNextRoute<
 		[number],
 		Team | undefined,
 		ApiDependencies,
@@ -1613,14 +1622,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	ping = ApiLib.createRoute<[], { result: string }, ApiDependencies, void>({
+	ping = createNextRoute<[], { result: string }, ApiDependencies, void>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, authData, args) => {
 			return res.status(200).send({ result: "success" });
 		},
 	});
 
-	getSubjectiveReportsFromMatches = ApiLib.createRoute<
+	getSubjectiveReportsFromMatches = createNextRoute<
 		[string, Match[]],
 		SubjectiveReport[],
 		ApiDependencies,
@@ -1654,7 +1663,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	removeUserFromTeam = ApiLib.createRoute<
+	removeUserFromTeam = createNextRoute<
 		[string, string],
 		{ result: string; team: Team },
 		ApiDependencies,
@@ -1713,7 +1722,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findUserById = ApiLib.createRoute<
+	findUserById = createNextRoute<
 		[string],
 		User | undefined,
 		ApiDependencies,
@@ -1730,7 +1739,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findBulkUsersById = ApiLib.createRoute<
+	findBulkUsersById = createNextRoute<
 		[string[]],
 		User[],
 		ApiDependencies,
@@ -1746,7 +1755,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findTeamById = ApiLib.createRoute<
+	findTeamById = createNextRoute<
 		[string],
 		Team | undefined,
 		ApiDependencies,
@@ -1763,7 +1772,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findTeamByNumberAndLeague = ApiLib.createRoute<
+	findTeamByNumberAndLeague = createNextRoute<
 		[number, League],
 		Team | undefined,
 		ApiDependencies,
@@ -1793,7 +1802,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findSeasonById = ApiLib.createRoute<
+	findSeasonById = createNextRoute<
 		[string],
 		Season | undefined,
 		ApiDependencies,
@@ -1810,7 +1819,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findCompetitionById = ApiLib.createRoute<
+	findCompetitionById = createNextRoute<
 		[string],
 		Competition | undefined,
 		ApiDependencies,
@@ -1827,7 +1836,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findMatchById = ApiLib.createRoute<
+	findMatchById = createNextRoute<
 		[string],
 		Match | undefined,
 		ApiDependencies,
@@ -1844,7 +1853,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findReportById = ApiLib.createRoute<
+	findReportById = createNextRoute<
 		[string],
 		Report | undefined,
 		ApiDependencies,
@@ -1861,7 +1870,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findPitreportById = ApiLib.createRoute<
+	findPitreportById = createNextRoute<
 		[string],
 		Pitreport | undefined,
 		ApiDependencies,
@@ -1874,7 +1883,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findBulkPitReportsById = ApiLib.createRoute<
+	findBulkPitReportsById = createNextRoute<
 		[string[]],
 		Pitreport[],
 		ApiDependencies,
@@ -1897,7 +1906,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateUser = ApiLib.createRoute<
+	updateUser = createNextRoute<
 		[object],
 		{ result: string },
 		ApiDependencies,
@@ -1923,7 +1932,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateTeam = ApiLib.createRoute<
+	updateTeam = createNextRoute<
 		[object, string],
 		{ result: string },
 		ApiDependencies,
@@ -1949,7 +1958,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateSeason = ApiLib.createRoute<
+	updateSeason = createNextRoute<
 		[object, string],
 		{ result: string },
 		ApiDependencies,
@@ -1975,7 +1984,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateReport = ApiLib.createRoute<
+	updateReport = createNextRoute<
 		[Partial<Report>, string],
 		{ result: string },
 		ApiDependencies,
@@ -2001,7 +2010,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updatePitreport = ApiLib.createRoute<
+	updatePitreport = createNextRoute<
 		[string, object],
 		{ result: string },
 		ApiDependencies,
@@ -2027,7 +2036,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	speedTest = ApiLib.createRoute<
+	speedTest = createNextRoute<
 		[],
 		{
 			requestTime: number;
@@ -2095,7 +2104,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			},
 		},
 		() =>
-			ApiLib.request("/speedTest", [Date.now()]).then((times) => ({
+			requestHelper.request("/speedTest", [Date.now()]).then((times) => ({
 				...times,
 				responseTime: Date.now() - times.responseTimestamp,
 			})),
