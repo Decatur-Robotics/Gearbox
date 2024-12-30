@@ -36,6 +36,7 @@ export default function Form(props: FormProps) {
 	const [syncing, setSyncing] = useState(false);
 	const [changeNumber, setChangeNumber, getChangeNumber] = useDynamicState(0);
 	const [submitting, setSubmitting] = useState(false);
+	const [submitErrorMsg, setSubmitErrorMsg] = useState<string>();
 
 	const alliance = props.report?.color;
 
@@ -57,6 +58,7 @@ export default function Form(props: FormProps) {
 			.catch((err) => {
 				console.error("Failed to submit form. Error:", err);
 				toast.error("Failed to submit form. Please try again. Error:", err);
+				setSubmitErrorMsg(err.toString());
 
 				setSubmitting(false);
 			});
@@ -287,6 +289,11 @@ export default function Form(props: FormProps) {
 					"Submit"
 				)}
 			</button>
+			{submitErrorMsg ? (
+				<p className="text-red-500 text-lg">{submitErrorMsg}</p>
+			) : (
+				<></>
+			)}
 		</FormPage>,
 	);
 
