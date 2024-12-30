@@ -15,6 +15,7 @@ import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import Loading from "../Loading";
 import { Analytics } from "@/lib/client/Analytics";
 import useDynamicState from "@/lib/client/useDynamicState";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -47,15 +48,17 @@ export default function Form(props: FormProps) {
 			.submitForm(props.report?._id!, formData)
 			.then(() => {
 				console.log("Submitted form successfully!");
+
+				location.href = location.href.substring(
+					0,
+					location.href.lastIndexOf("/"),
+				);
 			})
-			.finally(() => {
-				if (location.href.includes("offline"))
-					location.href = `/offline/${props.compId}`;
-				else
-					location.href = location.href.substring(
-						0,
-						location.href.lastIndexOf("/"),
-					);
+			.catch((err) => {
+				console.error("Failed to submit form. Error:", err);
+				toast.error("Failed to submit form. Please try again. Error:", err);
+
+				setSubmitting(false);
 			});
 
 		Analytics.quantReportSubmitted(
@@ -80,7 +83,13 @@ export default function Form(props: FormProps) {
 				setSyncing(false);
 			});
 		}, 500);
-	}, [formData, props.report?._id]);
+	}, [
+		formData,
+		props.report?._id,
+		changeNumber,
+		getChangeNumber,
+		setChangeNumber,
+	]);
 
 	const setCallback = useCallback(
 		(key: any, value: boolean | string | number | object) => {
