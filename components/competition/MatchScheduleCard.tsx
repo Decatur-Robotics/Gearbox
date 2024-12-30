@@ -287,7 +287,7 @@ export default function MatchScheduleCard(props: {
 													<div>No subjective scouter assigned</div>
 												)}
 											</div>
-											<Link
+											<a
 												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`}
 												href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}
 											>
@@ -301,7 +301,7 @@ export default function MatchScheduleCard(props: {
 															: 0
 													} in progress`}
 												)
-											</Link>
+											</a>
 										</div>
 									))}
 								</div>
