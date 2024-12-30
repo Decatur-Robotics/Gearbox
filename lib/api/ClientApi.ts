@@ -47,7 +47,7 @@ import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 
 const requestHelper = new RequestHelper(
-	process.env.NEXT_PUBLIC_API_URL,
+	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
 	(url) =>
 		toast.error(
 			`Unauthorized API request: ${url}. If this is an error, please contact the developers.`,
