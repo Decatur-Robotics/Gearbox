@@ -1,5 +1,5 @@
 import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
@@ -14,6 +14,7 @@ import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import Loading from "../Loading";
 import { Analytics } from "@/lib/client/Analytics";
+import useDynamicState from "@/lib/client/useDynamicState";
 
 const api = new ClientApi();
 
@@ -32,6 +33,7 @@ export default function Form(props: FormProps) {
 	const [page, setPage] = useState(0);
 	const [formData, setFormData] = useState<QuantData>(props.report?.data);
 	const [syncing, setSyncing] = useState(false);
+	const [changeNumber, setChangeNumber, getChangeNumber] = useDynamicState(0);
 	const [submitting, setSubmitting] = useState(false);
 
 	const alliance = props.report?.color;
@@ -64,10 +66,20 @@ export default function Form(props: FormProps) {
 		);
 	}
 
+	// Don't sync more than once every 500ms
 	const sync = useCallback(async () => {
-		setSyncing(true);
-		await api.updateReport({ data: formData }, props.report?._id!);
-		setSyncing(false);
+		const newChangeNumber = changeNumber! + 1;
+		setChangeNumber(newChangeNumber);
+
+		setTimeout(async () => {
+			getChangeNumber(async (currentNumber) => {
+				if (currentNumber !== newChangeNumber) return;
+
+				setSyncing(true);
+				await api.updateReport({ data: formData }, props.report?._id!);
+				setSyncing(false);
+			});
+		}, 500);
 	}, [formData, props.report?._id]);
 
 	const setCallback = useCallback(
@@ -82,7 +94,7 @@ export default function Form(props: FormProps) {
 		[sync],
 	);
 
-	useCallback(() => {
+	useEffect(() => {
 		// Set all Nan values to 0
 		for (const key in formData) {
 			if (typeof formData[key] === "number" && isNaN(formData[key])) {

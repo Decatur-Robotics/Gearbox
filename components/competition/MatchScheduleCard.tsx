@@ -198,7 +198,7 @@ export default function MatchScheduleCard(props: {
 																1000;
 
 														return (
-															<Link
+															<a
 																href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
 																key={reportId}
 																className={`${color} ${mine && !submitted ? "border-4" : "border-2"} 
@@ -206,7 +206,7 @@ export default function MatchScheduleCard(props: {
                                   rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
 															>
 																<h1>{report.robotNumber}</h1>
-															</Link>
+															</a>
 														);
 													})}
 												</div>
