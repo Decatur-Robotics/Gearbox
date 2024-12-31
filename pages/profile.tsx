@@ -121,7 +121,12 @@ export default function Profile(props: { teamList: Team[] }) {
 									<></>
 								)}
 							</Flex>
-							{ user != null && <XpProgressBar user={user} size="4rem" /> }
+							{user != null && (
+								<XpProgressBar
+									user={user}
+									size="4rem"
+								/>
+							)}
 						</div>
 					</Flex>
 				</Card>
