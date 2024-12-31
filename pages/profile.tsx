@@ -19,6 +19,7 @@ import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
 import { signOut } from "next-auth/react";
+import XpProgressBar from "@/components/XpProgressBar";
 
 const api = new ClientApi();
 
@@ -120,6 +121,7 @@ export default function Profile(props: { teamList: Team[] }) {
 									<></>
 								)}
 							</Flex>
+							{ user != null && <XpProgressBar user={user} size="4rem" /> }
 						</div>
 					</Flex>
 				</Card>
