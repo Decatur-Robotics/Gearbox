@@ -1,5 +1,5 @@
 import { AllianceColor, Report, QuantData, FieldPos } from "@/lib/Types";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FormPage from "./FormPages";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
@@ -14,6 +14,8 @@ import Slider from "./Sliders";
 import { BlockElement, FormLayout, FormElement } from "@/lib/Layout";
 import Loading from "../Loading";
 import { Analytics } from "@/lib/client/Analytics";
+import useDynamicState from "@/lib/client/useDynamicState";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -32,7 +34,9 @@ export default function Form(props: FormProps) {
 	const [page, setPage] = useState(0);
 	const [formData, setFormData] = useState<QuantData>(props.report?.data);
 	const [syncing, setSyncing] = useState(false);
+	const [changeNumber, setChangeNumber, getChangeNumber] = useDynamicState(0);
 	const [submitting, setSubmitting] = useState(false);
+	const [submitErrorMsg, setSubmitErrorMsg] = useState<string>();
 
 	const alliance = props.report?.color;
 
@@ -45,15 +49,18 @@ export default function Form(props: FormProps) {
 			.submitForm(props.report?._id!, formData)
 			.then(() => {
 				console.log("Submitted form successfully!");
+
+				location.href = location.href.substring(
+					0,
+					location.href.lastIndexOf("/"),
+				);
 			})
-			.finally(() => {
-				if (location.href.includes("offline"))
-					location.href = `/offline/${props.compId}`;
-				else
-					location.href = location.href.substring(
-						0,
-						location.href.lastIndexOf("/"),
-					);
+			.catch((err) => {
+				console.error("Failed to submit form. Error:", err);
+				toast.error("Failed to submit form. Please try again. Error:", err);
+				setSubmitErrorMsg(err.toString());
+
+				setSubmitting(false);
 			});
 
 		Analytics.quantReportSubmitted(
@@ -64,11 +71,27 @@ export default function Form(props: FormProps) {
 		);
 	}
 
+	// Don't sync more than once every 500ms
 	const sync = useCallback(async () => {
-		setSyncing(true);
-		await api.updateReport({ data: formData }, props.report?._id!);
-		setSyncing(false);
-	}, [formData, props.report?._id]);
+		const newChangeNumber = changeNumber! + 1;
+		setChangeNumber(newChangeNumber);
+
+		setTimeout(async () => {
+			getChangeNumber(async (currentNumber) => {
+				if (currentNumber !== newChangeNumber) return;
+
+				setSyncing(true);
+				await api.updateReport({ data: formData }, props.report?._id!);
+				setSyncing(false);
+			});
+		}, 500);
+	}, [
+		formData,
+		props.report?._id,
+		changeNumber,
+		getChangeNumber,
+		setChangeNumber,
+	]);
 
 	const setCallback = useCallback(
 		(key: any, value: boolean | string | number | object) => {
@@ -82,7 +105,7 @@ export default function Form(props: FormProps) {
 		[sync],
 	);
 
-	useCallback(() => {
+	useEffect(() => {
 		// Set all Nan values to 0
 		for (const key in formData) {
 			if (typeof formData[key] === "number" && isNaN(formData[key])) {
@@ -266,6 +289,11 @@ export default function Form(props: FormProps) {
 					"Submit"
 				)}
 			</button>
+			{submitErrorMsg ? (
+				<p className="text-red-500 text-lg">{submitErrorMsg}</p>
+			) : (
+				<></>
+			)}
 		</FormPage>,
 	);
 
