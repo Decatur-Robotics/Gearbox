@@ -1,3 +1,4 @@
+import Avatar from "@/components/Avatar";
 import Card from "@/components/Card";
 import Container from "@/components/Container";
 import ClientApi from "@/lib/api/ClientApi";
@@ -65,11 +66,22 @@ export default function Leaderboard() {
 							userLeaderboard.map((user, index) => (
 								<tr
 									key={user._id}
-									className={`${session?.user?._id == user._id && "text-primary"} hover:bg-base-100`}
+									className={`${session?.user?._id == user._id && "text-primary"} hover:bg-base-100 h-min`}
 								>
 									<td>{index + 1}</td>
-									<td>
-										{user.name} {session?.user?._id == user._id ? "(You)" : ""}
+									<td className="flex flex-row items-center h-min">
+										<Avatar
+											user={user}
+											showLevel={false}
+											scale="w-11"
+											imgHeightOverride="h-11"
+											borderThickness={2}
+											className="mr-2"
+										/>
+										<div>
+											{user.name}{" "}
+											{session?.user?._id == user._id ? "(You)" : ""}
+										</div>
 									</td>
 									<td>{user.teams.join(", ")}</td>
 									<td>{user.level}</td>
