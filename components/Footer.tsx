@@ -14,7 +14,7 @@ import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
 import { HiStatusOnline } from "react-icons/hi";
 import { useEffect, useState } from "react";
-import Leaderboard from '../pages/leaderboard';
+import Leaderboard from "../pages/leaderboard";
 
 export default function Footer() {
 	const [swStatus, setSwStatus] = useState("Finding service worker...");
