@@ -1,10 +1,9 @@
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { User } from "@/lib/Types";
 import { levelToClassName } from "@/lib/Xp";
 import { BsGearFill } from "react-icons/bs";
 
 export default function Avatar(props: {
-	user?: { image: string | undefined; level: number; admin?: boolean; } | undefined;
+	user?: { image: string | undefined; level: number; admin?: boolean };
 	scale?: string | undefined; // Use "scale-75" for 75% scale, etc.
 	imgHeightOverride?: string | undefined;
 	showLevel?: boolean | undefined;
