@@ -1,112 +1,170 @@
-import { DbPicklist, Report } from "@/lib/Types";
+import { CompPicklistGroup, Report } from "@/lib/Types";
 
-import { useDrag, useDrop } from "react-dnd";
+import { ConnectDropTarget, useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
 
-type CardData = {
-	number: number;
-	picklistIndex?: number;
-};
+const SHOW_PICKLISTS_ON_TEAM_CARDS = true;
 
 type Picklist = {
 	index: number;
 	name: string;
-	teams: CardData[];
+	head: PicklistEntry | undefined;
 	update: (picklist: Picklist) => void;
 };
 
-const Includes = (bucket: any[], item: CardData) => {
-	let result = false;
-	bucket.forEach((i: { number: number }) => {
-		if (i.number === item.number) {
-			result = true;
-		}
-	});
-
-	return result;
+type PicklistEntry = {
+	number: number;
+	next?: PicklistEntry;
+	picklist?: Picklist;
 };
 
-function removeTeamFromPicklist(team: CardData, picklists: Picklist[]) {
-	if (team.picklistIndex === undefined) return;
+function removeEntryFromItsPicklist(entry: PicklistEntry) {
+	if (entry.picklist) {
+		const picklist = entry.picklist;
+		if (picklist.head?.number === entry.number) {
+			picklist.head = picklist.head.next;
+		} else {
+			let curr: PicklistEntry | undefined = picklist.head;
+			while (curr) {
+				if (curr.next?.number === entry.number) {
+					curr.next = curr.next.next;
+				}
 
-	const picklist = picklists[team.picklistIndex];
-	if (!picklist) return;
+				curr = curr.next;
+			}
+		}
 
-	picklist.teams = picklist.teams.filter((t) => t.number !== team.number);
-	picklist.update(picklist);
+		entry.picklist = undefined;
+
+		picklist.update(picklist);
+
+		return picklist;
+	}
 }
 
 function TeamCard(props: {
-	cardData: CardData;
+	entry: PicklistEntry;
 	draggable: boolean;
 	picklist?: Picklist;
 	rank?: number;
-	lastRank?: number;
 	width?: string;
-	height?: string;
+	preview?: boolean;
 }) {
-	const { number: teamNumber, picklistIndex: picklist } = props.cardData;
+	const { entry, width, rank, preview } = props;
 
-	const [{ isDragging }, dragRef] = useDrag({
+	const [, dragRef] = useDrag({
 		type: "team",
-		item: props.cardData,
-		collect: (monitor) => ({
-			isDragging: monitor.isDragging(),
-		}),
+		item: () => {
+			return props.entry;
+		},
 	});
 
-	function changeTeamRank(change: number) {
-		const picklist = props.picklist;
-		if (
-			picklist === undefined ||
-			props.rank === undefined ||
-			props.lastRank === undefined
-		)
-			return;
+	// We have the useDrop for the InsertDropSite here because we need to know if the dragged item is over the insert site
+	const [{ isOverInsert, draggedEntry: draggedInsertEntry }, insertRef] =
+		useDrop({
+			accept: "team",
+			drop: (dragged: PicklistEntry) => {
+				// If you're moving a card into the same spot, don't do anything
+				if (
+					entry.number === dragged.number &&
+					entry.picklist === dragged.picklist
+				)
+					return;
 
-		const newRank = props.rank + change;
-		if (newRank < 0 || newRank > props.lastRank) return;
+				const picklist = removeEntryFromItsPicklist(dragged);
 
-		const otherTeam = picklist.teams[newRank];
-		picklist.teams[newRank] = picklist.teams[props.rank];
-		picklist.teams[props.rank] = otherTeam;
+				// Create a copy, don't operate on the original
+				dragged = {
+					number: dragged.number,
+					next: entry.next,
+					picklist: entry.picklist,
+				};
 
-		picklist.update(picklist);
-	}
+				entry.next = dragged;
+
+				picklist?.update(picklist);
+			},
+			collect: (monitor) => ({
+				isOverInsert: monitor.isOver(),
+				draggedEntry: monitor.getItem(),
+			}),
+		});
 
 	return (
+		<>
+			<div className="flex flex-col w-full">
+				<div
+					className={`w-${width ?? "full"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary ${preview && "animate-pulse"}`}
+					ref={dragRef as unknown as () => void}
+				>
+					<h1>
+						{rank !== undefined ? `${rank}. ` : ""}
+						<span className="max-sm:hidden">Team</span>{" "}
+						<span className="text-accent">#{entry.number}</span>
+						{SHOW_PICKLISTS_ON_TEAM_CARDS && entry.picklist && (
+							<span className="text-xs text-accent">
+								{" "}
+								({entry.picklist.name})
+							</span>
+						)}
+					</h1>
+				</div>
+				{rank && !preview && (
+					<InsertDropSite
+						rank={rank + 1}
+						entry={entry}
+						isOver={isOverInsert}
+						dropRef={insertRef}
+						draggedEntry={draggedInsertEntry}
+					/>
+				)}
+			</div>
+			{rank && !preview && entry.next && (
+				<TeamCard
+					rank={rank + (isOverInsert && draggedInsertEntry ? 2 : 1)}
+					entry={entry.next}
+					draggable={true}
+					picklist={props.picklist}
+				/>
+			)}
+		</>
+	);
+}
+
+/**
+ * The useDrop is in the TeamCard component
+ */
+function InsertDropSite({
+	rank,
+	entry,
+	isOver,
+	dropRef,
+	draggedEntry,
+}: {
+	rank: number;
+	entry: PicklistEntry;
+	isOver: boolean;
+	dropRef: ConnectDropTarget;
+	draggedEntry: PicklistEntry;
+}) {
+	return (
 		<div
-			className={`w-${props.width ?? "[150px]"} h-${props.height ?? "[100px]"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary`}
-			ref={dragRef as unknown as () => void}
+			ref={dropRef as any}
+			className={`w-full ${entry.next ? "h-full" : "h-4"}`}
 		>
-			<h1>
-				{props.rank !== undefined ? `${props.rank + 1}. ` : ""}
-				<span className="max-sm:hidden">Team</span>{" "}
-				<span className="text-accent">#{teamNumber}</span>
-			</h1>
-			{props.rank !== undefined && props.lastRank && props.picklist ? (
-				<div className="ml-2 space-x-1">
-					{props.rank > 0 && (
-						<button
-							className="btn btn-primary btn-sm"
-							onClick={() => changeTeamRank(-1)}
-						>
-							<FaArrowUp />
-						</button>
-					)}
-					{props.rank < props.lastRank && (
-						<button
-							className="btn btn-primary btn-sm"
-							onClick={() => changeTeamRank(1)}
-						>
-							<FaArrowDown />
-						</button>
-					)}
+			{isOver ? (
+				<div className="w-full my-2">
+					<TeamCard
+						entry={draggedEntry}
+						draggable={false}
+						rank={rank}
+						preview={true}
+					/>
 				</div>
 			) : (
-				""
+				<div className={`w-full ${entry.next ? "p-1" : "h-full"}`} />
 			)}
 		</div>
 	);
@@ -115,21 +173,19 @@ function TeamCard(props: {
 function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
 	const picklist = props.picklist;
 
-	const [{ isOver }, dropRef] = useDrop({
+	const [{ isOver, entry }, dropRef] = useDrop({
 		accept: "team",
-		drop: (item: CardData) => {
-			if (item.picklistIndex === picklist.index) return;
+		drop: (item: PicklistEntry) => {
+			removeEntryFromItsPicklist(item);
 
-			removeTeamFromPicklist(item, props.picklists);
+			item = { number: item.number, next: picklist.head, picklist };
+			picklist.head = item;
 
-			if (!Includes(picklist.teams, item)) {
-				item.picklistIndex = picklist.index;
-				picklist.teams.push(item);
-				picklist.update(picklist);
-			}
+			picklist.update(picklist);
 		},
 		collect: (monitor) => ({
 			isOver: monitor.isOver(),
+			entry: monitor.getItem(),
 		}),
 	});
 
@@ -139,10 +195,7 @@ function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
 	}
 
 	return (
-		<div
-			className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
-			ref={dropRef as unknown as () => void}
-		>
+		<div className="bg-base-200 h-[30rem] rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center p-2 sm:p-4">
 			<input
 				defaultValue={picklist.name}
 				className="w-[95%] input input-sm max-sm:hidden"
@@ -151,41 +204,55 @@ function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
 			<h1 className="w-[95%] input input-sm input-disabled sm:hidden">
 				{picklist.name}
 			</h1>
-			{picklist.teams.map((team, index) => (
-				<TeamCard
-					cardData={team}
-					draggable={false}
-					key={team.number}
-					picklist={picklist}
-					rank={index}
-					lastRank={picklist.teams.length - 1}
-					width="full"
-					height="[50px]"
-				/>
-			))}
-			{isOver && <h1 className="font-semibold text-accent">Drop Here!</h1>}
+			<div
+				className={`w-full h-full flex flex-col ${!picklist.head && "mt-2"}`}
+			>
+				<div
+					ref={dropRef as any}
+					className={`w-full ${!picklist.head ? "h-full" : "min-h-fit h-2"} flex justify-center text-center`}
+				>
+					{isOver ? (
+						<div className={`w-full ${picklist.head && "my-2"}`}>
+							<TeamCard
+								entry={entry}
+								draggable={false}
+								rank={1}
+								preview={true}
+							/>
+						</div>
+					) : (
+						!picklist.head && (
+							<h1 className="font-semibold text-accent">Drop Here!</h1>
+						)
+					)}
+				</div>
+				{picklist.head && (
+					<TeamCard
+						entry={picklist.head}
+						draggable={false}
+						key={picklist.head.number}
+						picklist={picklist}
+						rank={isOver ? 2 : 1}
+					/>
+				)}
+			</div>
 		</div>
 	);
 }
 
 export function TeamList(props: {
-	teams: CardData[];
+	teams: PicklistEntry[];
 	picklists: Picklist[];
 	expectedTeamCount: number;
 }) {
-	const [{ isOver }, dropRef] = useDrop({
+	const [, dropRef] = useDrop({
 		accept: "team",
-		drop: (item: CardData) => {
-			removeTeamFromPicklist(item, props.picklists);
-		},
-		collect: (monitor) => ({
-			isOver: monitor.isOver(),
-		}),
+		drop: removeEntryFromItsPicklist,
 	});
 
 	return (
 		<div
-			ref={dropRef as unknown as () => void}
+			ref={dropRef as any}
 			className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll"
 		>
 			{props.teams
@@ -193,7 +260,7 @@ export function TeamList(props: {
 				.map((team) => (
 					<TeamCard
 						draggable={true}
-						cardData={team}
+						entry={team}
 						key={team.number}
 					/>
 				))}
@@ -210,7 +277,7 @@ export default function PicklistScreen(props: {
 	teams: number[];
 	reports: Report[];
 	expectedTeamCount: number;
-	picklist: DbPicklist;
+	picklist: CompPicklistGroup;
 	compId: string;
 }) {
 	const [picklists, setPicklists] = useState<Picklist[]>([]);
@@ -225,25 +292,25 @@ export default function PicklistScreen(props: {
 
 	const teams = props.teams.map((team) => ({ number: team }));
 
-	const savePicklists = useCallback(
-		(picklists: Picklist[]) => {
-			const picklistDict = picklists.reduce<DbPicklist>(
-				(acc, picklist) => {
-					acc.picklists[picklist.name] = picklist.teams.map(
-						(team) => team.number,
-					);
-					return acc;
-				},
-				{
-					_id: props.picklist._id,
-					picklists: {},
-				},
-			);
+	useEffect(() => {
+		const picklistDict = picklists.reduce<CompPicklistGroup>(
+			(acc, picklist) => {
+				const picklistArray: number[] = [];
+				for (let curr = picklist.head; curr; curr = curr.next) {
+					picklistArray.push(curr.number);
+				}
 
-			api.updatePicklist(picklistDict);
-		},
-		[props.picklist._id],
-	);
+				acc.picklists[picklist.name] = picklistArray;
+				return acc;
+			},
+			{
+				_id: props.picklist._id,
+				picklists: {},
+			},
+		);
+
+		api.updatePicklist(picklistDict);
+	}, [props.picklist._id, picklists]);
 
 	const updatePicklist = useCallback(
 		(picklist: Picklist) => {
@@ -256,26 +323,39 @@ export default function PicklistScreen(props: {
 					}
 				});
 
-				savePicklists(newPicklists);
 				return newPicklists;
 			});
 		},
-		[setPicklists, savePicklists],
+		[setPicklists],
 	);
 
-	const loadDbPicklist = useCallback(
-		(picklistDict: DbPicklist) => {
+	const loadCompPicklistGroup = useCallback(
+		(picklistDict: CompPicklistGroup) => {
 			setPicklists(
-				Object.entries(picklistDict.picklists).map((picklist, index) => {
+				Object.entries(picklistDict.picklists).map(([name, teams], index) => {
 					const newPicklist: Picklist = {
 						index,
-						name: picklist[0],
-						teams: picklist[1].map((team: number) => ({ number: team })),
+						name,
+						head: undefined,
 						update: updatePicklist,
 					};
 
-					for (const team of newPicklist.teams) {
-						team.picklistIndex = newPicklist.index;
+					if (teams.length > 0) {
+						let curr: PicklistEntry = {
+							number: teams[0],
+							next: undefined,
+							picklist: newPicklist,
+						};
+						newPicklist.head = curr;
+
+						for (let i = 1; i < teams.length; i++) {
+							curr.next = {
+								number: teams[i],
+								next: undefined,
+								picklist: newPicklist,
+							};
+							curr = curr.next;
+						}
 					}
 
 					return newPicklist;
@@ -291,10 +371,10 @@ export default function PicklistScreen(props: {
 		setLoadingPicklists(LoadState.Loading);
 		api.getPicklist(props.picklist?._id).then((picklist) => {
 			if (picklist) {
-				loadDbPicklist(picklist);
+				loadCompPicklistGroup(picklist);
 			}
 		});
-		loadDbPicklist(props.picklist);
+		loadCompPicklistGroup(props.picklist);
 
 		setLoadingPicklists(LoadState.Loaded);
 	}, [
@@ -303,21 +383,25 @@ export default function PicklistScreen(props: {
 		LoadState.Loading,
 		LoadState.Loaded,
 		props.picklist,
-		loadDbPicklist,
+		loadCompPicklistGroup,
 	]);
 
 	const addPicklist = () => {
 		const newPicklist: Picklist = {
 			index: picklists.length,
 			name: `Picklist ${picklists.length + 1}`,
-			teams: [],
+			head: undefined,
 			update: updatePicklist,
 		};
 
 		const newPicklists = [...picklists, newPicklist];
-		savePicklists(newPicklists);
 		setPicklists(newPicklists);
 	};
+
+	const [, dropRef] = useDrop({
+		accept: "team",
+		drop: removeEntryFromItsPicklist,
+	});
 
 	return (
 		<div className="w-full h-fit flex flex-col space-y-2">
@@ -325,9 +409,12 @@ export default function PicklistScreen(props: {
 				teams={teams}
 				picklists={picklists}
 				expectedTeamCount={props.expectedTeamCount}
-			></TeamList>
+			/>
 
-			<div className="w-full min-h-[30rem] h-fit px-4 py-2 flex flex-row space-x-3">
+			<div
+				ref={dropRef as any}
+				className="w-full min-h-[30rem] h-fit px-4 py-2 flex flex-row space-x-3"
+			>
 				{loadingPicklists === LoadState.Loading ? (
 					<div className="w-full h-full flex items-center justify-center">
 						<div className="loading loading-spinner" />
@@ -344,7 +431,7 @@ export default function PicklistScreen(props: {
 							key={picklist.index}
 							picklist={picklist}
 							picklists={picklists}
-						></PicklistCard>
+						/>
 					))
 				)}
 			</div>
@@ -354,7 +441,7 @@ export default function PicklistScreen(props: {
 					className="max-sm:hidden btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
 					onClick={addPicklist}
 				>
-					<FaPlus></FaPlus>
+					<FaPlus />
 				</button>
 			)}
 		</div>

@@ -559,7 +559,7 @@ export interface EventData {
 	oprRanking: TheBlueAlliance.OprRanking;
 }
 
-export type DbPicklist = {
+export type CompPicklistGroup = {
 	_id: string;
 	picklists: {
 		[name: string]: number[];

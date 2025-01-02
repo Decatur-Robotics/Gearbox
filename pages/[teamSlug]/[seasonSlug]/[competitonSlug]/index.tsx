@@ -10,7 +10,7 @@ import {
 	User,
 	Team,
 	Competition,
-	DbPicklist,
+	CompPicklistGroup,
 	Season,
 } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";

@@ -6,7 +6,7 @@ import {
 	Alliance,
 	Competition,
 	CompetitonNameIdPair,
-	DbPicklist,
+	CompPicklistGroup,
 	League,
 	Match,
 	MatchType,
@@ -1235,7 +1235,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 	getPicklistFromComp = createNextRoute<
 		[string],
-		DbPicklist | undefined,
+		CompPicklistGroup | undefined,
 		ApiDependencies,
 		{ comp: Competition }
 	>({
@@ -1244,7 +1244,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db: dbPromise }, { comp }, [compId]) => {
 			const db = await dbPromise;
 
-			const picklist = await db.findObjectById<DbPicklist>(
+			const picklist = await db.findObjectById<CompPicklistGroup>(
 				CollectionId.Picklists,
 				new ObjectId(comp.picklist),
 			);
@@ -1255,9 +1255,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 	getPicklist = createNextRoute<
 		[string],
-		DbPicklist | undefined,
+		CompPicklistGroup | undefined,
 		ApiDependencies,
-		{ picklist: DbPicklist }
+		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklistId]) =>
 			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklistId),
@@ -1267,10 +1267,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	updatePicklist = createNextRoute<
-		[DbPicklist],
+		[CompPicklistGroup],
 		{ result: string },
 		ApiDependencies,
-		{ picklist: DbPicklist }
+		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklist]) =>
 			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklist._id),
