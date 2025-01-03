@@ -61,50 +61,52 @@ export default function Leaderboard() {
 								<th>XP</th>
 							</tr>
 						</thead>
-						{usersOrTeam == "users" &&
-							userLeaderboard &&
-							userLeaderboard.map((user, index) => (
-								<tr
-									key={user._id}
-									className={`${session?.user?._id == user._id && "text-primary"} hover:bg-base-100 h-min`}
-								>
-									<td>{index + 1}</td>
-									<td className="flex flex-row items-center h-min">
-										<Avatar
-											user={user}
-											showLevel={false}
-											scale="w-11"
-											imgHeightOverride="h-11"
-											borderThickness={2}
-											className="mr-2"
-										/>
-										<div>
-											{user.name}{" "}
-											{session?.user?._id == user._id ? "(You)" : ""}
-										</div>
-									</td>
-									<td>{user.teams.join(", ")}</td>
-									<td>{user.level}</td>
-									<td>{user.xp}</td>
-								</tr>
-							))}
-						{usersOrTeam == "teams" &&
-							teamLeaderboard &&
-							teamLeaderboard.map((team, index) => (
-								<tr
-									key={team._id}
-									className={`${session?.user?.teams.includes(team._id) && "text-primary"} hover:bg-base-100`}
-								>
-									<td>{index + 1}</td>
-									<td>
-										{team.name} ({team.league} {team.number}){" "}
-										{session?.user?.teams.includes(team._id)
-											? "(Your Team)"
-											: ""}
-									</td>
-									<td>{team.xp}</td>
-								</tr>
-							))}
+						<tbody>
+							{usersOrTeam == "users" &&
+								userLeaderboard &&
+								userLeaderboard.map((user, index) => (
+									<tr
+										key={user._id}
+										className={`${session?.user?._id == user._id && "text-primary"} hover:bg-base-100 h-min`}
+									>
+										<td>{index + 1}</td>
+										<td className="flex flex-row items-center h-min">
+											<Avatar
+												user={user}
+												showLevel={false}
+												scale="w-11"
+												imgHeightOverride="h-11"
+												borderThickness={2}
+												className="mr-2"
+											/>
+											<div>
+												{user.name}{" "}
+												{session?.user?._id == user._id ? "(You)" : ""}
+											</div>
+										</td>
+										<td>{user.teams.join(", ")}</td>
+										<td>{user.level}</td>
+										<td>{user.xp}</td>
+									</tr>
+								))}
+							{usersOrTeam == "teams" &&
+								teamLeaderboard &&
+								teamLeaderboard.map((team, index) => (
+									<tr
+										key={team._id}
+										className={`${session?.user?.teams.includes(team._id) && "text-primary"} hover:bg-base-100`}
+									>
+										<td>{index + 1}</td>
+										<td>
+											{team.name} ({team.league} {team.number}){" "}
+											{session?.user?.teams.includes(team._id)
+												? "(Your Team)"
+												: ""}
+										</td>
+										<td>{team.xp}</td>
+									</tr>
+								))}
+						</tbody>
 					</table>
 				</div>
 			</Card>
