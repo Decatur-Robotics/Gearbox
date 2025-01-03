@@ -2,8 +2,9 @@ import { CompPicklistGroup, Report } from "@/lib/Types";
 
 import { ConnectDropTarget, useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
+import { ObjectId } from "bson";
 
 const SHOW_PICKLISTS_ON_TEAM_CARDS = true;
 
@@ -12,12 +13,14 @@ type Picklist = {
 	name: string;
 	head: PicklistEntry | undefined;
 	update: (picklist: Picklist) => void;
+	delete: () => void;
 };
 
 type PicklistEntry = {
 	number: number;
 	next?: PicklistEntry;
 	picklist?: Picklist;
+	id?: string;
 };
 
 function removeEntryFromItsPicklist(entry: PicklistEntry) {
@@ -30,6 +33,7 @@ function removeEntryFromItsPicklist(entry: PicklistEntry) {
 			while (curr) {
 				if (curr.next?.number === entry.number) {
 					curr.next = curr.next.next;
+					break;
 				}
 
 				curr = curr.next;
@@ -52,7 +56,8 @@ function TeamCard(props: {
 	width?: string;
 	preview?: boolean;
 }) {
-	const { entry, width, rank, preview } = props;
+	const { entry, width, rank, preview, picklist } = props;
+	if (picklist) entry.picklist = picklist;
 
 	const [, dragRef] = useDrag({
 		type: "team",
@@ -69,22 +74,32 @@ function TeamCard(props: {
 				// If you're moving a card into the same spot, don't do anything
 				if (
 					entry.number === dragged.number &&
+					entry.next === dragged.next &&
 					entry.picklist === dragged.picklist
 				)
 					return;
 
-				const picklist = removeEntryFromItsPicklist(dragged);
+				removeEntryFromItsPicklist(dragged);
 
 				// Create a copy, don't operate on the original
 				dragged = {
 					number: dragged.number,
 					next: entry.next,
 					picklist: entry.picklist,
+					id: dragged.id,
 				};
 
 				entry.next = dragged;
 
-				picklist?.update(picklist);
+				console.log("Entry.next:", entry.next, entry.picklist?.head?.next);
+				console.log("Head equal:", entry === entry.picklist?.head);
+				console.log(
+					"Picklists equal:",
+					entry.picklist === entry.next?.picklist &&
+						entry.picklist === picklist,
+				);
+
+				entry.picklist?.update(entry.picklist);
 			},
 			collect: (monitor) => ({
 				isOverInsert: monitor.isOver(),
@@ -170,7 +185,7 @@ function InsertDropSite({
 	);
 }
 
-function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
+function PicklistCard(props: { picklist: Picklist }) {
 	const picklist = props.picklist;
 
 	const [{ isOver, entry }, dropRef] = useDrop({
@@ -178,7 +193,12 @@ function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
 		drop: (item: PicklistEntry) => {
 			removeEntryFromItsPicklist(item);
 
-			item = { number: item.number, next: picklist.head, picklist };
+			item = {
+				number: item.number,
+				next: picklist.head,
+				picklist,
+				id: item.id,
+			};
 			picklist.head = item;
 
 			picklist.update(picklist);
@@ -195,15 +215,25 @@ function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
 	}
 
 	return (
-		<div className="bg-base-200 h-[30rem] rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center p-2 sm:p-4">
-			<input
-				defaultValue={picklist.name}
-				className="w-[95%] input input-sm max-sm:hidden"
-				onChange={changeName}
-			/>
-			<h1 className="w-[95%] input input-sm input-disabled sm:hidden">
-				{picklist.name}
-			</h1>
+		<div className="bg-base-200 h-full rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center p-2 sm:p-4">
+			<div className="flex flex-row items-center">
+				<input
+					defaultValue={picklist.name}
+					className="w-[95%] input input-sm max-sm:hidden"
+					onChange={changeName}
+				/>
+				<h1 className="w-[95%] input input-sm input-disabled sm:hidden">
+					{picklist.name}
+				</h1>
+				<button className="btn btn-xs btn-ghost ml-1">
+					<FaTrash
+						onClick={() =>
+							confirm(`Are you sure you want to delete ${picklist.name}?`) &&
+							picklist.delete()
+						}
+					/>
+				</button>
+			</div>
 			<div
 				className={`w-full h-full flex flex-col ${!picklist.head && "mt-2"}`}
 			>
@@ -230,7 +260,6 @@ function PicklistCard(props: { picklist: Picklist; picklists: Picklist[] }) {
 					<TeamCard
 						entry={picklist.head}
 						draggable={false}
-						key={picklist.head.number}
 						picklist={picklist}
 						rank={isOver ? 2 : 1}
 					/>
@@ -329,6 +358,16 @@ export default function PicklistScreen(props: {
 		[setPicklists],
 	);
 
+	const deletePicklist = useCallback(
+		(picklist: Picklist) => {
+			setPicklists((old) => {
+				const newPicklists = old.filter((p) => p.index !== picklist.index);
+				return newPicklists;
+			});
+		},
+		[setPicklists],
+	);
+
 	const loadCompPicklistGroup = useCallback(
 		(picklistDict: CompPicklistGroup) => {
 			setPicklists(
@@ -338,6 +377,7 @@ export default function PicklistScreen(props: {
 						name,
 						head: undefined,
 						update: updatePicklist,
+						delete: () => deletePicklist(newPicklist),
 					};
 
 					if (teams.length > 0) {
@@ -345,6 +385,7 @@ export default function PicklistScreen(props: {
 							number: teams[0],
 							next: undefined,
 							picklist: newPicklist,
+							id: new ObjectId().toHexString(),
 						};
 						newPicklist.head = curr;
 
@@ -353,6 +394,7 @@ export default function PicklistScreen(props: {
 								number: teams[i],
 								next: undefined,
 								picklist: newPicklist,
+								id: new ObjectId().toHexString(),
 							};
 							curr = curr.next;
 						}
@@ -392,6 +434,7 @@ export default function PicklistScreen(props: {
 			name: `Picklist ${picklists.length + 1}`,
 			head: undefined,
 			update: updatePicklist,
+			delete: () => deletePicklist(newPicklist),
 		};
 
 		const newPicklists = [...picklists, newPicklist];
@@ -413,7 +456,7 @@ export default function PicklistScreen(props: {
 
 			<div
 				ref={dropRef as any}
-				className="w-full min-h-[30rem] h-fit px-4 py-2 flex flex-row space-x-3"
+				className="w-full min-h-[30rem] h-[30rem] px-4 py-2 flex flex-row space-x-3"
 			>
 				{loadingPicklists === LoadState.Loading ? (
 					<div className="w-full h-full flex items-center justify-center">
@@ -430,7 +473,6 @@ export default function PicklistScreen(props: {
 						<PicklistCard
 							key={picklist.index}
 							picklist={picklist}
-							picklists={picklists}
 						/>
 					))
 				)}
