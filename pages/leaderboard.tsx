@@ -97,7 +97,7 @@ export default function Leaderboard() {
 								>
 									<td>{index + 1}</td>
 									<td>
-										{team.name}{" "}
+										{team.name} ({team.league} {team.number}){" "}
 										{session?.user?.teams.includes(team._id)
 											? "(Your Team)"
 											: ""}

@@ -2124,7 +2124,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const users = await db.findObjects<User>(CollectionId.Users, {
 				xp: { $gt: 0 },
+				email: { $ne: "totallyrealemail@gmail.com" },
 			});
+
+			console.log(
+				"ID Query:",
+				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
+			);
 
 			const teams = await db.findObjects<Team>(CollectionId.Teams, {
 				_id: {
@@ -2134,13 +2140,15 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				},
 			});
 
+			console.log("Found", users, teams);
+
 			const leaderboardTeams = teams.reduce(
 				(acc, team) => {
 					acc[team._id!.toString()] = {
 						_id: team._id!.toString(),
 						name: team.name,
 						number: team.number,
-						league: team.league,
+						league: team.league ?? League.FRC,
 						xp: 0,
 					};
 
@@ -2158,7 +2166,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 					level: user.level,
 					teams: user.teams
 						.map((id) => leaderboardTeams[id])
-						.map((team) => `${team.league} ${team.number}`),
+						.map((team) => `${team.league ?? League.FRC} ${team.number}`),
 				}))
 				.sort((a, b) => b.xp - a.xp);
 
