@@ -12,6 +12,7 @@ export default function Avatar(props: {
 	onClick?: () => void | undefined;
 	className?: string | undefined;
 	online?: boolean;
+	gearSize?: number;
 }) {
 	const { session, status } = useCurrentSession();
 	const user = props.user ?? session?.user;
@@ -39,7 +40,7 @@ export default function Avatar(props: {
 			</div>
 			{admin ? (
 				<div className="absolute z-10 -bottom-2 -left-2 text-slate-300 animate-spin-slow">
-					<BsGearFill size={36}></BsGearFill>
+					<BsGearFill size={props.gearSize ?? 36}></BsGearFill>
 				</div>
 			) : (
 				<></>
