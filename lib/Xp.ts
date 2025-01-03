@@ -9,7 +9,7 @@ export function levelToXp(level: number) {
 }
 
 export function xpRequiredForNextLevel(level: number) {
-	return levelToXp(level + 1);
+	return Math.max(levelToXp(level + 1), 0);
 }
 
 export function levelToClassName(level: number | undefined) {
