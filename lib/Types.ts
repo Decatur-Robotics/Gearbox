@@ -578,3 +578,20 @@ export class WebhookHolder {
 		this.url = url;
 	}
 }
+
+export type LeaderboardUser = {
+	_id: string;
+	name: string;
+	image: string;
+	xp: number;
+	level: number;
+	teams: string[];
+};
+
+export type LeaderboardTeam = {
+	_id: string;
+	name: string;
+	number: number;
+	league: League;
+	xp: number;
+};
