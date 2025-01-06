@@ -323,7 +323,7 @@ export default function PicklistScreen(props: {
 	// Save picklists
 	useEffect(
 		() => savePicklistGroup(props.picklist._id, picklists, strikethroughs, api),
-		[props.picklist._id, picklists],
+		[props.picklist._id, picklists, strikethroughs],
 	);
 
 	const updatePicklist = useCallback(
