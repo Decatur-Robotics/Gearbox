@@ -53,6 +53,16 @@ function toArray(picklist: Picklist) {
 	return result;
 }
 
+function toIdArray(picklist: Picklist) {
+	const result: string[] = [];
+	let current = picklist.head;
+	while (current) {
+		result.push(current.id!);
+		current = current.next;
+	}
+	return result;
+}
+
 function getAtIndex(picklist: Picklist, index: number) {
 	let current = picklist.head;
 	for (let i = 0; i < index; i++) {
@@ -162,6 +172,26 @@ describe(insertAfterEntry.name, () => {
 		dragged = insertAfterEntry(entry, dragged);
 
 		expect(dragged?.picklist?.index).toBe(newPicklist.index);
+	});
+
+	test("Works when entry numbers are the same", () => {
+		const newPicklist = createPicklist(0, [1, 1, 1]);
+		const oldPicklist = createPicklist(1, [1, 1, 1]);
+
+		const entry = getAtIndex(newPicklist, 0)!;
+		let dragged: PicklistEntry | undefined = getAtIndex(oldPicklist, 2)!;
+
+		dragged = insertAfterEntry(entry, dragged);
+
+		expect(getPicklistLength(newPicklist)).toBe(4);
+		expect(getPicklistLength(oldPicklist)).toBe(2);
+		expect(toIdArray(newPicklist)).toEqual([
+			newPicklist.head!.id!,
+			dragged!.id!,
+			newPicklist.head!.next!.next!.id!,
+			newPicklist.head!.next!.next!.next!.id!,
+		]);
+		expect(toIdArray(oldPicklist)).toEqual([oldPicklist.head!.id!, oldPicklist.head!.next!.id!]);
 	});
 });
 
