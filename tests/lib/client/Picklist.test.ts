@@ -191,7 +191,10 @@ describe(insertAfterEntry.name, () => {
 			newPicklist.head!.next!.next!.id!,
 			newPicklist.head!.next!.next!.next!.id!,
 		]);
-		expect(toIdArray(oldPicklist)).toEqual([oldPicklist.head!.id!, oldPicklist.head!.next!.id!]);
+		expect(toIdArray(oldPicklist)).toEqual([
+			oldPicklist.head!.id!,
+			oldPicklist.head!.next!.id!,
+		]);
 	});
 });
 

@@ -4,7 +4,17 @@ import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { FaPlus, FaStrikethrough, FaTrash } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
 import { ObjectId } from "bson";
-import { PicklistEntry, Picklist, insertAfterEntry, setHeadOfPicklist, setTailOfPicklist, getPicklistLength, removeEntryFromItsPicklist, savePicklistGroup, loadPicklistGroup } from "@/lib/client/PicklistUtils";
+import {
+	PicklistEntry,
+	Picklist,
+	insertAfterEntry,
+	setHeadOfPicklist,
+	setTailOfPicklist,
+	getPicklistLength,
+	removeEntryFromItsPicklist,
+	savePicklistGroup,
+	loadPicklistGroup,
+} from "@/lib/client/PicklistUtils";
 
 // Be sure to disable for production!
 const SHOW_PICKLISTS_ON_TEAM_CARDS = false;
