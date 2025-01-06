@@ -226,6 +226,7 @@ export default function Container(props: ContainerProps) {
 										imgHeightOverride="h-11"
 										showLevel={false}
 										borderThickness={2}
+										gearSize={24}
 									/>
 								</Link>
 							) : (

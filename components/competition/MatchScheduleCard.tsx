@@ -230,6 +230,7 @@ export default function MatchScheduleCard(props: {
 																		showLevel={false}
 																		borderThickness={2}
 																		onClick={() => remindUserOnSlack(user._id!)}
+																		gearSize={25}
 																	/>
 																) : (
 																	<div className="w-12 h-12"></div>

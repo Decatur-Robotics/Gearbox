@@ -1,17 +1,17 @@
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { User } from "@/lib/Types";
 import { levelToClassName } from "@/lib/Xp";
 import { BsGearFill } from "react-icons/bs";
 
 export default function Avatar(props: {
-	user?: User | undefined;
-	scale?: string | undefined;
+	user?: { image: string | undefined; level: number; admin?: boolean };
+	scale?: string | undefined; // Use "scale-75" for 75% scale, etc.
 	imgHeightOverride?: string | undefined;
 	showLevel?: boolean | undefined;
 	borderThickness?: number | undefined;
 	onClick?: () => void | undefined;
 	className?: string | undefined;
 	online?: boolean;
+	gearSize?: number;
 }) {
 	const { session, status } = useCurrentSession();
 	const user = props.user ?? session?.user;
@@ -39,7 +39,7 @@ export default function Avatar(props: {
 			</div>
 			{admin ? (
 				<div className="absolute z-10 -bottom-2 -left-2 text-slate-300 animate-spin-slow">
-					<BsGearFill size={36}></BsGearFill>
+					<BsGearFill size={props.gearSize ?? 36}></BsGearFill>
 				</div>
 			) : (
 				<></>
