@@ -564,6 +564,7 @@ export type CompPicklistGroup = {
 	picklists: {
 		[name: string]: number[];
 	};
+	strikethroughs: number[];
 };
 
 /**

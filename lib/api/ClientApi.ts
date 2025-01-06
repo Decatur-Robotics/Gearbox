@@ -1253,7 +1253,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getPicklist = createNextRoute<
+	getPicklistGroup = createNextRoute<
 		[string],
 		CompPicklistGroup | undefined,
 		ApiDependencies,

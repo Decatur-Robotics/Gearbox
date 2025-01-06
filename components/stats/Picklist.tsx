@@ -1,12 +1,13 @@
 import { CompPicklistGroup, Report } from "@/lib/Types";
-
 import { ConnectDropTarget, useDrag, useDrop } from "react-dnd";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaPlus, FaStrikethrough, FaTrash } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
 import { ObjectId } from "bson";
 
+// Be sure to disable for production!
 const SHOW_PICKLISTS_ON_TEAM_CARDS = true;
+const SHOW_CARD_IDS = true;
 
 type Picklist = {
 	index: number;
@@ -24,9 +25,10 @@ type PicklistEntry = {
 };
 
 function removeEntryFromItsPicklist(entry: PicklistEntry) {
+	console.log("removing", entry);
 	if (entry.picklist) {
 		const picklist = entry.picklist;
-		if (picklist.head?.number === entry.number) {
+		if (picklist.head?.id && picklist.head?.id === entry.id) {
 			picklist.head = picklist.head.next;
 		} else {
 			let curr: PicklistEntry | undefined = picklist.head;
@@ -48,6 +50,17 @@ function removeEntryFromItsPicklist(entry: PicklistEntry) {
 	}
 }
 
+function getPicklistLength(picklist: Picklist) {
+	let length = 0;
+	let curr = picklist.head;
+	while (curr) {
+		length++;
+		curr = curr.next;
+	}
+
+	return length;
+}
+
 function TeamCard(props: {
 	entry: PicklistEntry;
 	draggable: boolean;
@@ -55,14 +68,27 @@ function TeamCard(props: {
 	rank?: number;
 	width?: string;
 	preview?: boolean;
+	strikeThroughs: number[];
+	toggleStrikethrough?: (team: number) => void;
 }) {
-	const { entry, width, rank, preview, picklist } = props;
+	const {
+		entry,
+		width,
+		rank,
+		preview,
+		picklist,
+		strikeThroughs,
+		toggleStrikethrough,
+	} = props;
 	if (picklist) entry.picklist = picklist;
 
 	const [, dragRef] = useDrag({
 		type: "team",
 		item: () => {
-			return props.entry;
+			return {
+				...props.entry,
+				id: props.entry.id ?? new ObjectId().toString(),
+			};
 		},
 	});
 
@@ -83,21 +109,13 @@ function TeamCard(props: {
 
 				// Create a copy, don't operate on the original
 				dragged = {
+					id: dragged.id,
 					number: dragged.number,
 					next: entry.next,
 					picklist: entry.picklist,
-					id: dragged.id,
 				};
 
 				entry.next = dragged;
-
-				console.log("Entry.next:", entry.next, entry.picklist?.head?.next);
-				console.log("Head equal:", entry === entry.picklist?.head);
-				console.log(
-					"Picklists equal:",
-					entry.picklist === entry.next?.picklist &&
-						entry.picklist === picklist,
-				);
 
 				entry.picklist?.update(entry.picklist);
 			},
@@ -114,10 +132,19 @@ function TeamCard(props: {
 					className={`w-${width ?? "full"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary ${preview && "animate-pulse"}`}
 					ref={dragRef as unknown as () => void}
 				>
-					<h1>
+					<h1
+						className={
+							strikeThroughs.includes(entry.number) ? "line-through" : ""
+						}
+					>
 						{rank !== undefined ? `${rank}. ` : ""}
 						<span className="max-sm:hidden">Team</span>{" "}
 						<span className="text-accent">#{entry.number}</span>
+						{SHOW_CARD_IDS && (
+							<span className="text-secondary">
+								.{entry.id?.slice(entry.id.length - 3)}
+							</span>
+						)}
 						{SHOW_PICKLISTS_ON_TEAM_CARDS && entry.picklist && (
 							<span className="text-xs text-accent">
 								{" "}
@@ -125,6 +152,14 @@ function TeamCard(props: {
 							</span>
 						)}
 					</h1>
+					{toggleStrikethrough && (
+						<button
+							className="btn btn-xs btn-ghost ml-1"
+							onClick={() => toggleStrikethrough(entry.number)}
+						>
+							<FaStrikethrough />
+						</button>
+					)}
 				</div>
 				{rank && !preview && (
 					<InsertDropSite
@@ -133,6 +168,7 @@ function TeamCard(props: {
 						isOver={isOverInsert}
 						dropRef={insertRef}
 						draggedEntry={draggedInsertEntry}
+						strikeThroughs={strikeThroughs}
 					/>
 				)}
 			</div>
@@ -142,6 +178,8 @@ function TeamCard(props: {
 					entry={entry.next}
 					draggable={true}
 					picklist={props.picklist}
+					strikeThroughs={strikeThroughs}
+					toggleStrikethrough={toggleStrikethrough}
 				/>
 			)}
 		</>
@@ -157,12 +195,14 @@ function InsertDropSite({
 	isOver,
 	dropRef,
 	draggedEntry,
+	strikeThroughs,
 }: {
 	rank: number;
 	entry: PicklistEntry;
 	isOver: boolean;
 	dropRef: ConnectDropTarget;
 	draggedEntry: PicklistEntry;
+	strikeThroughs: number[];
 }) {
 	return (
 		<div
@@ -176,6 +216,7 @@ function InsertDropSite({
 						draggable={false}
 						rank={rank}
 						preview={true}
+						strikeThroughs={strikeThroughs}
 					/>
 				</div>
 			) : (
@@ -185,10 +226,10 @@ function InsertDropSite({
 	);
 }
 
-function PicklistCard(props: { picklist: Picklist }) {
+function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 	const picklist = props.picklist;
 
-	const [{ isOver, entry }, dropRef] = useDrop({
+	const [{ isOver: isOverHead, entry: headEntry }, headDropRef] = useDrop({
 		accept: "team",
 		drop: (item: PicklistEntry) => {
 			removeEntryFromItsPicklist(item);
@@ -209,13 +250,39 @@ function PicklistCard(props: { picklist: Picklist }) {
 		}),
 	});
 
+	const [{ isOver: isOverTail, entry: tailEntry }, tailDropRef] = useDrop({
+		accept: "team",
+		drop: (item: PicklistEntry) => {
+			console.log("dropped", item);
+			removeEntryFromItsPicklist(item);
+			item.picklist = picklist;
+
+			let tail = picklist.head;
+			if (!tail) {
+				picklist.head = item;
+			} else {
+				while (tail.next) {
+					tail = tail.next;
+				}
+
+				tail.next = item;
+			}
+
+			picklist.update(picklist);
+		},
+		collect: (monitor) => ({
+			isOver: monitor.isOver(),
+			entry: monitor.getItem(),
+		}),
+	});
+
 	function changeName(e: ChangeEvent<HTMLInputElement>) {
 		picklist.name = e.target.value;
 		picklist.update(picklist);
 	}
 
 	return (
-		<div className="bg-base-200 h-full rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center p-2 sm:p-4">
+		<div className="bg-base-200 min-h-full h-fit rounded-lg w-1/3 sm:w-1/6 flex flex-col items-center p-2 sm:p-4">
 			<div className="flex flex-row items-center">
 				<input
 					defaultValue={picklist.name}
@@ -238,16 +305,17 @@ function PicklistCard(props: { picklist: Picklist }) {
 				className={`w-full h-full flex flex-col ${!picklist.head && "mt-2"}`}
 			>
 				<div
-					ref={dropRef as any}
+					ref={headDropRef as any}
 					className={`w-full ${!picklist.head ? "h-full" : "min-h-fit h-2"} flex justify-center text-center`}
 				>
-					{isOver ? (
+					{isOverHead ? (
 						<div className={`w-full ${picklist.head && "my-2"}`}>
 							<TeamCard
-								entry={entry}
+								entry={headEntry}
 								draggable={false}
 								rank={1}
 								preview={true}
+								strikeThroughs={props.strikethroughs}
 							/>
 						</div>
 					) : (
@@ -261,9 +329,26 @@ function PicklistCard(props: { picklist: Picklist }) {
 						entry={picklist.head}
 						draggable={false}
 						picklist={picklist}
-						rank={isOver ? 2 : 1}
+						rank={isOverHead ? 2 : 1}
+						strikeThroughs={props.strikethroughs}
 					/>
 				)}
+				<div
+					ref={tailDropRef as any}
+					className={`w-full h-auto grow flex justify-center text-center`}
+				>
+					{isOverTail && (
+						<div className="w-full -translate-y-2">
+							<TeamCard
+								entry={tailEntry}
+								draggable={false}
+								rank={getPicklistLength(picklist) + 1}
+								preview={true}
+								strikeThroughs={props.strikethroughs}
+							/>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
@@ -273,6 +358,8 @@ export function TeamList(props: {
 	teams: PicklistEntry[];
 	picklists: Picklist[];
 	expectedTeamCount: number;
+	strikethroughs: number[];
+	toggleStrikethrough: (team: number) => void;
 }) {
 	const [, dropRef] = useDrop({
 		accept: "team",
@@ -291,6 +378,8 @@ export function TeamList(props: {
 						draggable={true}
 						entry={team}
 						key={team.number}
+						strikeThroughs={props.strikethroughs}
+						toggleStrikethrough={props.toggleStrikethrough}
 					/>
 				))}
 			{props.teams.length !== props.expectedTeamCount && (
@@ -319,6 +408,8 @@ export default function PicklistScreen(props: {
 
 	const [loadingPicklists, setLoadingPicklists] = useState(LoadState.NotLoaded);
 
+	const [strikethroughs, setStrikethroughs] = useState<number[]>([]);
+
 	const teams = props.teams.map((team) => ({ number: team }));
 
 	useEffect(() => {
@@ -335,6 +426,7 @@ export default function PicklistScreen(props: {
 			{
 				_id: props.picklist._id,
 				picklists: {},
+				strikethroughs,
 			},
 		);
 
@@ -370,6 +462,8 @@ export default function PicklistScreen(props: {
 
 	const loadCompPicklistGroup = useCallback(
 		(picklistDict: CompPicklistGroup) => {
+			setStrikethroughs(picklistDict.strikethroughs);
+
 			setPicklists(
 				Object.entries(picklistDict.picklists).map(([name, teams], index) => {
 					const newPicklist: Picklist = {
@@ -382,10 +476,10 @@ export default function PicklistScreen(props: {
 
 					if (teams.length > 0) {
 						let curr: PicklistEntry = {
+							id: new ObjectId().toString(),
 							number: teams[0],
 							next: undefined,
 							picklist: newPicklist,
-							id: new ObjectId().toHexString(),
 						};
 						newPicklist.head = curr;
 
@@ -394,7 +488,7 @@ export default function PicklistScreen(props: {
 								number: teams[i],
 								next: undefined,
 								picklist: newPicklist,
-								id: new ObjectId().toHexString(),
+								id: new ObjectId().toString(),
 							};
 							curr = curr.next;
 						}
@@ -407,11 +501,24 @@ export default function PicklistScreen(props: {
 		[updatePicklist],
 	);
 
+	const toggleStrikethrough = useCallback(
+		(team: number) => {
+			setStrikethroughs((old) => {
+				if (old.includes(team)) {
+					return old.filter((t) => t !== team);
+				} else {
+					return [...old, team];
+				}
+			});
+		},
+		[setStrikethroughs],
+	);
+
 	useEffect(() => {
 		if (loadingPicklists !== LoadState.NotLoaded) return;
 
 		setLoadingPicklists(LoadState.Loading);
-		api.getPicklist(props.picklist?._id).then((picklist) => {
+		api.getPicklistGroup(props.picklist?._id).then((picklist) => {
 			if (picklist) {
 				loadCompPicklistGroup(picklist);
 			}
@@ -452,11 +559,13 @@ export default function PicklistScreen(props: {
 				teams={teams}
 				picklists={picklists}
 				expectedTeamCount={props.expectedTeamCount}
+				strikethroughs={strikethroughs}
+				toggleStrikethrough={toggleStrikethrough}
 			/>
 
 			<div
 				ref={dropRef as any}
-				className="w-full min-h-[30rem] h-[30rem] px-4 py-2 flex flex-row space-x-3"
+				className="w-full min-h-[30rem] h-full px-4 py-2 flex flex-row space-x-3"
 			>
 				{loadingPicklists === LoadState.Loading ? (
 					<div className="w-full h-full flex items-center justify-center">
@@ -473,6 +582,7 @@ export default function PicklistScreen(props: {
 						<PicklistCard
 							key={picklist.index}
 							picklist={picklist}
+							strikethroughs={strikethroughs}
 						/>
 					))
 				)}
