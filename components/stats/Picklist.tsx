@@ -129,7 +129,7 @@ function TeamCard(props: {
 		<>
 			<div className="flex flex-col w-full">
 				<div
-					className={`w-${width ?? "full"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary ${preview && "animate-pulse"}`}
+					className={`w-${width ?? "full"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary ${preview && "animate-pulse border-primary"}`}
 					ref={dragRef as unknown as () => void}
 				>
 					<h1
@@ -264,6 +264,7 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 				while (tail.next) {
 					tail = tail.next;
 				}
+				console.log("tail", tail);
 
 				tail.next = item;
 			}
@@ -282,7 +283,7 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 	}
 
 	return (
-		<div className="bg-base-200 min-h-full h-fit rounded-lg w-1/3 sm:w-1/6 flex flex-col items-center p-2 sm:p-4">
+		<div className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 flex flex-col items-center p-2 sm:p-4">
 			<div className="flex flex-row items-center">
 				<input
 					defaultValue={picklist.name}
@@ -301,14 +302,12 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 					/>
 				</button>
 			</div>
-			<div
-				className={`w-full h-full flex flex-col ${!picklist.head && "mt-2"}`}
-			>
+			<div className={`w-full grow flex flex-col ${!picklist.head && "mt-2"}`}>
 				<div
 					ref={headDropRef as any}
-					className={`w-full ${!picklist.head ? "h-full" : "min-h-fit h-2"} flex justify-center text-center`}
+					className={`w-full ${!picklist.head ? "h-full" : "min-h-fit h-2"} flex justify-center`}
 				>
-					{isOverHead ? (
+					{picklist.head && isOverHead && (
 						<div className={`w-full ${picklist.head && "my-2"}`}>
 							<TeamCard
 								entry={headEntry}
@@ -318,10 +317,6 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 								strikeThroughs={props.strikethroughs}
 							/>
 						</div>
-					) : (
-						!picklist.head && (
-							<h1 className="font-semibold text-accent">Drop Here!</h1>
-						)
 					)}
 				</div>
 				{picklist.head && (
@@ -335,9 +330,9 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 				)}
 				<div
 					ref={tailDropRef as any}
-					className={`w-full h-auto grow flex justify-center text-center`}
+					className={`w-full h-full grow flex justify-center ${!picklist.head && "pt-2"}`}
 				>
-					{isOverTail && (
+					{isOverTail ? (
 						<div className="w-full -translate-y-2">
 							<TeamCard
 								entry={tailEntry}
@@ -347,6 +342,12 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 								strikeThroughs={props.strikethroughs}
 							/>
 						</div>
+					) : (
+						!picklist.head && (
+							<h1 className="text-center font-semibold text-accent">
+								Drop Here!
+							</h1>
+						)
 					)}
 				</div>
 			</div>
@@ -412,6 +413,7 @@ export default function PicklistScreen(props: {
 
 	const teams = props.teams.map((team) => ({ number: team }));
 
+	// Save picklists
 	useEffect(() => {
 		const picklistDict = picklists.reduce<CompPicklistGroup>(
 			(acc, picklist) => {
@@ -514,6 +516,7 @@ export default function PicklistScreen(props: {
 		[setStrikethroughs],
 	);
 
+	// Load picklists
 	useEffect(() => {
 		if (loadingPicklists !== LoadState.NotLoaded) return;
 
@@ -550,7 +553,10 @@ export default function PicklistScreen(props: {
 
 	const [, dropRef] = useDrop({
 		accept: "team",
-		drop: removeEntryFromItsPicklist,
+		drop: (item: PicklistEntry, monitor) => {
+			if (monitor.didDrop()) return; // Check if another drop target handled the drop
+			removeEntryFromItsPicklist(item);
+		},
 	});
 
 	return (
@@ -590,7 +596,7 @@ export default function PicklistScreen(props: {
 
 			{loadingPicklists !== LoadState.Loading && (
 				<button
-					className="max-sm:hidden btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
+					className="max-sm:hidden btn btn-circle btn-lg btn-primary fixed right-10 bottom-10 animate-pulse font-bold "
 					onClick={addPicklist}
 				>
 					<FaPlus />
