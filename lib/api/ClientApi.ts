@@ -405,6 +405,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const picklist = await db.addObject(CollectionId.Picklists, {
 				picklists: {},
+				strikethroughs: [],
 			});
 
 			const comp = await db.addObject(

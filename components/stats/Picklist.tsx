@@ -4,62 +4,11 @@ import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { FaPlus, FaStrikethrough, FaTrash } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
 import { ObjectId } from "bson";
+import { PicklistEntry, Picklist, insertAfterEntry, setHeadOfPicklist, setTailOfPicklist, getPicklistLength, removeEntryFromItsPicklist, savePicklistGroup, loadPicklistGroup } from "@/lib/client/PicklistUtils";
 
 // Be sure to disable for production!
-const SHOW_PICKLISTS_ON_TEAM_CARDS = true;
-const SHOW_CARD_IDS = true;
-
-type Picklist = {
-	index: number;
-	name: string;
-	head: PicklistEntry | undefined;
-	update: (picklist: Picklist) => void;
-	delete: () => void;
-};
-
-type PicklistEntry = {
-	number: number;
-	next?: PicklistEntry;
-	picklist?: Picklist;
-	id?: string;
-};
-
-function removeEntryFromItsPicklist(entry: PicklistEntry) {
-	console.log("removing", entry);
-	if (entry.picklist) {
-		const picklist = entry.picklist;
-		if (picklist.head?.id && picklist.head?.id === entry.id) {
-			picklist.head = picklist.head.next;
-		} else {
-			let curr: PicklistEntry | undefined = picklist.head;
-			while (curr) {
-				if (curr.next?.number === entry.number) {
-					curr.next = curr.next.next;
-					break;
-				}
-
-				curr = curr.next;
-			}
-		}
-
-		entry.picklist = undefined;
-
-		picklist.update(picklist);
-
-		return picklist;
-	}
-}
-
-function getPicklistLength(picklist: Picklist) {
-	let length = 0;
-	let curr = picklist.head;
-	while (curr) {
-		length++;
-		curr = curr.next;
-	}
-
-	return length;
-}
+const SHOW_PICKLISTS_ON_TEAM_CARDS = false;
+const SHOW_CARD_IDS = false;
 
 function TeamCard(props: {
 	entry: PicklistEntry;
@@ -96,29 +45,7 @@ function TeamCard(props: {
 	const [{ isOverInsert, draggedEntry: draggedInsertEntry }, insertRef] =
 		useDrop({
 			accept: "team",
-			drop: (dragged: PicklistEntry) => {
-				// If you're moving a card into the same spot, don't do anything
-				if (
-					entry.number === dragged.number &&
-					entry.next === dragged.next &&
-					entry.picklist === dragged.picklist
-				)
-					return;
-
-				removeEntryFromItsPicklist(dragged);
-
-				// Create a copy, don't operate on the original
-				dragged = {
-					id: dragged.id,
-					number: dragged.number,
-					next: entry.next,
-					picklist: entry.picklist,
-				};
-
-				entry.next = dragged;
-
-				entry.picklist?.update(entry.picklist);
-			},
+			drop: (dragged: PicklistEntry) => insertAfterEntry(entry, dragged),
 			collect: (monitor) => ({
 				isOverInsert: monitor.isOver(),
 				draggedEntry: monitor.getItem(),
@@ -231,19 +158,7 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 
 	const [{ isOver: isOverHead, entry: headEntry }, headDropRef] = useDrop({
 		accept: "team",
-		drop: (item: PicklistEntry) => {
-			removeEntryFromItsPicklist(item);
-
-			item = {
-				number: item.number,
-				next: picklist.head,
-				picklist,
-				id: item.id,
-			};
-			picklist.head = item;
-
-			picklist.update(picklist);
-		},
+		drop: (item: PicklistEntry) => setHeadOfPicklist(picklist, item),
 		collect: (monitor) => ({
 			isOver: monitor.isOver(),
 			entry: monitor.getItem(),
@@ -252,25 +167,7 @@ function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
 
 	const [{ isOver: isOverTail, entry: tailEntry }, tailDropRef] = useDrop({
 		accept: "team",
-		drop: (item: PicklistEntry) => {
-			console.log("dropped", item);
-			removeEntryFromItsPicklist(item);
-			item.picklist = picklist;
-
-			let tail = picklist.head;
-			if (!tail) {
-				picklist.head = item;
-			} else {
-				while (tail.next) {
-					tail = tail.next;
-				}
-				console.log("tail", tail);
-
-				tail.next = item;
-			}
-
-			picklist.update(picklist);
-		},
+		drop: (item: PicklistEntry) => setTailOfPicklist(picklist, item),
 		collect: (monitor) => ({
 			isOver: monitor.isOver(),
 			entry: monitor.getItem(),
@@ -414,26 +311,10 @@ export default function PicklistScreen(props: {
 	const teams = props.teams.map((team) => ({ number: team }));
 
 	// Save picklists
-	useEffect(() => {
-		const picklistDict = picklists.reduce<CompPicklistGroup>(
-			(acc, picklist) => {
-				const picklistArray: number[] = [];
-				for (let curr = picklist.head; curr; curr = curr.next) {
-					picklistArray.push(curr.number);
-				}
-
-				acc.picklists[picklist.name] = picklistArray;
-				return acc;
-			},
-			{
-				_id: props.picklist._id,
-				picklists: {},
-				strikethroughs,
-			},
-		);
-
-		api.updatePicklist(picklistDict);
-	}, [props.picklist._id, picklists]);
+	useEffect(
+		() => savePicklistGroup(props.picklist._id, picklists, strikethroughs, api),
+		[props.picklist._id, picklists],
+	);
 
 	const updatePicklist = useCallback(
 		(picklist: Picklist) => {
@@ -462,45 +343,16 @@ export default function PicklistScreen(props: {
 		[setPicklists],
 	);
 
-	const loadCompPicklistGroup = useCallback(
-		(picklistDict: CompPicklistGroup) => {
-			setStrikethroughs(picklistDict.strikethroughs);
-
-			setPicklists(
-				Object.entries(picklistDict.picklists).map(([name, teams], index) => {
-					const newPicklist: Picklist = {
-						index,
-						name,
-						head: undefined,
-						update: updatePicklist,
-						delete: () => deletePicklist(newPicklist),
-					};
-
-					if (teams.length > 0) {
-						let curr: PicklistEntry = {
-							id: new ObjectId().toString(),
-							number: teams[0],
-							next: undefined,
-							picklist: newPicklist,
-						};
-						newPicklist.head = curr;
-
-						for (let i = 1; i < teams.length; i++) {
-							curr.next = {
-								number: teams[i],
-								next: undefined,
-								picklist: newPicklist,
-								id: new ObjectId().toString(),
-							};
-							curr = curr.next;
-						}
-					}
-
-					return newPicklist;
-				}),
-			);
-		},
-		[updatePicklist],
+	const loadPicklistGroupMemo = useCallback(
+		(picklistDict: CompPicklistGroup) =>
+			loadPicklistGroup(
+				picklistDict,
+				setStrikethroughs,
+				setPicklists,
+				updatePicklist,
+				deletePicklist,
+			),
+		[setStrikethroughs, setPicklists, updatePicklist, deletePicklist],
 	);
 
 	const toggleStrikethrough = useCallback(
@@ -523,10 +375,10 @@ export default function PicklistScreen(props: {
 		setLoadingPicklists(LoadState.Loading);
 		api.getPicklistGroup(props.picklist?._id).then((picklist) => {
 			if (picklist) {
-				loadCompPicklistGroup(picklist);
+				loadPicklistGroupMemo(picklist);
 			}
 		});
-		loadCompPicklistGroup(props.picklist);
+		loadPicklistGroupMemo(props.picklist);
 
 		setLoadingPicklists(LoadState.Loaded);
 	}, [
@@ -535,7 +387,7 @@ export default function PicklistScreen(props: {
 		LoadState.Loading,
 		LoadState.Loaded,
 		props.picklist,
-		loadCompPicklistGroup,
+		loadPicklistGroupMemo,
 	]);
 
 	const addPicklist = () => {
