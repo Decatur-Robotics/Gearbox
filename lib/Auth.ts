@@ -103,7 +103,6 @@ export const AuthenticationOptions: AuthOptions = {
 
 		async signIn({ user }) {
 			Analytics.signIn(user.name ?? "Unknown User");
-			new ResendUtils().createContact(user);
 
 			let typedUser = user as Partial<User>;
 			if (!typedUser.slug) {
@@ -140,6 +139,8 @@ export const AuthenticationOptions: AuthOptions = {
 					typedUser,
 				);
 			}
+
+			new ResendUtils().createContact(typedUser as User);
 
 			return true;
 		},
