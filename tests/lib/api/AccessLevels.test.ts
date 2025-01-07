@@ -11,7 +11,7 @@ import {
 	User,
 	Report,
 	Pitreport,
-	DbPicklist,
+	CompPicklistGroup,
 } from "@/lib/Types";
 import { ObjectId } from "bson";
 
@@ -800,7 +800,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPicklist.name}`, () => {
 
 		const picklist = await db.addObject(
 			CollectionId.Picklists,
-			{} as any as DbPicklist,
+			{} as any as CompPicklistGroup,
 		);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			picklist: picklist._id!.toString(),
@@ -830,7 +830,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPicklist.name}`, () => {
 
 		const picklist = await db.addObject(
 			CollectionId.Picklists,
-			{} as any as DbPicklist,
+			{} as any as CompPicklistGroup,
 		);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			picklist: picklist._id!.toString(),

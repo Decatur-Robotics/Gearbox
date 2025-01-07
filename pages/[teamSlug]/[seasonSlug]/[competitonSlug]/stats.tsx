@@ -6,7 +6,7 @@ import {
 	Pitreport,
 	SubjectiveReport,
 	Report,
-	DbPicklist,
+	CompPicklistGroup,
 } from "@/lib/Types";
 import { useState, useEffect, useCallback } from "react";
 import Container from "@/components/Container";
@@ -30,7 +30,7 @@ export default function Stats(props: {
 	pitReports: Pitreport[];
 	subjectiveReports: SubjectiveReport[];
 	competition: Competition;
-	picklists: DbPicklist;
+	picklists: CompPicklistGroup;
 }) {
 	const [update, setUpdate] = useState(Date.now());
 	const [updating, setUpdating] = useState(false);
@@ -85,11 +85,6 @@ export default function Stats(props: {
 	subjectiveReports.forEach((r) =>
 		Object.keys(r.robotComments).forEach((c) => teams.add(+c)),
 	); //+str converts to number
-
-	console.log("Reports", reports);
-	console.log("PitReports", pitReports);
-	console.log("SubjectiveReports", subjectiveReports);
-	console.log("Teams", teams);
 
 	return (
 		<Container
@@ -209,11 +204,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		},
 	);
 
-	const picklists = await db.findObjectById<DbPicklist>(
+	const picklists = await db.findObjectById<CompPicklistGroup>(
 		CollectionId.Picklists,
 		new ObjectId(resolved.competition?.picklist),
 	);
-	console.log("Found picklists:", resolved.competition?.picklist, picklists);
 
 	return {
 		props: {
