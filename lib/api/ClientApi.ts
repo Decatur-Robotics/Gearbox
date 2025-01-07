@@ -1252,6 +1252,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				new ObjectId(comp.picklist),
 			);
 
+			if (picklist) picklist.strikethroughs ??= [];
+
 			return res.status(200).send(picklist);
 		},
 	});
