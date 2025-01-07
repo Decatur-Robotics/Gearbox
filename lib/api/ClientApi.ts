@@ -19,6 +19,8 @@ import {
 	User,
 	Report,
 	WebhookHolder,
+	LeaderboardUser,
+	LeaderboardTeam,
 } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
@@ -2109,4 +2111,78 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				responseTime: Date.now() - times.responseTimestamp,
 			})),
 	);
+
+	getLeaderboard = createNextRoute<
+		[],
+		{ users: LeaderboardUser[]; teams: LeaderboardTeam[] },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.AlwaysAuthorized,
+		handler: async (req, res, { db: dbPromise }, authData, args) => {
+			const db = await dbPromise;
+
+			const users = await db.findObjects<User>(CollectionId.Users, {
+				xp: { $gt: 0 },
+				email: { $ne: "totallyrealemail@gmail.com" },
+			});
+
+			console.log(
+				"ID Query:",
+				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
+			);
+
+			const teams = await db.findObjects<Team>(CollectionId.Teams, {
+				_id: {
+					$in: users
+						.map((user) => user.teams.map((id) => new ObjectId(id)))
+						.flat(),
+				},
+			});
+
+			console.log("Found", users, teams);
+
+			const leaderboardTeams = teams.reduce(
+				(acc, team) => {
+					acc[team._id!.toString()] = {
+						_id: team._id!.toString(),
+						name: team.name,
+						number: team.number,
+						league: team.league ?? League.FRC,
+						xp: 0,
+					};
+
+					return acc;
+				},
+				{} as { [_id: string]: LeaderboardTeam },
+			);
+
+			const leaderboardUsers = users
+				.map((user) => ({
+					_id: user._id!.toString(),
+					name: user.name?.split(" ")[0] ?? "Unknown",
+					image: user.image,
+					xp: user.xp,
+					level: user.level,
+					teams: user.teams
+						.map((id) => leaderboardTeams[id])
+						.map((team) => `${team.league ?? League.FRC} ${team.number}`),
+				}))
+				.sort((a, b) => b.xp - a.xp);
+
+			users.forEach((user) => {
+				user.teams.forEach((teamId) => {
+					leaderboardTeams[teamId].xp += user.xp;
+				});
+			});
+
+			const leaderboardTeamsArray = Object.values(leaderboardTeams).sort(
+				(a, b) => b.xp - a.xp,
+			);
+
+			return res
+				.status(200)
+				.send({ users: leaderboardUsers, teams: leaderboardTeamsArray });
+		},
+	});
 }
