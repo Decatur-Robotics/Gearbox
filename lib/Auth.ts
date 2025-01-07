@@ -114,9 +114,12 @@ export const AuthenticationOptions: AuthOptions = {
 				const name =
 					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
 
+				const id = typedUser._id ?? new ObjectId();
+
 				// User is incomplete, fill in the missing fields
 				typedUser = {
-					_id: typedUser._id ?? new ObjectId(typedUser.id),
+					_id: id,
+					id: id.toString(),
 					name,
 					image: typedUser.image ?? "https://4026.org/user.jpg",
 					slug: await GenerateSlug(
