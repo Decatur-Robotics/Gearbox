@@ -106,7 +106,10 @@ export const AuthenticationOptions: AuthOptions = {
 
 			let typedUser = user as Partial<User>;
 			if (!typedUser.slug) {
-				console.log("User is incomplete, filling in missing fields");
+				console.log(
+					"User is incomplete, filling in missing fields. User:",
+					typedUser,
+				);
 
 				const name =
 					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
