@@ -103,18 +103,23 @@ export const AuthenticationOptions: AuthOptions = {
 
 		async signIn({ user }) {
 			Analytics.signIn(user.name ?? "Unknown User");
-			new ResendUtils().createContact(user);
 
 			let typedUser = user as Partial<User>;
 			if (!typedUser.slug) {
-				console.log("User is incomplete, filling in missing fields");
+				console.log(
+					"User is incomplete, filling in missing fields. User:",
+					typedUser,
+				);
 
 				const name =
 					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
 
+				const id = typedUser._id ?? new ObjectId();
+
 				// User is incomplete, fill in the missing fields
 				typedUser = {
-					_id: typedUser._id ?? new ObjectId(typedUser.id),
+					_id: id,
+					id: id.toString(),
 					name,
 					image: typedUser.image ?? "https://4026.org/user.jpg",
 					slug: await GenerateSlug(
@@ -140,6 +145,8 @@ export const AuthenticationOptions: AuthOptions = {
 					typedUser,
 				);
 			}
+
+			new ResendUtils().createContact(typedUser as User);
 
 			return true;
 		},

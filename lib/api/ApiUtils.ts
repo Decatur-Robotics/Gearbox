@@ -8,7 +8,7 @@ import {
 	Team,
 	Report,
 	Competition,
-	DbPicklist,
+	CompPicklistGroup,
 	Match,
 	Pitreport,
 	Season,
@@ -67,7 +67,10 @@ export function getCompFromSubjectiveReport(
 		});
 }
 
-export function getCompFromPicklist(db: DbInterface, picklist: DbPicklist) {
+export function getCompFromPicklist(
+	db: DbInterface,
+	picklist: CompPicklistGroup,
+) {
 	return db.findObject<Competition>(CollectionId.Competitions, {
 		picklist: picklist._id?.toString(),
 	});
@@ -119,7 +122,7 @@ export async function getTeamFromPitReport(db: DbInterface, report: Pitreport) {
 
 export async function getTeamFromPicklist(
 	db: DbInterface,
-	picklist: DbPicklist,
+	picklist: CompPicklistGroup,
 ) {
 	return getTeamFromDocument(db, getCompFromPicklist, picklist);
 }

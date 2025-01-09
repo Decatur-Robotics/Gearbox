@@ -9,7 +9,7 @@ import {
 	Account,
 	Session,
 	Pitreport,
-	DbPicklist,
+	CompPicklistGroup,
 	WebhookHolder,
 } from "../Types";
 
@@ -54,7 +54,7 @@ export type CollectionIdToType<Id extends CollectionId> =
 									: Id extends CollectionId.PitReports
 										? Pitreport
 										: Id extends CollectionId.Picklists
-											? DbPicklist
+											? CompPicklistGroup
 											: Id extends CollectionId.SubjectiveReports
 												? SubjectiveReport
 												: Id extends CollectionId.Webhooks

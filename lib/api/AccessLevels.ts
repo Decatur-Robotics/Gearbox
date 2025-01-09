@@ -1,7 +1,7 @@
 import { NextApiRequest } from "next";
 import {
 	Competition,
-	DbPicklist,
+	CompPicklistGroup,
 	Match,
 	Pitreport,
 	Report,
@@ -404,7 +404,7 @@ namespace AccessLevels {
 
 		const picklist = await (
 			await db
-		).findObjectById<DbPicklist>(
+		).findObjectById<CompPicklistGroup>(
 			CollectionId.Picklists,
 			new ObjectId(picklistId),
 		);
