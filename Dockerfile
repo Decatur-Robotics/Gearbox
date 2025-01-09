@@ -13,7 +13,7 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 443
+EXPOSE 80
 
 # ENTRYPOINT [ "bash" ] # Uncomment to operate the terminal in the container
 CMD ["/usr/local/bin/npm", "run", "start"]
