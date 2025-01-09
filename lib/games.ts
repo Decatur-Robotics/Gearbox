@@ -1,3 +1,4 @@
+import { Dot } from "@/components/stats/Heatmap";
 import {
 	CenterStageEnums,
 	Defense,
@@ -1160,8 +1161,72 @@ namespace IntoTheDeep {
 	);
 }
 
+namespace Reefscape {
+	export class QuantitativeData extends QuantData {}
+
+	export class PitData extends PitReportData {}
+
+	const pitReportLayout: FormLayoutProps<PitData> = {};
+
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {};
+
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+		sections: {},
+		getGraphDots: function (
+			quantitativeReports: Report<QuantitativeData>[],
+			pitReport?: Pitreport<PitData> | undefined,
+		): Dot[] {
+			throw new Error("Function not implemented.");
+		},
+	};
+
+	function getBadges(
+		pitReport: Pitreport<PitData> | undefined,
+		quantitativeReports: Report<QuantitativeData>[] | undefined,
+		card: boolean,
+	) {
+		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+		return badges;
+	}
+
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+		let totalPoints = 0;
+
+		return totalPoints;
+	}
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [],
+		individualSlideStats: [],
+		robotCapabilities: [],
+		graphStat: {
+			label: "",
+			key: undefined,
+			get: undefined,
+		},
+	};
+
+	export const game = new Game(
+		"Reefscape",
+		2025,
+		League.FRC,
+		QuantitativeData,
+		PitData,
+		pitReportLayout,
+		quantitativeReportLayout,
+		statsLayout,
+		pitStatsLayout,
+		"Reefscape",
+		"https://info.firstinspires.org/hubfs/Dive/reef-scape.svg",
+		getBadges,
+		getAvgPoints,
+	);
+}
+
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
 	[GameId.Crescendo]: Crescendo.game,
 	[GameId.CenterStage]: CenterStage.game,
+	[GameId.Reefscape]: Reefscape.game,
 });
