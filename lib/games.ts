@@ -5,6 +5,7 @@ import {
 	FrcDrivetrain,
 	IntakeTypes,
 	IntoTheDeepEnums,
+	ReefscapeEnums,
 } from "./Enums";
 import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
 import {
@@ -1162,9 +1163,46 @@ namespace IntoTheDeep {
 }
 
 namespace Reefscape {
-	export class QuantitativeData extends QuantData {}
+	export class QuantitativeData extends QuantData {
+		CageHeight: ReefscapeEnums.CageHeight = ReefscapeEnums.CageHeight.None;
 
-	export class PitData extends PitReportData {}
+		AutoMovedPastStaringLine: boolean = false;
+
+		AutoCoralScoredLevelOne: number = 0;
+		AutoCoralScoredLevelTwo: number = 0;
+		AutoCoralScoredLevelThree: number = 0;
+		AutoCoralScoredLevelFour: number = 0;
+
+		AutoAlgaeRemovedFromReef: number = 0;
+		AutoAlgaeScoredProcessor: number = 0;
+		AutoAlgaeScoredNest: number = 0;
+
+		TeleopCoralScoredLevelOne: number = 0;
+		TeleopCoralScoredLevelTwo: number = 0;
+		TeleopCoralScoredLevelThree: number = 0;
+		TeleopCoralScoredLevelFour: number = 0;
+		TeleopCoralCycleFails: number = 0;
+
+		TeleopAlgaeRemovedFromReef: number = 0;
+		TeleopAlgaeScoredProcessor: number = 0;
+		TeleopAlgaeScoredNest: number = 0;
+
+		EndgameClimbStatus: ReefscapeEnums.EndgameClimbStatus =
+			ReefscapeEnums.EndgameClimbStatus.None;
+	}
+
+	export class PitData extends PitReportData {
+		CanDriveUnderShallowCage: boolean = false;
+		DriveThroughDeepCage: ReefscapeEnums.DriveThroughDeepCage =
+			ReefscapeEnums.DriveThroughDeepCage.No;
+		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
+			ReefscapeEnums.AutoCapabilities.NoAuto;
+		AlgaeRemoval: ReefscapeEnums.AlgaeRemoval =
+			ReefscapeEnums.AlgaeRemoval.CannotRemove;
+		ScoreAlgaeInProcessor: boolean = false;
+		ScoreAlgaeInNest: boolean = false;
+		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
+	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {};
 
