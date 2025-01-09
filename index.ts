@@ -8,9 +8,6 @@ import { IncomingMessage, ServerResponse, request } from "http";
 console.log("Starting server...");
 
 const dev = process.env.NODE_ENV !== "production";
-const port = 443;
-const app = next({ dev, port });
-const handle = app.getRequestHandler();
 
 console.log("Constants set");
 
@@ -21,8 +18,12 @@ const httpsOptions =
 				cert: readFileSync("./certs/cert.pem"),
 			}
 		: {};
+		
+const port = "key" in httpsOptions && "cert" in httpsOptions ? 443 : 80;
+console.log(`Using port ${port}`);
 
-console.log("HTTPS options set");
+const app = next({ dev, port });
+const handle = app.getRequestHandler();
 
 console.log("App preparing...");
 app.prepare().then(() => {
