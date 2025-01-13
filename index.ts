@@ -33,6 +33,7 @@ app.prepare().then(() => {
 		const server = createServer(
 			httpsOptions,
 			async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
+				console.log("Request received: " + req.url);
 				if (!req.url) return;
 
 				const parsedUrl = parse(req.url, true);
@@ -42,7 +43,7 @@ app.prepare().then(() => {
 			.listen(port, () => {
 				console.log(
 					process.env.NODE_ENV +
-						" HTTPS Server Running At: https://localhost:" +
+						` Server Running At: ${port == 443 ? "https" : "http"}://localhost:`,
 						port,
 				);
 			})
