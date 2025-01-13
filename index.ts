@@ -18,7 +18,7 @@ const httpsOptions =
 				cert: readFileSync("./certs/cert.pem"),
 			}
 		: {};
-		
+
 const port = "key" in httpsOptions && "cert" in httpsOptions ? 443 : 80;
 console.log(`Using port ${port}`);
 
