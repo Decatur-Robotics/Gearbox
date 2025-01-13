@@ -1,9 +1,14 @@
 import { join } from "path";
-import { createServer } from "https";
+import { createServer as createServerHttps } from "https";
 import { parse } from "url";
 import next from "next";
 import fs, { existsSync, readFileSync } from "fs";
-import { IncomingMessage, ServerResponse, request } from "http";
+import {
+	IncomingMessage,
+	ServerResponse,
+	request,
+	createServer as createServerHttp,
+} from "http";
 
 console.log("Starting server...");
 
@@ -11,15 +16,17 @@ const dev = process.env.NODE_ENV !== "production";
 
 console.log("Constants set");
 
-const httpsOptions =
-	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem")
-		? {
-				key: readFileSync("./certs/key.pem"),
-				cert: readFileSync("./certs/cert.pem"),
-			}
-		: {};
+const useHttps =
+	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem");
 
-const port = "key" in httpsOptions && "cert" in httpsOptions ? 443 : 80;
+const httpsOptions = useHttps
+	? {
+			key: readFileSync("./certs/key.pem"),
+			cert: readFileSync("./certs/cert.pem"),
+		}
+	: {};
+
+const port = useHttps ? 443 : 80;
 console.log(`Using port ${port}`);
 
 const app = next({ dev, port });
@@ -29,21 +36,26 @@ console.log("App preparing...");
 app.prepare().then(() => {
 	console.log("App prepared. Creating server...");
 
-	try {
-		const server = createServer(
-			httpsOptions,
-			async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
-				console.log("Request received: " + req.url);
-				if (!req.url) return;
+	async function handleRaw(
+		req: IncomingMessage,
+		res: ServerResponse<IncomingMessage>,
+	) {
+		if (!req.url) return;
 
-				const parsedUrl = parse(req.url, true);
-				handle(req, res, parsedUrl);
-			},
+		const parsedUrl = parse(req.url, true);
+		handle(req, res, parsedUrl);
+	}
+
+	try {
+		const server = (
+			port == 443
+				? createServerHttps(httpsOptions, handleRaw)
+				: createServerHttp(handleRaw)
 		)
 			.listen(port, () => {
 				console.log(
 					process.env.NODE_ENV +
-						` Server Running At: ${port == 443 ? "https" : "http"}://localhost:` +
+						` Server Running At: ${useHttps ? "https" : "http"}://localhost:` +
 						port,
 				);
 			})
