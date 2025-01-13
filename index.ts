@@ -43,8 +43,8 @@ app.prepare().then(() => {
 			.listen(port, () => {
 				console.log(
 					process.env.NODE_ENV +
-						` Server Running At: ${port == 443 ? "https" : "http"}://localhost:`,
-					port,
+						` Server Running At: ${port == 443 ? "https" : "http"}://localhost:` +
+						port,
 				);
 			})
 			.on("error", (err: Error) => {
