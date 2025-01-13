@@ -44,7 +44,7 @@ app.prepare().then(() => {
 				console.log(
 					process.env.NODE_ENV +
 						` Server Running At: ${port == 443 ? "https" : "http"}://localhost:`,
-						port,
+					port,
 				);
 			})
 			.on("error", (err: Error) => {
