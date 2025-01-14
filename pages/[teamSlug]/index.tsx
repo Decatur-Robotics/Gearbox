@@ -596,11 +596,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		(seasonId) => new ObjectId(seasonId),
 	);
 	const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
-	const seasons = await db.findObjects<Season>(CollectionId.Seasons, {
+	const seasons = await db.findObjects(CollectionId.Seasons, {
 		_id: { $in: seasonIds },
 	});
 
-	var users = await db.findObjects<User>(CollectionId.Users, {
+	var users = await db.findObjects(CollectionId.Users, {
 		_id: { $in: userIds },
 	});
 
@@ -614,7 +614,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	const currentSeason = seasons[seasons.length - 1];
 	var comp = undefined;
 	if (currentSeason) {
-		comp = await db.findObjectById<Competition>(
+		comp = await db.findObjectById(
 			CollectionId.Competitions,
 			new ObjectId(
 				currentSeason.competitions[currentSeason.competitions.length - 1],

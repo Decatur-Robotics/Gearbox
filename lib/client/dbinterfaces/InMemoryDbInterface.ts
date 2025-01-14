@@ -154,21 +154,27 @@ export default class InMemoryDbInterface implements DbInterface {
 			});
 	}
 
-	findObjectById<Type extends Document>(
-		collection: CollectionId,
+	findObjectById<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(
+		collection: TId,
 		id: ObjectId,
-	): Promise<Type | undefined> {
+	): Promise<TObj | undefined> {
 		return this.findObject(collection, { _id: id });
 	}
 
-	findObject<Type extends Document>(
-		collection: CollectionId,
+	findObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(
+		collection: TId,
 		query: object,
-	): Promise<Type | undefined> {
+	): Promise<TObj | undefined> {
 		return this.backingDb.collections[collection]
 			.findOne(serialize(query, false))
 			.then(deserialize)
-			.then((obj: Type) => {
+			.then((obj: TObj) => {
 				if (Object.keys(obj).length === 0) {
 					return undefined;
 				}
@@ -177,10 +183,13 @@ export default class InMemoryDbInterface implements DbInterface {
 			});
 	}
 
-	findObjects<Type extends Document>(
-		collection: CollectionId,
+	findObjects<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(
+		collection: TId,
 		query: object,
-	): Promise<Type[]> {
+	): Promise<TObj[]> {
 		return this.backingDb.collections[collection]
 			.find(serialize(query, false))
 			.fetch()

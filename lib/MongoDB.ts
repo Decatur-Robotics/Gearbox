@@ -101,30 +101,30 @@ export class MongoDBInterface implements DbInterface {
 		return Promise.resolve();
 	}
 
-	async findObjectById<Type>(
-		collection: CollectionId,
-		id: ObjectId,
-	): Promise<Type> {
+	async findObjectById<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, id: ObjectId): Promise<TObj> {
 		return (await this?.db
 			?.collection(collection)
-			.findOne({ _id: id })) as Type;
+			.findOne({ _id: id })) as TObj;
 	}
 
-	async findObject<Type>(
-		collection: CollectionId,
-		query: object,
-	): Promise<Type> {
-		return (await this?.db?.collection(collection).findOne(query)) as Type;
+	async findObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, query: object): Promise<TObj> {
+		return (await this?.db?.collection(collection).findOne(query)) as TObj;
 	}
 
-	async findObjects<Type>(
-		collection: CollectionId,
-		query: object,
-	): Promise<Type[]> {
+	async findObjects<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, query: object): Promise<TObj[]> {
 		return (await this?.db
 			?.collection(collection)
 			.find(query)
-			.toArray()) as Type[];
+			.toArray()) as TObj[];
 	}
 
 	async countObjects(
