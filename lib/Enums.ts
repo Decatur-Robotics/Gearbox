@@ -109,7 +109,7 @@ export namespace ReefscapeEnums {
 		ScoreMoreThanOneCoral = "ScoreMoreThanOneCoral",
 	}
 
-	export enum AlgaeRemoval {
+	export enum CanRemoveAlgae {
 		CannotRemove = "Cannot Remove",
 		CanRemove = "Can Remove",
 		CanRemoveAndScore = "Can Remove And Score",

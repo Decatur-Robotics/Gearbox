@@ -1197,16 +1197,65 @@ namespace Reefscape {
 			ReefscapeEnums.DriveThroughDeepCage.No;
 		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
 			ReefscapeEnums.AutoCapabilities.NoAuto;
-		AlgaeRemoval: ReefscapeEnums.AlgaeRemoval =
-			ReefscapeEnums.AlgaeRemoval.CannotRemove;
-		ScoreAlgaeInProcessor: boolean = false;
-		ScoreAlgaeInNest: boolean = false;
+		AutoDescription: string = "";
+		CanRemoveAlgae: ReefscapeEnums.CanRemoveAlgae =
+			ReefscapeEnums.CanRemoveAlgae.CannotRemove;
+		CanScoreAlgaeInProcessor: boolean = false;
+		CanScoreAlgaeInNest: boolean = false;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
 	}
 
-	const pitReportLayout: FormLayoutProps<PitData> = {};
+	const pitReportLayout: FormLayoutProps<PitData> = {
+		Capabilities: [
+			{
+				key: "CanDriveUnderShallowCage",
+				label: "Can Drive Under Shallow Cage?",
+			},
+			{ key: "CanRemoveAlgae", label: "Can Remove Algae?" },
+			{
+				key: "CanScoreAlgaeInProcessor",
+				label: "Can Score Algae in Processor?",
+			},
+			{ key: "CanScoreAlgaeInNest", label: "Can Score Algae in Nest?" },
+			{ key: "Climbing", label: "Climbing?" },
+		],
+		Auto: [
+			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
+			{ key: "AutoDescription", label: "Auto Description" },
+		],
+	};
 
-	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {};
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+		"Pre-Match": ["CageHeight"],
+		Auto: [
+			"AutoMovedPastStartingLine",
+			[
+				["AutoCoralScoredLevelOne"],
+				["AutoCoralScoredLevelTwo"],
+				["AutoCoralScoredLevelThree"],
+				["AutoCoralScoredLevelFour"],
+			],
+			[
+				["AutoAlgaeRemovedFromReef"],
+				["AutoAlgaeScoredProcessor"],
+				["AutoAlgaeScoredNest"],
+			],
+		],
+		"Teleop & Endgame": [
+			[
+				["TeleopCoralScoredLevelOne"],
+				["TeleopCoralScoredLevelTwo"],
+				["TeleopCoralScoredLevelThree"],
+				["TeleopCoralScoredLevelFour"],
+			],
+			[
+				["TeleopAlgaeRemovedFromReef"],
+				["TeleopAlgaeScoredProcessor"],
+				["TeleopAlgaeScoredNest"],
+			],
+			"EndgameClimbStatus",
+		],
+	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {},
