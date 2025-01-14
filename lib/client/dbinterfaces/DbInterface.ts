@@ -1,17 +1,22 @@
 import { ObjectId, Document } from "bson";
 import CollectionId, { CollectionIdToType } from "../CollectionId";
+import { default as BaseDbInterface } from "mongo-anywhere/DbInterface";
 
 export type WithStringOrObjectIdId<Type> = Omit<Type, "_id"> & {
 	_id?: ObjectId | string;
 };
 
-export default interface DbInterface {
+export default interface DbInterface
+	extends BaseDbInterface<CollectionId, CollectionIdToType<CollectionId>> {
 	init(): Promise<void>;
+
 	addObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		object: WithStringOrObjectIdId<TObj>,
 	): Promise<TObj>;
+
 	deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void>;
+
 	updateObjectById<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
@@ -20,6 +25,7 @@ export default interface DbInterface {
 		id: ObjectId,
 		newValues: Partial<TObj>,
 	): Promise<void>;
+
 	findObjectById<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
@@ -27,10 +33,12 @@ export default interface DbInterface {
 		collection: TId,
 		id: ObjectId,
 	): Promise<TObj | undefined>;
+
 	findObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		query: object,
 	): Promise<TObj | undefined>;
+
 	/**
 	 * Type should not be an array! This function returns an array of Type (Type[]).
 	 */
@@ -38,6 +46,7 @@ export default interface DbInterface {
 		collection: TId,
 		query: object,
 	): Promise<TObj[]>;
+
 	countObjects(
 		collection: CollectionId,
 		query: object,

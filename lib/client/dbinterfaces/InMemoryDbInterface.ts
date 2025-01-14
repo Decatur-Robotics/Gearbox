@@ -4,6 +4,8 @@ import DbInterface, {
 	WithStringOrObjectIdId,
 } from "@/lib/client/dbinterfaces/DbInterface";
 import { MemoryDb } from "minimongo";
+import { default as BaseInMemoryDbInterface } from "mongo-anywhere/InMemoryDbInterface";
+import { Col } from "react-bootstrap";
 
 /**
  * Remove undefined values or EJSON will convert them to null
@@ -85,120 +87,53 @@ function deserialize(obj: any): any {
 /**
  * @tested_by tests/lib/client/dbinterfaces/InMemoryDbInterface.test.ts
  */
-export default class InMemoryDbInterface implements DbInterface {
-	backingDb: MemoryDb;
-
-	constructor() {
-		this.backingDb = new MemoryDb();
-	}
-
+export default class InMemoryDbInterface
+	extends BaseInMemoryDbInterface<
+		CollectionId,
+		CollectionIdToType<CollectionId>
+	>
+	implements DbInterface
+{
 	init(): Promise<void> {
-		const promise = new Promise((resolve) => {
-			let collectionsCreated = 0;
-
-			function onCollectionCreated() {
-				collectionsCreated++;
-				if (collectionsCreated === Object.keys(CollectionId).length) {
-					resolve(undefined);
-				}
-			}
-
-			// Have to use Object.values here or else we'll get the keys as strings
-			// Be sure to use of, not in!
-			for (const collectionId of Object.values(CollectionId)) {
-				this.backingDb.addCollection(
-					collectionId,
-					onCollectionCreated,
-					onCollectionCreated,
-				);
-			}
-		});
-
-		return promise as Promise<void>;
+		return super.init(Object.values(CollectionId));
 	}
-
 	addObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		object: WithStringOrObjectIdId<TObj>,
 	): Promise<TObj> {
-		if (!object._id) object._id = new ObjectId();
-
-		return this.backingDb.collections[collection]
-			.upsert(serialize(object))
-			.then(deserialize);
+		return super.addObject(collection, object);
 	}
-
 	deleteObjectById(collection: CollectionId, id: ObjectId): Promise<void> {
-		return this.backingDb.collections[collection].remove(
-			serialize({ _id: id }),
-		);
+		return super.deleteObjectById(collection, id);
 	}
-
 	updateObjectById<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
 	>(collection: TId, id: ObjectId, newValues: Partial<TObj>): Promise<void> {
-		return this.backingDb.collections[collection]
-			.findOne(serialize({ _id: id }))
-			.then((existingDoc) => {
-				if (!existingDoc) {
-					throw new Error(
-						`Document with id ${id} not found in collection ${collection}`,
-					);
-				}
-
-				const returnValue = this.backingDb.collections[collection].upsert(
-					serialize({ ...existingDoc, ...newValues, _id: id }),
-				);
-				return deserialize(returnValue);
-			});
+		return super.updateObjectById(collection, id, newValues);
 	}
-
 	findObjectById<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
 	>(collection: TId, id: ObjectId): Promise<TObj | undefined> {
-		return this.findObject(collection, { _id: id });
+		return super.findObjectById(collection, id);
 	}
-
 	findObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		query: object,
 	): Promise<TObj | undefined> {
-		return this.backingDb.collections[collection]
-			.findOne(serialize(query, false))
-			.then(deserialize)
-			.then((obj: TObj) => {
-				if (Object.keys(obj).length === 0) {
-					return undefined;
-				}
-
-				return obj;
-			});
+		return super.findObject(collection, query);
 	}
-
 	findObjects<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		query: object,
 	): Promise<TObj[]> {
-		return this.backingDb.collections[collection]
-			.find(serialize(query, false))
-			.fetch()
-			.then((res: { [index: string]: object }) => {
-				return Object.values(res).map(deserialize);
-			});
+		return super.findObjects(collection, query);
 	}
-
 	countObjects(
 		collection: CollectionId,
 		query: object,
 	): Promise<number | undefined> {
-		return (
-			this.backingDb.collections[collection]
-				.find(serialize(query, false))
-				.fetch() as Promise<unknown>
-		).then((objects) => {
-			return Object.keys(objects as any).length;
-		});
+		return super.countObjects(collection, query);
 	}
 }
