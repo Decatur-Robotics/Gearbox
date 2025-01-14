@@ -11,7 +11,7 @@
 		"restart": "next build && cross-env NODE_ENV=production npx tsx index.ts",
 		"test": "jest",
 		"docker-build": "docker build -t gearbox .",
-		"docker-start": "docker run -i -t -p 443:443 gearbox",
+		"docker-start": "docker run -i -t -p 80:80 gearbox",
 		"docker-prune": "docker container prune",
 		"lint": "eslint . --max-warnings=0",
 		"prettier-fix": "prettier --write ./**/*.{js,tsx,jsx,json,ts}",
