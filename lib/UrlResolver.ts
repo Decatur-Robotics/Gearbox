@@ -81,17 +81,17 @@ export default async function UrlResolver(
 
 	try {
 		const promises = [
-			db.findObject<Team>(CollectionId.Teams, { slug: teamSlug }),
+			db.findObject(CollectionId.Teams, { slug: teamSlug }),
 			seasonSlug
-				? db.findObject<Season>(CollectionId.Seasons, { slug: seasonSlug })
+				? db.findObject(CollectionId.Seasons, { slug: seasonSlug })
 				: null,
 			competitionSlug
-				? db.findObject<Competition>(CollectionId.Competitions, {
+				? db.findObject(CollectionId.Competitions, {
 						slug: competitionSlug,
 					})
 				: null,
 			reportId
-				? db.findObject<Report>(CollectionId.Reports, {
+				? db.findObject(CollectionId.Reports, {
 						_id: new ObjectId(reportId),
 					})
 				: null,

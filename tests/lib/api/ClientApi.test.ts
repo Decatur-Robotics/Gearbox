@@ -47,7 +47,7 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.send).toHaveBeenCalledWith({ result: "Already on team" });
 
-		const team = await db.findObjectById<Team>(CollectionId.Teams, teamId);
+		const team = await db.findObjectById(CollectionId.Teams, teamId);
 		expect(team?.requests).toEqual([]);
 	});
 
@@ -68,7 +68,7 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.send).toHaveBeenCalledWith({ result: "Success" });
 
-		const team = await db.findObjectById<Team>(CollectionId.Teams, teamId);
+		const team = await db.findObjectById(CollectionId.Teams, teamId);
 		expect(team?.requests).toEqual([user._id!.toString()]);
 	});
 
@@ -147,10 +147,10 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 			])),
 		);
 
-		const team = await db.findObjectById<Team>(CollectionId.Teams, teamId);
+		const team = await db.findObjectById(CollectionId.Teams, teamId);
 		expect(team?.users).toEqual([user._id!.toString()]);
 
-		const foundUser = await db.findObjectById<User>(
+		const foundUser = await db.findObjectById(
 			CollectionId.Users,
 			user._id! as any as ObjectId,
 		);
@@ -177,7 +177,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 			])),
 		);
 
-		const team = await db.findObjectById<Team>(CollectionId.Teams, teamId);
+		const team = await db.findObjectById(CollectionId.Teams, teamId);
 		expect(team?.requests).toEqual([]);
 		expect(team?.users).toEqual([]);
 	});
@@ -225,7 +225,7 @@ describe(`${ClientApi.name}.${api.createTeam.name}`, () => {
 			...(await getTestApiParams(res, { db, user }, ["", "", 1, League.FRC])),
 		);
 
-		const team = await db.findObject<Team>(CollectionId.Teams, {
+		const team = await db.findObject(CollectionId.Teams, {
 			number: 1,
 			league: League.FRC,
 		});
@@ -242,7 +242,7 @@ describe(`${ClientApi.name}.${api.createTeam.name}`, () => {
 		);
 		const team = res.send.mock.calls[0][0] as Team; // The handler doesn't return a value, so we have to get the team from res
 
-		const foundUser = await db.findObjectById<User>(
+		const foundUser = await db.findObjectById(
 			CollectionId.Users,
 			new ObjectId(user._id!),
 		);
@@ -566,7 +566,7 @@ describe(`${ClientApi.name}.${api.updateUser.name}`, () => {
 			...(await getTestApiParams(res, { db, user }, [newValues])),
 		);
 
-		const updatedUser = await db.findObjectById<User>(
+		const updatedUser = await db.findObjectById(
 			CollectionId.Users,
 			new ObjectId(user._id!),
 		);
@@ -593,7 +593,7 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
 			)),
 		);
 
-		const updatedTeam = await db.findObjectById<Team>(
+		const updatedTeam = await db.findObjectById(
 			CollectionId.Teams,
 			new ObjectId(team._id!),
 		);
@@ -850,13 +850,13 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 			webhookUrl,
 		);
 
-		const updatedTeam = await db.findObjectById<Team>(
+		const updatedTeam = await db.findObjectById(
 			CollectionId.Teams,
 			new ObjectId(team._id!),
 		);
 		expect(updatedTeam?.slackWebhook).not.toBe(undefined);
 
-		const webhook = await db.findObjectById<WebhookHolder>(
+		const webhook = await db.findObjectById(
 			CollectionId.Webhooks,
 			new ObjectId(updatedTeam!.slackWebhook!),
 		);
@@ -892,13 +892,13 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 			webhookUrl,
 		);
 
-		const updatedTeam = await db.findObjectById<Team>(
+		const updatedTeam = await db.findObjectById(
 			CollectionId.Teams,
 			new ObjectId(team._id!),
 		);
 		expect(updatedTeam?.slackWebhook).toEqual(webhook._id!.toString());
 
-		const updatedWebhook = await db.findObjectById<WebhookHolder>(
+		const updatedWebhook = await db.findObjectById(
 			CollectionId.Webhooks,
 			new ObjectId(updatedTeam!.slackWebhook!),
 		);
