@@ -157,17 +157,11 @@ export default class InMemoryDbInterface implements DbInterface {
 	findObjectById<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
-	>(
-		collection: TId,
-		id: ObjectId,
-	): Promise<TObj | undefined> {
+	>(collection: TId, id: ObjectId): Promise<TObj | undefined> {
 		return this.findObject(collection, { _id: id });
 	}
 
-	findObject<
-		TId extends CollectionId,
-		TObj extends CollectionIdToType<TId>,
-	>(
+	findObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		query: object,
 	): Promise<TObj | undefined> {
@@ -183,10 +177,7 @@ export default class InMemoryDbInterface implements DbInterface {
 			});
 	}
 
-	findObjects<
-		TId extends CollectionId,
-		TObj extends CollectionIdToType<TId>,
-	>(
+	findObjects<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
 		query: object,
 	): Promise<TObj[]> {
