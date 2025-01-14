@@ -59,10 +59,7 @@ export async function AssignScoutersToCompetitionMatches(
 		new ObjectId(competitionId),
 	);
 
-	const team = await db.findObject(
-		CollectionId.Teams,
-		new ObjectId(teamId),
-	);
+	const team = await db.findObject(CollectionId.Teams, new ObjectId(teamId));
 
 	if (!comp || !team) {
 		throw new Error("Competition or team not found");

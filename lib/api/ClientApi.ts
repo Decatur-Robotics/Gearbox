@@ -1091,12 +1091,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const pitReports = await db.findObjects(
-				CollectionId.PitReports,
-				{
-					_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
-				},
-			);
+			const pitReports = await db.findObjects(CollectionId.PitReports, {
+				_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+			});
 
 			return res.status(200).send(pitReports);
 		},
@@ -1434,12 +1431,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects(
-				CollectionId.SubjectiveReports,
-				{
-					match: { $in: comp.matches },
-				},
-			);
+			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: comp.matches },
+			});
 
 			return res.status(200).send(reports);
 		},
@@ -1657,12 +1651,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			}
 
 			const matchIds = matches.map((match) => match._id?.toString());
-			const reports = await db.findObjects(
-				CollectionId.SubjectiveReports,
-				{
-					match: { $in: matchIds },
-				},
-			);
+			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: matchIds },
+			});
 
 			return res.status(200).send(reports);
 		},

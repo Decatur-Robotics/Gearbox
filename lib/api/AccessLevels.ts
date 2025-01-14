@@ -116,10 +116,7 @@ namespace AccessLevels {
 
 		const comp = await (
 			await db
-		).findObjectById(
-			CollectionId.Competitions,
-			new ObjectId(compId),
-		);
+		).findObjectById(CollectionId.Competitions, new ObjectId(compId));
 		if (!comp) {
 			return { authorized: false, authData: undefined };
 		}
@@ -240,10 +237,7 @@ namespace AccessLevels {
 
 		const comp = await (
 			await db
-		).findObjectById(
-			CollectionId.Competitions,
-			new ObjectId(compId),
-		);
+		).findObjectById(CollectionId.Competitions, new ObjectId(compId));
 		if (!comp) {
 			return { authorized: false, authData: undefined };
 		}
@@ -306,10 +300,7 @@ namespace AccessLevels {
 
 		const pitReport = await (
 			await db
-		).findObjectById(
-			CollectionId.PitReports,
-			new ObjectId(pitReportId),
-		);
+		).findObjectById(CollectionId.PitReports, new ObjectId(pitReportId));
 		if (!pitReport) {
 			return { authorized: false, authData: undefined };
 		}
@@ -372,10 +363,7 @@ namespace AccessLevels {
 
 		const report = await (
 			await db
-		).findObjectById(
-			CollectionId.SubjectiveReports,
-			new ObjectId(reportId),
-		);
+		).findObjectById(CollectionId.SubjectiveReports, new ObjectId(reportId));
 		if (!report) {
 			return { authorized: false, authData: undefined };
 		}
@@ -404,10 +392,7 @@ namespace AccessLevels {
 
 		const picklist = await (
 			await db
-		).findObjectById(
-			CollectionId.Picklists,
-			new ObjectId(picklistId),
-		);
+		).findObjectById(CollectionId.Picklists, new ObjectId(picklistId));
 		if (!picklist) {
 			return { authorized: false, authData: undefined };
 		}

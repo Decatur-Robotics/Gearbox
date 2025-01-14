@@ -308,10 +308,7 @@ export default function PitReportForm(props: {
 
 async function getPitreport(id: string) {
 	const db = await getDatabase();
-	return await db.findObjectById(
-		CollectionId.PitReports,
-		new ObjectId(id),
-	);
+	return await db.findObjectById(CollectionId.PitReports, new ObjectId(id));
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
