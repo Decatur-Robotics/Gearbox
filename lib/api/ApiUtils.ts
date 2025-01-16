@@ -35,19 +35,19 @@ export function ownsTeam(team?: Team | null, user?: User) {
 }
 
 export function getCompFromReport(db: DbInterface, report: Report) {
-	return db.findObject<Competition>(CollectionId.Competitions, {
+	return db.findObject(CollectionId.Competitions, {
 		matches: report.match?.toString(),
 	});
 }
 
 export function getCompFromMatch(db: DbInterface, match: Match) {
-	return db.findObject<Competition>(CollectionId.Competitions, {
+	return db.findObject(CollectionId.Competitions, {
 		matches: match._id?.toString(),
 	});
 }
 
 export function getCompFromPitReport(db: DbInterface, report: Pitreport) {
-	return db.findObject<Competition>(CollectionId.Competitions, {
+	return db.findObject(CollectionId.Competitions, {
 		pitReports: report._id?.toString(),
 	});
 }
@@ -57,7 +57,7 @@ export function getCompFromSubjectiveReport(
 	report: SubjectiveReport,
 ) {
 	return db
-		.findObject<Match>(CollectionId.Matches, {
+		.findObject(CollectionId.Matches, {
 			subjectiveReports: report._id?.toString(),
 		})
 		.then((match) => {
@@ -71,19 +71,19 @@ export function getCompFromPicklist(
 	db: DbInterface,
 	picklist: CompPicklistGroup,
 ) {
-	return db.findObject<Competition>(CollectionId.Competitions, {
+	return db.findObject(CollectionId.Competitions, {
 		picklist: picklist._id?.toString(),
 	});
 }
 
 export function getSeasonFromComp(db: DbInterface, comp: Competition) {
-	return db.findObject<Season>(CollectionId.Seasons, {
+	return db.findObject(CollectionId.Seasons, {
 		competitions: comp?._id?.toString(), // Specifying one value is effectively includes for arrays
 	});
 }
 
 export function getTeamFromSeason(db: DbInterface, season: Season) {
-	return db.findObject<Team>(CollectionId.Teams, {
+	return db.findObject(CollectionId.Teams, {
 		seasons: season._id?.toString(),
 	});
 }
