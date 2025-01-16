@@ -54,15 +54,12 @@ export async function AssignScoutersToCompetitionMatches(
 	teamId: string,
 	competitionId: string,
 ) {
-	const comp = await db.findObjectById<Competition>(
+	const comp = await db.findObjectById(
 		CollectionId.Competitions,
 		new ObjectId(competitionId),
 	);
 
-	const team = await db.findObject<Team>(
-		CollectionId.Teams,
-		new ObjectId(teamId),
-	);
+	const team = await db.findObject(CollectionId.Teams, new ObjectId(teamId));
 
 	if (!comp || !team) {
 		throw new Error("Competition or team not found");
@@ -99,7 +96,7 @@ export async function generateReportsForMatch(
 	schedule?: ScheduleMatch,
 ) {
 	if (typeof match === "string") {
-		const foundMatch = await db.findObjectById<Match>(
+		const foundMatch = await db.findObjectById(
 			CollectionId.Matches,
 			new ObjectId(match),
 		);
@@ -114,7 +111,7 @@ export async function generateReportsForMatch(
 	match.subjectiveScouter = schedule?.subjectiveScouter;
 
 	const existingReportPromises = match.reports.map((r) =>
-		db.findObjectById<Report>(CollectionId.Reports, new ObjectId(r)),
+		db.findObjectById(CollectionId.Reports, new ObjectId(r)),
 	);
 	const existingReports = await Promise.all(existingReportPromises);
 
