@@ -40,10 +40,11 @@ app.prepare().then(() => {
 		req: IncomingMessage,
 		res: ServerResponse<IncomingMessage>,
 	) {
+		console.log(`IN: ${req.method} ${req.url}`);
 		if (!req.url) return;
 
 		const parsedUrl = parse(req.url, true);
-		handle(req, res, parsedUrl);
+		handle(req, res, parsedUrl).then(() => console.log(`OUT: ${req.method} ${req.url} ${res.statusCode}`));
 	}
 
 	try {
