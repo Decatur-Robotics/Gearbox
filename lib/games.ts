@@ -1258,7 +1258,12 @@ namespace Reefscape {
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
-		sections: {},
+		sections: {
+			Auto: [
+				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
+				
+			],
+		},
 		getGraphDots: function (
 			quantitativeReports: Report<QuantitativeData>[],
 			pitReport?: Pitreport<PitData> | undefined,
