@@ -49,7 +49,7 @@ app.prepare().then(() => {
 
 	try {
 		const server = (
-			port == 443
+			useHttps
 				? createServerHttps(httpsOptions, handleRaw)
 				: createServerHttp(handleRaw)
 		)
