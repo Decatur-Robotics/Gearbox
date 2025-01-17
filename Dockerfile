@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses=CC-BY-NC-SA-4.0
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm i
+RUN npm ci
 
 COPY . .
 
