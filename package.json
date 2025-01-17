@@ -58,7 +58,7 @@
 		"ts-node": "^10.9.2",
 		"tsx": "^4.19.2",
 		"typescript": "5.7.3",
-		"unified-api-nextjs": "^1.0.0"
+		"unified-api-nextjs": "^1.0.4"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.2.0",
