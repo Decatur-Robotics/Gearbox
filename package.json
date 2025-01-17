@@ -1,6 +1,6 @@
 {
 	"name": "sj3",
-	"version": "1.1.11",
+	"version": "1.1.12",
 	"private": true,
 	"repository": "https://github.com/Decatur-Robotics/Gearbox",
 	"license": "CC BY-NC-SA 4.0",
@@ -58,7 +58,7 @@
 		"ts-node": "^10.9.2",
 		"tsx": "^4.19.2",
 		"typescript": "5.7.3",
-		"unified-api-nextjs": "^1.0.4"
+		"unified-api-nextjs": "^1.0.6"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.2.0",
