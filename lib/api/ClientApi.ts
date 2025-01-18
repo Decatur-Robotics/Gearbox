@@ -891,7 +891,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const tbaOPRPromise = tba.req.getCompetitonOPRS(eventKey);
 
 			return res.status(200).send({
-				firstRanking: (await compRankingsPromise).rankings,
+				firstRanking: (await compRankingsPromise)?.rankings,
 				comp: await eventInformationPromise,
 				oprRanking: await tbaOPRPromise,
 			});
