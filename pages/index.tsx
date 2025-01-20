@@ -305,7 +305,6 @@ export default function Homepage() {
 						src="https://discord.com/widget?id=1219401473042157718&theme=dark"
 						width="350"
 						height="500"
-						allowTransparency={true}
 						sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
 					></iframe>
 					<div className="w-2/3 flex flex-row">
