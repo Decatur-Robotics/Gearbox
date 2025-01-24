@@ -15,7 +15,9 @@ export default function Leveling() {
 				{[...Array(MAX_LEVEL + 1).keys()].map((level) => (
 					<div key={level}>
 						<Avatar user={{ level, image: undefined }} />
-            <p>Lvl: {level} - {levelToXp(level)} XP</p>
+						<p>
+							Lvl: {level} - {levelToXp(level)} XP
+						</p>
 					</div>
 				))}
 			</div>
