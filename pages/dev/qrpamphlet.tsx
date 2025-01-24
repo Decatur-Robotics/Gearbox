@@ -1,5 +1,5 @@
 import { BsGearFill } from "react-icons/bs";
-import Pamphlet from "../components/Pamphlet";
+import Pamphlet from "@/components/Pamphlet";
 import QrCode from "@/components/QrCode";
 
 export default function QrPamphlet() {
