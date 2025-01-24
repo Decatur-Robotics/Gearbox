@@ -1,4 +1,4 @@
-const package = require("./package.json");
+const packageConfig = require("./package.json");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -16,7 +16,7 @@ const nextConfig = {
 	},
 	env: {
 		NEXT_PUBLIC_BUILD_TIME: Date.now().toString(),
-		NEXT_PUBLIC_GEARBOX_VERSION: package.version,
+		NEXT_PUBLIC_GEARBOX_VERSION: packageConfig.version,
 	},
 	eslint: {
 		dirs: ["pages", "components", "lib", "tests"],
