@@ -76,7 +76,7 @@ export default function Homepage() {
 							<div className="flex flex-row space-x-4">
 								<Link
 									className="btn btn-lg btn-primary normal-case"
-									href="profile"
+									href={session?.user ? "/profile" : "/api/auth/signin"}
 								>
 									Get Started
 								</Link>
