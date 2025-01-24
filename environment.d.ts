@@ -45,6 +45,7 @@ declare global {
 			NEXT_PUBLIC_FORCE_OFFLINE_MODE: string;
 
 			NEXT_PUBLIC_BUILD_TIME: string;
+			NEXT_PUBLIC_GEARBOX_VERSION: string;
 
 			DEVELOPER_EMAILS: string;
 

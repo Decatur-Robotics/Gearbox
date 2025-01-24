@@ -151,8 +151,9 @@ export default function Footer() {
 			</nav>
 			<nav className="max-sm:pl-8">
 				<h6 className="footer-title">Debug</h6>
+				<div>Version {process.env.NEXT_PUBLIC_GEARBOX_VERSION}</div>
 				<div>
-					Version{" "}
+					Build Time:{" "}
 					{(() => {
 						const timestamp = new Date(+process.env.NEXT_PUBLIC_BUILD_TIME);
 						return timestamp.toDateString() + " " + timestamp.toTimeString();
