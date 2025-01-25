@@ -61,6 +61,10 @@ Features full feature parity with SJ2, whilst remaining simpler, faster and cool
 1. Run `npm run build`
 1. Run `npm run start`
 
+##### Deployment
+
+See the [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terraform) repo.
+
 #### Tests
 
 1. Run `npm run test`
