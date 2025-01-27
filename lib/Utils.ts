@@ -2,7 +2,7 @@
  * Utility Functions
  * @remarks
  * This is a general collection of commonly used functions
- * 
+ *
  * @tested_by tests/lib/Utils.test.ts
  */
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
@@ -24,7 +24,7 @@ import { Redirect } from "next";
 export async function GenerateSlug(
 	db: DbInterface,
 	collection: CollectionId,
-	name: string
+	name: string,
 ): Promise<string> {
 	return GenerateSlugWithIndex(db, collection, name, 0);
 }
@@ -64,8 +64,13 @@ export function createRedirect(
 ): { redirect: Redirect } {
 	return {
 		redirect: {
-			destination: `${destination}${Object.keys(query).length ? "?" : ""}${Object.keys(query)
-				.map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
+			destination: `${destination}${Object.keys(query).length ? "?" : ""}${Object.keys(
+				query,
+			)
+				.map(
+					(key) =>
+						`${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`,
+				)
 				.join("&")}`,
 			permanent: false,
 		},
@@ -82,5 +87,5 @@ export function mentionUserInSlack(user: {
 	slackId: string | undefined;
 	name: string | undefined;
 }): string {
-	return user.slackId ? `<@${user.slackId}>` : user.name ?? "";
+	return user.slackId ? `<@${user.slackId}>` : (user.name ?? "");
 }
