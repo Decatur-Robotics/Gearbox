@@ -2,12 +2,13 @@
  * Utility Functions
  * @remarks
  * This is a general collection of commonly used functions
+ * 
+ * @tested_by tests/lib/Utils.test.ts
  */
 import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Redirect } from "next";
-import { User } from "./Types";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -18,14 +19,24 @@ import { User } from "./Types";
  *
  * @param collection - A Database Collection
  * @param name - The name that is the base of the generation
- * @param index - Number to append to end of name- works recursively
  * @returns - A Unique SLUG
  */
 export async function GenerateSlug(
 	db: DbInterface,
 	collection: CollectionId,
+	name: string
+): Promise<string> {
+	return GenerateSlugWithIndex(db, collection, name, 0);
+}
+
+/**
+ * @param index will not be appended if 0 is passed as the index
+ */
+async function GenerateSlugWithIndex(
+	db: DbInterface,
+	collection: CollectionId,
 	name: string,
-	index: number = 0,
+	index: number,
 ): Promise<string> {
 	let finalName;
 	if (index === 0) {
@@ -36,7 +47,7 @@ export async function GenerateSlug(
 
 	const result = await db.findObject(collection, { slug: finalName });
 	if (result) {
-		return GenerateSlug(
+		return GenerateSlugWithIndex(
 			db,
 			collection,
 			index === 0 ? finalName : name,
@@ -53,8 +64,8 @@ export function createRedirect(
 ): { redirect: Redirect } {
 	return {
 		redirect: {
-			destination: `${destination}?${Object.keys(query)
-				.map((key) => `${key}=${query[key]}`)
+			destination: `${destination}${Object.keys(query).length ? "?" : ""}${Object.keys(query)
+				.map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
 				.join("&")}`,
 			permanent: false,
 		},
@@ -67,6 +78,9 @@ export function isDeveloper(email: string | undefined) {
 	);
 }
 
-export function mentionUserInSlack(user: User) {
-	return user?.slackId ? `<@${user!.slackId}>` : user!.name;
+export function mentionUserInSlack(user: {
+	slackId: string | undefined;
+	name: string | undefined;
+}): string {
+	return user.slackId ? `<@${user.slackId}>` : user.name ?? "";
 }
