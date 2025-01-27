@@ -5,115 +5,137 @@ import { Team, User } from "@/lib/Types";
 import { ObjectId } from "bson";
 
 describe(fakeUser.name, () => {
-  test("Returns a fake user", async () => {
-    const db = new InMemoryDbInterface();
+	test("Returns a fake user", async () => {
+		const db = new InMemoryDbInterface();
 
-    const user = await fakeUser(db, new ObjectId());
+		const user = await fakeUser(db, new ObjectId());
 
-    expect(user).toBeInstanceOf(Object);
+		expect(user).toBeInstanceOf(Object);
 
-    expect(user.name).not.toBeUndefined();
-    expect(user.email).not.toBeUndefined();
-    expect(user.image).not.toBeUndefined();
-  });
+		expect(user.name).not.toBeUndefined();
+		expect(user.email).not.toBeUndefined();
+		expect(user.image).not.toBeUndefined();
+	});
 
-  test("Returns a user with a team when a team ID is passed", async () => {
-    const db = new InMemoryDbInterface();
+	test("Returns a user with a team when a team ID is passed", async () => {
+		const db = new InMemoryDbInterface();
 
-    const teamId = new ObjectId();
-    const user = await fakeUser(db, teamId);
+		const teamId = new ObjectId();
+		const user = await fakeUser(db, teamId);
 
-    expect(user.teams.length).toBe(1);
-    expect(user.teams).toContain(teamId.toString());
-  });
+		expect(user.teams.length).toBe(1);
+		expect(user.teams).toContain(teamId.toString());
+	});
 
-  test("Returns a user without a team when no team ID is passed", async () => {
-    const db = new InMemoryDbInterface();
+	test("Returns a user without a team when no team ID is passed", async () => {
+		const db = new InMemoryDbInterface();
 
-    const user = await fakeUser(db, undefined);
+		const user = await fakeUser(db, undefined);
 
-    expect(user.teams.length).toBe(0);
-  });
+		expect(user.teams.length).toBe(0);
+	});
 
-  test("Adds the user to the database", async () => {
-    const db = new InMemoryDbInterface();
+	test("Adds the user to the database", async () => {
+		const db = new InMemoryDbInterface();
 
-    const teamId = new ObjectId();
-    const returnedUser = await fakeUser(db, teamId);
-    const dbUser = await db.findObject(CollectionId.Users, { teams: [teamId.toString()] });
+		const teamId = new ObjectId();
+		const returnedUser = await fakeUser(db, teamId);
+		const dbUser = await db.findObject(CollectionId.Users, {
+			teams: [teamId.toString()],
+		});
 
-    expect(returnedUser).toEqual(dbUser);
-  });
+		expect(returnedUser).toEqual(dbUser);
+	});
 
-  test("User name is random", async () => {
-    const db = new InMemoryDbInterface();
+	test("User name is random", async () => {
+		const db = new InMemoryDbInterface();
 
-    const userPromises: Promise<User>[] = [];
-    for (let i = 0; i < 10; i++) {
-      userPromises.push(fakeUser(db, undefined));
-    }
+		const userPromises: Promise<User>[] = [];
+		for (let i = 0; i < 10; i++) {
+			userPromises.push(fakeUser(db, undefined));
+		}
 
-    const users = await Promise.all(userPromises);
+		const users = await Promise.all(userPromises);
 
-    const uniqueNames = new Set(users.map((user) => user.name));
+		const uniqueNames = new Set(users.map((user) => user.name));
 
-    expect(uniqueNames.size).toBeGreaterThan(users.length / 2);
-  });
+		expect(uniqueNames.size).toBeGreaterThan(users.length / 2);
+	});
 });
 
 describe(fillTeamWithFakeUsers.name, () => {
-  test("Returns a team with fake users", async () => {
-    const db = new InMemoryDbInterface();
+	test("Returns a team with fake users", async () => {
+		const db = new InMemoryDbInterface();
 
-    const originalTeam = await db.addObject(CollectionId.Teams, new Team("Test Team", "test", undefined, 1));
+		const originalTeam = await db.addObject(
+			CollectionId.Teams,
+			new Team("Test Team", "test", undefined, 1),
+		);
 
-    const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
-    
-    expect(newTeam.users.length).toBe(3);
-  });
+		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
-  test("Adds the users to the database", async () => {
-    const db = new InMemoryDbInterface();
+		expect(newTeam.users.length).toBe(3);
+	});
 
-    const originalTeam = await db.addObject(CollectionId.Teams, new Team("Test Team", "test", undefined, 1));
+	test("Adds the users to the database", async () => {
+		const db = new InMemoryDbInterface();
 
-    const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
+		const originalTeam = await db.addObject(
+			CollectionId.Teams,
+			new Team("Test Team", "test", undefined, 1),
+		);
 
-    const users = await db.findObjects(CollectionId.Users, { teams: [newTeam._id.toString()] });
-    
-    expect(users.length).toBe(3);
-    expect(newTeam.users).toEqual(users.map((user) => user._id?.toString()));
-  });
+		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
-  test("Adds users as scouters", async () => {
-    const db = new InMemoryDbInterface();
+		const users = await db.findObjects(CollectionId.Users, {
+			teams: [newTeam._id.toString()],
+		});
 
-    const originalTeam = await db.addObject(CollectionId.Teams, new Team("Test Team", "test", undefined, 1));
+		expect(users.length).toBe(3);
+		expect(newTeam.users).toEqual(users.map((user) => user._id?.toString()));
+	});
 
-    const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
+	test("Adds users as scouters", async () => {
+		const db = new InMemoryDbInterface();
 
-    const users = await db.findObjects(CollectionId.Users, { teams: [newTeam._id.toString()] });
+		const originalTeam = await db.addObject(
+			CollectionId.Teams,
+			new Team("Test Team", "test", undefined, 1),
+		);
 
-    expect(newTeam.scouters).toEqual(users.map((user) => user._id?.toString()));
-  });
+		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
-  test("Throws an error if the team is not found", async () => {
-    const db = new InMemoryDbInterface();
+		const users = await db.findObjects(CollectionId.Users, {
+			teams: [newTeam._id.toString()],
+		});
 
-    await expect(fillTeamWithFakeUsers(3, new ObjectId(), db)).rejects.toThrow("Team not found");
-  });
+		expect(newTeam.scouters).toEqual(users.map((user) => user._id?.toString()));
+	});
 
-  test("Names are random", async () => {
-    const db = new InMemoryDbInterface();
+	test("Throws an error if the team is not found", async () => {
+		const db = new InMemoryDbInterface();
 
-    const originalTeam = await db.addObject(CollectionId.Teams, new Team("Test Team", "test", undefined, 1));
+		await expect(fillTeamWithFakeUsers(3, new ObjectId(), db)).rejects.toThrow(
+			"Team not found",
+		);
+	});
 
-    const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
+	test("Names are random", async () => {
+		const db = new InMemoryDbInterface();
 
-    const users = await db.findObjects(CollectionId.Users, { teams: [newTeam._id.toString()] });
+		const originalTeam = await db.addObject(
+			CollectionId.Teams,
+			new Team("Test Team", "test", undefined, 1),
+		);
 
-    const uniqueNames = new Set(users.map((user) => user.name));
+		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
-    expect(uniqueNames.size).toBeGreaterThan(users.length / 2);
-  });
+		const users = await db.findObjects(CollectionId.Users, {
+			teams: [newTeam._id.toString()],
+		});
+
+		const uniqueNames = new Set(users.map((user) => user.name));
+
+		expect(uniqueNames.size).toBeGreaterThan(users.length / 2);
+	});
 });
