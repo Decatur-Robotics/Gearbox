@@ -277,7 +277,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			if (process.env.FILL_TEAMS === "true") {
-				fillTeamWithFakeUsers(20, team._id.toString(), db);
+				fillTeamWithFakeUsers(20, team._id, db);
 			}
 
 			return res.status(200).send(team);

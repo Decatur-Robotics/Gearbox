@@ -37,8 +37,8 @@ async function randomName(): Promise<string> {
 }
 
 export async function fakeUser(
-	teamId: string | undefined,
 	db: DbInterface,
+	teamId: ObjectId | undefined,
 ): Promise<User> {
 	const name = await randomName();
 	const user = new User(
@@ -47,7 +47,7 @@ export async function fakeUser(
 		"https://media.npr.org/assets/img/2015/06/15/gettyimages-1445210_custom-9cff1c641fe4451adaf1bcd3750bf4a11fb5d4e9.jpg",
 		false,
 		await GenerateSlug(db, CollectionId.Users, name),
-		teamId ? [teamId] : [],
+		teamId ? [teamId.toString()] : [],
 		[],
 		"",
 		10,
@@ -57,17 +57,17 @@ export async function fakeUser(
 
 export async function fillTeamWithFakeUsers(
 	n: number,
-	teamId: string | undefined,
+	teamId: ObjectId,
 	db: DbInterface,
 ): Promise<Team> {
 	const users: any[] = [];
 	for (let i = 0; i < n; i++) {
-		users.push((await fakeUser(teamId, db))._id?.toString());
+		users.push((await fakeUser(db, teamId))._id!.toString());
 	}
 
 	const team = await db.findObjectById(
 		CollectionId.Teams,
-		new ObjectId(teamId?.toString()),
+		new ObjectId(teamId.toString()),
 	);
 
 	if (!team) {
