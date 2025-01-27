@@ -1,3 +1,6 @@
+/**
+ * @tested_by tests/lib/CompetitionHandling.test.ts
+ */
 import {
 	Competition,
 	Match,
@@ -18,9 +21,6 @@ type ScheduleMatch = {
 	assignedScouters: string[];
 };
 
-/**
- * @tested_by tests/lib/CompetitionHandling.test.ts
- */
 export function generateSchedule(
 	scouters: string[],
 	subjectiveScouters: string[],
@@ -49,20 +49,24 @@ export function generateSchedule(
 	return schedule;
 }
 
-export async function AssignScoutersToCompetitionMatches(
+export async function assignScoutersToCompetitionMatches(
 	db: DbInterface,
-	teamId: string,
-	competitionId: string,
+	teamId: ObjectId,
+	competitionId: ObjectId,
 ) {
 	const comp = await db.findObjectById(
 		CollectionId.Competitions,
 		new ObjectId(competitionId),
 	);
 
-	const team = await db.findObject(CollectionId.Teams, new ObjectId(teamId));
+	const team = await db.findObjectById(CollectionId.Teams, new ObjectId(teamId));
 
-	if (!comp || !team) {
-		throw new Error("Competition or team not found");
+	if (!comp) {
+		throw new Error("Competition not found");
+	}
+
+	if (!team) {
+		throw new Error("Team not found");
 	}
 
 	team.scouters = team.scouters.filter((s) => team.users.includes(s));

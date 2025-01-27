@@ -36,7 +36,7 @@ import { GenerateSlug, isDeveloper, mentionUserInSlack } from "../Utils";
 import { fillTeamWithFakeUsers } from "../dev/FakeData";
 import { GameId } from "../client/GameId";
 import {
-	AssignScoutersToCompetitionMatches,
+	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
 import { games } from "../games";
@@ -521,10 +521,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			if (!team?._id) return res.status(400).send({ error: "Team not found" });
 
-			const result = await AssignScoutersToCompetitionMatches(
+			const result = await assignScoutersToCompetitionMatches(
 				db,
-				team?._id?.toString(),
-				compId,
+				team._id,
+				new ObjectId(compId),
 			);
 
 			return res.status(200).send({ result: result });
