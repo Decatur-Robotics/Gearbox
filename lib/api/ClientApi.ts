@@ -182,7 +182,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		void
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { tba }, authData, [number, league]) => {
+		handler: async (req, res, { tba, db }, authData, [number, league]) => {
 			if (number <= 0) {
 				return res.status(200).send(undefined);
 			}
@@ -191,7 +191,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				.status(200)
 				.send(
 					league === League.FTC
-						? await TheOrangeAlliance.getTeam(number)
+						? await TheOrangeAlliance.getTeam(number, await db)
 						: await tba.getTeamAutofillData(number),
 				);
 		},
@@ -1615,8 +1615,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		void
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { tba }, authData, [teamNumber]) => {
-			const team = await TheOrangeAlliance.getTeam(teamNumber);
+		handler: async (req, res, { tba, db }, authData, [teamNumber]) => {
+			const team = await TheOrangeAlliance.getTeam(teamNumber, await db);
 			return res.status(200).send(team);
 		},
 	});
