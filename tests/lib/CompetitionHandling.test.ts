@@ -209,7 +209,10 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 	}
 
 	test("Assigns scouters to matches if team has scouters", async () => {
-		const { db, team, comp, matches, reports } = await createTestComp(10, false);
+		const { db, team, comp, matches, reports } = await createTestComp(
+			10,
+			false,
+		);
 
 		await assignScoutersToCompetitionMatches(
 			db,
@@ -253,7 +256,10 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 	});
 
 	test("Rotates through scouters", async () => {
-		const { db, team, comp, matches, reports } = await createTestComp(10, false);
+		const { db, team, comp, matches, reports } = await createTestComp(
+			10,
+			false,
+		);
 
 		await assignScoutersToCompetitionMatches(
 			db,
@@ -289,7 +295,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 			team._id,
 			new ObjectId(comp._id),
 		);
-		
+
 		const updatedMatches = await Promise.all(
 			matches.map((m) =>
 				db.findObjectById(CollectionId.Matches, new ObjectId(m._id)),
@@ -310,7 +316,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 			team._id,
 			new ObjectId(comp._id),
 		);
-		
+
 		const updatedMatches = await Promise.all(
 			matches.map((m) =>
 				db.findObjectById(CollectionId.Matches, new ObjectId(m._id)),
@@ -330,7 +336,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 			team._id,
 			new ObjectId(comp._id),
 		);
-		
+
 		const updatedMatches = await Promise.all(
 			matches.map((m) =>
 				db.findObjectById(CollectionId.Matches, new ObjectId(m._id)),
@@ -367,11 +373,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		const { db, team } = await createTestComp(10, false);
 
 		await expect(
-			assignScoutersToCompetitionMatches(
-				db,
-				team._id,
-				new ObjectId(),
-			),
+			assignScoutersToCompetitionMatches(db, team._id, new ObjectId()),
 		).rejects.toThrow("Competition not found");
 	});
 });
