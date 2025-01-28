@@ -427,7 +427,10 @@ describe(generateReportsForMatch.name, () => {
 			0,
 			MatchType.Qualifying,
 			Array.from({ length: robotsPerAlliance }, (_, i) => i),
-			Array.from({ length: robotsPerAlliance }, (_, i) => i + robotsPerAlliance),
+			Array.from(
+				{ length: robotsPerAlliance },
+				(_, i) => i + robotsPerAlliance,
+			),
 		);
 		match._id = new ObjectId() as any;
 
@@ -509,7 +512,10 @@ describe(generateReportsForMatch.name, () => {
 		const { match, reports, db } = await createMatch();
 
 		const reportToDelete = reports[0];
-		await db.deleteObjectById(CollectionId.Reports, new ObjectId(reportToDelete._id));
+		await db.deleteObjectById(
+			CollectionId.Reports,
+			new ObjectId(reportToDelete._id),
+		);
 
 		await generateReportsForMatch(db, match, GameId.Crescendo);
 
@@ -545,7 +551,9 @@ describe(generateReportsForMatch.name, () => {
 
 		for (const report of updatedReports) {
 			expect(report).toBeDefined();
-			expect(report).toEqual(reports.find((r) => r._id.toString() === report?._id?.toString()));
+			expect(report).toEqual(
+				reports.find((r) => r._id.toString() === report?._id?.toString()),
+			);
 		}
 	});
 

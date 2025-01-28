@@ -178,7 +178,7 @@ export async function generateReportsForMatch(
 		if (oldReport) {
 			reports.push(oldReport._id!);
 			continue;
-		};
+		}
 
 		// Create a new report
 
