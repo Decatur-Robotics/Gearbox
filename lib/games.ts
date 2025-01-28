@@ -1202,6 +1202,8 @@ namespace Reefscape {
 			ReefscapeEnums.CanRemoveAlgae.CannotRemove;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNest: boolean = false;
+		AlgaeScoredAuto: number = 0
+		CoralScoredAuto: number = 0
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
 	}
 
@@ -1261,14 +1263,85 @@ namespace Reefscape {
 		sections: {
 			Auto: [
 				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
-				
+				{
+					key: "AutoCoralScoredLevelOne",
+					label: "Avg Amt Of Coral Scored Level One Auto",
+				},
+				{
+					key: "AutoCoralScoredLevelTwo",
+					label: "Avg Amt Of Coral Scored Level Two Auto",
+				},
+				{
+					key: "AutoCoralScoredLevelThree",
+					label: "Avg Amt Of Coral Scored Level Three Auto",
+				},
+				{
+					key: "AutoCoralScoredLevelFour",
+					label: "Avg Amt Of Coral Scored Level Four Auto",
+				},
+				{
+					key: "AutoAlgaeRemovedFromReef",
+					label: "Avg Amt of Algae Removed From Reef",
+				},
+				{
+					key: "AutoAlgaeScoredProcessor",
+					label: "Avg Amt of Algae Scored Processor Auto",
+				},
+				{
+					key: "AutoAlgaeScoredNest",
+					label: "Avg Amt of Algae Scored Nest Auto",
+				},
 			],
+			Teleop: [
+				{
+					key: "TeleopCoralScoredLevelOne",
+					label: "Avg Amt Of Coral Scored Level One Teleop",
+				},
+				{
+					key: "TeleopCoralScoredLevelTwo",
+					label: "Avg Amt Of Coral Scored Level Two Teleop",
+				},
+				{
+					key: "TeleopCoralScoredLevelThree",
+					label: "Avg Amt Of Coral Scored Level Three Teleop",
+				},
+				{
+					key: "TeleopCoralScoredLevelFour",
+					label: "Avg Amt Of Coral Scored Level Four Teleop",
+				},
+				{
+					key: "TeleopAlgaeRemovedFromReef",
+					label: "Avg Amt of Algae Removed From Reef",
+				},
+				{
+					key: "TeleopAlgaeScoredProcessor",
+					label: "Avg Amt of Algae Scored Processor Teleop",
+				},
+				{
+					key: "TeleopAlgaeScoredNest",
+					label: "Avg Amt of Algae Scored Nest Teleop",
+				},
+			],
+			Endgame: [{ key: "EndgameClimbStatus", label: "Endgame Climb status" }],
 		},
 		getGraphDots: function (
 			quantitativeReports: Report<QuantitativeData>[],
 			pitReport?: Pitreport<PitData> | undefined,
 		): Dot[] {
 			throw new Error("Function not implemented.");
+		},
+	};
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [
+
+		],
+		individualSlideStats: [],
+		robotCapabilities: [],
+		graphStat: {
+			label: "",
+			key: undefined,
+			get: undefined,
 		},
 	};
 
@@ -1287,17 +1360,6 @@ namespace Reefscape {
 
 		return totalPoints;
 	}
-
-	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
-		overallSlideStats: [],
-		individualSlideStats: [],
-		robotCapabilities: [],
-		graphStat: {
-			label: "",
-			key: undefined,
-			get: undefined,
-		},
-	};
 
 	export const game = new Game(
 		"Reefscape",
