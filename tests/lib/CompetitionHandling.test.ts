@@ -2,12 +2,21 @@ import CollectionId from "@/lib/client/CollectionId";
 import InMemoryDbInterface from "@/lib/client/dbinterfaces/InMemoryDbInterface";
 import {
 	assignScoutersToCompetitionMatches,
+	generateReportsForMatch,
 	generateSchedule,
 } from "@/lib/CompetitionHandling";
 import { fillTeamWithFakeUsers } from "@/lib/dev/FakeData";
-import { AllianceColor, Competition, Match, Report, Team } from "@/lib/Types";
+import {
+	AllianceColor,
+	Competition,
+	League,
+	Match,
+	Report,
+	Team,
+} from "@/lib/Types";
 import { MatchType } from "../../lib/Types";
 import { ObjectId } from "bson";
+import { GameId } from "@/lib/client/GameId";
 
 describe(generateSchedule.name, () => {
 	test("Generates a schedule with the correct number of matches", () => {
@@ -139,6 +148,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 	async function createTestComp(
 		matchCount: number,
 		subjectiveScouters: boolean,
+		league: League = League.FRC,
 	): Promise<{
 		db: InMemoryDbInterface;
 		team: Team;
@@ -148,7 +158,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 	}> {
 		const db = new InMemoryDbInterface();
 
-		let team = new Team("test", "test", undefined, 1);
+		let team = new Team("test", "test", undefined, 1, league);
 		await db.addObject(CollectionId.Teams, team);
 
 		team = await fillTeamWithFakeUsers(10, team._id, db);
@@ -173,21 +183,24 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 				undefined,
 				0,
 				MatchType.Qualifying,
-				[0, 1, 2],
-				[3, 4, 5],
+				league === League.FRC ? [0, 1, 2] : [0, 1],
+				league === League.FRC ? [3, 4, 5] : [2, 3],
 			);
 			match._id = new ObjectId() as any;
 
-			const matchReports = Array.from({ length: 6 }, (_, i) => ({
-				...new Report(
-					undefined,
-					{} as any,
-					[0, 1, 2, 3, 4, 5][i],
-					AllianceColor.Blue,
-					match._id!.toString(),
-				),
-				_id: new ObjectId() as any as string,
-			}));
+			const matchReports = Array.from(
+				{ length: league === League.FRC ? 6 : 4 },
+				(_, i) => ({
+					...new Report(
+						undefined,
+						{} as any,
+						[0, 1, 2, 3, 4, 5][i],
+						AllianceColor.Blue,
+						match._id!.toString(),
+					),
+					_id: new ObjectId() as any as string,
+				}),
+			);
 
 			match.reports = matchReports.map((r) => r._id?.toString()!);
 
@@ -202,6 +215,8 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		]);
 
 		const comp = new Competition("test", "test", undefined, 1, 1);
+		// The game doesn't matter, just which league it's for
+		comp.gameId = league === League.FRC ? GameId.Crescendo : GameId.CenterStage;
 		comp.matches = matches.map((m) => m._id!.toString());
 		await db.addObject(CollectionId.Competitions, comp);
 
@@ -284,6 +299,31 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 			expect(scouters).toContain(report?.user);
 
 			prevReport = report;
+		}
+	});
+
+	test("Assigns scouters if team is FTC", async () => {
+		const { db, team, comp, matches, reports } = await createTestComp(
+			10,
+			false,
+			League.FTC,
+		);
+
+		await assignScoutersToCompetitionMatches(
+			db,
+			team._id,
+			new ObjectId(comp._id),
+		);
+
+		const updatedReports = await Promise.all(
+			reports.map((r) =>
+				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+			),
+		);
+
+		for (const report of updatedReports) {
+			expect(report?.user).toBeDefined();
+			expect(team.scouters).toContain(report?.user);
 		}
 	});
 
@@ -375,5 +415,154 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await expect(
 			assignScoutersToCompetitionMatches(db, team._id, new ObjectId()),
 		).rejects.toThrow("Competition not found");
+	});
+});
+
+describe(generateReportsForMatch.name, () => {
+	async function createMatch(robotsPerAlliance: number = 3) {
+		const match = new Match(
+			1,
+			"1",
+			undefined,
+			0,
+			MatchType.Qualifying,
+			Array.from({ length: robotsPerAlliance }, (_, i) => i),
+			Array.from({ length: robotsPerAlliance }, (_, i) => i + robotsPerAlliance),
+		);
+		match._id = new ObjectId() as any;
+
+		const reports = Array.from({ length: robotsPerAlliance * 2 }, (_, i) => ({
+			...new Report(
+				undefined,
+				{} as any,
+				Array.from({ length: robotsPerAlliance * 2 }, (_, i) => i)[i],
+				AllianceColor.Blue,
+				match._id!.toString(),
+			),
+			_id: new ObjectId() as any as string,
+		}));
+		match.reports = reports.map((r) => r._id?.toString()!);
+
+		const db = new InMemoryDbInterface();
+		await Promise.all([
+			db.addObject(CollectionId.Matches, match),
+			...reports.map((r) => db.addObject(CollectionId.Reports, r)),
+		]);
+
+		return { match, reports, db };
+	}
+
+	test("Generates reports for match", async () => {
+		const { match, reports, db } = await createMatch();
+
+		await generateReportsForMatch(db, match, GameId.Crescendo);
+
+		const updatedReports = await Promise.all(
+			reports.map((r) =>
+				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+			),
+		);
+
+		for (const report of updatedReports) {
+			expect(report).toBeDefined();
+		}
+	});
+
+	test("Does not generate new reports if reports already exist", async () => {
+		const { match, reports, db } = await createMatch();
+
+		const prevReportCount = await db.countObjects(CollectionId.Reports, {});
+
+		await generateReportsForMatch(db, match, GameId.Crescendo);
+
+		expect(await db.countObjects(CollectionId.Reports, {})).toBe(
+			prevReportCount,
+		);
+	});
+
+	test("Generates reports if no reports are present", async () => {
+		const { match, reports, db } = await createMatch();
+
+		for (const report of reports) {
+			await db.deleteObjectById(CollectionId.Reports, new ObjectId(report._id));
+		}
+
+		await generateReportsForMatch(db, match, GameId.Crescendo);
+
+		const [updatedReports, updatedMatch] = await Promise.all([
+			db.findObjects(CollectionId.Reports, {
+				match: match._id?.toString(),
+			}),
+			db.findObjectById(CollectionId.Matches, new ObjectId(match._id)),
+		]);
+
+		expect(updatedReports.every((r) => r !== undefined)).toBe(true);
+		expect(updatedReports.length).toBe(6);
+		expect(updatedMatch?.reports.length).toBe(6);
+		for (const report of updatedReports) {
+			expect(report?.match).toBe(match._id?.toString());
+			expect(match.reports).toContain(report?._id?.toString());
+		}
+	});
+
+	test("Generates new reports if some reports are missing", async () => {
+		const { match, reports, db } = await createMatch();
+
+		const reportToDelete = reports[0];
+		await db.deleteObjectById(CollectionId.Reports, new ObjectId(reportToDelete._id));
+
+		await generateReportsForMatch(db, match, GameId.Crescendo);
+
+		const [updatedReports, updatedMatch] = await Promise.all([
+			db.findObjects(CollectionId.Reports, {
+				match: match._id?.toString(),
+			}),
+			db.findObjectById(CollectionId.Matches, new ObjectId(match._id)),
+		]);
+
+		expect(updatedReports.every((r) => r !== undefined)).toBe(true);
+		expect(updatedReports.length).toBe(6);
+		expect(updatedMatch?.reports.length).toBe(6);
+		for (const report of updatedReports) {
+			expect(report?.match).toBe(match._id?.toString());
+			// I couldn't get toContain to work, some issue with === vs ==
+			expect(
+				match.reports.some((r) => r == report._id?.toString()),
+			).toBeTruthy();
+		}
+	});
+
+	test("Does not change existing reports", async () => {
+		const { match, reports, db } = await createMatch();
+
+		await generateReportsForMatch(db, match, GameId.Crescendo);
+
+		const updatedReports = await Promise.all(
+			reports.map((r) =>
+				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+			),
+		);
+
+		for (const report of updatedReports) {
+			expect(report).toBeDefined();
+			expect(report).toEqual(reports.find((r) => r._id.toString() === report?._id?.toString()));
+		}
+	});
+
+	test("Generates reports for match with 4 robots", async () => {
+		const { match, reports, db } = await createMatch(2);
+
+		await generateReportsForMatch(db, match, GameId.CenterStage);
+
+		const updatedReports = await Promise.all(
+			reports.map((r) =>
+				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+			),
+		);
+
+		expect(updatedReports.length).toBe(4);
+		for (const report of updatedReports) {
+			expect(report).toBeDefined();
+		}
 	});
 });
