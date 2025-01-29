@@ -55,6 +55,7 @@ export async function fakeUser(
 		"",
 		10,
 	);
+	user.lastSignInDateTime = new Date();
 	return await db.addObject(CollectionId.Users, user);
 }
 
