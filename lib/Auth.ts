@@ -145,15 +145,19 @@ export const AuthenticationOptions: AuthOptions = {
 					typedUser,
 				);
 			}
-        
-      const today = new Date();
-      if ((typedUser as User).lastSignInDateTime?.toDateString() !== today.toDateString()) {
-        // We use user.id since user._id strangely doesn't exist on user.
-        await getDatabase()
-          .then(db => db.updateObjectById(CollectionId.Users, new ObjectId(typedUser.id), {
-            lastSignInDateTime: today
-          }));
-      }
+
+			const today = new Date();
+			if (
+				(typedUser as User).lastSignInDateTime?.toDateString() !==
+				today.toDateString()
+			) {
+				// We use user.id since user._id strangely doesn't exist on user.
+				await getDatabase().then((db) =>
+					db.updateObjectById(CollectionId.Users, new ObjectId(typedUser.id), {
+						lastSignInDateTime: today,
+					}),
+				);
+			}
 
 			new ResendUtils().createContact(typedUser as User);
 

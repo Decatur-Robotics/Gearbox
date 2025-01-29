@@ -21,7 +21,7 @@ import {
 	WebhookHolder,
 	LeaderboardUser,
 	LeaderboardTeam,
-  LinkedList
+	LinkedList,
 } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
@@ -2181,57 +2181,91 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
-  getUserAnalyticsData = createNextRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
-    isAuthorized: AccessLevels.IfDeveloper,
-    handler: async (req, res, { db: dbPromise }, authData, args) => {
-      const db = await dbPromise;
+	getUserAnalyticsData = createNextRoute<
+		[],
+		{ [team: string]: { date: Date; count: number }[] },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, { db: dbPromise }, authData, args) => {
+			const db = await dbPromise;
 
-      const [teams, users] = await Promise.all([
-        db.findObjects(CollectionId.Teams, {}),
-        db.findObjects(CollectionId.Users, { lastSignInDateTime: { $exists: true } })
-      ]);
+			const [teams, users] = await Promise.all([
+				db.findObjects(CollectionId.Teams, {}),
+				db.findObjects(CollectionId.Users, {
+					lastSignInDateTime: { $exists: true },
+				}),
+			]);
 
-      const signInDatesByTeam: { [team: string]: LinkedList<{ date: string, count: number }> } = teams.reduce((acc, team) => {
-        acc[team._id!.toString()] = new LinkedList<{ date: string, count: number }>();
-        return acc;
-      }, { All: new LinkedList() } as { [team: string]: LinkedList<{ date: string, count: number }> });
+			const signInDatesByTeam: {
+				[team: string]: LinkedList<{ date: string; count: number }>;
+			} = teams.reduce(
+				(acc, team) => {
+					acc[team._id!.toString()] = new LinkedList<{
+						date: string;
+						count: number;
+					}>();
+					return acc;
+				},
+				{ All: new LinkedList() } as {
+					[team: string]: LinkedList<{ date: string; count: number }>;
+				},
+			);
 
-      for (const user of users) {
-        for (const team of [...user.teams, "All"]) {
-          const signInDates = signInDatesByTeam[team];
+			for (const user of users) {
+				for (const team of [...user.teams, "All"]) {
+					const signInDates = signInDatesByTeam[team];
 
-          // Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
-          for(let node = signInDates.first(); true; node = node.next) {
-            if (!node) {
-              // Can't just update signInDates, as that will reference a new object and not change the old one!
-              signInDates.setHead({ date: user.lastSignInDateTime!.toDateString(), count: 1 });
-              break;
-            }
+					// Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
+					for (let node = signInDates.first(); true; node = node.next) {
+						if (!node) {
+							// Can't just update signInDates, as that will reference a new object and not change the old one!
+							signInDates.setHead({
+								date: user.lastSignInDateTime!.toDateString(),
+								count: 1,
+							});
+							break;
+						}
 
-            if (node && node?.date === user.lastSignInDateTime!.toDateString()) {
-              node.count++;
-              break;
-            }
+						if (
+							node &&
+							node?.date === user.lastSignInDateTime!.toDateString()
+						) {
+							node.count++;
+							break;
+						}
 
-            if (!node?.next || new Date(user.lastSignInDateTime!.toDateString())! < new Date(node.next.date)) {
-              signInDates.insertAfter(node!, { date: user.lastSignInDateTime!.toDateString(), count: 1 });
-              break;
-            }
-          }
-        }
-      }
+						if (
+							!node?.next ||
+							new Date(user.lastSignInDateTime!.toDateString())! <
+								new Date(node.next.date)
+						) {
+							signInDates.insertAfter(node!, {
+								date: user.lastSignInDateTime!.toDateString(),
+								count: 1,
+							});
+							break;
+						}
+					}
+				}
+			}
 
-      // We mixed up the types for this object in Criterion B
-      const responseObj: { [team: string]: { date: Date, count: number }[] } = {};
-      for (const obj of [...teams, "All"]) {
-        const id = typeof obj === "object" ? obj._id!.toString() : obj;
-        const label = typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
+			// We mixed up the types for this object in Criterion B
+			const responseObj: { [team: string]: { date: Date; count: number }[] } =
+				{};
+			for (const obj of [...teams, "All"]) {
+				const id = typeof obj === "object" ? obj._id!.toString() : obj;
+				const label =
+					typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
 
-        responseObj[label] = signInDatesByTeam[id]
-          .map((node) => ({ date: new Date(node.date), count: node.count }));
-      }
+				responseObj[label] = signInDatesByTeam[id].map((node) => ({
+					date: new Date(node.date),
+					count: node.count,
+				}));
+			}
 
-      res.status(200).send(responseObj);
-    }
-  });
+			res.status(200).send(responseObj);
+		},
+	});
 }
