@@ -1,3 +1,6 @@
+/**
+ * @tested_by tests/lib/CompetitionHandling.test.ts
+ */
 import {
 	Competition,
 	Match,
@@ -18,9 +21,6 @@ type ScheduleMatch = {
 	assignedScouters: string[];
 };
 
-/**
- * @tested_by tests/lib/CompetitionHandling.test.ts
- */
 export function generateSchedule(
 	scouters: string[],
 	subjectiveScouters: string[],
@@ -49,20 +49,27 @@ export function generateSchedule(
 	return schedule;
 }
 
-export async function AssignScoutersToCompetitionMatches(
+export async function assignScoutersToCompetitionMatches(
 	db: DbInterface,
-	teamId: string,
-	competitionId: string,
+	teamId: ObjectId,
+	competitionId: ObjectId,
 ) {
 	const comp = await db.findObjectById(
 		CollectionId.Competitions,
 		new ObjectId(competitionId),
 	);
 
-	const team = await db.findObject(CollectionId.Teams, new ObjectId(teamId));
+	const team = await db.findObjectById(
+		CollectionId.Teams,
+		new ObjectId(teamId),
+	);
 
-	if (!comp || !team) {
-		throw new Error("Competition or team not found");
+	if (!comp) {
+		throw new Error("Competition not found");
+	}
+
+	if (!team) {
+		throw new Error("Team not found");
 	}
 
 	team.scouters = team.scouters.filter((s) => team.users.includes(s));
@@ -81,7 +88,7 @@ export async function AssignScoutersToCompetitionMatches(
 	for (let i = 0; i < comp.matches.length; i++) {
 		// Filter out the subjective scouter that will be assigned to this match
 		promises.push(
-			generateReportsForMatch(db, comp.matches[i], comp.gameId, schedule[i]),
+			assignScoutersToMatch(db, comp.matches[i], comp.gameId, schedule[i]),
 		);
 	}
 
@@ -89,26 +96,22 @@ export async function AssignScoutersToCompetitionMatches(
 	return "Success";
 }
 
-export async function generateReportsForMatch(
+async function assignScoutersToMatch(
 	db: DbInterface,
-	match: string | Match,
+	matchId: string,
 	gameId: GameId,
-	schedule?: ScheduleMatch,
+	schedule: ScheduleMatch,
 ) {
-	if (typeof match === "string") {
-		const foundMatch = await db.findObjectById(
-			CollectionId.Matches,
-			new ObjectId(match),
-		);
+	const match = await db.findObjectById(
+		CollectionId.Matches,
+		new ObjectId(matchId),
+	);
 
-		if (!foundMatch) {
-			throw new Error("Match not found");
-		}
-
-		match = foundMatch;
+	if (!match) {
+		throw new Error(`Match not found: ${matchId}`);
 	}
 
-	match.subjectiveScouter = schedule?.subjectiveScouter;
+	match.subjectiveScouter = schedule.subjectiveScouter;
 
 	const existingReportPromises = match.reports.map((r) =>
 		db.findObjectById(CollectionId.Reports, new ObjectId(r)),
@@ -120,46 +123,85 @@ export async function generateReportsForMatch(
 	for (let i = 0; i < bots.length; i++) {
 		const teamNumber = bots[i];
 		const scouter =
-			i < (schedule?.assignedScouters.length ?? 0)
-				? schedule?.assignedScouters[i]
+			i < (schedule.assignedScouters.length ?? 0)
+				? schedule.assignedScouters[i]
 				: undefined;
-		const color = match.blueAlliance.includes(teamNumber)
-			? AllianceColor.Blue
-			: AllianceColor.Red;
 
 		const oldReport = existingReports.find(
 			(r) => r?.robotNumber === teamNumber,
 		);
 
-		if (!oldReport) {
-			// Create a new report
+		if (!oldReport) continue;
 
-			const newReport = new Report(
-				scouter,
-				games[gameId].createQuantitativeFormData(),
-				teamNumber,
-				color,
-				String(match._id),
-				0,
-			);
+		// Update existing report
+		oldReport.user = scouter;
 
-			reports.push(
-				String((await db.addObject(CollectionId.Reports, newReport))._id),
-			);
-		} else {
-			// Update existing report
-			oldReport.user = scouter;
-
-			await db.updateObjectById(
-				CollectionId.Reports,
-				new ObjectId(oldReport._id),
-				oldReport,
-			);
-			reports.push(oldReport._id);
-		}
+		await db.updateObjectById(
+			CollectionId.Reports,
+			new ObjectId(oldReport._id),
+			oldReport,
+		);
+		reports.push(oldReport._id);
 	}
 
-	match.reports = reports.filter((r) => r !== undefined) as string[];
+	await db.updateObjectById(
+		CollectionId.Matches,
+		new ObjectId(match._id),
+		match,
+	);
+}
+
+/**
+ * Generates reports for a match, creating new reports if they don't exist.
+ * If some of the reports already exist, only the missing reports will be created.
+ */
+export async function generateReportsForMatch(
+	db: DbInterface,
+	match: Match,
+	gameId: GameId,
+) {
+	const existingReports = await Promise.all(
+		match.reports.map((r) =>
+			db.findObjectById(CollectionId.Reports, new ObjectId(r)),
+		),
+	);
+
+	const bots = match.blueAlliance.concat(match.redAlliance);
+	const reports = [];
+	for (let i = 0; i < bots.length; i++) {
+		const teamNumber = bots[i];
+
+		const oldReport = existingReports.find(
+			(r) => r?.robotNumber === teamNumber,
+		);
+
+		if (oldReport) {
+			reports.push(oldReport._id!);
+			continue;
+		}
+
+		// Create a new report
+
+		const color = match.blueAlliance.includes(teamNumber)
+			? AllianceColor.Blue
+			: AllianceColor.Red;
+
+		const newReport = new Report(
+			undefined,
+			games[gameId].createQuantitativeFormData(),
+			teamNumber,
+			color,
+			String(match._id),
+			0,
+		);
+
+		reports.push(
+			String((await db.addObject(CollectionId.Reports, newReport))._id),
+		);
+	}
+
+	match.reports = reports;
+
 	await db.updateObjectById(
 		CollectionId.Matches,
 		new ObjectId(match._id),
