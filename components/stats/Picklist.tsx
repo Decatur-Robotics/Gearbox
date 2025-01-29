@@ -1,291 +1,469 @@
-import { DbPicklist, Report } from "@/lib/Types";
-
-import { useDrag, useDrop } from "react-dnd";
-import { ChangeEvent, useEffect, useState } from "react";
-import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa";
-import { getServerSideProps } from '../../pages/[teamSlug]/[seasonSlug]/[competitonSlug]/stats';
+import { CompPicklistGroup, Report } from "@/lib/Types";
+import { ConnectDropTarget, useDrag, useDrop } from "react-dnd";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { FaPlus, FaStrikethrough, FaTrash } from "react-icons/fa";
 import ClientApi from "@/lib/api/ClientApi";
-import { updateCompInLocalStorage } from "@/lib/client/offlineUtils";
+import { ObjectId } from "bson";
+import {
+	PicklistEntry,
+	Picklist,
+	insertAfterEntry,
+	setHeadOfPicklist,
+	setTailOfPicklist,
+	getPicklistLength,
+	removeEntryFromItsPicklist,
+	savePicklistGroup,
+	loadPicklistGroup,
+} from "@/lib/client/PicklistUtils";
 
-type CardData = { 
-  number: number;
-  picklistIndex?: number;
-};
+// Be sure to disable for production!
+const SHOW_PICKLISTS_ON_TEAM_CARDS = false;
+const SHOW_CARD_IDS = false;
 
-type Picklist = {
-  index: number;
-  name: string;
-  teams: CardData[];
-  update: (picklist: Picklist) => void;
+function TeamCard(props: {
+	entry: PicklistEntry;
+	draggable: boolean;
+	picklist?: Picklist;
+	rank?: number;
+	width?: string;
+	preview?: boolean;
+	strikeThroughs: number[];
+	toggleStrikethrough?: (team: number) => void;
+}) {
+	const {
+		entry,
+		width,
+		rank,
+		preview,
+		picklist,
+		strikeThroughs,
+		toggleStrikethrough,
+	} = props;
+	if (picklist) entry.picklist = picklist;
+
+	const [, dragRef] = useDrag({
+		type: "team",
+		item: () => {
+			return {
+				...props.entry,
+				id: props.entry.id ?? new ObjectId().toString(),
+			};
+		},
+	});
+
+	// We have the useDrop for the InsertDropSite here because we need to know if the dragged item is over the insert site
+	const [{ isOverInsert, draggedEntry: draggedInsertEntry }, insertRef] =
+		useDrop({
+			accept: "team",
+			drop: (dragged: PicklistEntry) => insertAfterEntry(entry, dragged),
+			collect: (monitor) => ({
+				isOverInsert: monitor.isOver(),
+				draggedEntry: monitor.getItem(),
+			}),
+		});
+
+	return (
+		<>
+			<div className="flex flex-col w-full">
+				<div
+					className={`w-${width ?? "full"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary ${preview && "animate-pulse border-primary"}`}
+					ref={dragRef as unknown as () => void}
+				>
+					<h1
+						className={
+							strikeThroughs.includes(entry.number) ? "line-through" : ""
+						}
+					>
+						{rank !== undefined ? `${rank}. ` : ""}
+						<span className="max-sm:hidden">Team</span>{" "}
+						<span className="text-accent">#{entry.number}</span>
+						{SHOW_CARD_IDS && (
+							<span className="text-secondary">
+								.{entry.id?.slice(entry.id.length - 3)}
+							</span>
+						)}
+						{SHOW_PICKLISTS_ON_TEAM_CARDS && entry.picklist && (
+							<span className="text-xs text-accent">
+								{" "}
+								({entry.picklist.name})
+							</span>
+						)}
+					</h1>
+					{toggleStrikethrough && (
+						<button
+							className="btn btn-xs btn-ghost ml-1"
+							onClick={() => toggleStrikethrough(entry.number)}
+						>
+							<FaStrikethrough />
+						</button>
+					)}
+				</div>
+				{rank && !preview && (
+					<InsertDropSite
+						rank={rank + 1}
+						entry={entry}
+						isOver={isOverInsert}
+						dropRef={insertRef}
+						draggedEntry={draggedInsertEntry}
+						strikeThroughs={strikeThroughs}
+					/>
+				)}
+			</div>
+			{rank && !preview && entry.next && (
+				<TeamCard
+					rank={rank + (isOverInsert && draggedInsertEntry ? 2 : 1)}
+					entry={entry.next}
+					draggable={true}
+					picklist={props.picklist}
+					strikeThroughs={strikeThroughs}
+					toggleStrikethrough={toggleStrikethrough}
+				/>
+			)}
+		</>
+	);
 }
 
-const Includes = (bucket: any[], item: CardData) => {
-  let result = false;
-  bucket.forEach((i: { number: number }) => {
-    if (i.number === item.number) {
-      result = true;
-    }
-  });
-
-  return result;
-};
-
-function removeTeamFromPicklist(team: CardData, picklists: Picklist[]) {
-  if (team.picklistIndex === undefined) return;
-
-  const picklist = picklists[team.picklistIndex];
-  if (!picklist) return;
-  
-  picklist.teams = picklist.teams.filter((t) => t.number !== team.number);
-  picklist.update(picklist);
+/**
+ * The useDrop is in the TeamCard component
+ */
+function InsertDropSite({
+	rank,
+	entry,
+	isOver,
+	dropRef,
+	draggedEntry,
+	strikeThroughs,
+}: {
+	rank: number;
+	entry: PicklistEntry;
+	isOver: boolean;
+	dropRef: ConnectDropTarget;
+	draggedEntry: PicklistEntry;
+	strikeThroughs: number[];
+}) {
+	return (
+		<div
+			ref={dropRef as any}
+			className={`w-full ${entry.next ? "h-full" : "h-4"}`}
+		>
+			{isOver ? (
+				<div className="w-full my-2">
+					<TeamCard
+						entry={draggedEntry}
+						draggable={false}
+						rank={rank}
+						preview={true}
+						strikeThroughs={strikeThroughs}
+					/>
+				</div>
+			) : (
+				<div className={`w-full ${entry.next ? "p-1" : "h-full"}`} />
+			)}
+		</div>
+	);
 }
 
-function TeamCard(props: { cardData: CardData, draggable: boolean, picklist?: Picklist, rank?: number, lastRank?: number, 
-    width?: string, height?: string}) {
-  const { number: teamNumber, picklistIndex: picklist } = props.cardData;
+function PicklistCard(props: { picklist: Picklist; strikethroughs: number[] }) {
+	const picklist = props.picklist;
 
-  const [{ isDragging }, dragRef] = useDrag({
-    type: "team",
-    item: props.cardData,
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
+	const [{ isOver: isOverHead, entry: headEntry }, headDropRef] = useDrop({
+		accept: "team",
+		drop: (item: PicklistEntry) => setHeadOfPicklist(picklist, item),
+		collect: (monitor) => ({
+			isOver: monitor.isOver(),
+			entry: monitor.getItem(),
+		}),
+	});
 
-  function changeTeamRank(change: number) {
-    const picklist = props.picklist;
-    if (picklist === undefined || props.rank === undefined || props.lastRank === undefined) return;
+	const [{ isOver: isOverTail, entry: tailEntry }, tailDropRef] = useDrop({
+		accept: "team",
+		drop: (item: PicklistEntry) => setTailOfPicklist(picklist, item),
+		collect: (monitor) => ({
+			isOver: monitor.isOver(),
+			entry: monitor.getItem(),
+		}),
+	});
 
-    const newRank = props.rank + change;
-    if (newRank < 0 || newRank > props.lastRank) return;
+	function changeName(e: ChangeEvent<HTMLInputElement>) {
+		picklist.name = e.target.value;
+		picklist.update(picklist);
+	}
 
-    const otherTeam = picklist.teams[newRank];
-    picklist.teams[newRank] = picklist.teams[props.rank];
-    picklist.teams[props.rank] = otherTeam;
-
-    picklist.update(picklist);
-  }
-
-  return (
-    <div
-      className={`w-${props.width ?? "[150px]"} h-${props.height ?? "[100px]"} bg-base-100 rounded-lg p-1 flex items-center justify-center border-2 border-base-100 hover:border-primary`}
-      ref={dragRef as unknown as () => void}
-    >
-      <h1>
-        {props.rank !== undefined ? `${props.rank + 1}. ` : ""}<span className="max-sm:hidden">Team</span> <span className="text-accent">#{teamNumber}</span>
-      </h1>
-      {
-        props.rank !== undefined && props.lastRank && props.picklist ? (
-          <div className="ml-2 space-x-1">
-            { props.rank > 0 && <button className="btn btn-primary btn-sm" onClick={() => changeTeamRank(-1)}><FaArrowUp /></button> }
-            { props.rank < props.lastRank && <button className="btn btn-primary btn-sm" onClick={() => changeTeamRank(1)}><FaArrowDown /></button> }
-          </div>)
-          : ""
-      }
-    </div>
-  );
+	return (
+		<div className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 flex flex-col items-center p-2 sm:p-4">
+			<div className="flex flex-row items-center">
+				<input
+					defaultValue={picklist.name}
+					className="w-[95%] input input-sm max-sm:hidden"
+					onChange={changeName}
+				/>
+				<h1 className="w-[95%] input input-sm input-disabled sm:hidden">
+					{picklist.name}
+				</h1>
+				<button className="btn btn-xs btn-ghost ml-1">
+					<FaTrash
+						onClick={() =>
+							confirm(`Are you sure you want to delete ${picklist.name}?`) &&
+							picklist.delete()
+						}
+					/>
+				</button>
+			</div>
+			<div className={`w-full grow flex flex-col ${!picklist.head && "mt-2"}`}>
+				<div
+					ref={headDropRef as any}
+					className={`w-full ${!picklist.head ? "h-full" : "min-h-fit h-2"} flex justify-center`}
+				>
+					{picklist.head && isOverHead && (
+						<div className={`w-full ${picklist.head && "my-2"}`}>
+							<TeamCard
+								entry={headEntry}
+								draggable={false}
+								rank={1}
+								preview={true}
+								strikeThroughs={props.strikethroughs}
+							/>
+						</div>
+					)}
+				</div>
+				{picklist.head && (
+					<TeamCard
+						entry={picklist.head}
+						draggable={false}
+						picklist={picklist}
+						rank={isOverHead ? 2 : 1}
+						strikeThroughs={props.strikethroughs}
+					/>
+				)}
+				<div
+					ref={tailDropRef as any}
+					className={`w-full h-full grow flex justify-center ${!picklist.head && "pt-2"}`}
+				>
+					{isOverTail ? (
+						<div className="w-full -translate-y-2">
+							<TeamCard
+								entry={tailEntry}
+								draggable={false}
+								rank={getPicklistLength(picklist) + 1}
+								preview={true}
+								strikeThroughs={props.strikethroughs}
+							/>
+						</div>
+					) : (
+						!picklist.head && (
+							<h1 className="text-center font-semibold text-accent">
+								Drop Here!
+							</h1>
+						)
+					)}
+				</div>
+			</div>
+		</div>
+	);
 }
 
-function  PicklistCard(props: { picklist: Picklist, picklists: Picklist[] }) {
-  const picklist = props.picklist;
+export function TeamList(props: {
+	teams: PicklistEntry[];
+	picklists: Picklist[];
+	expectedTeamCount: number;
+	strikethroughs: number[];
+	toggleStrikethrough: (team: number) => void;
+}) {
+	const [, dropRef] = useDrop({
+		accept: "team",
+		drop: removeEntryFromItsPicklist,
+	});
 
-  const [{ isOver }, dropRef] = useDrop({
-    accept: "team",
-    drop: (item: CardData) => {
-      if (item.picklistIndex === picklist.index) return;
-
-      removeTeamFromPicklist(item, props.picklists);
-
-      if (!Includes(picklist.teams, item)) {
-        item.picklistIndex = picklist.index;
-        picklist.teams.push(item);
-        picklist.update(picklist);
-      }
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-
-  function changeName(e: ChangeEvent<HTMLInputElement>) {
-    picklist.name = e.target.value;
-    picklist.update(picklist);
-  }
-
-  return (
-    <div
-      className="bg-base-200 min-h-[30rem] h-fit rounded-lg w-1/3 sm:w-1/6 min-h-32 flex flex-col items-center space-y-2 p-2 sm:p-4"
-      ref={dropRef as unknown as () => void}
-    >
-      <input defaultValue={picklist.name} className="w-[95%] input input-sm max-sm:hidden" onChange={changeName} />
-      <h1 className="w-[95%] input input-sm input-disabled sm:hidden">{picklist.name}</h1>
-      {picklist.teams.map((team, index) => (
-        <TeamCard
-          cardData={team}
-          draggable={false}
-          key={team.number}
-          picklist={picklist}
-          rank={index}
-          lastRank={picklist.teams.length - 1}
-          width="full"
-          height="[50px]"
-        />
-      ))}
-      {isOver && <h1 className="font-semibold text-accent">Drop Here!</h1>}
-    </div>
-  );
-}
-
-export function TeamList(props: { teams: CardData[], picklists: Picklist[], expectedTeamCount: number }) {
-  const [{ isOver}, dropRef] = useDrop({
-    accept: "team",
-    drop: (item: CardData) => {
-      removeTeamFromPicklist(item, props.picklists);
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-  
-  return (
-    <div ref={dropRef as unknown as () => void} className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll">
-      {
-        props.teams.sort((a, b) => a.number - b.number).map((team) => (
-          <TeamCard
-            draggable={true}
-            cardData={team}
-            key={team.number}
-          />
-        ))
-      }
-      { props.teams.length !== props.expectedTeamCount &&
-        <div className="loading loading-spinner" />
-      }
-    </div>);
+	return (
+		<div
+			ref={dropRef as any}
+			className="w-full h-fit flex flex-row bg-base-300 space-x-2 p-2 overflow-x-scroll"
+		>
+			{props.teams
+				.sort((a, b) => a.number - b.number)
+				.map((team) => (
+					<TeamCard
+						draggable={true}
+						entry={team}
+						key={team.number}
+						strikeThroughs={props.strikethroughs}
+						toggleStrikethrough={props.toggleStrikethrough}
+					/>
+				))}
+			{props.teams.length !== props.expectedTeamCount && (
+				<div className="loading loading-spinner" />
+			)}
+		</div>
+	);
 }
 
 const api = new ClientApi();
 
-export default function PicklistScreen(props: { teams: number[], reports: Report[], expectedTeamCount: number, picklist: DbPicklist, compId: string }) {
-  const [picklists, setPicklists] = useState<Picklist[]>([]);
+export default function PicklistScreen(props: {
+	teams: number[];
+	reports: Report[];
+	expectedTeamCount: number;
+	picklist: CompPicklistGroup;
+	compId: string;
+}) {
+	const [picklists, setPicklists] = useState<Picklist[]>([]);
 
-  enum LoadState {
-    NotLoaded,
-    Loading,
-    Loaded
-  }
+	enum LoadState {
+		NotLoaded,
+		Loading,
+		Loaded,
+	}
 
-  const [loadingPicklists, setLoadingPicklists] = useState(LoadState.NotLoaded);
+	const [loadingPicklists, setLoadingPicklists] = useState(LoadState.NotLoaded);
 
-  const teams = props.teams.map((team) => ({ number: team }));
+	const [strikethroughs, setStrikethroughs] = useState<number[]>([]);
 
-  function savePicklists(picklists: Picklist[]) {
-    const picklistDict = picklists.reduce<DbPicklist>((acc, picklist) => {
-      acc.picklists[picklist.name] = picklist.teams.map((team) => team.number);
-      return acc;
-    }, {
-      _id: props.picklist._id,
-      picklists: {}
-    });
+	const teams = props.teams.map((team) => ({ number: team }));
 
-    updateCompInLocalStorage(props.compId, (comp) => comp.picklists = picklistDict);
-    
-    api.updatePicklist(picklistDict);
-  }
+	// Save picklists
+	useEffect(
+		() => savePicklistGroup(props.picklist._id, picklists, strikethroughs, api),
+		[props.picklist._id, picklists, strikethroughs],
+	);
 
-  function updatePicklist(picklist: Picklist) {
-    setPicklists((old) => {
-      const newPicklists = old.map((p) => {
-        if (p.index === picklist.index) {
-          return picklist;
-        } else {
-          return p;
-        }
-      });
+	const updatePicklist = useCallback(
+		(picklist: Picklist) => {
+			setPicklists((old) => {
+				const newPicklists = old.map((p) => {
+					if (p.index === picklist.index) {
+						return picklist;
+					} else {
+						return p;
+					}
+				});
 
-      savePicklists(newPicklists);
-      return newPicklists;
-    });
-  }
+				return newPicklists;
+			});
+		},
+		[setPicklists],
+	);
 
-  function loadDbPicklist(picklistDict: DbPicklist) {
-    setPicklists(Object.entries(picklistDict.picklists).map((picklist, index) => {
-          const newPicklist: Picklist = {
-            index,
-            name: picklist[0],
-            teams: picklist[1].map((team: number) => ({ number: team })),
-            update: updatePicklist
-          };
+	const deletePicklist = useCallback(
+		(picklist: Picklist) => {
+			setPicklists((old) => {
+				const newPicklists = old.filter((p) => p.index !== picklist.index);
+				return newPicklists;
+			});
+		},
+		[setPicklists],
+	);
 
-          for (const team of newPicklist.teams) {
-            team.picklistIndex = newPicklist.index;
-          }
+	const loadPicklistGroupMemo = useCallback(
+		(picklistDict: CompPicklistGroup) =>
+			loadPicklistGroup(
+				picklistDict,
+				setStrikethroughs,
+				setPicklists,
+				updatePicklist,
+				deletePicklist,
+			),
+		[setStrikethroughs, setPicklists, updatePicklist, deletePicklist],
+	);
 
-          return newPicklist;
-        }));
-  }
+	const toggleStrikethrough = useCallback(
+		(team: number) => {
+			setStrikethroughs((old) => {
+				if (old.includes(team)) {
+					return old.filter((t) => t !== team);
+				} else {
+					return [...old, team];
+				}
+			});
+		},
+		[setStrikethroughs],
+	);
 
-  useEffect(() => {
-    if (loadingPicklists !== LoadState.NotLoaded) return;
+	// Load picklists
+	useEffect(() => {
+		if (loadingPicklists !== LoadState.NotLoaded) return;
 
-    console.log(props);
-    setLoadingPicklists(LoadState.Loading);
-    api.getPicklist(props.picklist?._id).then((picklist) => {
-      if (picklist) {
-        loadDbPicklist(picklist);
-      }
-    });
-    loadDbPicklist(props.picklist);
+		setLoadingPicklists(LoadState.Loading);
+		api.getPicklistGroup(props.picklist?._id).then((picklist) => {
+			if (picklist) {
+				loadPicklistGroupMemo(picklist);
+			}
+		});
+		loadPicklistGroupMemo(props.picklist);
 
-    setLoadingPicklists(LoadState.Loaded);
-  });
+		setLoadingPicklists(LoadState.Loaded);
+	}, [
+		loadingPicklists,
+		LoadState.NotLoaded,
+		LoadState.Loading,
+		LoadState.Loaded,
+		props.picklist,
+		loadPicklistGroupMemo,
+	]);
 
-  const addPicklist = () => {
-    const newPicklist: Picklist = {
-      index: picklists.length,
-      name: `Picklist ${picklists.length + 1}`,
-      teams: [],
-      update: updatePicklist
-    };
+	const addPicklist = () => {
+		const newPicklist: Picklist = {
+			index: picklists.length,
+			name: `Picklist ${picklists.length + 1}`,
+			head: undefined,
+			update: updatePicklist,
+			delete: () => deletePicklist(newPicklist),
+		};
 
-    const newPicklists = [...picklists, newPicklist];
-    savePicklists(newPicklists);
-    setPicklists(newPicklists);
-  };
+		const newPicklists = [...picklists, newPicklist];
+		setPicklists(newPicklists);
+	};
 
-  return (
-    <div className="w-full h-fit flex flex-col space-y-2">
-      <TeamList teams={teams} picklists={picklists} expectedTeamCount={props.expectedTeamCount}></TeamList>
+	const [, dropRef] = useDrop({
+		accept: "team",
+		drop: (item: PicklistEntry, monitor) => {
+			if (monitor.didDrop()) return; // Check if another drop target handled the drop
+			removeEntryFromItsPicklist(item);
+		},
+	});
 
-      <div className="w-full min-h-[30rem] h-fit px-4 py-2 flex flex-row space-x-3">
-        {
-          loadingPicklists === LoadState.Loading
-          ?  <div className="w-full h-full flex items-center justify-center">
-              <div className="loading loading-spinner" />
-            </div>
-          : picklists.length === 0 
-            ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <h1 className="text-3xl text-accent animate-bounce font-semibold">
-                Create A Picklist
-              </h1>
-            </div>
-            )
-            : picklists.map((picklist) => (
-              <PicklistCard key={picklist.index} picklist={picklist} picklists={picklists}></PicklistCard>
-            )
-          )
-        }
-      </div>
+	return (
+		<div className="w-full h-fit flex flex-col space-y-2">
+			<TeamList
+				teams={teams}
+				picklists={picklists}
+				expectedTeamCount={props.expectedTeamCount}
+				strikethroughs={strikethroughs}
+				toggleStrikethrough={toggleStrikethrough}
+			/>
 
-      { loadingPicklists !== LoadState.Loading &&
-        <button
-          className="max-sm:hidden btn btn-circle btn-lg btn-primary absolute right-10 bottom-[21rem] animate-pulse font-bold "
-          onClick={addPicklist}
-        >
-          <FaPlus></FaPlus>
-        </button>
-      }
-    </div>
-  );
+			<div
+				ref={dropRef as any}
+				className="w-full min-h-[30rem] h-full px-4 py-2 flex flex-row space-x-3"
+			>
+				{loadingPicklists === LoadState.Loading ? (
+					<div className="w-full h-full flex items-center justify-center">
+						<div className="loading loading-spinner" />
+					</div>
+				) : picklists.length === 0 ? (
+					<div className="w-full h-full flex items-center justify-center">
+						<h1 className="text-3xl text-accent animate-bounce font-semibold">
+							Create A Picklist
+						</h1>
+					</div>
+				) : (
+					picklists.map((picklist) => (
+						<PicklistCard
+							key={picklist.index}
+							picklist={picklist}
+							strikethroughs={strikethroughs}
+						/>
+					))
+				)}
+			</div>
+
+			{loadingPicklists !== LoadState.Loading && (
+				<button
+					className="max-sm:hidden btn btn-circle btn-lg btn-primary fixed right-10 bottom-10 animate-pulse font-bold "
+					onClick={addPicklist}
+				>
+					<FaPlus />
+				</button>
+			)}
+		</div>
+	);
 }

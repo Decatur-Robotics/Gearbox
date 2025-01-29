@@ -1,18 +1,17 @@
-import {
-  Db,
-  MongoClient,
-  MongoClientOptions,
-} from "mongodb";
-import { ObjectId } from "bson";
-import CollectionId from "./client/CollectionId";
-import DbInterface from "./client/dbinterfaces/DbInterface";
+import { Db, MongoClient, MongoClientOptions } from "mongodb";
+import { ObjectId, Document } from "bson";
+import CollectionId, { CollectionIdToType } from "./client/CollectionId";
+import DbInterface, {
+	WithStringOrObjectIdId,
+} from "./client/dbinterfaces/DbInterface";
+import { default as BaseMongoDbInterface } from "mongo-anywhere/MongoDbInterface";
 
 if (!process.env.MONGODB_URI) {
-  // Necessary to allow connections from files running outside of Next
-  require("dotenv").config();
+	// Necessary to allow connections from files running outside of Next
+	require("dotenv").config();
 
-  if (!process.env.MONGODB_URI)
-    console.error('Invalid/Missing environment variable: "MONGODB_URI"');
+	if (!process.env.MONGODB_URI)
+		console.error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
 const uri = process.env.MONGODB_URI ?? "mongodb://localhost:27017";
@@ -22,104 +21,77 @@ let client;
 let clientPromise: Promise<MongoClient>;
 
 if (!global.clientPromise) {
-  client = new MongoClient(uri, options);
-  global.clientPromise = client.connect();
+	client = new MongoClient(uri, options);
+	global.clientPromise = client.connect();
 }
 clientPromise = global.clientPromise;
 
 export { clientPromise };
 
 export async function getDatabase(): Promise<MongoDBInterface> {
-  if (!global.interface) {
-    await clientPromise;
-    const dbInterface = new MongoDBInterface(clientPromise);
-    await dbInterface.init();
-    global.interface = dbInterface;
+	if (!global.interface) {
+		await clientPromise;
+		const dbInterface = new MongoDBInterface(clientPromise);
+		await dbInterface.init();
+		global.interface = dbInterface;
 
-    return dbInterface;
-  }
+		return dbInterface;
+	}
 
-  return global.interface;
+	return global.interface;
 }
 
-export class MongoDBInterface implements DbInterface {
-  promise: Promise<MongoClient> | undefined;
-  client: MongoClient | undefined;
-  db: Db | undefined;
+export class MongoDBInterface
+	extends BaseMongoDbInterface<CollectionId, CollectionIdToType<CollectionId>>
+	implements DbInterface
+{
+	async init() {
+		super.init(Object.values(CollectionId));
+	}
 
-  constructor(promise: Promise<MongoClient>) {
-    this.promise = promise;
-  }
+	async addObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, object: WithStringOrObjectIdId<TObj>): Promise<TObj> {
+		return super.addObject(collection, object);
+	}
 
-  async init() {
-    this.client = await this.promise;
-    this.db = this.client?.db(process.env.DB);
-    //@ts-ignore
+	async deleteObjectById(collection: CollectionId, id: ObjectId) {
+		await this?.db?.collection(collection).deleteOne({ _id: id });
+	}
 
-    const CollectionId = await this.db?.listCollections().toArray() as CollectionId;
-    if (CollectionId?.length === 0) {
-      try {
-        Object.values(CollectionId).forEach(
-          async (collectionName) =>
-            await this.db?.createCollection(collectionName)
-        );
-      } catch (e) {
-        console.log("Failed to create CollectionId... (probably exist already)");
-      }
-    }
-  }
+	updateObjectById<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, id: ObjectId, newValues: Partial<TObj>): Promise<void> {
+		return super.updateObjectById(collection, id, newValues);
+	}
 
-  async addObject<Type>(collection: CollectionId, object: any): Promise<Type> {
-    const ack = await this?.db?.collection(collection).insertOne(object);
-    object._id = ack?.insertedId;
-    return object as Type;
-  }
+	async findObjectById<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, id: ObjectId): Promise<TObj> {
+		return super.findObjectById(collection, id);
+	}
 
-  async deleteObjectById(collection: CollectionId, id: ObjectId) {
-    var query = { _id: id };
-    await this?.db?.collection(collection).deleteOne(query);
-  }
+	async findObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, query: object): Promise<TObj> {
+		return super.findObject(collection, query);
+	}
 
-  async updateObjectById<Type>(
-    collection: CollectionId,
-    id: ObjectId,
-    newValues: Partial<Type> | { [key: string]: any }
-  ) {
-    var query = { _id: id };
-    var updated = { $set: newValues };
-    this?.db
-      ?.collection(collection)
-      .updateOne(query, updated);
-  }
+	async findObjects<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, query: object): Promise<TObj[]> {
+		return super.findObjects(collection, query);
+	}
 
-  async findObjectById<Type>(
-    collection: CollectionId,
-    id: ObjectId
-  ): Promise<Type> {
-    return (await this?.db?.collection(collection).findOne({ _id: id })) as Type;
-  }
-
-  async findObject<Type>(
-    collection: CollectionId,
-    query: object
-  ): Promise<Type> {
-    return (await this?.db?.collection(collection).findOne(query)) as Type;
-  }
-
-  async findObjects<Type>(
-    collection: CollectionId,
-    query: object
-  ): Promise<Type[]> {
-    return (await this?.db
-      ?.collection(collection)
-      .find(query)
-      .toArray()) as Type[];
-  }
-
-  async countObjects(
-    collection: CollectionId,
-    query: object
-  ): Promise<number | undefined> {
-    return await this?.db?.collection(collection).countDocuments(query);
-  }
+	async countObjects(
+		collection: CollectionId,
+		query: object,
+	): Promise<number | undefined> {
+		return super.countObjects(collection, query);
+	}
 }

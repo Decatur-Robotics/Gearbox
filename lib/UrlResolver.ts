@@ -13,10 +13,10 @@ const gdb = getDatabase();
  * Structure to hold the final, resolved URL Data
  */
 export interface ResolvedUrlData {
-  team: Team | undefined;
-  season: Season | undefined;
-  competition: Competition | undefined;
-  report: Report | undefined;
+	team: Team | undefined;
+	season: Season | undefined;
+	competition: Competition | undefined;
+	report: Report | undefined;
 }
 
 /**
@@ -30,24 +30,24 @@ export interface ResolvedUrlData {
  * @returns - The same object, but with `_id` set as a string
  */
 export function SerializeDatabaseObject(object: any): any {
-  if (!object) {
-    return null;
-  }
-  if (object?._id) {
-    object._id = object?._id.toString();
-  }
-  if (object?.ownerTeam) {
-    object.ownerTeam = object.ownerTeam.toString();
-  }
-  if (object?.ownerComp) {
-    object.ownerComp = object.ownerComp.toString();
-  }
+	if (!object) {
+		return null;
+	}
+	if (object?._id) {
+		object._id = object?._id.toString();
+	}
+	if (object?.ownerTeam) {
+		object.ownerTeam = object.ownerTeam.toString();
+	}
+	if (object?.ownerComp) {
+		object.ownerComp = object.ownerComp.toString();
+	}
 
-  return object;
+	return object;
 }
 
 export function SerializeDatabaseObjects(objectArray: any[]): any[] {
-  return objectArray.map((obj) => SerializeDatabaseObject(obj));
+	return objectArray.map((obj) => SerializeDatabaseObject(obj));
 }
 
 /**
@@ -62,62 +62,71 @@ export function SerializeDatabaseObjects(objectArray: any[]): any[] {
  */
 
 export default async function UrlResolver(
-  context: GetServerSidePropsContext,
-  depthToCheckValidity: number
+	context: GetServerSidePropsContext,
+	depthToCheckValidity: number,
 ): Promise<ResolvedUrlData | { redirect: Redirect }> {
-  const db = await gdb;
+	const db = await gdb;
 
-  // split the url into the specific parts
-  const splittedUrl = context.resolvedUrl.split("/");
-  splittedUrl.shift();
+	// split the url into the specific parts
+	const splittedUrl = context.resolvedUrl.split("/");
+	splittedUrl.shift();
 
-  // each split cooresponds to a different slug for a specific object
-  const teamSlug = splittedUrl[0];
+	// each split cooresponds to a different slug for a specific object
+	const teamSlug = splittedUrl[0];
 
-  const seasonSlug = splittedUrl[1];
-  const competitionSlug = splittedUrl[2];
-  // very hacky- fix this
-  const reportId = splittedUrl[3]?.length > 5 ? splittedUrl[3] : undefined;
+	const seasonSlug = splittedUrl[1];
+	const competitionSlug = splittedUrl[2];
+	// very hacky- fix this
+	const reportId = splittedUrl[3]?.length > 5 ? splittedUrl[3] : undefined;
 
-  try {
-    const promises = [
-      db.findObject<Team>(CollectionId.Teams, { slug: teamSlug }),
-      seasonSlug
-        ? db.findObject<Season>(CollectionId.Seasons, { slug: seasonSlug })
-        : null,
-      competitionSlug
-        ? db.findObject<Competition>(CollectionId.Competitions, {
-            slug: competitionSlug,
-          })
-        : null,
-      reportId
-        ? db.findObject<Report>(CollectionId.Reports, {
-            _id: new ObjectId(reportId),
-          })
-        : null,
-    ];
+	try {
+		const promises = [
+			db.findObject(CollectionId.Teams, { slug: teamSlug }),
+			seasonSlug
+				? db.findObject(CollectionId.Seasons, { slug: seasonSlug })
+				: null,
+			competitionSlug
+				? db.findObject(CollectionId.Competitions, {
+						slug: competitionSlug,
+					})
+				: null,
+			reportId
+				? db.findObject(CollectionId.Reports, {
+						_id: new ObjectId(reportId),
+					})
+				: null,
+		];
 
-    await Promise.all(promises);
+		await Promise.all(promises);
 
-    for (const promise of promises.slice(0, depthToCheckValidity)) {
-      // If the value is just null, we didn't fetch the object in the first place
-      if (promise instanceof Promise && (await promise === null || await promise === undefined)) {
-        return createRedirect("/error", { message: `Page Not Found: ${context.resolvedUrl}`, code: 404 });
-      }
-    }
+		for (const promise of promises.slice(0, depthToCheckValidity)) {
+			// If the value is just null, we didn't fetch the object in the first place
+			if (
+				promise instanceof Promise &&
+				((await promise) === null || (await promise) === undefined)
+			) {
+				return createRedirect("/error", {
+					message: `Page Not Found: ${context.resolvedUrl}`,
+					code: 404,
+				});
+			}
+		}
 
-    // find these slugs, and convert them to a JSON safe condition
-    // if they dont exist, simply return nothing
-    const data: ResolvedUrlData = {
-      team: SerializeDatabaseObject(await promises[0]),
-      season: SerializeDatabaseObject(await promises[1]),
-      competition: SerializeDatabaseObject(await promises[2]),
-      report: SerializeDatabaseObject(await promises[3]),
-    };
-    return data;
-  } catch (error) {
-    console.error(error);
-    
-    return createRedirect("/error", { message: `Internal Server Error: ${error}`, code: 500 });
-  }
+		// find these slugs, and convert them to a JSON safe condition
+		// if they dont exist, simply return nothing
+		const data: ResolvedUrlData = {
+			team: SerializeDatabaseObject(await promises[0]),
+			season: SerializeDatabaseObject(await promises[1]),
+			competition: SerializeDatabaseObject(await promises[2]),
+			report: SerializeDatabaseObject(await promises[3]),
+		};
+		return data;
+	} catch (error) {
+		console.error(error);
+
+		return createRedirect("/error", {
+			message: `Internal Server Error: ${error}`,
+			code: 500,
+		});
+	}
 }

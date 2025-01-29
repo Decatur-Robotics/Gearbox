@@ -1,30 +1,43 @@
-const XP_PER_LEVEL = 20;
+/**
+ * Use the /dev/leveling page to visualize these functions. Be sure to update MAX_LEVEL in that file!
+ *
+ * @tested_by /lib/Xp.test.ts
+ */
+
+export const XP_PER_LEVEL = 20;
 
 export function xpToLevel(xp: number) {
-  return Math.floor(xp / XP_PER_LEVEL);
+	if (xp < 0) return 0;
+	return Math.floor(xp / XP_PER_LEVEL);
 }
 
 export function levelToXp(level: number) {
-  return level * XP_PER_LEVEL;
+	if (level < 0) return 0;
+	return level * XP_PER_LEVEL;
 }
 
 export function xpRequiredForNextLevel(level: number) {
-  return levelToXp(level + 1);
+	return Math.max(levelToXp(level + 1), 0);
 }
 
 export function levelToClassName(level: number | undefined) {
-  if (!level) {
-    return "border-neutral";
-  }
-  let className = "border-";
+	if (!level) {
+		return "border-neutral";
+	}
 
-  if (level >= 20) className += "primary";
-  else if (level >= 15) className += "secondary";
-  else if (level >= 10) className += "accent";
-  else if (level >= 5) className += "error";
-  else if (level >= 3) className += "warning";
-  else if (level >= 1) className += "success";
-  else className += "info";
+	const classes: string[] = [];
 
-  return className;
+	if (level >= 120)
+		classes.push(
+			"border-accent hover:border-primary drop-shadow-glowAccent animate-pulse",
+		);
+	else if (level >= 90)
+		classes.push("border-accent hover:border-primary drop-shadow-glowAccent");
+	else if (level >= 70)
+		classes.push("border-primary hover:border-accent drop-shadow-glowStrong");
+	else if (level >= 40) classes.push("border-accent hover:border-primary");
+	else if (level >= 30) classes.push("border-accent");
+	else if (level >= 10) classes.push("border-primary");
+
+	return classes.join(" ");
 }

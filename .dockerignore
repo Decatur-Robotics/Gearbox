@@ -1,0 +1,12 @@
+node_modules
+tests
+.git
+.github
+.next
+.swc
+.vscode
+coverage
+certs
+.env
+.env.test
+tsconfig.tsbuildinfo

@@ -7,7 +7,7 @@ import { getDatabase, clientPromise } from "./MongoDB";
 import { ObjectId } from "bson";
 import { User } from "./Types";
 import { GenerateSlug } from "./Utils";
-import { Analytics } from '@/lib/client/Analytics';
+import { Analytics } from "@/lib/client/Analytics";
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
@@ -18,26 +18,30 @@ const db = getDatabase();
 const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
 
 export const AuthenticationOptions: AuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
-      profile: async (profile) => {
-        const user = new User(
-          profile.name,
-          profile.email,
-          profile.picture,
-          false,
-          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
-          [],
-          []
-        );
-        user.id = profile.sub;
-        return user;
-      },
-    }),
-    /*
+	secret: process.env.NEXTAUTH_SECRET,
+	providers: [
+		Google({
+			clientId: process.env.GOOGLE_ID,
+			clientSecret: process.env.GOOGLE_SECRET,
+			profile: async (profile) => {
+				const user = new User(
+					profile.name,
+					profile.email,
+					profile.picture,
+					false,
+					await GenerateSlug(
+						await getDatabase(),
+						CollectionId.Users,
+						profile.name,
+					),
+					[],
+					[],
+				);
+				user.id = profile.sub;
+				return user;
+			},
+		}),
+		/*
         GitHubProvider({
           clientId: process.env.GITHUB_ID as string,
           clientSecret: process.env.GITHUB_SECRET as string,
@@ -48,107 +52,128 @@ export const AuthenticationOptions: AuthOptions = {
         },
       }),
       */
-    SlackProvider({
-      clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
-      clientSecret: process.env.SLACK_CLIENT_SECRET as string,
-      profile: async (profile) => {
-        const user = new User(
-          profile.name,
-          profile.email,
-          profile.picture,
-          false,
-          await GenerateSlug(await getDatabase(), CollectionId.Users, profile.name),
-          [],
-          [],
-          profile.sub,
-          10,
-          1
-        );
-        user.id = profile.sub;
-        return user;
-      }
-    }),
-    Email({
-      server: {
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      },
-      from: process.env.SMTP_FROM
-    })
-  ],
-  callbacks: {
-    async session({ session, user }) {
-      session.user = await (await db).findObjectById(
-        CollectionId.Users,
-        new ObjectId(user.id)
-      );
+		SlackProvider({
+			clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
+			clientSecret: process.env.SLACK_CLIENT_SECRET as string,
+			profile: async (profile) => {
+				const user = new User(
+					profile.name,
+					profile.email,
+					profile.picture,
+					false,
+					await GenerateSlug(
+						await getDatabase(),
+						CollectionId.Users,
+						profile.name,
+					),
+					[],
+					[],
+					profile.sub,
+					10,
+					1,
+				);
+				user.id = profile.sub;
+				return user;
+			},
+		}),
+		Email({
+			server: {
+				host: process.env.SMTP_HOST,
+				port: process.env.SMTP_PORT,
+				auth: {
+					user: process.env.SMTP_USER,
+					pass: process.env.SMTP_PASSWORD,
+				},
+			},
+			from: process.env.SMTP_FROM,
+		}),
+	],
+	callbacks: {
+		async session({ session, user }) {
+			session.user = await (
+				await db
+			).findObjectById(CollectionId.Users, new ObjectId(user.id));
 
-      return session;
-    },
+			return session;
+		},
 
-    async redirect({ baseUrl }) {
-      return baseUrl + "/onboarding";
-    },
+		async redirect({ baseUrl }) {
+			return baseUrl + "/onboarding";
+		},
 
-    async signIn({ user }) {
-      Analytics.signIn(user.name ?? "Unknown User");
-      new ResendUtils().createContact(user);
+		async signIn({ user }) {
+			Analytics.signIn(user.name ?? "Unknown User");
 
-      let typedUser = user as Partial<User>;
-      if (!typedUser.slug) {
-        console.log("User is incomplete, filling in missing fields");
+			let typedUser = user as Partial<User>;
+			if (!typedUser.slug) {
+				console.log(
+					"User is incomplete, filling in missing fields. User:",
+					typedUser,
+				);
 
-        const name = typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
+				const name =
+					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
+
+				const id = typedUser._id ?? new ObjectId();
+
+				// User is incomplete, fill in the missing fields
+				typedUser = {
+					_id: id,
+					id: id.toString(),
+					name,
+					image: typedUser.image ?? "https://4026.org/user.jpg",
+					slug: await GenerateSlug(
+						await getDatabase(),
+						CollectionId.Users,
+						name,
+					),
+					teams: typedUser.teams ?? [],
+					owner: typedUser.owner ?? [],
+					slackId: typedUser.slackId ?? "",
+					onboardingComplete: typedUser.onboardingComplete ?? false,
+					admin: typedUser.admin ?? false,
+					xp: typedUser.xp ?? 0,
+					level: typedUser.level ?? 0,
+					...typedUser,
+				} as User;
+
+				await (
+					await db
+				).updateObjectById(
+					CollectionId.Users,
+					new ObjectId(typedUser._id?.toString()),
+					typedUser,
+				);
+			}
         
-        // User is incomplete, fill in the missing fields
-        typedUser = {
-          _id: typedUser._id ?? new ObjectId(typedUser.id),
-          name,
-          image: typedUser.image ?? "https://4026.org/user.jpg",
-          slug: await GenerateSlug(await db, CollectionId.Users, name),
-          teams: typedUser.teams ?? [],
-          owner: typedUser.owner ?? [],
-          slackId: typedUser.slackId ?? "",
-          onboardingComplete: typedUser.onboardingComplete ?? false,
-          admin: typedUser.admin ?? false,
-          xp: typedUser.xp ?? 0,
-          level: typedUser.level ?? 0,
-          ...typedUser,
-        } as User;
-
-        await (await db).updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), typedUser);
-      }
-      
       const today = new Date();
-      if ((user as User).lastSignInDateTime?.toDateString() !== today.toDateString()) {
+      if ((typedUser as User).lastSignInDateTime?.toDateString() !== today.toDateString()) {
         // We use user.id since user._id strangely doesn't exist on user.
         await getDatabase()
-          .then(db => db.updateObjectById(CollectionId.Users, new ObjectId(user.id), {
+          .then(db => db.updateObjectById(CollectionId.Users, new ObjectId(typedUser.id), {
             lastSignInDate: today
           }));
       }
 
-      return true;
-    }
-  },
-  debug: false,
-  adapter: {
-    ...adapter,
-    createUser: async (user: Omit<AdapterUser, "id">) => {
-      const createdUser = await adapter.createUser!(user);
+			new ResendUtils().createContact(typedUser as User);
 
-      Analytics.newSignUp(user.name ?? "Unknown User");
+			return true;
+		},
+	},
+	debug: false,
+	adapter: {
+		...adapter,
+		createUser: async (user: Omit<AdapterUser, "id">) => {
+			const createdUser = await adapter.createUser!(user);
 
-      return createdUser;
-    }
-  },
-  pages: {
-    //signIn: "/signin",
-  },
+			Analytics.newSignUp(user.name ?? "Unknown User");
+
+			return createdUser;
+		},
+	},
+	pages: {
+		//signIn: "/signin",
+	},
 };
 
 export default NextAuth(AuthenticationOptions);
