@@ -74,7 +74,7 @@ export default function CreateTeam() {
 			.getTeamAutofillData(team.number!, team.league ?? League.FRC)
 			.catch(() => null)
 			.then((data) => {
-				if (data) setTeam({ ...team, name: data.name });
+				if (data) setTeam((team) => ({ ...team, name: data.name }));
 				setError("");
 			});
 	}, [team.number, team.league]);
