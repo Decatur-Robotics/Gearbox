@@ -2181,14 +2181,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
-  getUserAnalyticsData = ApiLib.createRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
+  getUserAnalyticsData = createNextRoute<[], { [team: string]: { date: Date, count: number }[] }, ApiDependencies, void>({
     isAuthorized: AccessLevels.IfDeveloper,
     handler: async (req, res, { db: dbPromise }, authData, args) => {
       const db = await dbPromise;
 
       const [teams, users] = await Promise.all([
-        db.findObjects<Team>(CollectionId.Teams, {}),
-        db.findObjects<User>(CollectionId.Users, { lastSignInDateTime: { $exists: true } })
+        db.findObjects(CollectionId.Teams, {}),
+        db.findObjects(CollectionId.Users, { lastSignInDateTime: { $exists: true } })
       ]);
 
       const signInDatesByTeam: { [team: string]: LinkedList<{ date: string, count: number }> } = teams.reduce((acc, team) => {
