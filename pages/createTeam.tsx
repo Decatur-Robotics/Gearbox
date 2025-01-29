@@ -77,7 +77,7 @@ export default function CreateTeam() {
 				if (data) setTeam({ ...team, name: data.name });
 				setError("");
 			});
-	}, [team]);
+	}, [team.number, team.league]);
 
 	return (
 		<Container
