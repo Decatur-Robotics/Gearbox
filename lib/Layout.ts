@@ -143,6 +143,14 @@ export type StatPair<
 	label: string;
 };
 
+export type StatGroup<
+	TPitData extends PitReportData,
+	TQuantData extends QuantData,
+> = {
+	stats: Stat<TPitData, TQuantData>[]
+	label: string;
+}
+
 export type StatsLayout<
 	TPitData extends PitReportData,
 	TQuantData extends QuantData,

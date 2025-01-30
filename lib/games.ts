@@ -1181,7 +1181,6 @@ namespace Reefscape {
 		TeleopCoralScoredLevelTwo: number = 0;
 		TeleopCoralScoredLevelThree: number = 0;
 		TeleopCoralScoredLevelFour: number = 0;
-		TeleopCoralCycleFails: number = 0;
 
 		TeleopAlgaeRemovedFromReef: number = 0;
 		TeleopAlgaeScoredProcessor: number = 0;
@@ -1202,8 +1201,8 @@ namespace Reefscape {
 			ReefscapeEnums.CanRemoveAlgae.CannotRemove;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNest: boolean = false;
-		AlgaeScoredAuto: number = 0
-		CoralScoredAuto: number = 0
+		AlgaeScoredAuto: number = 0;
+		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
 	}
 
@@ -1334,14 +1333,147 @@ namespace Reefscape {
 
 	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
 		overallSlideStats: [
-
+			{
+				label: "Average Algae Scored In Auto",
+				key: "AlgaeScoredAuto",
+			},
+			{
+				label: "Average Coral Scored In Auto",
+				key: "CoralScoredAuto",
+			},
 		],
-		individualSlideStats: [],
-		robotCapabilities: [],
+		individualSlideStats: [
+			{
+				label: "Average Auto Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const CoralLvlOne = NumericalTotal(
+						"AutoCoralScoredLevelOne",
+						quantitativeReports,
+					);
+
+					const CoralLvlTwo = NumericalTotal(
+						"AutoCoralScoredLevelTwo",
+						quantitativeReports,
+					);
+
+					const CoralLvlThree = NumericalTotal(
+						"AutoCoralScoredLevelThree",
+						quantitativeReports,
+					);
+
+					const CoralLvlFour = NumericalTotal(
+						"AutoCoralScoredLevelFour",
+						quantitativeReports,
+					);
+
+					const AlgaeNest = NumericalTotal(
+						"AutoAlgaeScoredNest",
+						quantitativeReports,
+					);
+
+					const AlgaeProcessor = NumericalTotal(
+						"AutoAlgaeScoredProcessor",
+						quantitativeReports,
+					);
+
+					return (
+						(CoralLvlOne +
+							CoralLvlTwo +
+							CoralLvlThree +
+							CoralLvlFour +
+							AlgaeNest +
+							AlgaeProcessor) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Average Teleop Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const CoralLvlOne = NumericalTotal(
+						"TeleopCoralScoredLevelOne",
+						quantitativeReports,
+					);
+
+					const CoralLvlTwo = NumericalTotal(
+						"TeleopCoralScoredLevelTwo",
+						quantitativeReports,
+					);
+
+					const CoralLvlThree = NumericalTotal(
+						"TeleopCoralScoredLevelThree",
+						quantitativeReports,
+					);
+
+					const CoralLvlFour = NumericalTotal(
+						"TeleopCoralScoredLevelFour",
+						quantitativeReports,
+					);
+
+					const AlgaeNest = NumericalTotal(
+						"TeleopAlgaeScoredNest",
+						quantitativeReports,
+					);
+
+					const AlgaeProcessor = NumericalTotal(
+						"TeleopAlgaeScoredProcessor",
+						quantitativeReports,
+					);
+
+					return (
+						(CoralLvlOne +
+							CoralLvlTwo +
+							CoralLvlThree +
+							CoralLvlFour +
+							AlgaeNest +
+							AlgaeProcessor) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Avg Endgame Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const climbed = NumericalTotal(
+						"EndgameClimbStatus",
+						quantitativeReports,
+					);
+
+					return Round(climbed) / quantitativeReports.length;
+				},
+			},
+		],
+		robotCapabilities: [
+			{
+				key: "CanDriveUnderShallowCage",
+				label: "Can Drive Under Shallow Cage?",
+			},
+			{ key: "CanRemoveAlgae", label: "Can Remove Algae?" },
+			{
+				key: "CanScoreAlgaeInProcessor",
+				label: "Can Score Algae in Processor?",
+			},
+			{ key: "CanScoreAlgaeInNest", label: "Can Score Algae in Nest?" },
+			{ key: "Climbing", label: "Climbing?" },
+		],
 		graphStat: {
-			label: "",
-			key: undefined,
-			get: undefined,
+			label: "Average Coral Scored In Auto",
+			key: "CoralScoredAuto",
 		},
 	};
 
