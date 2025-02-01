@@ -114,6 +114,14 @@ export async function repairUser(
 		}
 	}
 
+	if (typeof id === "string") {
+		try {
+			id = new ObjectId(id);
+		} catch (e) {
+			console.error("Invalid ObjectId:", id);
+		}
+	}
+
 	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
 
 	// User is incomplete, fill in the missing fields
@@ -137,7 +145,7 @@ export async function repairUser(
 		console.log("Updating user", user._id);
 		await db.updateObjectById(
 			CollectionId.Users,
-			new ObjectId(user._id?.toString()),
+			user._id as unknown as ObjectId,
 			user,
 		);
 	}
