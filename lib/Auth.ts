@@ -112,7 +112,9 @@ export const AuthenticationOptions: AuthOptions = {
 			let typedUser = user as Partial<User>;
 			if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
 				const repairUserOnceItIsInDb = async () => {
-					console.log("User is incomplete, waiting for it to be in the database.");
+					console.log(
+						"User is incomplete, waiting for it to be in the database.",
+					);
 					let foundUser: User | undefined = undefined;
 					while (!foundUser) {
 						foundUser = await (
@@ -132,7 +134,7 @@ export const AuthenticationOptions: AuthOptions = {
 					typedUser = await repairUser(await db, typedUser);
 
 					console.log("User updated:", typedUser);
-				}
+				};
 
 				repairUserOnceItIsInDb();
 			}
