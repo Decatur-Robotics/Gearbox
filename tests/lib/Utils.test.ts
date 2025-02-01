@@ -223,12 +223,15 @@ describe(repairUser.name, () => {
 
 		const user = {
 			_id: new ObjectId() as unknown as string,
-			email: "test@gmail.com"
+			email: "test@gmail.com",
 		};
 
 		await repairUser(db, user, false);
 
-		const foundUser = await db.findObjectById(CollectionId.Users, new ObjectId(user._id));
+		const foundUser = await db.findObjectById(
+			CollectionId.Users,
+			new ObjectId(user._id),
+		);
 		expect(foundUser).toBeUndefined();
 	});
 
@@ -242,7 +245,7 @@ describe(repairUser.name, () => {
 
 		const repairedUser = await repairUser(db, user, false);
 
-		expect(repairedUser._id).toBe(user.id);
+		expect(repairedUser._id?.toString()).toBe(user.id);
 	});
 
 	test("Adds a default name when the name and email is missing", async () => {

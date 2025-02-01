@@ -26,6 +26,8 @@ async function loadUsersIntoResend() {
 	}
 
 	console.log("Done!");
+
+	process.exit(0); // Needed to avoid having to Ctrl+C the script
 }
 
 loadUsersIntoResend();
