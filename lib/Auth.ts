@@ -120,7 +120,9 @@ export const AuthenticationOptions: AuthOptions = {
 				// - Renato, 1/31/2025, 11:22 PM
 				new Promise<void>(async (resolve) => {
 					setTimeout(async () => {
-						console.log("Post-Updating user... If you're readining this, it comes from Auth.ts. Go fix it.");
+						console.log(
+							"Post-Updating user... If you're readining this, it comes from Auth.ts. Go fix it.",
+						);
 						console.log("Id:", typedUser._id);
 
 						let foundUser = await (
