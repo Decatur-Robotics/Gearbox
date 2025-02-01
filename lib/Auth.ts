@@ -12,6 +12,7 @@ import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
+import { wait } from "./client/ClientUtils";
 
 var db = getDatabase();
 
@@ -102,60 +103,38 @@ export const AuthenticationOptions: AuthOptions = {
 			return baseUrl + "/onboarding";
 		},
 
+		/**
+		 * For email sign in, runs when the "Sign In" button is clicked (before email is sent).
+		 */
 		async signIn({ user }) {
 			Analytics.signIn(user.name ?? "Unknown User");
 
 			let typedUser = user as Partial<User>;
 			if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
-				console.log(
-					"User is incomplete, filling in missing fields. User:",
-					typedUser,
-				);
-
-				typedUser = await repairUser(await getDatabase(), typedUser);
-
-				// With email sign up, the user is not in the DB yet. I don't know why and it enrages me.
-				// So, we update the user after a delay.
-				// I hate this on so many levels, but it's eaten up my entire Friday night and my body yearns for sleep.
-				// I'm sorry. Heaven forgive me.
-				// - Renato, 1/31/2025, 11:22 PM
-				new Promise<void>(async (resolve) => {
-					setTimeout(async () => {
-						console.log(
-							"Post-Updating user... If you're reading this, it comes from Auth.ts. GO FIX IT.",
-						);
-						console.log("Id:", typedUser._id);
-
-						let foundUser = await (
+				const repairUserOnceItIsInDb = async () => {
+					console.log("User is incomplete, waiting for it to be in the database.");
+					let foundUser: User | undefined = undefined;
+					while (!foundUser) {
+						foundUser = await (
 							await db
-						).findObjectById(
-							CollectionId.Users,
-							typedUser._id as unknown as ObjectId,
-						);
-						console.log("Found user:", foundUser);
+						).findObject(CollectionId.Users, { email: typedUser.email });
 
-						if (!foundUser) {
-							foundUser = await (
-								await db
-							).findObject(CollectionId.Users, { email: typedUser.email });
-							console.log("Found user by email:", foundUser);
-						}
+						if (!foundUser) await wait(50);
+					}
 
-						delete typedUser._id;
-						typedUser.id = foundUser?._id?.toString();
+					console.log(
+						"User is incomplete, filling in missing fields. User:",
+						typedUser,
+					);
 
-						await (
-							await db
-						).updateObjectById(
-							CollectionId.Users,
-							foundUser._id as unknown as ObjectId,
-							typedUser as User,
-						);
-						resolve();
-					}, 1000);
-				});
+					typedUser._id = foundUser._id;
 
-				console.log("User updated:", typedUser);
+					typedUser = await repairUser(await db, typedUser);
+
+					console.log("User updated:", typedUser);
+				}
+
+				repairUserOnceItIsInDb();
 			}
 
 			new ResendUtils().createContact(typedUser as User);
