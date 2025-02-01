@@ -123,7 +123,7 @@ export async function repairUser(
 		id: id?.toString(),
 		name,
 		image: user.image ?? "https://4026.org/user.jpg",
-		slug: user.slug ?? await GenerateSlug(db, CollectionId.Users, name),
+		slug: user.slug ?? (await GenerateSlug(db, CollectionId.Users, name)),
 		teams: user.teams ?? [],
 		owner: user.owner ?? [],
 		slackId: user.slackId ?? "",

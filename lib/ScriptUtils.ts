@@ -1,5 +1,5 @@
 /**
- * DO NOT IMPORT THIS FILE IN FILES USED IN THE WEBSITE ITSELF
+ * DO NOT IMPORT THIS FILE IN THE WEBSITE ITSELF
  */
 import { createInterface } from "readline";
 
