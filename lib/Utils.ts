@@ -145,7 +145,7 @@ export async function repairUser(
 
 /**
  * Intended for use in scripts
- * 
+ *
  * @param prompt What to ask the user
  * @returns The user's input
  */
@@ -156,12 +156,9 @@ export function getCommandLineInput(prompt: string) {
 			output: process.stdout,
 		});
 
-		readline.question(
-			prompt + " ",
-			(answer: string) => {
-				readline.close();
-				resolve(answer);
-			},
-		);
+		readline.question(prompt + " ", (answer: string) => {
+			readline.close();
+			resolve(answer);
+		});
 	});
 }

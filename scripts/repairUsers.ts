@@ -22,10 +22,12 @@ async function repairUsers() {
 
 	console.log(`Found ${users.length} incomplete users`);
 
-  if (await getCommandLineInput("Do you want to continue? (yes/no)") !== "yes") {
-    console.log("Exiting...");
-    process.exit(0);
-  }
+	if (
+		(await getCommandLineInput("Do you want to continue? (yes/no)")) !== "yes"
+	) {
+		console.log("Exiting...");
+		process.exit(0);
+	}
 
 	for (let i = 0; i < users.length; i++) {
 		const user = users[i];
