@@ -113,6 +113,44 @@ export const AuthenticationOptions: AuthOptions = {
 
 				typedUser = await repairUser(await getDatabase(), typedUser);
 
+				// With email sign up, the user is not in the DB yet. I don't know why and it enrages me.
+				// So, we update the user after a delay.
+				// I hate this on so many levels, but it's eaten up my entire Friday night and my body yearns for sleep.
+				// I'm sorry. Heaven forgive me.
+				// - Renato, 1/31/2025, 11:22 PM
+				new Promise<void>(async (resolve) => {
+					setTimeout(async () => {
+						console.log("Post-Updating user... If you're readining this, it comes from Auth.ts. Go fix it.");
+						console.log("Id:", typedUser._id);
+
+						let foundUser = await (
+							await db
+						).findObjectById(
+							CollectionId.Users,
+							typedUser._id as unknown as ObjectId,
+						);
+						console.log("Found user:", foundUser);
+
+						if (!foundUser) {
+							foundUser = await (
+								await db
+							).findObject(CollectionId.Users, { email: typedUser.email });
+							console.log("Found user by email:", foundUser);
+						}
+
+						delete typedUser._id;
+
+						await (
+							await db
+						).updateObjectById(
+							CollectionId.Users,
+							foundUser._id as unknown as ObjectId,
+							typedUser as User,
+						);
+						resolve();
+					}, 1000);
+				});
+
 				console.log("User updated:", typedUser);
 			}
 

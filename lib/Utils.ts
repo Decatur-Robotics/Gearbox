@@ -110,15 +110,15 @@ export async function repairUser(
 		try {
 			id = new ObjectId(user.id);
 		} catch (e) {
+			if (!id) {
+				console.log("Finding user based on email...");
+				const userFromEmail = await db.findObject(CollectionId.Users, {
+					email: user.email,
+				});
+				console.log("Found user:", userFromEmail);
+				id = userFromEmail?._id ?? new ObjectId();
+			}
 			console.error("Invalid ObjectId:", user.id, "Using", id, "instead");
-		}
-	}
-
-	if (typeof id === "string") {
-		try {
-			id = new ObjectId(id);
-		} catch (e) {
-			console.error("Invalid ObjectId:", id);
 		}
 	}
 
@@ -127,7 +127,6 @@ export async function repairUser(
 	// User is incomplete, fill in the missing fields
 	user = {
 		...user,
-		_id: id,
 		id: id?.toString(),
 		name,
 		image: user.image ?? "https://4026.org/user.jpg",
@@ -149,6 +148,8 @@ export async function repairUser(
 			user,
 		);
 	}
+
+	user._id = id as unknown as string;
 
 	return user as User;
 }
