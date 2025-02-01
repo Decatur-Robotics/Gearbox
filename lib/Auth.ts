@@ -114,10 +114,16 @@ export const AuthenticationOptions: AuthOptions = {
 				const name =
 					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
 
-				const id = typedUser._id ?? new ObjectId();
+				let id = typedUser._id ?? new ObjectId();
+				try {
+					id = new ObjectId(typedUser.id);
+				} catch (e) {
+					console.error("Invalid ObjectId:", typedUser.id);
+				}
 
 				// User is incomplete, fill in the missing fields
 				typedUser = {
+					...typedUser,
 					_id: id,
 					id: id.toString(),
 					name,
@@ -134,7 +140,6 @@ export const AuthenticationOptions: AuthOptions = {
 					admin: typedUser.admin ?? false,
 					xp: typedUser.xp ?? 0,
 					level: typedUser.level ?? 0,
-					...typedUser,
 				} as User;
 
 				await (
@@ -144,6 +149,8 @@ export const AuthenticationOptions: AuthOptions = {
 					new ObjectId(typedUser._id?.toString()),
 					typedUser,
 				);
+
+				console.log("User updated:", typedUser);
 			}
 
 			new ResendUtils().createContact(typedUser as User);
