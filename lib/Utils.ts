@@ -142,23 +142,3 @@ export async function repairUser(
 
 	return user as User;
 }
-
-/**
- * Intended for use in scripts
- *
- * @param prompt What to ask the user
- * @returns The user's input
- */
-export function getCommandLineInput(prompt: string) {
-	return new Promise<string>((resolve) => {
-		const readline = require("readline").createInterface({
-			input: process.stdin,
-			output: process.stdout,
-		});
-
-		readline.question(prompt + " ", (answer: string) => {
-			readline.close();
-			resolve(answer);
-		});
-	});
-}

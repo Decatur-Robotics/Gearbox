@@ -1,6 +1,7 @@
 import CollectionId from "@/lib/client/CollectionId";
 import { getDatabase } from "@/lib/MongoDB";
-import { getCommandLineInput, repairUser } from "@/lib/Utils";
+import { getCommandLineInput } from "@/lib/ScriptUtils";
+import { repairUser } from "@/lib/Utils";
 
 async function repairUsers() {
 	console.log("Getting database...");
