@@ -32,8 +32,10 @@ async function repairUsers() {
 
 	for (let i = 0; i < users.length; i++) {
 		let user = users[i];
-		console.log(`Repairing user ${user._id} (${i + 1}/${users.length}): ${user.email}`);
-    user = await repairUser(db, user);
+		console.log(
+			`Repairing user ${user._id} (${i + 1}/${users.length}): ${user.email}`,
+		);
+		user = await repairUser(db, user);
 		console.log(`Updated ${user._id?.toString()}`);
 	}
 
