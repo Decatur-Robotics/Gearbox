@@ -46,7 +46,9 @@ app.prepare().then(() => {
 
 		const parsedUrl = parse(req.url, true);
 		handle(req, res, parsedUrl).then(() =>
-			console.log(`OUT: ${req.method} ${req.url} ${res.statusCode} in ${Date.now() - start}ms`),
+			console.log(
+				`OUT: ${req.method} ${req.url} ${res.statusCode} in ${Date.now() - start}ms`,
+			),
 		);
 	}
 
