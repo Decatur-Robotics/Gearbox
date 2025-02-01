@@ -90,6 +90,7 @@ export const AuthenticationOptions: AuthOptions = {
 	],
 	callbacks: {
 		async session({ session, user }) {
+			console.log("Session user:", user);
 			session.user = await (
 				await db
 			).findObjectById(CollectionId.Users, new ObjectId(user.id));
@@ -105,7 +106,7 @@ export const AuthenticationOptions: AuthOptions = {
 			Analytics.signIn(user.name ?? "Unknown User");
 
 			let typedUser = user as Partial<User>;
-			if (!typedUser.slug) {
+			if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
 				console.log(
 					"User is incomplete, filling in missing fields. User:",
 					typedUser,
@@ -121,7 +122,7 @@ export const AuthenticationOptions: AuthOptions = {
 				new Promise<void>(async (resolve) => {
 					setTimeout(async () => {
 						console.log(
-							"Post-Updating user... If you're readining this, it comes from Auth.ts. Go fix it.",
+							"Post-Updating user... If you're reading this, it comes from Auth.ts. GO FIX IT.",
 						);
 						console.log("Id:", typedUser._id);
 
@@ -141,6 +142,7 @@ export const AuthenticationOptions: AuthOptions = {
 						}
 
 						delete typedUser._id;
+						typedUser.id = foundUser?._id?.toString();
 
 						await (
 							await db

@@ -106,7 +106,7 @@ export async function repairUser(
 ): Promise<User> {
 	let id: ObjectId | string | undefined = user._id;
 
-	if (user.id) {
+	if (!id && user.id) {
 		try {
 			id = new ObjectId(user.id);
 		} catch (e) {
