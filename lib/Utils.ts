@@ -110,7 +110,7 @@ export async function repairUser(
 		try {
 			id = new ObjectId(user.id);
 		} catch (e) {
-			console.error("Invalid ObjectId:", user.id);
+			console.error("Invalid ObjectId:", user.id, "Using", id, "instead");
 		}
 	}
 
@@ -133,12 +133,14 @@ export async function repairUser(
 		level: user.level ?? 0,
 	} as User;
 
-	if (updateDocument)
+	if (updateDocument) {
+		console.log("Updating user", user._id);
 		await db.updateObjectById(
 			CollectionId.Users,
 			new ObjectId(user._id?.toString()),
 			user,
 		);
+	}
 
 	return user as User;
 }
