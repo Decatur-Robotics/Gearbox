@@ -40,12 +40,13 @@ app.prepare().then(() => {
 		req: IncomingMessage,
 		res: ServerResponse<IncomingMessage>,
 	) {
+		const start = Date.now();
 		console.log(`IN: ${req.method} ${req.url}`);
 		if (!req.url) return;
 
 		const parsedUrl = parse(req.url, true);
 		handle(req, res, parsedUrl).then(() =>
-			console.log(`OUT: ${req.method} ${req.url} ${res.statusCode}`),
+			console.log(`OUT: ${req.method} ${req.url} ${res.statusCode} in ${Date.now() - start}ms`),
 		);
 	}
 
