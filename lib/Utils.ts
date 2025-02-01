@@ -9,6 +9,8 @@ import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Redirect } from "next";
+import { User } from "./Types";
+import { ObjectId } from "bson";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -88,4 +90,55 @@ export function mentionUserInSlack(user: {
 	name: string | undefined;
 }): string {
 	return user.slackId ? `<@${user.slackId}>` : (user.name ?? "");
+}
+
+/**
+ * If a user is missing fields, this function will populate them with default values and update the user in the DB.
+ *
+ * @param [updateDocument=true] If true, the user will be updated in the database. If false, the user will only be returned.
+ * 	If true, will throw an error if the user is not in the DB.
+ * @returns the updated user
+ */
+export async function repairUser(
+	db: DbInterface,
+	user: Partial<User>,
+	updateDocument: boolean = true,
+): Promise<User> {
+	let id: ObjectId | string | undefined = user._id;
+
+	if (user.id) {
+		try {
+			id = new ObjectId(user.id);
+		} catch (e) {
+			console.error("Invalid ObjectId:", user.id);
+		}
+	}
+
+	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
+
+	// User is incomplete, fill in the missing fields
+	user = {
+		...user,
+		_id: id,
+		id: id?.toString(),
+		name,
+		image: user.image ?? "https://4026.org/user.jpg",
+		slug: await GenerateSlug(db, CollectionId.Users, name),
+		teams: user.teams ?? [],
+		owner: user.owner ?? [],
+		slackId: user.slackId ?? "",
+		onboardingComplete: user.onboardingComplete ?? false,
+		admin: user.admin ?? false,
+		xp: user.xp ?? 0,
+		level: user.level ?? 0,
+	} as User;
+
+	if (updateDocument)
+		await db.updateObjectById(
+			CollectionId.Users,
+			new ObjectId(user._id?.toString()),
+			user,
+		);
+
+	return user as User;
 }

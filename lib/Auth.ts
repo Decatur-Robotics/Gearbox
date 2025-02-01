@@ -6,7 +6,7 @@ import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { getDatabase, clientPromise } from "./MongoDB";
 import { ObjectId } from "bson";
 import { User } from "./Types";
-import { GenerateSlug } from "./Utils";
+import { GenerateSlug, repairUser } from "./Utils";
 import { Analytics } from "@/lib/client/Analytics";
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
@@ -111,44 +111,7 @@ export const AuthenticationOptions: AuthOptions = {
 					typedUser,
 				);
 
-				const name =
-					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
-
-				let id = typedUser._id ?? new ObjectId();
-				try {
-					id = new ObjectId(typedUser.id);
-				} catch (e) {
-					console.error("Invalid ObjectId:", typedUser.id);
-				}
-
-				// User is incomplete, fill in the missing fields
-				typedUser = {
-					...typedUser,
-					_id: id,
-					id: id.toString(),
-					name,
-					image: typedUser.image ?? "https://4026.org/user.jpg",
-					slug: await GenerateSlug(
-						await getDatabase(),
-						CollectionId.Users,
-						name,
-					),
-					teams: typedUser.teams ?? [],
-					owner: typedUser.owner ?? [],
-					slackId: typedUser.slackId ?? "",
-					onboardingComplete: typedUser.onboardingComplete ?? false,
-					admin: typedUser.admin ?? false,
-					xp: typedUser.xp ?? 0,
-					level: typedUser.level ?? 0,
-				} as User;
-
-				await (
-					await db
-				).updateObjectById(
-					CollectionId.Users,
-					new ObjectId(typedUser._id?.toString()),
-					typedUser,
-				);
+				typedUser = await repairUser(await getDatabase(), typedUser);
 
 				console.log("User updated:", typedUser);
 			}
