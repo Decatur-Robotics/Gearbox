@@ -124,16 +124,13 @@ export const AuthenticationOptions: AuthOptions = {
 						if (!foundUser) await wait(50);
 					}
 
-					console.log(
-						"User is incomplete, filling in missing fields. User:",
-						typedUser,
-					);
+					console.log("User is incomplete, filling in missing fields.");
 
 					typedUser._id = foundUser._id;
 
 					typedUser = await repairUser(await db, typedUser);
 
-					console.log("User updated:", typedUser);
+					console.log("User updated:", typedUser._id?.toString());
 				};
 
 				repairUserOnceItIsInDb();
@@ -146,7 +143,7 @@ export const AuthenticationOptions: AuthOptions = {
 			) {
 				// We use user.id since user._id strangely doesn't exist on user.
 				await getDatabase().then((db) =>
-					db.updateObjectById(CollectionId.Users, new ObjectId(typedUser.id), {
+					db.updateObjectById(CollectionId.Users, new ObjectId(typedUser._id?.toString()), {
 						lastSignInDateTime: today,
 					}),
 				);
