@@ -1,6 +1,13 @@
 name: CD
 
-on: [workflow_call, workflow_dispatch]
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+  workflow_dispatch:
 
 permissions:
   packages: write
@@ -32,3 +39,12 @@ jobs:
 
       - name: Push to GHCR
         run: docker push ghcr.io/decatur-robotics/gearbox:latest
+
+      - name: install-aws-cli-action
+        uses: unfor19/install-aws-cli-action@v1
+
+      - name: Configure AWS
+        run: aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} && aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} && aws configure set region us-east-1
+
+      - name: Deploy to ECS
+        run: aws ecs update-service --cluster gearbox --service gearbox --force-new-deployment
