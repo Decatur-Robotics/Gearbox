@@ -1,11 +1,14 @@
 import CollectionId from "@/lib/client/CollectionId";
 import InMemoryDbInterface from "@/lib/client/dbinterfaces/InMemoryDbInterface";
+import { User } from "@/lib/Types";
 import {
 	createRedirect,
 	GenerateSlug,
 	isDeveloper,
 	mentionUserInSlack,
+	repairUser,
 } from "@/lib/Utils";
+import { ObjectId } from "bson";
 
 describe(GenerateSlug.name, () => {
 	test("Removes whitespace and makes the name lowercase when DB is empty", async () => {
@@ -146,5 +149,115 @@ describe(mentionUserInSlack.name, () => {
 	test("Returns an empty string when user has no slackId or name", () => {
 		const user = { slackId: undefined, name: undefined };
 		expect(mentionUserInSlack(user)).toBe("");
+	});
+});
+
+describe(repairUser.name, () => {
+	test("Fills in missing fields on the returned user", async () => {
+		const db = new InMemoryDbInterface();
+
+		const user = {
+			_id: new ObjectId() as unknown as string,
+			email: "test@gmail.com",
+		};
+
+		const repairedUser = await repairUser(db, user, false);
+
+		expect(repairedUser.name).toBe("test");
+		expect(repairedUser.image).toBeDefined();
+		expect(repairedUser.slug).toBeDefined();
+		expect(repairedUser.owner).toEqual([]);
+		expect(repairedUser.teams).toEqual([]);
+	});
+
+	test("Does not overwrite existing fields on the user", async () => {
+		const db = new InMemoryDbInterface();
+
+		const user = {
+			_id: new ObjectId() as unknown as string,
+			email: "test@gmail.com",
+			name: "Test User",
+			slackId: "123",
+			teams: ["team"],
+			owner: ["owner"],
+			onboardingComplete: true,
+			admin: true,
+			xp: 10,
+			level: 1,
+		} as User & { [key: string]: unknown };
+
+		const repairedUser = (await repairUser(db, user, false)) as User & {
+			[key: string]: unknown;
+		};
+
+		for (const key of Object.keys(user)) {
+			expect(repairedUser[key]).toBe(user[key]);
+		}
+	});
+
+	test("Updates the user in the DB when updateDocument is true", async () => {
+		const db = new InMemoryDbInterface();
+
+		const user = {
+			_id: new ObjectId() as unknown as string,
+			email: "test@gmail.com",
+		};
+
+		await db.addObject(CollectionId.Users, user as unknown as User);
+
+		await repairUser(db, user);
+
+		const updatedUser = await db.findObjectById(
+			CollectionId.Users,
+			new ObjectId(user._id),
+		);
+
+		expect(updatedUser).toBeDefined();
+		expect(updatedUser?.name).toBe("test");
+		expect(updatedUser?.image).toBeDefined();
+		expect(updatedUser?.slug).toBeDefined();
+	});
+
+	test("Does not update the user in the DB when updateDocument is false", async () => {
+		const db = new InMemoryDbInterface();
+
+		const user = {
+			_id: new ObjectId() as unknown as string,
+			email: "test@gmail.com",
+		};
+
+		await repairUser(db, user, false);
+
+		const foundUser = await db.findObjectById(
+			CollectionId.Users,
+			new ObjectId(user._id),
+		);
+		expect(foundUser).toBeUndefined();
+	});
+
+	test("Use the id field as the _id field when it is present", async () => {
+		const db = new InMemoryDbInterface();
+
+		const user = {
+			id: new ObjectId().toString(),
+			email: "test@gmail.com",
+		};
+
+		const repairedUser = await repairUser(db, user, false);
+
+		expect(repairedUser._id?.toString()).toBe(user.id);
+	});
+
+	test("Adds a default name when the name and email is missing", async () => {
+		const db = new InMemoryDbInterface();
+
+		const user = {
+			_id: new ObjectId() as unknown as string,
+		};
+
+		const repairedUser = await repairUser(db, user, false);
+
+		expect(repairedUser.name).toBeDefined();
+		expect(repairedUser.name).not.toBe("");
 	});
 });
