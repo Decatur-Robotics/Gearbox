@@ -15,7 +15,7 @@ permissions:
 jobs:
   push:
     runs-on: ubuntu-latest
-    environment: Test 
+    environment: Production 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
