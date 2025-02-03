@@ -1480,14 +1480,17 @@ namespace Reefscape {
 		card: boolean,
 	) {
 		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
-		
-		if (pitReport?.data?.CanRemoveAlgae)
-			badges.push({ text: 'Can Remove Algae', color: 'primary'})
-		if (pitReport?.data?.CanScoreAlgaeInNet)
-			badges.push({ text: 'Can Score Algae Net', color: 'secondary'})
-		if (pitReport?.data?.CanScoreAlgaeInProcessor)
-			badges.push({ text: 'Can Score Algae Processor', color: 'success'})
 
+		if (pitReport?.data?.CanRemoveAlgae)
+			badges.push({ text: "Can Remove Algae", color: "primary" });
+		if (pitReport?.data?.CanScoreAlgaeInNet)
+			badges.push({ text: "Can Score Algae Net", color: "secondary" });
+		if (pitReport?.data?.CanScoreAlgaeInProcessor)
+			badges.push({ text: "Can Score Algae Processor", color: "success" });
+		if (pitReport?.data?.CanDriveUnderShallowCage)
+			badges.push({ text: "Can Drive Under Shallow Cage", color: "info"})
+
+		
 		return badges;
 	}
 
