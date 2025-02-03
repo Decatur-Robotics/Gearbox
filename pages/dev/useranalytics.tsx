@@ -39,7 +39,7 @@ export default function UserAnalytics() {
 					for (const date of teams[team]) {
 						date.date = new Date(date.date);
 					}
-					teams[team].reverse();
+					teams[team] = teams[team].sort((a, b) => a.date.getTime() - b.date.getTime());
 				}
 
 				setSignInDates(teams);

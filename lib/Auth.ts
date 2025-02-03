@@ -127,6 +127,7 @@ export const AuthenticationOptions: AuthOptions = {
 					console.log("User is incomplete, filling in missing fields.");
 
 					typedUser._id = foundUser._id;
+					typedUser.lastSignInDateTime = new Date();
 
 					typedUser = await repairUser(await db, typedUser);
 
