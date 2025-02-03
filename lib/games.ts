@@ -1164,8 +1164,6 @@ namespace IntoTheDeep {
 
 namespace Reefscape {
 	export class QuantitativeData extends QuantData {
-		CageHeight: ReefscapeEnums.CageHeight = ReefscapeEnums.CageHeight.None;
-
 		AutoMovedPastStaringLine: boolean = false;
 
 		AutoCoralScoredLevelOne: number = 0;
@@ -1175,7 +1173,7 @@ namespace Reefscape {
 
 		AutoAlgaeRemovedFromReef: number = 0;
 		AutoAlgaeScoredProcessor: number = 0;
-		AutoAlgaeScoredNest: number = 0;
+		AutoAlgaeScoredNet: number = 0;
 
 		TeleopCoralScoredLevelOne: number = 0;
 		TeleopCoralScoredLevelTwo: number = 0;
@@ -1184,7 +1182,7 @@ namespace Reefscape {
 
 		TeleopAlgaeRemovedFromReef: number = 0;
 		TeleopAlgaeScoredProcessor: number = 0;
-		TeleopAlgaeScoredNest: number = 0;
+		TeleopAlgaeScoredNet: number = 0;
 
 		EndgameClimbStatus: ReefscapeEnums.EndgameClimbStatus =
 			ReefscapeEnums.EndgameClimbStatus.None;
@@ -1197,10 +1195,9 @@ namespace Reefscape {
 		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
 			ReefscapeEnums.AutoCapabilities.NoAuto;
 		AutoDescription: string = "";
-		CanRemoveAlgae: ReefscapeEnums.CanRemoveAlgae =
-			ReefscapeEnums.CanRemoveAlgae.CannotRemove;
+		CanRemoveAlgae: boolean = false;
 		CanScoreAlgaeInProcessor: boolean = false;
-		CanScoreAlgaeInNest: boolean = false;
+		CanScoreAlgaeInNet: boolean = false;
 		AlgaeScoredAuto: number = 0;
 		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
@@ -1217,7 +1214,7 @@ namespace Reefscape {
 				key: "CanScoreAlgaeInProcessor",
 				label: "Can Score Algae in Processor?",
 			},
-			{ key: "CanScoreAlgaeInNest", label: "Can Score Algae in Nest?" },
+			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
 		],
 		Auto: [
@@ -1239,7 +1236,7 @@ namespace Reefscape {
 			[
 				["AutoAlgaeRemovedFromReef"],
 				["AutoAlgaeScoredProcessor"],
-				["AutoAlgaeScoredNest"],
+				["AutoAlgaeScoredNet"],
 			],
 		],
 		"Teleop & Endgame": [
@@ -1252,7 +1249,7 @@ namespace Reefscape {
 			[
 				["TeleopAlgaeRemovedFromReef"],
 				["TeleopAlgaeScoredProcessor"],
-				["TeleopAlgaeScoredNest"],
+				["TeleopAlgaeScoredNet"],
 			],
 			"EndgameClimbStatus",
 		],
@@ -1287,8 +1284,8 @@ namespace Reefscape {
 					label: "Avg Amt of Algae Scored Processor Auto",
 				},
 				{
-					key: "AutoAlgaeScoredNest",
-					label: "Avg Amt of Algae Scored Nest Auto",
+					key: "AutoAlgaeScoredNet",
+					label: "Avg Amt of Algae Scored Net Auto",
 				},
 			],
 			Teleop: [
@@ -1317,8 +1314,8 @@ namespace Reefscape {
 					label: "Avg Amt of Algae Scored Processor Teleop",
 				},
 				{
-					key: "TeleopAlgaeScoredNest",
-					label: "Avg Amt of Algae Scored Nest Teleop",
+					key: "TeleopAlgaeScoredNet",
+					label: "Avg Amt of Algae Scored Net Teleop",
 				},
 			],
 			Endgame: [{ key: "EndgameClimbStatus", label: "Endgame Climb status" }],
@@ -1371,8 +1368,8 @@ namespace Reefscape {
 						quantitativeReports,
 					);
 
-					const AlgaeNest = NumericalTotal(
-						"AutoAlgaeScoredNest",
+					const AlgaeNet = NumericalTotal(
+						"AutoAlgaeScoredNet",
 						quantitativeReports,
 					);
 
@@ -1386,7 +1383,7 @@ namespace Reefscape {
 							CoralLvlTwo +
 							CoralLvlThree +
 							CoralLvlFour +
-							AlgaeNest +
+							AlgaeNet +
 							AlgaeProcessor) /
 						quantitativeReports.length
 					);
@@ -1420,8 +1417,8 @@ namespace Reefscape {
 						quantitativeReports,
 					);
 
-					const AlgaeNest = NumericalTotal(
-						"TeleopAlgaeScoredNest",
+					const AlgaeNet = NumericalTotal(
+						"TeleopAlgaeScoredNet",
 						quantitativeReports,
 					);
 
@@ -1435,7 +1432,7 @@ namespace Reefscape {
 							CoralLvlTwo +
 							CoralLvlThree +
 							CoralLvlFour +
-							AlgaeNest +
+							AlgaeNet +
 							AlgaeProcessor) /
 						quantitativeReports.length
 					);
@@ -1468,7 +1465,7 @@ namespace Reefscape {
 				key: "CanScoreAlgaeInProcessor",
 				label: "Can Score Algae in Processor?",
 			},
-			{ key: "CanScoreAlgaeInNest", label: "Can Score Algae in Nest?" },
+			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
 		],
 		graphStat: {
@@ -1483,14 +1480,56 @@ namespace Reefscape {
 		card: boolean,
 	) {
 		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+		
+		if (pitReport?.data?.CanRemoveAlgae)
+			badges.push({ text: 'Can Remove Algae', color: 'primary'})
+		if (pitReport?.data?.CanScoreAlgaeInNet)
+			badges.push({ text: 'Can Score Algae Net', color: 'secondary'})
+		if (pitReport?.data?.CanScoreAlgaeInProcessor)
+			badges.push({ text: 'Can Score Algae Processor', color: 'success'})
 
 		return badges;
 	}
 
 	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+		if (!reports) return 0;
+
 		let totalPoints = 0;
 
-		return totalPoints;
+		for (const report of reports.map((r) => r.data)) {
+			switch (report.EndgameClimbStatus) {
+				case ReefscapeEnums.EndgameClimbStatus.None:
+					break;
+				case ReefscapeEnums.EndgameClimbStatus.Parked:
+					totalPoints += 2;
+					break;
+				case ReefscapeEnums.EndgameClimbStatus.ClimbedHigh:
+					totalPoints += 6;
+					break;
+				case ReefscapeEnums.EndgameClimbStatus.ClimbedLow:
+					totalPoints += 12;
+					break;
+			}
+
+			totalPoints += report.TeleopCoralScoredLevelOneCoralScoredLevelOne * 2;
+			totalPoints +=
+				(report.AutoCoralScoredLevelOne + report.TeleopCoralScoredLevelTwo) * 3;
+			totalPoints +=
+				(report.AutoCoralScoredLevelTwo +
+					report.TeleopCoralScoredLevelThree +
+					report.AutoAlgaeScoredNet +
+					report.TeleopAlgaeScoredNet) *
+				4;
+			totalPoints += report.TeleopCoralScoredLevelFour * 5;
+			totalPoints +=
+				(report.AutoAlgaeScoredProcessor +
+					report.TeleopAlgaeScoredProcessor +
+					report.AutoCoralScoredLevelThree) *
+				6;
+			totalPoints += report.AutoCoralScoredLevelFour * 7;
+		}
+
+		return totalPoints / Math.max(reports.length, 1);
 	}
 
 	export const game = new Game(

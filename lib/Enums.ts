@@ -83,15 +83,9 @@ export namespace IntoTheDeepEnums {
 }
 
 export namespace ReefscapeEnums {
-	export enum CageHeight {
-		Shallow = "Shallow",
-		Deep = "Deep",
-		None = "None",
-	}
-
 	export enum EndgameClimbStatus {
-		Climbed = "Climbed",
-		FailedToClimb = "Failed To Climb",
+		ClimbedLow = "Climbed Low",
+		ClimbedHigh = "Climbed High",
 		Parked = "Parked",
 		None = "None"
 	}
@@ -107,12 +101,6 @@ export namespace ReefscapeEnums {
 		MovePastStart = "Move Past Start",
 		ScoreOneCoral = "Score One Coral",
 		ScoreMoreThanOneCoral = "ScoreMoreThanOneCoral",
-	}
-
-	export enum CanRemoveAlgae {
-		CannotRemove = "Cannot Remove",
-		CanRemove = "Can Remove",
-		CanRemoveAndScore = "Can Remove And Score",
 	}
 
 	export enum Climbing {
