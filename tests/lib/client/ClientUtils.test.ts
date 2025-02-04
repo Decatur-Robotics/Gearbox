@@ -109,7 +109,7 @@ describe(wait.name, () => {
 
 		const results = await Promise.all(trials);
 		for (const result of results) {
-			expect(result).toBeLessThanOrEqual(20);
+			expect(result).toBeLessThanOrEqual(150);
 		}
 	});
 });

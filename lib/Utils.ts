@@ -141,7 +141,6 @@ export async function repairUser(
 	} as User;
 
 	if (updateDocument) {
-		console.log("Updating user", user._id);
 		await db.updateObjectById(
 			CollectionId.Users,
 			user._id as unknown as ObjectId,
