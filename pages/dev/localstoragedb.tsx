@@ -33,11 +33,11 @@ export default function LocalStorageDb() {
 
 	function addObject() {
 		if (!db || !collection || !json) return;
-    try {
-		db.addObject(collection, JSON.parse(json));
-    } catch (e: any) {
-      toast.error(e.message);
-    }
+		try {
+			db.addObject(collection, JSON.parse(json));
+		} catch (e: any) {
+			toast.error(e.message);
+		}
 		updateDbData(db);
 	}
 
@@ -48,12 +48,11 @@ export default function LocalStorageDb() {
 		>
 			<h1 className="text-xl">LocalStorage DB</h1>
 			<div className="flex flex-col">
-				<select onChange={(e) => setCollection(e.target.value as CollectionId)} defaultValue={"Select Collection"}>
-					<option
-						disabled
-					>
-						Select Collection
-					</option>
+				<select
+					onChange={(e) => setCollection(e.target.value as CollectionId)}
+					defaultValue={"Select Collection"}
+				>
+					<option disabled>Select Collection</option>
 					{Object.keys(CollectionId).map((collection) => (
 						<option key={collection}>{collection}</option>
 					))}
@@ -62,7 +61,12 @@ export default function LocalStorageDb() {
 					onChange={(e) => setJson(e.target.value)}
 					placeholder="Enter JSON..."
 				/>
-				<button onClick={addObject} className="btn btn-primary">Add Object</button>
+				<button
+					onClick={addObject}
+					className="btn btn-primary"
+				>
+					Add Object
+				</button>
 			</div>
 			<ul>
 				{db &&
