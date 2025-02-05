@@ -91,7 +91,6 @@ export const AuthenticationOptions: AuthOptions = {
 	],
 	callbacks: {
 		async session({ session, user }) {
-			console.log("Session user:", user);
 			session.user = await (
 				await db
 			).findObjectById(CollectionId.Users, new ObjectId(user.id));
