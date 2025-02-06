@@ -188,23 +188,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		return resolved;
 	}
 
-	const reports = await db.findObjects<Report>(CollectionId.Reports, {
+	const reports = await db.findObjects(CollectionId.Reports, {
 		match: { $in: resolved.competition?.matches },
 		submitted: true,
 	});
 
-	const pitReports = await db.findObjects<Pitreport>(CollectionId.PitReports, {
+	const pitReports = await db.findObjects(CollectionId.PitReports, {
 		_id: { $in: resolved.competition?.pitReports },
 	});
 
-	const subjectiveReports = await db.findObjects<SubjectiveReport>(
+	const subjectiveReports = await db.findObjects(
 		CollectionId.SubjectiveReports,
 		{
 			match: { $in: resolved.competition?.matches },
 		},
 	);
 
-	const picklists = await db.findObjectById<CompPicklistGroup>(
+	const picklists = await db.findObjectById(
 		CollectionId.Picklists,
 		new ObjectId(resolved.competition?.picklist),
 	);

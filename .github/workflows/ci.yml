@@ -17,6 +17,12 @@ jobs:
         with:
           tags: ghcr.io/decatur-robotics/gearbox:latest
           outputs: type=docker,dest=/tmp/gearbox.tar
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gearbox
+          path: /tmp/gearbox.tar
 
   unit_test:
     runs-on: ubuntu-latest

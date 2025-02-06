@@ -3,10 +3,10 @@ import CollectionId, { CollectionIdToType } from "@/lib/client/CollectionId";
 import DbInterface, {
 	WithStringOrObjectIdId,
 } from "@/lib/client/dbinterfaces/DbInterface";
-import { default as BaseInMemoryDbInterface } from "mongo-anywhere/InMemoryDbInterface";
+import { default as BaseLocalStorageDbInterface } from "mongo-anywhere/LocalStorageDbInterface";
 
-export default class InMemoryDbInterface
-	extends BaseInMemoryDbInterface<
+export default class LocalStorageDbInterface
+	extends BaseLocalStorageDbInterface<
 		CollectionId,
 		CollectionIdToType<CollectionId>
 	>

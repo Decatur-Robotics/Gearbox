@@ -32,7 +32,7 @@ export default function Homepage() {
 	function formatDataPoint(num: number | null): string {
 		if (num === null || num === undefined) return "?";
 
-		return num.toLocaleString();
+		return num.toString();
 	}
 
 	const hide = status === "authenticated";
@@ -76,7 +76,7 @@ export default function Homepage() {
 							<div className="flex flex-row space-x-4">
 								<Link
 									className="btn btn-lg btn-primary normal-case"
-									href="profile"
+									href={session?.user ? "/profile" : "/api/auth/signin"}
 								>
 									Get Started
 								</Link>
@@ -104,11 +104,11 @@ export default function Homepage() {
 										<BsGearFill
 											size={200}
 											className="animate-spin-slow"
-										></BsGearFill>
+										/>
 										<BsGearFill
 											size={120}
 											className="animate-spin-slow"
-										></BsGearFill>
+										/>
 									</h1>
 									<div className="z-20 relative">
 										<h1 className="text-4xl font-bold italic">
@@ -128,11 +128,11 @@ export default function Homepage() {
 													<BsGearFill
 														size={200}
 														className="animate-spin-slow text-8xl"
-													></BsGearFill>
+													/>
 													<BsGearFill
 														size={120}
 														className="animate-spin-slow max-sm:hidden"
-													></BsGearFill>
+													/>
 												</h1>
 												<div className="z-20 relative">
 													<h1 className="text-4xl font-bold italic">
@@ -152,7 +152,7 @@ export default function Homepage() {
 								<div className="stat place-items-center">
 									<div className="stat-title">Teams</div>
 									<div className="stat-figure text-primary">
-										<FaUserGroup size={30}></FaUserGroup>
+										<FaUserGroup size={30} />
 									</div>
 									{!counterData.teams ? (
 										<div className="stat-value loading loading-spinner text-primary"></div>
@@ -166,7 +166,7 @@ export default function Homepage() {
 
 								<div className="stat place-items-center">
 									<div className="stat-figure text-secondary">
-										<FaUser size={30}></FaUser>
+										<FaUser size={30} />
 									</div>
 									<div className="stat-title">Users</div>
 									{!counterData.users ? (
@@ -181,7 +181,7 @@ export default function Homepage() {
 
 								<div className="stat place-items-center">
 									<div className="stat-figure text-accent">
-										<FaDatabase size={30}></FaDatabase>
+										<FaDatabase size={30} />
 									</div>
 									<div className="stat-title">Net Datapoints</div>
 									{!counterData.datapoints ? (
@@ -259,7 +259,7 @@ export default function Homepage() {
 									<IoPhonePortraitOutline
 										size={80}
 										className="opacity-50 rotate-12"
-									></IoPhonePortraitOutline>
+									/>
 								</span>
 								<p className="text-lg translate-y-4">Mobile Friendly</p>
 							</div>
@@ -274,7 +274,7 @@ export default function Homepage() {
 									<FaWifi
 										size={90}
 										className="opacity-50 rotate-12"
-									></FaWifi>
+									/>
 								</span>
 								<p className="text-lg translate-y-2">Low-data Functionality</p>
 							</div>
@@ -305,9 +305,8 @@ export default function Homepage() {
 						src="https://discord.com/widget?id=1219401473042157718&theme=dark"
 						width="350"
 						height="500"
-						allowTransparency={true}
 						sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-					></iframe>
+					/>
 					<div className="w-2/3 flex flex-row">
 						<div>
 							<h1 className="text-5xl font-bold">Realtime Support</h1>

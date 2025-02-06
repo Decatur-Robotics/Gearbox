@@ -10,7 +10,7 @@ async function loadUsersIntoResend() {
 	const db = await getDatabase();
 
 	console.log("Finding users...");
-	const users = await db.findObjects<User>(CollectionId.Users, {});
+	const users = await db.findObjects(CollectionId.Users, {});
 
 	console.log(`Saving ${users.length} users to Resend...`);
 
@@ -26,6 +26,8 @@ async function loadUsersIntoResend() {
 	}
 
 	console.log("Done!");
+
+	process.exit(0); // Needed to avoid having to Ctrl+C the script
 }
 
 loadUsersIntoResend();

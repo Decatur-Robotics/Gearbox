@@ -6,12 +6,13 @@ import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import { getDatabase, clientPromise } from "./MongoDB";
 import { ObjectId } from "bson";
 import { User } from "./Types";
-import { GenerateSlug } from "./Utils";
+import { GenerateSlug, repairUser } from "./Utils";
 import { Analytics } from "@/lib/client/Analytics";
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
+import { wait } from "./client/ClientUtils";
 
 var db = getDatabase();
 
@@ -101,49 +102,40 @@ export const AuthenticationOptions: AuthOptions = {
 			return baseUrl + "/onboarding";
 		},
 
+		/**
+		 * For email sign in, runs when the "Sign In" button is clicked (before email is sent).
+		 */
 		async signIn({ user }) {
 			Analytics.signIn(user.name ?? "Unknown User");
 
 			let typedUser = user as Partial<User>;
-			if (!typedUser.slug) {
-				console.log(
-					"User is incomplete, filling in missing fields. User:",
-					typedUser,
-				);
+			if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
+				const repairUserOnceItIsInDb = async () => {
+					console.log(
+						"User is incomplete, waiting for it to be in the database.",
+					);
+					let foundUser: User | undefined = undefined;
+					while (!foundUser) {
+						foundUser = await (
+							await db
+						).findObject(CollectionId.Users, { email: typedUser.email });
 
-				const name =
-					typedUser.name ?? typedUser.email?.split("@")[0] ?? "Unknown User";
+						if (!foundUser) await wait(50);
+					}
 
-				const id = typedUser._id ?? new ObjectId();
+					console.log(
+						"User is incomplete, filling in missing fields. User:",
+						typedUser,
+					);
 
-				// User is incomplete, fill in the missing fields
-				typedUser = {
-					_id: id,
-					id: id.toString(),
-					name,
-					image: typedUser.image ?? "https://4026.org/user.jpg",
-					slug: await GenerateSlug(
-						await getDatabase(),
-						CollectionId.Users,
-						name,
-					),
-					teams: typedUser.teams ?? [],
-					owner: typedUser.owner ?? [],
-					slackId: typedUser.slackId ?? "",
-					onboardingComplete: typedUser.onboardingComplete ?? false,
-					admin: typedUser.admin ?? false,
-					xp: typedUser.xp ?? 0,
-					level: typedUser.level ?? 0,
-					...typedUser,
-				} as User;
+					typedUser._id = foundUser._id;
 
-				await (
-					await db
-				).updateObjectById(
-					CollectionId.Users,
-					new ObjectId(typedUser._id?.toString()),
-					typedUser,
-				);
+					typedUser = await repairUser(await db, typedUser);
+
+					console.log("User updated:", typedUser);
+				};
+
+				repairUserOnceItIsInDb();
 			}
 
 			new ResendUtils().createContact(typedUser as User);

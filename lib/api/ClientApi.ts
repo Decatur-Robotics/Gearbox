@@ -36,7 +36,7 @@ import { GenerateSlug, isDeveloper, mentionUserInSlack } from "../Utils";
 import { fillTeamWithFakeUsers } from "../dev/FakeData";
 import { GameId } from "../client/GameId";
 import {
-	AssignScoutersToCompetitionMatches,
+	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
 import { games } from "../games";
@@ -52,7 +52,7 @@ const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
 	(url) =>
 		toast.error(
-			`Unauthorized API request: ${url}. If this is an error, please contact the developers.`,
+			`Failed API request: ${url}. If this is an error, please contact the developers.`,
 		),
 );
 
@@ -91,7 +91,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db, userPromise }, authData, [teamId]) => {
 			let team = await (
 				await db
-			).findObjectById<Team>(CollectionId.Teams, new ObjectId(teamId));
+			).findObjectById(CollectionId.Teams, new ObjectId(teamId));
 
 			if (!team) {
 				return res.error(404, "Team not found");
@@ -130,12 +130,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const teamPromise = db.findObjectById<Team>(
+			const teamPromise = db.findObjectById(
 				CollectionId.Teams,
 				new ObjectId(teamId.toString()),
 			);
 
-			const joineePromise = db.findObjectById<User>(
+			const joineePromise = db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(userId.toString()),
 			);
@@ -182,7 +182,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		void
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { tba }, authData, [number, league]) => {
+		handler: async (req, res, { tba, db }, authData, [number, league]) => {
 			if (number <= 0) {
 				return res.status(200).send(undefined);
 			}
@@ -191,7 +191,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				.status(200)
 				.send(
 					league === League.FTC
-						? await TheOrangeAlliance.getTeam(number)
+						? await TheOrangeAlliance.getTeam(number, await db)
 						: await tba.getTeamAutofillData(number),
 				);
 		},
@@ -239,7 +239,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			// Find if team already exists
-			const existingTeam = await db.findObject<Team>(CollectionId.Teams, {
+			const existingTeam = await db.findObject(CollectionId.Teams, {
 				number,
 				...(league === League.FRC
 					? { $or: [{ league: League.FRC }, { league: undefined }] }
@@ -277,7 +277,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			if (process.env.FILL_TEAMS === "true") {
-				fillTeamWithFakeUsers(20, team._id.toString(), db);
+				fillTeamWithFakeUsers(20, team._id, db);
 			}
 
 			return res.status(200).send(team);
@@ -521,10 +521,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			if (!team?._id) return res.status(400).send({ error: "Team not found" });
 
-			const result = await AssignScoutersToCompetitionMatches(
+			const result = await assignScoutersToCompetitionMatches(
 				db,
-				team?._id?.toString(),
-				compId,
+				team._id,
+				new ObjectId(compId),
 			);
 
 			return res.status(200).send({ result: result });
@@ -593,7 +593,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const usedComps =
 				usePublicData && comp.tbaId !== NotLinkedToTba
-					? await db.findObjects<Competition>(CollectionId.Competitions, {
+					? await db.findObjects(CollectionId.Competitions, {
 							publicData: true,
 							tbaId: comp.tbaId,
 							gameId: comp.gameId,
@@ -603,7 +603,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			if (usePublicData && !comp.publicData) usedComps.push(comp);
 
 			const reports = (
-				await db.findObjects<Report>(CollectionId.Reports, {
+				await db.findObjects(CollectionId.Reports, {
 					match: { $in: usedComps.flatMap((m) => m.matches) },
 					submitted: submitted ? true : { $exists: true },
 				})
@@ -635,7 +635,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const matches = await db.findObjects<Match>(CollectionId.Matches, {
+			const matches = await db.findObjects(CollectionId.Matches, {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
 			return res.status(200).send(matches);
@@ -659,7 +659,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects<Report>(CollectionId.Reports, {
+			const reports = await db.findObjects(CollectionId.Reports, {
 				_id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
 			});
 			return res.status(200).send(reports);
@@ -766,14 +766,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			[teamId, targetUserId],
 		) => {
 			const db = await dbPromise;
-			const targetUserPromise = db.findObjectById<User>(
+			const targetUserPromise = db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(targetUserId),
 			);
 
 			if (!team.slackWebhook) throw new SlackNotLinkedError(res);
 
-			const webhookHolder = await db.findObjectById<WebhookHolder>(
+			const webhookHolder = await db.findObjectById(
 				CollectionId.Webhooks,
 				new ObjectId(team.slackWebhook),
 			);
@@ -891,7 +891,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const tbaOPRPromise = tba.req.getCompetitonOPRS(eventKey);
 
 			return res.status(200).send({
-				firstRanking: (await compRankingsPromise).rankings,
+				firstRanking: (await compRankingsPromise)?.rankings,
 				comp: await eventInformationPromise,
 				oprRanking: await tbaOPRPromise,
 			});
@@ -996,10 +996,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const matches = await db.findObjects<Match>(CollectionId.Matches, {
+			const matches = await db.findObjects(CollectionId.Matches, {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
-			const allReports = await db.findObjects<Report>(CollectionId.Reports, {
+			const allReports = await db.findObjects(CollectionId.Reports, {
 				match: { $in: matches.map((match) => match?._id?.toString()) },
 			});
 			const reports = allReports.filter((report) => report.submitted);
@@ -1091,12 +1091,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const pitReports = await db.findObjects<Pitreport>(
-				CollectionId.PitReports,
-				{
-					_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
-				},
-			);
+			const pitReports = await db.findObjects(CollectionId.PitReports, {
+				_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+			});
 
 			return res.status(200).send(pitReports);
 		},
@@ -1144,7 +1141,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects<Report>(CollectionId.Reports, {
+			const reports = await db.findObjects(CollectionId.Reports, {
 				match: { $in: comp.matches },
 			});
 
@@ -1186,7 +1183,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			for (const scouterId of team?.scouters) {
 				promises.push(
 					db
-						.findObjectById<User>(CollectionId.Users, new ObjectId(scouterId))
+						.findObjectById(CollectionId.Users, new ObjectId(scouterId))
 						.then((scouter) => scouter && scouters.push(scouter)),
 				);
 			}
@@ -1194,14 +1191,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			for (const matchId of comp.matches) {
 				promises.push(
 					db
-						.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId))
+						.findObjectById(CollectionId.Matches, new ObjectId(matchId))
 						.then((match) => match && matches.push(match)),
 				);
 			}
 
 			promises.push(
 				db
-					.findObjects<Report>(CollectionId.Reports, {
+					.findObjects(CollectionId.Reports, {
 						match: { $in: comp.matches },
 					})
 					.then((r) => quantitativeReports.push(...r)),
@@ -1209,7 +1206,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			promises.push(
 				db
-					.findObjects<Pitreport>(CollectionId.PitReports, {
+					.findObjects(CollectionId.PitReports, {
 						_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
 						submitted: true,
 					})
@@ -1218,7 +1215,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			promises.push(
 				db
-					.findObjects<SubjectiveReport>(CollectionId.SubjectiveReports, {
+					.findObjects(CollectionId.SubjectiveReports, {
 						match: { $in: comp.matches },
 					})
 					.then((r) => subjectiveReports.push(...r)),
@@ -1247,7 +1244,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db: dbPromise }, { comp }, [compId]) => {
 			const db = await dbPromise;
 
-			const picklist = await db.findObjectById<CompPicklistGroup>(
+			const picklist = await db.findObjectById(
 				CollectionId.Picklists,
 				new ObjectId(comp.picklist),
 			);
@@ -1434,12 +1431,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects<SubjectiveReport>(
-				CollectionId.SubjectiveReports,
-				{
-					match: { $in: comp.matches },
-				},
-			);
+			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: comp.matches },
+			});
 
 			return res.status(200).send(reports);
 		},
@@ -1621,8 +1615,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		void
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { tba }, authData, [teamNumber]) => {
-			const team = await TheOrangeAlliance.getTeam(teamNumber);
+		handler: async (req, res, { tba, db }, authData, [teamNumber]) => {
+			const team = await TheOrangeAlliance.getTeam(teamNumber, await db);
 			return res.status(200).send(team);
 		},
 	});
@@ -1657,12 +1651,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			}
 
 			const matchIds = matches.map((match) => match._id?.toString());
-			const reports = await db.findObjects<SubjectiveReport>(
-				CollectionId.SubjectiveReports,
-				{
-					match: { $in: matchIds },
-				},
-			);
+			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: matchIds },
+			});
 
 			return res.status(200).send(reports);
 		},
@@ -1685,7 +1676,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const removedUserPromise = db.findObjectById<User>(
+			const removedUserPromise = db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(userId),
 			);
@@ -1736,7 +1727,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const user = await db.findObjectById<User>(
+			const user = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(id),
 			);
@@ -1753,7 +1744,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [ids]) => {
 			const db = await dbPromise;
-			const users = await db.findObjects<User>(CollectionId.Users, {
+			const users = await db.findObjects(CollectionId.Users, {
 				_id: { $in: ids.map((id) => new ObjectId(id)) },
 			});
 			return res.status(200).send(users);
@@ -1769,7 +1760,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const team = await db.findObjectById<Team>(
+			const team = await db.findObjectById(
 				CollectionId.Teams,
 				new ObjectId(id),
 			);
@@ -1801,7 +1792,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 						}
 					: { number: number, league: league };
 
-			const team = await db.findObject<Team>(CollectionId.Teams, query);
+			const team = await db.findObject(CollectionId.Teams, query);
 
 			return res.status(200).send(team);
 		},
@@ -1816,7 +1807,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const season = await db.findObjectById<Season>(
+			const season = await db.findObjectById(
 				CollectionId.Seasons,
 				new ObjectId(id),
 			);
@@ -1833,7 +1824,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const competition = await db.findObjectById<Competition>(
+			const competition = await db.findObjectById(
 				CollectionId.Competitions,
 				new ObjectId(id),
 			);
@@ -1850,7 +1841,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const match = await db.findObjectById<Match>(
+			const match = await db.findObjectById(
 				CollectionId.Matches,
 				new ObjectId(id),
 			);
@@ -1867,7 +1858,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const report = await db.findObjectById<Report>(
+			const report = await db.findObjectById(
 				CollectionId.Reports,
 				new ObjectId(id),
 			);
@@ -2125,7 +2116,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db: dbPromise }, authData, args) => {
 			const db = await dbPromise;
 
-			const users = await db.findObjects<User>(CollectionId.Users, {
+			const users = await db.findObjects(CollectionId.Users, {
 				xp: { $gt: 0 },
 				email: { $ne: "totallyrealemail@gmail.com" },
 			});
@@ -2135,7 +2126,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
 			);
 
-			const teams = await db.findObjects<Team>(CollectionId.Teams, {
+			const teams = await db.findObjects(CollectionId.Teams, {
 				_id: {
 					$in: users
 						.map((user) => user.teams.map((id) => new ObjectId(id)))

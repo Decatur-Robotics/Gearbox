@@ -128,7 +128,7 @@ export function removeWhitespaceAndMakeLowerCase(str: string): string {
 }
 
 /**
- * @tested_by tests/lib/clien/tClientUtils.test.ts
+ * @tested_by tests/lib/client/ClientUtils.test.ts
  */
 export function promisify<TReturn>(
 	func: (...args: any[]) => TReturn,
@@ -141,4 +141,13 @@ export function promisify<TReturn>(
 				(err: any) => reject(err),
 			);
 		});
+}
+
+/**
+ * Tested to be accurate to within 150ms
+ *
+ * @tested_by tests/lib/client/ClientUtils.test.ts
+ */
+export async function wait(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
