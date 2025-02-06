@@ -142,9 +142,7 @@ export default function LocalStorageDb() {
 					<span className="text-error">Not ready</span>
 				)}
 			</div>
-			<div>
-				Flagged docs: {flagCount}
-			</div>
+			<div>Flagged docs: {flagCount}</div>
 			<div className="divider" />
 			<ul>
 				{db &&
