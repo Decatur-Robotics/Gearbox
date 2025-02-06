@@ -1,6 +1,7 @@
 import Container from "@/components/Container";
 import CollectionId from "@/lib/client/CollectionId";
 import LocalStorageDbInterface from "@/lib/client/dbinterfaces/LocalStorageDbInterface";
+import { ObjectId } from "bson";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -10,6 +11,7 @@ export default function LocalStorageDb() {
 	const [json, setJson] = useState<string>();
 
 	const [dbData, setDbData] = useState<{ [collection: string]: object[] }>({});
+	const [flagCount, setFlagCount] = useState(0);
 
 	useEffect(() => {
 		const db = new LocalStorageDbInterface();
@@ -21,6 +23,7 @@ export default function LocalStorageDb() {
 
 	async function updateDbData(db: LocalStorageDbInterface) {
 		if (!db) return;
+
 		const newDbData: { [collection: string]: object[] } = {};
 		await Promise.all(
 			Object.values(CollectionId).map(async (collection) => {
@@ -29,15 +32,77 @@ export default function LocalStorageDb() {
 			}),
 		);
 		setDbData(newDbData);
+
+		const flaggedDocs: object[] = (
+			await Promise.all(
+				Object.values(CollectionId).map(
+					async (collection) =>
+						await db.findObjects(collection, { flagged: true }),
+				),
+			)
+		).flat();
+		setFlagCount(flaggedDocs.length);
 	}
 
-	function addObject() {
+	async function addObject() {
 		if (!db || !collection || !json) return;
+
+		const obj = JSON.parse(json);
+
+		console.log("Adding object", obj, "to", collection);
+
 		try {
-			db.addObject(collection, JSON.parse(json));
+			await db.addObject(collection, obj);
 		} catch (e: any) {
 			toast.error(e.message);
 		}
+		updateDbData(db);
+	}
+
+	async function deleteObject(collection: CollectionId, _id: ObjectId) {
+		if (!db) return;
+
+		console.log("Deleting object", _id.toString(), "from", collection);
+
+		await db.deleteObjectById(collection, _id);
+		updateDbData(db);
+	}
+
+	async function increment(collection: CollectionId, _id: ObjectId) {
+		if (!db) return;
+
+		console.log("Incrementing object", _id.toString(), "in", collection);
+
+		const object = await db.findObjectById(collection, _id);
+
+		if (!object) {
+			toast.error("Object not found:" + _id.toString());
+			return;
+		}
+
+		await db.updateObjectById(collection, _id, {
+			count: (object.count ?? 0) + 1,
+		});
+
+		updateDbData(db);
+	}
+
+	async function toggleFlag(collection: CollectionId, _id: ObjectId) {
+		if (!db) return;
+
+		console.log("Toggling flag on object", _id.toString(), "in", collection);
+
+		const object = await db.findObjectById(collection, _id);
+
+		if (!object) {
+			toast.error("Object not found:" + _id.toString());
+			return;
+		}
+
+		await db.updateObjectById(collection, _id, {
+			flagged: !object.flagged,
+		});
+
 		updateDbData(db);
 	}
 
@@ -68,6 +133,19 @@ export default function LocalStorageDb() {
 					Add Object
 				</button>
 			</div>
+			<div className="divider" />
+			<div>
+				DB:{" "}
+				{db ? (
+					<span className="text-success">Ready</span>
+				) : (
+					<span className="text-error">Not ready</span>
+				)}
+			</div>
+			<div>
+				Flagged docs: {flagCount}
+			</div>
+			<div className="divider" />
 			<ul>
 				{db &&
 					Object.values(CollectionId).map((collection) => (
@@ -76,8 +154,35 @@ export default function LocalStorageDb() {
 							<ol className="ml-4">
 								{dbData[collection] &&
 									dbData[collection].map((object) => (
-										<li key={JSON.stringify(object)}>
-											{JSON.stringify(object)}
+										<li
+											key={JSON.stringify(object)}
+											className="flex items-center"
+										>
+											<div>{JSON.stringify(object)}</div>
+											<button
+												className="btn btn-warning btn-sm"
+												onClick={() =>
+													deleteObject(collection, (object as any)._id)
+												}
+											>
+												Delete
+											</button>
+											<button
+												className="btn btn-secondary btn-sm"
+												onClick={() =>
+													increment(collection, (object as any)._id)
+												}
+											>
+												Increment
+											</button>
+											<button
+												className="btn btn-secondary btn-sm"
+												onClick={() =>
+													toggleFlag(collection, (object as any)._id)
+												}
+											>
+												{(object as any).flagged ? "Unflag" : "Flag"}
+											</button>
 										</li>
 									))}
 							</ol>
