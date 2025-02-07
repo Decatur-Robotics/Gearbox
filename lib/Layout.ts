@@ -9,6 +9,7 @@ import {
 	CenterStageEnums,
 	IntoTheDeepEnums,
 	FtcDrivetrain,
+	ReefscapeEnums,
 } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report, League } from "./Types";
 
@@ -212,6 +213,10 @@ export function keyToType(
 		CenterStageEnums.AutoSidePreference,
 		IntoTheDeepEnums.StartedWith,
 		IntoTheDeepEnums.EndgameLevelClimbed,
+		ReefscapeEnums.AutoCapabilities,
+		ReefscapeEnums.Climbing,
+		ReefscapeEnums.DriveThroughDeepCage,
+		ReefscapeEnums.EndgameClimbStatus,
 	];
 
 	if (key === "Defense") return Defense;
