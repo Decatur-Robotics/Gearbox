@@ -226,10 +226,10 @@ export function keyToType(
 	if (key === "EndgameLevelClimbed")
 		return IntoTheDeepEnums.EndgameLevelClimbed;
 
-	if (key == "ReefscapeEnums.AutoCapabilities") return ReefscapeEnums.AutoCapabilities;
-	if (key == "ReefscapeEnums.Climbing") return ReefscapeEnums.Climbing;
-	if (key == "ReefscapeEnums.DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
-	if (key == "ReefscapeEnums.EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
+	if (key == "AutoCapabilities") return ReefscapeEnums.AutoCapabilities;
+	if (key == "Climbing") return ReefscapeEnums.Climbing;
+	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
+	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;
