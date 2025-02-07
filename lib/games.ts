@@ -1230,8 +1230,8 @@ namespace Reefscape {
 				["AutoCoralScoredLevelOne"],
 				["AutoCoralScoredLevelTwo"],
 				["AutoCoralScoredLevelThree"],
-				["AutoCoralScoredLevelFour"],
 			],
+			[["AutoCoralScoredLevelFour"],],
 			[
 				["AutoAlgaeRemovedFromReef"],
 				["AutoAlgaeScoredProcessor"],
