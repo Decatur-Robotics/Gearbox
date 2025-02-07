@@ -1224,7 +1224,6 @@ namespace Reefscape {
 	};
 
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
-		"Pre-Match": ["CageHeight"],
 		Auto: [
 			"AutoMovedPastStartingLine",
 			[
