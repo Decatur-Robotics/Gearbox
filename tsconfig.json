@@ -34,6 +34,6 @@
 		"index.ts",
 		"pages/_error.js",
 		"tests/lib/client/InputVerification.test.ts"
-	],
+, "public/pwa/sw.js"	],
 	"exclude": ["node_modules"]
 }

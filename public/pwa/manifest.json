@@ -3,8 +3,8 @@
 	"short_name": "Gearbox",
 	"icons": [
 		{
-			"src": "/favicon.png",
-			"sizes": "220x220",
+			"src": "/robot.jpg.png",
+			"sizes": "500x500",
 			"type": "image/png",
 			"purpose": "any"
 		}
