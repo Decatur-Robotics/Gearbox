@@ -84,10 +84,10 @@ export namespace IntoTheDeepEnums {
 
 export namespace ReefscapeEnums {
 	export enum EndgameClimbStatus {
-		ClimbedLow = "Climbed Low",
-		ClimbedHigh = "Climbed High",
-		Parked = "Parked",
-		None = "None"
+		None = "None",
+		Park = "Park",
+		High = "High",
+		Low = "Low",
 	}
 
 	export enum DriveThroughDeepCage {

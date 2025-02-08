@@ -1194,7 +1194,6 @@ namespace Reefscape {
 			ReefscapeEnums.DriveThroughDeepCage.No;
 		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
 			ReefscapeEnums.AutoCapabilities.NoAuto;
-		AutoDescription: string = "";
 		CanRemoveAlgae: boolean = false;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNet: boolean = false;
@@ -1219,39 +1218,36 @@ namespace Reefscape {
 		],
 		Auto: [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
-			{ key: "AutoDescription", label: "Auto Description" },
+			{ key: "CoralScoredAuto", label: "Average Coral Scored In Auto" },
+			{ key: "AlgaeScoredAuto", label: "Average Algae Scored In Auto" },
 		],
 	};
 
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
-			"AutoMovedPastStartingLine",
+			"AutoMovedPastStaringLine",
 			[
-				["AutoCoralScoredLevelOne"],
-				["AutoCoralScoredLevelTwo"],
-				["AutoCoralScoredLevelThree"],
+				["AutoCoralScoredLevelOne", "AutoCoralScoredLevelTwo"],
+				["AutoCoralScoredLevelThree", "AutoCoralScoredLevelFour"],
 			],
-			[["AutoCoralScoredLevelFour"],],
 			[
 				["AutoAlgaeRemovedFromReef"],
 				["AutoAlgaeScoredProcessor"],
 				["AutoAlgaeScoredNet"],
 			],
 		],
-		"Teleop & Endgame": [
+		Teleop: [
 			[
-				["TeleopCoralScoredLevelOne"],
-				["TeleopCoralScoredLevelTwo"],
-				["TeleopCoralScoredLevelThree"],
-				["TeleopCoralScoredLevelFour"],
+				["TeleopCoralScoredLevelOne", "TeleopCoralScoredLevelTwo"],
+				["TeleopCoralScoredLevelThree", "TeleopCoralScoredLevelFour"],
 			],
 			[
 				["TeleopAlgaeRemovedFromReef"],
 				["TeleopAlgaeScoredProcessor"],
 				["TeleopAlgaeScoredNet"],
 			],
-			"EndgameClimbStatus",
 		],
+		"Post Match": ["EndgameClimbStatus"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
@@ -1317,13 +1313,12 @@ namespace Reefscape {
 					label: "Avg Amt of Algae Scored Net Teleop",
 				},
 			],
-			Endgame: [{ key: "EndgameClimbStatus", label: "Endgame Climb status" }],
 		},
 		getGraphDots: function (
 			quantitativeReports: Report<QuantitativeData>[],
 			pitReport?: Pitreport<PitData> | undefined,
 		): Dot[] {
-			throw new Error("Function not implemented.");
+			return [];
 		},
 	};
 
@@ -1502,32 +1497,30 @@ namespace Reefscape {
 			switch (report.EndgameClimbStatus) {
 				case ReefscapeEnums.EndgameClimbStatus.None:
 					break;
-				case ReefscapeEnums.EndgameClimbStatus.Parked:
+				case ReefscapeEnums.EndgameClimbStatus.Park:
 					totalPoints += 2;
 					break;
-				case ReefscapeEnums.EndgameClimbStatus.ClimbedHigh:
+				case ReefscapeEnums.EndgameClimbStatus.High:
 					totalPoints += 6;
 					break;
-				case ReefscapeEnums.EndgameClimbStatus.ClimbedLow:
+				case ReefscapeEnums.EndgameClimbStatus.Low:
 					totalPoints += 12;
 					break;
 			}
 
-			totalPoints += report.TeleopCoralScoredLevelOneCoralScoredLevelOne * 2;
+			totalPoints += report.TeleopCoralScoredLevelOne * 2;
 			totalPoints +=
 				(report.AutoCoralScoredLevelOne + report.TeleopCoralScoredLevelTwo) * 3;
 			totalPoints +=
 				(report.AutoCoralScoredLevelTwo +
 					report.TeleopCoralScoredLevelThree +
 					report.AutoAlgaeScoredNet +
-					report.TeleopAlgaeScoredNet) *
-				4;
+					report.TeleopAlgaeScoredNet) * 4;
 			totalPoints += report.TeleopCoralScoredLevelFour * 5;
 			totalPoints +=
 				(report.AutoAlgaeScoredProcessor +
 					report.TeleopAlgaeScoredProcessor +
-					report.AutoCoralScoredLevelThree) *
-				6;
+					report.AutoCoralScoredLevelThree) * 6;
 			totalPoints += report.AutoCoralScoredLevelFour * 7;
 		}
 

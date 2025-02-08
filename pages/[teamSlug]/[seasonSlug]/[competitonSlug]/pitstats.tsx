@@ -311,8 +311,8 @@ export default function Pitstats(props: { competition: Competition }) {
 					teamNumber={Number(key)}
 					pitReport={newPits[Number(key)]}
 					matchReports={newReports.filter((r) => r.robotNumber === Number(key))}
-					ranking={rankings.find((r) => r.team_key === `frc${key}`)}
-					maxRanking={rankings.length}
+					ranking={rankings?.find((r) => r.team_key === `frc${key}`)}
+					maxRanking={rankings?.length}
 					layout={layout}
 					getBadges={games[comp.gameId].getBadges}
 					stats={stats.map((stat) => ({
@@ -321,7 +321,7 @@ export default function Pitstats(props: { competition: Competition }) {
 						mean: stat.mean,
 						stDev: stat.stDev,
 						rank: stat.rankings.indexOf(key) + 1,
-						maxRanking: rankings.length,
+						maxRanking: rankings?.length,
 					}))}
 				/>
 			);

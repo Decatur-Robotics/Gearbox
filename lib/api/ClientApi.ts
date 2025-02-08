@@ -907,7 +907,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { tba }, authData, [tbaId]) => {
 			const compRankings = await tba.req.getCompetitonRanking(tbaId);
-			return res.status(200).send(compRankings.rankings);
+			return res.status(200).send(compRankings?.rankings);
 		},
 	});
 
