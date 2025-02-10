@@ -37,9 +37,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/public/sw.js
-/public/sw.js.map
-/public/workbox-*
-/public/fallback-*
-
 /certs/*.*

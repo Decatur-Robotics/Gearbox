@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "es5",
-		"lib": ["dom", "dom.iterable", "esnext"],
+		"lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
@@ -34,6 +34,6 @@
 		"index.ts",
 		"pages/_error.js",
 		"tests/lib/client/InputVerification.test.ts"
-, "public/pwa/sw.js"	],
+, "public/sw.js"	],
 	"exclude": ["node_modules"]
 }

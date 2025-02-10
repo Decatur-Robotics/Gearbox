@@ -1,6 +1,7 @@
 {
 	"name": "Gearbox",
 	"short_name": "Gearbox",
+	"id": "/",
 	"icons": [
 		{
 			"src": "/robot.jpg.png",

@@ -137,7 +137,7 @@ export default function Container(props: ContainerProps) {
 
 	useEffect(() => {
 		if ("serviceWorker" in navigator) {
-			navigator.serviceWorker.register("/pwa/sw.js").then((reg) => {
+			navigator.serviceWorker.register("/sw.js").then((reg) => {
 				console.log("Service worker has been registered", reg);
 			}).catch((err) => {
 				console.log("Service worker registration failed: " + err);
@@ -154,7 +154,7 @@ export default function Container(props: ContainerProps) {
 				<title>
 					{props.title !== "Gearbox" ? `${props.title} | Gearbox` : props.title}
 				</title>
-				<link rel="manifest" href="/pwa/manifest.json" />
+				<link rel="manifest" href="/manifest.json" />
 			</Head>
 
 			<DiscordBanner />

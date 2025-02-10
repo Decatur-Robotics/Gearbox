@@ -29,7 +29,6 @@ export default function Footer() {
 			if (registration) {
 				registration.addEventListener("updatefound", () => {
 					setSwStatus("Service worker update found");
-					console.log("Service worker update found");
 					registration.installing?.addEventListener("statechange", () => {
 						console.log(
 							"Service worker state change: ",
