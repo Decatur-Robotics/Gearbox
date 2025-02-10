@@ -2191,6 +2191,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db: dbPromise }, authData, args) => {
 			const db = await dbPromise;
 
+			// Find data from DB
 			const [teams, users] = await Promise.all([
 				db.findObjects(CollectionId.Teams, {}),
 				db.findObjects(CollectionId.Users, {
@@ -2198,6 +2199,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				}),
 			]);
 
+			// Create a linked list for each team
 			const signInDatesByTeam: {
 				[team: string]: LinkedList<{ date: string; count: number }>;
 			} = teams.reduce(
@@ -2214,12 +2216,15 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			for (const user of users) {
+				// Add the user to each of their teams
 				for (const team of [...user.teams, "All"]) {
 					const signInDates = signInDatesByTeam[team];
 
-					// Might need to rewrite this section of Criterion B! We need also need to add planning for the "all" team
+					// Iterate through the team's linked list
 					for (let node = signInDates.first(); true; node = node.next) {
 						if (!node) {
+							// We're either at the end of the list, or the list is empty
+
 							// Can't just update signInDates, as that will reference a new object and not change the old one!
 							signInDates.setHead({
 								date: user.lastSignInDateTime!.toDateString(),
@@ -2232,6 +2237,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 							node &&
 							node?.date === user.lastSignInDateTime!.toDateString()
 						) {
+							// Found the node with the same date
 							node.count++;
 							break;
 						}
@@ -2241,6 +2247,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 							new Date(user.lastSignInDateTime!.toDateString())! <
 								new Date(node.next.date)
 						) {
+							// The next node's date is after the user's sign-in date
 							signInDates.insertAfter(node!, {
 								date: user.lastSignInDateTime!.toDateString(),
 								count: 1,
@@ -2251,20 +2258,24 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				}
 			}
 
-			// We mixed up the types for this object in Criterion B
+			// Convert linked lists to arrays
 			const responseObj: { [team: string]: { date: Date; count: number }[] } =
 				{};
 			for (const obj of [...teams, "All"]) {
+				// Convert ObjectIds to strings
 				const id = typeof obj === "object" ? obj._id!.toString() : obj;
+				// Pull relevant data from the team to create a label
 				const label =
 					typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
 
+					// Convert date strings to Date objects
 				responseObj[label] = signInDatesByTeam[id].map((node) => ({
 					date: new Date(node.date),
 					count: node.count,
 				}));
 			}
 
+			// Send the response
 			res.status(200).send(responseObj);
 		},
 	});
