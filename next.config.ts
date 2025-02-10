@@ -1,12 +1,11 @@
 import packageConfig from "./package.json";
 import withSerwistInit from "@serwist/next";
 
-console.log(process.env.NEXT_PUBLIC_BUILD_TIME);
 const withSerwist = withSerwistInit({
 	swSrc: "lib/sw.ts",
 	swDest: "public/sw.js",
 	additionalPrecacheEntries: [
-		{ url: "/offline", revision: process.env.NEXT_PUBLIC_BUILD_TIME },
+		{ url: "/offline", revision: new Date().toDateString() },
 	],
 });
 
