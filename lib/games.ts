@@ -827,7 +827,7 @@ export namespace CenterStage {
 	);
 }
 
-namespace IntoTheDeep {
+export namespace IntoTheDeep {
 	export class QuantitativeData extends QuantData {
 		StartedWith: IntoTheDeepEnums.StartedWith =
 			IntoTheDeepEnums.StartedWith.Nothing;

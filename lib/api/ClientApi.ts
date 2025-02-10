@@ -17,8 +17,6 @@ import {
 	SubjectiveReportSubmissionType,
 	Team,
 	User,
-	Report,
-	WebhookHolder,
 	LeaderboardUser,
 	LeaderboardTeam,
 	LinkedList,
@@ -40,7 +38,7 @@ import {
 	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
-import { games } from "../games";
+import { CenterStage, Crescendo, games, IntoTheDeep } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
@@ -48,6 +46,7 @@ import { _id } from "@next-auth/mongodb-adapter";
 import toast from "react-hot-toast";
 import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
+import { Report } from "../Types";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -953,8 +952,32 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				{},
 			);
 
-			const dataPointsPerReport = Reflect.ownKeys(QuantData).length;
-			const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
+			const quantReportTypes = [
+				Crescendo.QuantitativeData,
+				CenterStage.QuantitativeData,
+				IntoTheDeep.QuantitativeData,
+			];
+			const pitReportTypes = [
+				Crescendo.PitData,
+				CenterStage.PitData,
+				IntoTheDeep.PitData,
+			];
+
+			const dataPointsPerReport =
+				Reflect.ownKeys(QuantData).length +
+				quantReportTypes.reduce(
+					(acc, game) => acc + Reflect.ownKeys(game).length,
+					0,
+				) /
+					quantReportTypes.length;
+
+			const dataPointsPerPitReports =
+				Reflect.ownKeys(Pitreport).length +
+				pitReportTypes.reduce(
+					(acc, game) => acc + Reflect.ownKeys(game).length,
+					0,
+				) /
+					pitReportTypes.length;
 			const dataPointsPerSubjectiveReport =
 				Reflect.ownKeys(SubjectiveReport).length + 5;
 
