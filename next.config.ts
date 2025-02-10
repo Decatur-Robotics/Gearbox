@@ -1,4 +1,10 @@
-const packageConfig = require("./package.json");
+import packageConfig from "./package.json";
+import withSerwistInit from "@serwist/next";
+
+const withSerwist = withSerwistInit({
+	swSrc: "lib/sw.ts",
+	swDest: "public/sw.js",
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -23,4 +29,4 @@ const nextConfig = {
 	},
 };
 
-module.exports = nextConfig;
+module.exports = withSerwist(nextConfig);

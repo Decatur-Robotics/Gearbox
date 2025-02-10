@@ -38,3 +38,7 @@ yarn-error.log*
 next-env.d.ts
 
 /certs/*.*
+
+# PWA
+public/sw.js
+public/swe-worker*

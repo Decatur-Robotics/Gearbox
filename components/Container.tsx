@@ -135,16 +135,6 @@ export default function Container(props: ContainerProps) {
 		}
 	}
 
-	useEffect(() => {
-		if ("serviceWorker" in navigator) {
-			navigator.serviceWorker.register("/sw.js").then((reg) => {
-				console.log("Service worker has been registered", reg);
-			}).catch((err) => {
-				console.log("Service worker registration failed: " + err);
-			});
-		}
-	}, []);
-
 	return (
 		<div
 			className="w-full h-screen flex flex-col overflow-x-hidden"
@@ -154,7 +144,6 @@ export default function Container(props: ContainerProps) {
 				<title>
 					{props.title !== "Gearbox" ? `${props.title} | Gearbox` : props.title}
 				</title>
-				<link rel="manifest" href="/manifest.json" />
 			</Head>
 
 			<DiscordBanner />
