@@ -30,7 +30,10 @@ export default function App({
 	return (
 		<>
 			<Head>
-				<link rel="manifest" href="/manifest.json" />
+				<link
+					rel="manifest"
+					href="/manifest.json"
+				/>
 			</Head>
 			<SessionProvider session={session}>
 				<DndProvider backend={HTML5Backend}>
