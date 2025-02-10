@@ -1936,7 +1936,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		Team
 	>({
 		isAuthorized: (req, res, deps, [newValues, teamId]) =>
-			AccessLevels.IfOnTeam(req, res, deps, teamId),
+			AccessLevels.IfTeamOwner(req, res, deps, teamId),
 		handler: async (
 			req,
 			res,
