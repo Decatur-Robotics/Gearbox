@@ -2268,7 +2268,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				const label =
 					typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
 
-					// Convert date strings to Date objects
+				// Convert date strings to Date objects
 				responseObj[label] = signInDatesByTeam[id].map((node) => ({
 					date: new Date(node.date),
 					count: node.count,
