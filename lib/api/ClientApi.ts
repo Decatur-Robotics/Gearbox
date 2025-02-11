@@ -17,10 +17,9 @@ import {
 	SubjectiveReportSubmissionType,
 	Team,
 	User,
-	Report,
-	WebhookHolder,
 	LeaderboardUser,
 	LeaderboardTeam,
+	LinkedList,
 } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
@@ -39,7 +38,7 @@ import {
 	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
-import { games } from "../games";
+import { CenterStage, Crescendo, games, IntoTheDeep } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
@@ -47,6 +46,7 @@ import { _id } from "@next-auth/mongodb-adapter";
 import toast from "react-hot-toast";
 import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
+import { Report } from "../Types";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -952,8 +952,32 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				{},
 			);
 
-			const dataPointsPerReport = Reflect.ownKeys(QuantData).length;
-			const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
+			const quantReportTypes = [
+				Crescendo.QuantitativeData,
+				CenterStage.QuantitativeData,
+				IntoTheDeep.QuantitativeData,
+			];
+			const pitReportTypes = [
+				Crescendo.PitData,
+				CenterStage.PitData,
+				IntoTheDeep.PitData,
+			];
+
+			const dataPointsPerReport =
+				Reflect.ownKeys(QuantData).length +
+				quantReportTypes.reduce(
+					(acc, game) => acc + Reflect.ownKeys(game).length,
+					0,
+				) /
+					quantReportTypes.length;
+
+			const dataPointsPerPitReports =
+				Reflect.ownKeys(Pitreport).length +
+				pitReportTypes.reduce(
+					(acc, game) => acc + Reflect.ownKeys(game).length,
+					0,
+				) /
+					pitReportTypes.length;
 			const dataPointsPerSubjectiveReport =
 				Reflect.ownKeys(SubjectiveReport).length + 5;
 
@@ -1935,7 +1959,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		Team
 	>({
 		isAuthorized: (req, res, deps, [newValues, teamId]) =>
-			AccessLevels.IfOnTeam(req, res, deps, teamId),
+			AccessLevels.IfTeamOwner(req, res, deps, teamId),
 		handler: async (
 			req,
 			res,
@@ -2177,6 +2201,105 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			return res
 				.status(200)
 				.send({ users: leaderboardUsers, teams: leaderboardTeamsArray });
+		},
+	});
+
+	getUserAnalyticsData = createNextRoute<
+		[],
+		{ [team: string]: { date: Date; count: number }[] },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, { db: dbPromise }, authData, args) => {
+			const db = await dbPromise;
+
+			// Find data from DB
+			const [teams, users] = await Promise.all([
+				db.findObjects(CollectionId.Teams, {}),
+				db.findObjects(CollectionId.Users, {
+					lastSignInDateTime: { $exists: true },
+				}),
+			]);
+
+			// Create a linked list for each team
+			const signInDatesByTeam: {
+				[team: string]: LinkedList<{ date: string; count: number }>;
+			} = teams.reduce(
+				(acc, team) => {
+					acc[team._id!.toString()] = new LinkedList<{
+						date: string;
+						count: number;
+					}>();
+					return acc;
+				},
+				{ All: new LinkedList() } as {
+					[team: string]: LinkedList<{ date: string; count: number }>;
+				},
+			);
+
+			for (const user of users) {
+				// Add the user to each of their teams
+				for (const team of [...user.teams, "All"]) {
+					const signInDates = signInDatesByTeam[team];
+
+					// Iterate through the team's linked list
+					for (let node = signInDates.first(); true; node = node.next) {
+						if (!node) {
+							// We're either at the end of the list, or the list is empty
+
+							// Can't just update signInDates, as that will reference a new object and not change the old one!
+							signInDates.setHead({
+								date: user.lastSignInDateTime!.toDateString(),
+								count: 1,
+							});
+							break;
+						}
+
+						if (
+							node &&
+							node?.date === user.lastSignInDateTime!.toDateString()
+						) {
+							// Found the node with the same date
+							node.count++;
+							break;
+						}
+
+						if (
+							!node?.next ||
+							new Date(user.lastSignInDateTime!.toDateString())! <
+								new Date(node.next.date)
+						) {
+							// The next node's date is after the user's sign-in date
+							signInDates.insertAfter(node!, {
+								date: user.lastSignInDateTime!.toDateString(),
+								count: 1,
+							});
+							break;
+						}
+					}
+				}
+			}
+
+			// Convert linked lists to arrays
+			const responseObj: { [team: string]: { date: Date; count: number }[] } =
+				{};
+			for (const obj of [...teams, "All"]) {
+				// Convert ObjectIds to strings
+				const id = typeof obj === "object" ? obj._id!.toString() : obj;
+				// Pull relevant data from the team to create a label
+				const label =
+					typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
+
+				// Convert date strings to Date objects
+				responseObj[label] = signInDatesByTeam[id].map((node) => ({
+					date: new Date(node.date),
+					count: node.count,
+				}));
+			}
+
+			// Send the response
+			res.status(200).send(responseObj);
 		},
 	});
 }
