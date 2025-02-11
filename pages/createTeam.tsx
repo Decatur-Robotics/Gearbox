@@ -18,6 +18,8 @@ export default function CreateTeam() {
 	const [team, setTeam] = useState<Partial<Team>>({});
 	const [error, setError] = useState("");
 
+	const[allianceStatus, setAllianceStatus] = useState<Boolean>(false);
+
 	const createTeam = async () => {
 		if (!session?.user) {
 			return;
@@ -52,6 +54,7 @@ export default function CreateTeam() {
 			team.tbaId ?? NotLinkedToTba,
 			team.number,
 			team.league,
+			team.alliance as boolean,
 		);
 
 		if (!newTeam) {
@@ -120,6 +123,14 @@ export default function CreateTeam() {
 						className="input w-full"
 						value={team.name ?? ""}
 						onChange={(e) => setTeam({ ...team, name: e.target.value })}
+					/> 
+					<input
+						type="checkbox"
+						onChange={() => {
+							setAllianceStatus(!allianceStatus)
+							setTeam({ ...team, alliance: allianceStatus as boolean}
+
+						)}}
 					/>
 					<button
 						className="btn btn-primary w-full"
@@ -127,6 +138,7 @@ export default function CreateTeam() {
 					>
 						Create Team
 					</button>
+					{allianceStatus? <p>allied</p>:<p>not allied</p>}
 					{error && <p className="text-red-500">{error}</p>}
 				</Card>
 			</Flex>
