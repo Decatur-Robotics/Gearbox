@@ -18,7 +18,7 @@ export default function CreateTeam() {
 	const [team, setTeam] = useState<Partial<Team>>({});
 	const [error, setError] = useState("");
 
-	const[allianceStatus, setAllianceStatus] = useState<Boolean>(false);
+	const[allianceStatus, setAllianceStatus] = useState<boolean>(false);
 
 	const createTeam = async () => {
 		if (!session?.user) {
@@ -62,7 +62,7 @@ export default function CreateTeam() {
 			team.tbaId ?? NotLinkedToTba,
 			team.number,
 			team.league,
-			team.alliance as boolean,
+			allianceStatus,
 		);
 
 		if (!newTeam) {
