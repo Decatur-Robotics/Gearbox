@@ -9,6 +9,7 @@ import {
 	CenterStageEnums,
 	IntoTheDeepEnums,
 	FtcDrivetrain,
+	ReefscapeEnums,
 } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report, League } from "./Types";
 
@@ -143,6 +144,14 @@ export type StatPair<
 	label: string;
 };
 
+export type StatGroup<
+	TPitData extends PitReportData,
+	TQuantData extends QuantData,
+> = {
+	stats: Stat<TPitData, TQuantData>[];
+	label: string;
+};
+
 export type StatsLayout<
 	TPitData extends PitReportData,
 	TQuantData extends QuantData,
@@ -204,6 +213,10 @@ export function keyToType(
 		CenterStageEnums.AutoSidePreference,
 		IntoTheDeepEnums.StartedWith,
 		IntoTheDeepEnums.EndgameLevelClimbed,
+		ReefscapeEnums.AutoCapabilities,
+		ReefscapeEnums.Climbing,
+		ReefscapeEnums.DriveThroughDeepCage,
+		ReefscapeEnums.EndgameClimbStatus,
 	];
 
 	if (key === "Defense") return Defense;
@@ -212,6 +225,11 @@ export function keyToType(
 	if (key === "StartedWith") return IntoTheDeepEnums.StartedWith;
 	if (key === "EndgameLevelClimbed")
 		return IntoTheDeepEnums.EndgameLevelClimbed;
+
+	if (key == "AutoCapabilities") return ReefscapeEnums.AutoCapabilities;
+	if (key == "Climbing") return ReefscapeEnums.Climbing;
+	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
+	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;
