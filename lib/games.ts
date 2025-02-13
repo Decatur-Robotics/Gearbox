@@ -1463,8 +1463,8 @@ namespace Reefscape {
 			{ key: "Climbing", label: "Climbing?" },
 		],
 		graphStat: {
-			label: "Average Coral Scored In Auto",
-			key: "CoralScoredAuto",
+			label: "Average Algae Scored In The Net During Teleop",
+			key: "TeleopAlgaeScoredNet",
 		},
 	};
 

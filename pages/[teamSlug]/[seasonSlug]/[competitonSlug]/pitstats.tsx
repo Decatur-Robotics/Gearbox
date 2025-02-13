@@ -26,6 +26,7 @@ import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { games } from "@/lib/games";
 import { PitStatsLayout, Badge } from "@/lib/Layout";
 import CollectionId from "@/lib/client/CollectionId";
+import { matchesMiddleware } from "next/dist/shared/lib/router/router";
 
 const api = new ClientApi();
 
@@ -69,12 +70,14 @@ function TeamSlide(props: {
 
 		const data = [];
 		if (stat.get) {
-			for (const report of props.matchReports) {
-				data.push(stat.get(props.pitReport, [report]));
-			}
-		} else {
-			for (const report of props.matchReports) {
-				data.push(report.data[stat.key as string]);
+			data.push(stat.get(props.pitReport, props.matchReports));
+		} else if (stat.key) {
+			if (props.matchReports.length && stat.key in props.matchReports[0].data) {
+				for (const report of props.matchReports) {
+					data.push(report.data[stat.key as string]);
+				}
+			} else if (props.pitReport.data) {
+				data.push(props.pitReport.data[stat.key as string]);
 			}
 		}
 
