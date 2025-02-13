@@ -77,7 +77,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
 							{/* The following div pushes the create button to the bottom and vertically aligns the image to the middle of the remaining space */}
 							<div className="grow flex items-center">
 								<img
-									className="w-fit h-auto"
+									className={`w-fit h-auto ${game.coverImageClass}`}
 									src={game.coverImage}
 									alt={game.name}
 								/>
