@@ -1219,7 +1219,7 @@ namespace Reefscape {
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
 		],
-		'Auto (Describe more in comments)': [
+		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
 			{ key: "CoralScoredAuto", label: "Average Coral Scored In Auto" },
 			{ key: "AlgaeScoredAuto", label: "Average Algae Scored In Auto" },
@@ -1265,12 +1265,25 @@ namespace Reefscape {
 						key: "TeleopCoralScoredLevelTwo",
 						label: "Coral Scored Level Two",
 					},
-					{ key: "TeleopCoralScoredLevelFour", label: "Coral Scored Level Four" },
+					{
+						key: "TeleopCoralScoredLevelFour",
+						label: "Coral Scored Level Four",
+					},
 				],
 			],
 			[
-				[{ key: "TeleopAlgaeRemovedFromReef", label: "Algae Removed From Reef" }],
-				[{ key: "TeleopAlgaeScoredProcessor", label: "Algae Scored Processor" }],
+				[
+					{
+						key: "TeleopAlgaeRemovedFromReef",
+						label: "Algae Removed From Reef",
+					},
+				],
+				[
+					{
+						key: "TeleopAlgaeScoredProcessor",
+						label: "Algae Scored Processor",
+					},
+				],
 				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net" }],
 			],
 		],
