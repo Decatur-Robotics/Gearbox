@@ -27,6 +27,7 @@ import Checkbox from "@/components/forms/Checkboxes";
 import FieldPositionSelector from "@/components/forms/FieldPositionSelector";
 import ImageUpload from "@/components/forms/ImageUpload";
 import Card from "@/components/Card";
+import Container from "@/components/Container";
 
 const api = new ClientApi();
 
@@ -270,39 +271,44 @@ export default function PitReportForm(props: {
 	});
 
 	return (
-		<Flex
-			mode="col"
-			className="items-center w-screen h-full space-y-4"
+		<Container
+			requireAuthentication={true}
+			title={`${props.pitReport.teamNumber} | Pit Scouting`}
 		>
-			<Card
-				className="w-1/4"
-				coloredTop="bg-accent"
+			<Flex
+				mode="col"
+				className="items-center w-screen h-full space-y-4"
 			>
-				<Flex
-					center={true}
-					mode="col"
+				<Card
+					className="w-1/4"
+					coloredTop="bg-accent"
 				>
-					<h1 className="text-4xl font-semibold">Pitscouting</h1>
-					<div className="divider"></div>
-					<h1 className="font-semibold text-2xl">
-						<FaRobot
-							className="inline mr-2"
-							size={30}
-						></FaRobot>
-						Team <span className="text-accent">{pitreport.teamNumber}</span>
-					</h1>
-				</Flex>
-			</Card>
-			<Card>
-				{components}
-				<button
-					className="btn btn-primary "
-					onClick={submit}
-				>
-					Submit
-				</button>
-			</Card>
-		</Flex>
+					<Flex
+						center={true}
+						mode="col"
+					>
+						<h1 className="text-4xl font-semibold">Pitscouting</h1>
+						<div className="divider"></div>
+						<h1 className="font-semibold text-2xl">
+							<FaRobot
+								className="inline mr-2"
+								size={30}
+							></FaRobot>
+							Team <span className="text-accent">{pitreport.teamNumber}</span>
+						</h1>
+					</Flex>
+				</Card>
+				<Card>
+					{components}
+					<button
+						className="btn btn-primary "
+						onClick={submit}
+					>
+						Submit
+					</button>
+				</Card>
+			</Flex>
+		</Container>
 	);
 }
 
