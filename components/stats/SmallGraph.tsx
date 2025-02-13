@@ -103,9 +103,7 @@ export default function SmallGraph(props: {
 	};
 
 	useEffect(() => {
-		if (
-			!props.selectedReports)
-			return;
+		if (!props.selectedReports) return;
 
 		setDataPoints([]);
 		setCurrentTeam(props.team);
@@ -139,13 +137,9 @@ export default function SmallGraph(props: {
 					console.log(e.target.value);
 					setKey(e.target.value);
 				}}
-				defaultValue={'selected'}
+				defaultValue={"selected"}
 			>
-				<option
-					disabled
-				>
-					Select Variable
-				</option>
+				<option disabled>Select Variable</option>
 				{keys.map((key) => (
 					<option
 						key={key}

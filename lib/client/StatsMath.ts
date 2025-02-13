@@ -119,9 +119,9 @@ export function ComparativePercent<T extends QuantData>(
 	return Round((a / (b + a)) * 100) + "%";
 }
 
-/** 
-* @tested_by tests/lib/client/StatsMath.test.ts 
-*/
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
 export function ComparativePercentMulti<T extends QuantData>(
 	selectors: Selector<T>[],
 	reports: Report<T>[],

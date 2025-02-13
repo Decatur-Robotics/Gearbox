@@ -10,7 +10,7 @@ export default function useInterval(
 	deps: any[] = [],
 ) {
 	const [id, setId] = useState<NodeJS.Timeout | undefined>(undefined);
-	const callback = useCallback(func, [func.name])
+	const callback = useCallback(func, [func.name]);
 
 	useEffect(() => {
 		setId(setInterval(callback, interval));

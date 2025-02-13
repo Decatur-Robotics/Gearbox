@@ -1482,9 +1482,8 @@ namespace Reefscape {
 		if (pitReport?.data?.CanScoreAlgaeInProcessor)
 			badges.push({ text: "Can Score Algae Processor", color: "success" });
 		if (pitReport?.data?.CanDriveUnderShallowCage)
-			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" })
+			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
 
-		
 		return badges;
 	}
 
@@ -1515,12 +1514,14 @@ namespace Reefscape {
 				(report.AutoCoralScoredLevelTwo +
 					report.TeleopCoralScoredLevelThree +
 					report.AutoAlgaeScoredNet +
-					report.TeleopAlgaeScoredNet) * 4;
+					report.TeleopAlgaeScoredNet) *
+				4;
 			totalPoints += report.TeleopCoralScoredLevelFour * 5;
 			totalPoints +=
 				(report.AutoAlgaeScoredProcessor +
 					report.TeleopAlgaeScoredProcessor +
-					report.AutoCoralScoredLevelThree) * 6;
+					report.AutoCoralScoredLevelThree) *
+				6;
 			totalPoints += report.AutoCoralScoredLevelFour * 7;
 		}
 
