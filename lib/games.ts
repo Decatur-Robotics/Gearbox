@@ -1164,7 +1164,7 @@ export namespace IntoTheDeep {
 
 namespace Reefscape {
 	export class QuantitativeData extends QuantData {
-		AutoMovedPastStaringLine: boolean = false;
+		AutoMovedPastStartingline: boolean = false;
 
 		AutoCoralScoredLevelOne: number = 0;
 		AutoCoralScoredLevelTwo: number = 0;
@@ -1216,7 +1216,7 @@ namespace Reefscape {
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
 		],
-		Auto: [
+		'Auto (Describe more in comments)': [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
 			{ key: "CoralScoredAuto", label: "Average Coral Scored In Auto" },
 			{ key: "AlgaeScoredAuto", label: "Average Algae Scored In Auto" },
@@ -1225,26 +1225,50 @@ namespace Reefscape {
 
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
-			"AutoMovedPastStaringLine",
+			{ key: "AutoMovedPastStartingLine", label: "Moved Past Starting Line" },
 			[
-				["AutoCoralScoredLevelOne", "AutoCoralScoredLevelTwo"],
-				["AutoCoralScoredLevelThree", "AutoCoralScoredLevelFour"],
+				[
+					{ key: "AutoCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "AutoCoralScoredLevelThree",
+						label: "Coral Scored Level Three",
+					},
+				],
+				[
+					{
+						key: "AutoCoralScoredLevelTwo",
+						label: "Coral Scored Level Two",
+					},
+					{ key: "AutoCoralScoredLevelFour", label: "Coral Scored Level Four" },
+				],
 			],
 			[
-				["AutoAlgaeRemovedFromReef"],
-				["AutoAlgaeScoredProcessor"],
-				["AutoAlgaeScoredNet"],
+				[{ key: "AutoAlgaeRemovedFromReef", label: "Algae Removed From Reef" }],
+				[{ key: "AutoAlgaeScoredProcessor", label: "Algae Scored Processor" }],
+				[{ key: "AutoAlgaeScoredNet", label: "Algae Scored Net" }],
 			],
 		],
 		Teleop: [
 			[
-				["TeleopCoralScoredLevelOne", "TeleopCoralScoredLevelTwo"],
-				["TeleopCoralScoredLevelThree", "TeleopCoralScoredLevelFour"],
+				[
+					{ key: "TeleopCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "TeleopCoralScoredLevelThree",
+						label: "Coral Scored Level Three",
+					},
+				],
+				[
+					{
+						key: "TeleopCoralScoredLevelTwo",
+						label: "Coral Scored Level Two",
+					},
+					{ key: "TeleopCoralScoredLevelFour", label: "Coral Scored Level Four" },
+				],
 			],
 			[
-				["TeleopAlgaeRemovedFromReef"],
-				["TeleopAlgaeScoredProcessor"],
-				["TeleopAlgaeScoredNet"],
+				[{ key: "TeleopAlgaeRemovedFromReef", label: "Algae Removed From Reef" }],
+				[{ key: "TeleopAlgaeScoredProcessor", label: "Algae Scored Processor" }],
+				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net" }],
 			],
 		],
 		"Post Match": ["EndgameClimbStatus"],
@@ -1546,8 +1570,8 @@ namespace Reefscape {
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
+	[GameId.Reefscape]: Reefscape.game,
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
 	[GameId.Crescendo]: Crescendo.game,
 	[GameId.CenterStage]: CenterStage.game,
-	[GameId.Reefscape]: Reefscape.game,
 });
