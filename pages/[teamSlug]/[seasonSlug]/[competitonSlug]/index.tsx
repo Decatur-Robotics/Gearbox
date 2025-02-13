@@ -436,7 +436,10 @@ export default function CompetitionIndex({
 		setMatchBeingEdited(match._id);
 	}
 
-	const loadMatchesInterval = useCallback(() => loadMatches(true), [loadMatches]);
+	const loadMatchesInterval = useCallback(
+		() => loadMatches(true),
+		[loadMatches],
+	);
 	useInterval(loadMatchesInterval, 5000);
 
 	function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
