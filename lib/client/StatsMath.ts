@@ -118,3 +118,31 @@ export function ComparativePercent<T extends QuantData>(
 
 	return Round((a / (b + a)) * 100) + "%";
 }
+
+/**
+ * @tested_by tests/lib/client/StatsMath.test.ts
+ */
+export function ComparativePercentMulti<T extends QuantData>(
+	selectors: Selector<T>[],
+	reports: Report<T>[],
+) {
+	const results: string[] = [];
+	const totals = selectors.map((selectors) =>
+		NumericalTotal(selectors, reports),
+	);
+
+	let sum = 0;
+	for (let i = 0; i < totals.length; i++) {
+		sum += totals[i];
+	}
+
+	for (let i = 0; i < totals.length; i++) {
+		results.push(Round((totals[i] / sum) * 100) + "%");
+	}
+
+	if (sum === 0) {
+		return 0;
+	}
+
+	return results;
+}
