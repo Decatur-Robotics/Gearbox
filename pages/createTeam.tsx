@@ -30,6 +30,14 @@ export default function CreateTeam() {
 			return;
 		}
 
+		if (allianceStatus) {
+			//If this ever becomes an issue it might work better to convert the number to a string and check the length - Davis.
+			if (!team.number ||  team.number < 10000){
+				setError("Alliance numbers must be greater than six digits")
+				return;
+			}
+		}
+
 		if (!team?.number) {
 			setError("Must enter a team number");
 			return;
@@ -92,7 +100,18 @@ export default function CreateTeam() {
 				mode="col"
 				className="md:h-full items-center md:justify-center max-sm:py-10"
 			>
-				<Card title="Create a Team">
+				<Card title={allianceStatus? "Create an Alliance" : "Create a Team"}>
+					<label className="cursor-pointer label">
+    					<span className="label-text">Scouting Alliance</span>
+    					<input
+								type="checkbox"
+								className="checkbox checkbox-accent"
+								onChange={() => {
+									setAllianceStatus(!allianceStatus)
+									setTeam({ ...team, alliance: allianceStatus as boolean}
+								)}}
+							/>
+  					</label>
 					<div className="flex flex-row space-x-4 flex-g">
 						{Object.values(League).map((league) => (
 							<button
@@ -107,7 +126,7 @@ export default function CreateTeam() {
 					{/* Use value={team.number ?? ""} to start the input as controlled while still showing the placeholder -Renato */}
 					<input
 						type="number"
-						placeholder="Team Number"
+						placeholder={allianceStatus? "Alliance Number (Six Digits or More)" : "Team Number"}
 						className="input w-full"
 						value={team.number ?? ""}
 						onChange={(e) =>
@@ -119,19 +138,12 @@ export default function CreateTeam() {
 					/>
 					<input
 						type="text"
-						placeholder="Team Name"
+						placeholder={allianceStatus? "Alliance Name" : "Team Name"}
 						className="input w-full"
 						value={team.name ?? ""}
 						onChange={(e) => setTeam({ ...team, name: e.target.value })}
 					/> 
-					<input
-						type="checkbox"
-						onChange={() => {
-							setAllianceStatus(!allianceStatus)
-							setTeam({ ...team, alliance: allianceStatus as boolean}
 
-						)}}
-					/>
 					<button
 						className="btn btn-primary w-full"
 						onClick={createTeam}
