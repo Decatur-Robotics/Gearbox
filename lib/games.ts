@@ -463,6 +463,7 @@ export namespace Crescendo {
 		pitStatsLayout,
 		"Crescendo",
 		"https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png",
+		"",
 		getBadges,
 		getAvgPoints,
 	);
@@ -824,6 +825,7 @@ export namespace CenterStage {
 		pitStatsLayout,
 		"CenterStage",
 		"https://www.firstinspires.org/sites/default/files/uploads/resource_library/ftc/centerstage/centerstage.png",
+		"",
 		getBadges,
 		getAvgPoints,
 	);
@@ -1157,6 +1159,7 @@ export namespace IntoTheDeep {
 		pitStatsLayout,
 		"IntoTheDeep",
 		"https://info.firstinspires.org/hubfs/Dive/into-the-deep.svg",
+		"invert",
 		getBadges,
 		getAvgPoints,
 	);
@@ -1564,6 +1567,7 @@ namespace Reefscape {
 		pitStatsLayout,
 		"Reefscape",
 		"https://info.firstinspires.org/hubfs/Dive/reef-scape.svg",
+		"invert",
 		getBadges,
 		getAvgPoints,
 	);
