@@ -9,16 +9,14 @@ export default function useInterval(
 	interval: number,
 	deps: any[] = [],
 ) {
-	const [id, setId] = useState<NodeJS.Timeout | undefined>(undefined);
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const callback = useCallback(func, [func.name]);
+	const [id, setId] = useState<NodeJS.Timeout>();
+	const callback = useCallback(func, [...deps, func]);
 
 	useEffect(() => {
-		setId(setInterval(callback, interval));
-		return () => clearInterval(id);
-		// ESLint doesn't like spread operator in dependencies
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [interval, callback, id, ...deps]);
+		const newInterval = setInterval(callback, interval);
+		setId(newInterval);
+		return () => clearInterval(newInterval);
+	}, [interval, callback]);
 
 	return id;
 }
