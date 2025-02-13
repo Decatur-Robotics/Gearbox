@@ -1219,7 +1219,7 @@ namespace Reefscape {
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
 		],
-		Auto: [
+		"Auto (describe further in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
 			{ key: "CoralScoredAuto", label: "Average Coral Scored In Auto" },
 			{ key: "AlgaeScoredAuto", label: "Average Algae Scored In Auto" },
