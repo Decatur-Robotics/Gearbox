@@ -30,7 +30,7 @@ export default function FieldPositionSelector({
 
 	useEffect(() => {
 		callback("AutoStart", { x: mx ?? 0, y: my ?? 0, angle: a ?? 0 });
-	}, [mx, my, a, ax, ay, callback]);
+	}, [mx, my, a, ax, ay, callback.name]);
 
 	const setup = (p5: p5Types, canvasParentRef: Element) => {
 		bg = p5.loadImage(
