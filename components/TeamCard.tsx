@@ -10,8 +10,9 @@ export default function TeamCard(props: { team: Team | undefined }) {
 			className="w-full bg-base-300 border-4 border-base-300 transition ease-in hover:border-primary"
 		>
 			<h1 className="font-semibold max-sm:text-sm">
-				{team?.league} {team?.alliance ? "Alliance" : "Team"} <span className="text-accent">{team?.number}</span>{" "}
-				- <span className="text-primary">{team?.users.length}</span> members
+				{team?.league} {team?.alliance ? "Alliance" : "Team"}{" "}
+				<span className="text-accent">{team?.number}</span> -{" "}
+				<span className="text-primary">{team?.users.length}</span> members
 			</h1>
 		</Card>
 	);

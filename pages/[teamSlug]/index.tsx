@@ -249,7 +249,9 @@ function Roster(props: TeamPageProps) {
 			title={team?.alliance ? "Alliance Roster" : "Team Roster"}
 			className="h-full "
 		>
-			<h1 className="text-lg font-semibold">View and Manage your {team?.alliance ? "Alliance" : "Team"}</h1>
+			<h1 className="text-lg font-semibold">
+				View and Manage your {team?.alliance ? "Alliance" : "Team"}
+			</h1>
 			<h1>
 				<span className="text-accent">{users?.length}</span> total members
 			</h1>
@@ -411,7 +413,11 @@ function Settings(props: TeamPageProps) {
 	const updateTeam = async () => {
 		setError("");
 		if (!validName(teamName, true)) {
-			{props.team?.alliance ? setError("Invalid Alliance Name") : setError("Invalid Team Name");}
+			{
+				props.team?.alliance
+					? setError("Invalid Alliance Name")
+					: setError("Invalid Team Name");
+			}
 			return;
 		}
 
@@ -421,7 +427,9 @@ function Settings(props: TeamPageProps) {
 
 	return (
 		<Card title="Settings">
-			<h1 className="font-semibold text-lg">Edit your {props.team?.alliance ? "Alliance's" : "Team's"} configuration</h1>
+			<h1 className="font-semibold text-lg">
+				Edit your {props.team?.alliance ? "Alliance's" : "Team's"} configuration
+			</h1>
 			<h1 className="text-md text-error">{error}</h1>
 			<div className="divider"></div>
 			<p>Set your {props.team?.alliance ? "Alliance" : "Team"}&apos;s Name:</p>
@@ -440,7 +448,8 @@ function Settings(props: TeamPageProps) {
 				className="btn btn-primary md:w-1/4"
 				onClick={updateTeam}
 			>
-				<FaSync></FaSync>{props.team?.alliance ? "Update Alliance" : "Update Team"}
+				<FaSync></FaSync>
+				{props.team?.alliance ? "Update Alliance" : "Update Team"}
 			</button>
 		</Card>
 	);
@@ -460,7 +469,13 @@ export default function TeamIndex(props: TeamPageProps) {
 		<Container
 			requireAuthentication={true}
 			hideMenu={false}
-			title={team ? `${team.number} - ${team.name}` : props.team?.alliance ? "Alliance Loading ..." : "Team Loading..."}
+			title={
+				team
+					? `${team.number} - ${team.name}`
+					: props.team?.alliance
+						? "Alliance Loading ..."
+						: "Team Loading..."
+			}
 		>
 			<Flex
 				mode={"col"}
@@ -479,7 +494,8 @@ export default function TeamIndex(props: TeamPageProps) {
 								size={30}
 								className="inline-block mr-2"
 							></FaRobot>
-							{props.team?.alliance ? "Alliance":"Team"} <span className="text-accent">{team?.number}</span>
+							{props.team?.alliance ? "Alliance" : "Team"}{" "}
+							<span className="text-accent">{team?.number}</span>
 						</h1>
 						<div className="divider divider-horizontal max-sm:divider-vertical"></div>
 						<h1 className="font-semibold text-xg">
@@ -500,19 +516,20 @@ export default function TeamIndex(props: TeamPageProps) {
 						<div className="badge badge-secondary md:badge-lg">
 							{isFrc ? "FRC" : "FTC"}
 						</div>
-						{props.team?.alliance ?
-						<></>
-						: <Link
-							href={`https://www.thebluealliance.com/team/${team?.number}`}
-							rel="noopener noreferrer"
-							target="_blank"
-						>
-							<div className="badge badge-primary text-white underline md:badge-lg">
-								<MdOutlineOpenInNew />
-								TBA
-							</div>
-						</Link>
-						}
+						{props.team?.alliance ? (
+							<></>
+						) : (
+							<Link
+								href={`https://www.thebluealliance.com/team/${team?.number}`}
+								rel="noopener noreferrer"
+								target="_blank"
+							>
+								<div className="badge badge-primary text-white underline md:badge-lg">
+									<MdOutlineOpenInNew />
+									TBA
+								</div>
+							</Link>
+						)}
 					</Flex>
 					<div className="flex flex-row items-center space-x-2">
 						<BsSlack color={team?.slackWebhook ? "green" : "red"} />

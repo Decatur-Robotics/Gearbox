@@ -30,8 +30,8 @@ export default function CreateTeam() {
 
 		if (team.alliance) {
 			//If this ever becomes an issue it might work better to convert the number to a string and check the length - Davis.
-			if (!team.number ||  team.number < 10000){
-				setError("Alliance numbers must be greater than six digits")
+			if (!team.number || team.number < 10000) {
+				setError("Alliance numbers must be greater than six digits");
 				return;
 			}
 		}
@@ -100,15 +100,15 @@ export default function CreateTeam() {
 			>
 				<Card title={team.alliance ? "Create an Alliance" : "Create a Team"}>
 					<label className="cursor-pointer label">
-    					<span className="label-text">Scouting Alliance</span>
-    					<input
-								type="checkbox"
-								className="checkbox checkbox-accent"
-								onChange={() => {
-									setTeam({ ...team, alliance: !team.alliance})
-								}}
-							/>
-  					</label>
+						<span className="label-text">Scouting Alliance</span>
+						<input
+							type="checkbox"
+							className="checkbox checkbox-accent"
+							onChange={() => {
+								setTeam({ ...team, alliance: !team.alliance });
+							}}
+						/>
+					</label>
 					<div className="flex flex-row space-x-4 flex-g">
 						{Object.values(League).map((league) => (
 							<button
@@ -123,7 +123,11 @@ export default function CreateTeam() {
 					{/* Use value={team.number ?? ""} to start the input as controlled while still showing the placeholder -Renato */}
 					<input
 						type="number"
-						placeholder={team.alliance ? "Alliance Number (Six Digits or More)" : "Team Number"}
+						placeholder={
+							team.alliance
+								? "Alliance Number (Six Digits or More)"
+								: "Team Number"
+						}
 						className="input w-full"
 						value={team.number ?? ""}
 						onChange={(e) =>
@@ -139,7 +143,7 @@ export default function CreateTeam() {
 						className="input w-full"
 						value={team.name ?? ""}
 						onChange={(e) => setTeam({ ...team, name: e.target.value })}
-					/> 
+					/>
 
 					<button
 						className="btn btn-primary w-full"
@@ -147,7 +151,7 @@ export default function CreateTeam() {
 					>
 						Create Team
 					</button>
-					{team.alliance? <p>allied</p> : <p>not allied</p>}
+					{team.alliance ? <p>allied</p> : <p>not allied</p>}
 					{error && <p className="text-red-500">{error}</p>}
 				</Card>
 			</Flex>

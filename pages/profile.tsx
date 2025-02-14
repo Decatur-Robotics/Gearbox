@@ -146,7 +146,7 @@ export default function Profile(props: { teamList: Team[] }) {
 								{teams.map((team) => (
 									<Link
 										href={"/" + team.slug}
-										className="w-full" 
+										className="w-full"
 										key={team._id.toString()}
 									>
 										<TeamCard team={team} />
