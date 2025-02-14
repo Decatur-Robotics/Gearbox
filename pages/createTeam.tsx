@@ -9,7 +9,6 @@ import Card from "@/components/Card";
 import Flex from "@/components/Flex";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
-import { Console } from "console";
 
 const api = new ClientApi();
 
