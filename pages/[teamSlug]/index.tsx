@@ -421,10 +421,10 @@ function Settings(props: TeamPageProps) {
 
 	return (
 		<Card title="Settings">
-			<h1 className="font-semibold text-lg">Edit your {props.team?.alliance ? "alliances" : "teams"} configuration</h1>
+			<h1 className="font-semibold text-lg">Edit your {props.team?.alliance ? "Alliance's" : "Team's"} configuration</h1>
 			<h1 className="text-md text-error">{error}</h1>
 			<div className="divider"></div>
-			<p>Set your {props.team?.alliance ? "Alliance" : "Team"}&apos; Name:</p>
+			<p>Set your {props.team?.alliance ? "Alliance" : "Team"}&apos;s Name:</p>
 			<input
 				value={teamName}
 				maxLength={100}
