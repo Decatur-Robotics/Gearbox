@@ -88,6 +88,7 @@ export class Team {
 	tbaId: string | undefined;
 	number: number;
 	league: League = League.FRC;
+	alliance: boolean;
 
 	owners: string[];
 	users: string[];
@@ -109,6 +110,7 @@ export class Team {
 		tbaId: string | undefined,
 		number: number,
 		league: League = League.FRC,
+		alliance: boolean = false,
 		owners: string[] = [],
 		users: string[] = [],
 		scouters: string[] = [],
@@ -122,6 +124,7 @@ export class Team {
 		this.tbaId = tbaId;
 		this.number = number;
 		this.league = league;
+		this.alliance = alliance;
 		this.owners = owners;
 		this.users = users;
 		this.scouters = scouters;
