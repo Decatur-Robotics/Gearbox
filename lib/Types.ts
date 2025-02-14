@@ -174,6 +174,7 @@ export class Game<
 
 	fieldImagePrefix: string;
 	coverImage: string;
+	coverImageClass: string;
 
 	getBadges: (
 		pitData: Pitreport<TPitData> | undefined,
@@ -204,6 +205,7 @@ export class Game<
 		pitStatsLayout: PitStatsLayout<TPitData, TQuantData>,
 		fieldImagePrefix: string,
 		coverImage: string,
+		coverImageClass: string | undefined,
 		getBadges: (
 			pitData: Pitreport<TPitData> | undefined,
 			quantitativeReports: Report<TQuantData>[] | undefined,
@@ -237,6 +239,7 @@ export class Game<
 
 		this.fieldImagePrefix = fieldImagePrefix;
 		this.coverImage = coverImage;
+		this.coverImageClass = coverImageClass ?? "";
 
 		this.getBadges = getBadges;
 		this.getAvgPoints = getAvgPoints;

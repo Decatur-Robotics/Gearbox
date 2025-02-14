@@ -1,4 +1,4 @@
-import { Season, Team } from "../../lib/Types";
+import { League, Season, Team } from "../../lib/Types";
 import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
@@ -41,9 +41,17 @@ export default function CreateSeason(props: CreateSeasonProps) {
 		);
 	};
 
-	const gamesWithIds = Object.entries(games).map(([id, game]) => {
-		return { ...game, id: id as GameId };
-	});
+	const gamesWithIds = Object.entries(games)
+		.map(([id, game]) => {
+			return { ...game, id: id as GameId };
+		})
+		.sort((a, b) => {
+			return b.year === a.year
+				? b.league === League.FRC
+					? 1
+					: -1
+				: b.year - a.year;
+		});
 
 	return (
 		<Container
@@ -69,7 +77,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
 							{/* The following div pushes the create button to the bottom and vertically aligns the image to the middle of the remaining space */}
 							<div className="grow flex items-center">
 								<img
-									className="w-fit h-auto"
+									className={`w-fit h-auto ${game.coverImageClass}`}
 									src={game.coverImage}
 									alt={game.name}
 								/>
