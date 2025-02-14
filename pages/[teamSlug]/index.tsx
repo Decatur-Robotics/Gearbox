@@ -246,10 +246,10 @@ function Roster(props: TeamPageProps) {
 
 	return (
 		<Card
-			title="Team Roster"
+			title={team?.alliance ? "Alliance Roster" : "Team Roster"}
 			className="h-full "
 		>
-			<h1 className="text-lg font-semibold">View and Manage your Team</h1>
+			<h1 className="text-lg font-semibold">View and Manage your {team?.alliance ? "Alliance" : "Team"}</h1>
 			<h1>
 				<span className="text-accent">{users?.length}</span> total members
 			</h1>
@@ -411,7 +411,7 @@ function Settings(props: TeamPageProps) {
 	const updateTeam = async () => {
 		setError("");
 		if (!validName(teamName, true)) {
-			setError("Invalid Team Name");
+			{props.team?.alliance ? setError("Invalid Alliance Name") : setError("Invalid Team Name");}
 			return;
 		}
 
@@ -421,10 +421,10 @@ function Settings(props: TeamPageProps) {
 
 	return (
 		<Card title="Settings">
-			<h1 className="font-semibold text-lg">Edit your teams configuration</h1>
+			<h1 className="font-semibold text-lg">Edit your {props.team?.alliance ? "alliances" : "teams"} configuration</h1>
 			<h1 className="text-md text-error">{error}</h1>
 			<div className="divider"></div>
-			<p>Set your Team&apos;s Name:</p>
+			<p>Set your {props.team?.alliance ? "Alliance" : "Team"}&apos; Name:</p>
 			<input
 				value={teamName}
 				maxLength={100}
@@ -432,7 +432,7 @@ function Settings(props: TeamPageProps) {
 					setTeamName(e.target.value);
 				}}
 				type="text"
-				placeholder="Team Name"
+				placeholder={props.team?.alliance ? "Team Name" : "Team Name"}
 				className="input input-bordered w-full max-w-xs"
 			/>
 			<div className="divider"></div>
@@ -440,7 +440,7 @@ function Settings(props: TeamPageProps) {
 				className="btn btn-primary md:w-1/4"
 				onClick={updateTeam}
 			>
-				<FaSync></FaSync>Update Team
+				<FaSync></FaSync>{props.team?.alliance ? "Update Alliance" : "Update Team"}
 			</button>
 		</Card>
 	);
@@ -460,7 +460,7 @@ export default function TeamIndex(props: TeamPageProps) {
 		<Container
 			requireAuthentication={true}
 			hideMenu={false}
-			title={team ? `${team.number} - ${team.name}` : "Team Loading..."}
+			title={team ? `${team.number} - ${team.name}` : props.team?.alliance ? "Alliance Loading ..." : "Team Loading..."}
 		>
 			<Flex
 				mode={"col"}
