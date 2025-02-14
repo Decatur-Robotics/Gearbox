@@ -479,7 +479,7 @@ export default function TeamIndex(props: TeamPageProps) {
 								size={30}
 								className="inline-block mr-2"
 							></FaRobot>
-							{props.team?.alliance ? "Team":"Alliance"} <span className="text-accent">{team?.number}</span>
+							{props.team?.alliance ? "Alliance":"Team"} <span className="text-accent">{team?.number}</span>
 						</h1>
 						<div className="divider divider-horizontal max-sm:divider-vertical"></div>
 						<h1 className="font-semibold text-xg">
@@ -501,7 +501,8 @@ export default function TeamIndex(props: TeamPageProps) {
 							{isFrc ? "FRC" : "FTC"}
 						</div>
 						{props.team?.alliance ?
-						<Link
+						<></>
+						: <Link
 							href={`https://www.thebluealliance.com/team/${team?.number}`}
 							rel="noopener noreferrer"
 							target="_blank"
@@ -511,8 +512,7 @@ export default function TeamIndex(props: TeamPageProps) {
 								TBA
 							</div>
 						</Link>
-						:
-						<></>}
+						}
 					</Flex>
 					<div className="flex flex-row items-center space-x-2">
 						<BsSlack color={team?.slackWebhook ? "green" : "red"} />
