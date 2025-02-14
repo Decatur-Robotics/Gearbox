@@ -110,7 +110,7 @@ export class Team {
 		tbaId: string | undefined,
 		number: number,
 		league: League = League.FRC,
-		alliance: boolean,
+		alliance: boolean = false,
 		owners: string[] = [],
 		users: string[] = [],
 		scouters: string[] = [],

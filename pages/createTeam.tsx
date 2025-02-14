@@ -9,6 +9,7 @@ import Card from "@/components/Card";
 import Flex from "@/components/Flex";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { Console } from "console";
 
 const api = new ClientApi();
 
@@ -17,8 +18,6 @@ export default function CreateTeam() {
 
 	const [team, setTeam] = useState<Partial<Team>>({});
 	const [error, setError] = useState("");
-
-	const[allianceStatus, setAllianceStatus] = useState<boolean>(false);
 
 	const createTeam = async () => {
 		if (!session?.user) {
@@ -30,7 +29,7 @@ export default function CreateTeam() {
 			return;
 		}
 
-		if (allianceStatus) {
+		if (team.alliance) {
 			//If this ever becomes an issue it might work better to convert the number to a string and check the length - Davis.
 			if (!team.number ||  team.number < 10000){
 				setError("Alliance numbers must be greater than six digits")
@@ -62,7 +61,7 @@ export default function CreateTeam() {
 			team.tbaId ?? NotLinkedToTba,
 			team.number,
 			team.league,
-			allianceStatus,
+			team.alliance == true,
 		);
 
 		if (!newTeam) {
@@ -100,16 +99,15 @@ export default function CreateTeam() {
 				mode="col"
 				className="md:h-full items-center md:justify-center max-sm:py-10"
 			>
-				<Card title={allianceStatus? "Create an Alliance" : "Create a Team"}>
+				<Card title={team.alliance ? "Create an Alliance" : "Create a Team"}>
 					<label className="cursor-pointer label">
     					<span className="label-text">Scouting Alliance</span>
     					<input
 								type="checkbox"
 								className="checkbox checkbox-accent"
 								onChange={() => {
-									setAllianceStatus(!allianceStatus)
-									setTeam({ ...team, alliance: allianceStatus as boolean}
-								)}}
+									setTeam({ ...team, alliance: !team.alliance})
+								}}
 							/>
   					</label>
 					<div className="flex flex-row space-x-4 flex-g">
@@ -126,7 +124,7 @@ export default function CreateTeam() {
 					{/* Use value={team.number ?? ""} to start the input as controlled while still showing the placeholder -Renato */}
 					<input
 						type="number"
-						placeholder={allianceStatus? "Alliance Number (Six Digits or More)" : "Team Number"}
+						placeholder={team.alliance ? "Alliance Number (Six Digits or More)" : "Team Number"}
 						className="input w-full"
 						value={team.number ?? ""}
 						onChange={(e) =>
@@ -138,7 +136,7 @@ export default function CreateTeam() {
 					/>
 					<input
 						type="text"
-						placeholder={allianceStatus? "Alliance Name" : "Team Name"}
+						placeholder={team.alliance ? "Alliance Name" : "Team Name"}
 						className="input w-full"
 						value={team.name ?? ""}
 						onChange={(e) => setTeam({ ...team, name: e.target.value })}
@@ -150,7 +148,7 @@ export default function CreateTeam() {
 					>
 						Create Team
 					</button>
-					{allianceStatus? <p>allied</p>:<p>not allied</p>}
+					{team.alliance? <p>allied</p> : <p>not allied</p>}
 					{error && <p className="text-red-500">{error}</p>}
 				</Card>
 			</Flex>
