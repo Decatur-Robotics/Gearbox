@@ -23,7 +23,7 @@ export default function Cache() {
 			{cacheStats ? (
 				Object.entries(cacheStats).map(([key, value]) => (
 					<div key={key}>
-						{key}: {value}
+						{key}: {(+value).toLocaleString()}
 					</div>
 				))
 			) : (
