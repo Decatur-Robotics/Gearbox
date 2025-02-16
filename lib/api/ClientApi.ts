@@ -2303,4 +2303,18 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			res.status(200).send(responseObj);
 		},
 	});
+
+	getCacheStats = createNextRoute<
+		[],
+		object | undefined,
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, {}, authData, args) => {
+			if (!global.cache) return res.status(200).send(undefined);
+			const stats = global.cache.getStats();
+			return res.status(200).send(stats);
+		},
+	});
 }
