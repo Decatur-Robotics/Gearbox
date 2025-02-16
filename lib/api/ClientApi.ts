@@ -47,6 +47,7 @@ import toast from "react-hot-toast";
 import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
+import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -615,6 +616,25 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 						: { ...report, data: { ...report.data, comments: "" } },
 				);
 			return res.status(200).send(reports);
+		},
+		afterResponse: async (res, ranFallback) => {
+			if (ranFallback || !res) return;
+
+			console.log("Adding reports to local db:", res);
+
+			const localDb = new LocalStorageDbInterface();
+			await localDb.init();
+			for (const report of res) {
+				console.log(report, new ObjectId(res[0]._id), new ObjectId(res[0]._id).toString());
+				await localDb.addObject(CollectionId.Reports, report);
+			}
+
+			// await Promise.all(
+			// 	res.map((report) => {
+			// 		console.log("Adding report to local db:", report);
+			// 		return localDb.addObject(CollectionId.Reports, report).then(() => console.log("Added report to local db:", report));
+			// 	}),
+			// );
 		},
 	});
 
