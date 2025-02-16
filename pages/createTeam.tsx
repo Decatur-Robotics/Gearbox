@@ -151,7 +151,6 @@ export default function CreateTeam() {
 					>
 						Create Team
 					</button>
-					{team.alliance ? <p>allied</p> : <p>not allied</p>}
 					{error && <p className="text-red-500">{error}</p>}
 				</Card>
 			</Flex>
