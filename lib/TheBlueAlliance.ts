@@ -12,6 +12,7 @@ import {
 import { NotLinkedToTba } from "./client/ClientUtils";
 import { GameId, defaultGameId } from "./client/GameId";
 import { games } from "./games";
+import DbInterface from "./client/dbinterfaces/DbInterface";
 
 export namespace TheBlueAlliance {
 	export interface SimpleTeam {
@@ -209,7 +210,7 @@ export namespace TheBlueAlliance {
 
 	export class Interface {
 		req: Request;
-		db: Promise<MongoDBInterface>;
+		db: Promise<DbInterface>;
 
 		competitionPairings: CompetitonNameIdPair[] = [];
 
