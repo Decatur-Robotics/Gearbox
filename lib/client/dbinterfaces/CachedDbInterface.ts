@@ -4,6 +4,13 @@ import DbInterface, {
 	WithStringOrObjectIdId,
 } from "@/lib/client/dbinterfaces/DbInterface";
 import { default as BaseCachedDbInterface } from "mongo-anywhere/CachedDbInterface";
+import NodeCache from "node-cache";
+import { CacheOperation } from "mongo-anywhere/CachedDbInterface";
+
+export const cacheOptions: NodeCache.Options = {
+	stdTTL: 10 * 60,
+	useClones: false,
+};
 
 export default class CachedDbInterface
 	extends BaseCachedDbInterface<CollectionId, CollectionIdToType<CollectionId>>
@@ -11,6 +18,11 @@ export default class CachedDbInterface
 {
 	init(): Promise<void> {
 		return super.init(Object.values(CollectionId));
+	}
+	getTtl(operation: CacheOperation, collectionId: CollectionId): number {
+		if (operation === "count") return 3 * 60 * 60;
+
+		return cacheOptions.stdTTL!;
 	}
 	addObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
 		collection: TId,
