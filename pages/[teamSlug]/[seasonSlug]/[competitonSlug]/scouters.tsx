@@ -24,7 +24,7 @@ export default function Scouters(props: {
 	const team = props.team;
 	const comp = props.competition;
 
-	const { session, status } = useCurrentSession();
+	const { session } = useCurrentSession();
 	const isManager = session?.user?._id
 		? team?.owners.includes(session.user?._id)
 		: false;
@@ -141,9 +141,9 @@ export default function Scouters(props: {
 				setReports((reports) => {
 					if (!reports) return reports;
 
-					const { _id, ...updated } = reports[comment.dbId];
+					const { _id, ...old } = reports[comment.dbId];
 					promise = api.updateReport(
-						{ data: { ...updated.data, comments: "" } },
+						{ data: { ...old.data, comments: "" } },
 						comment.dbId,
 					);
 
@@ -154,7 +154,12 @@ export default function Scouters(props: {
 			}
 
 			function removePitComment(comment: Comment) {
-				return api.updatePitreport(comment.dbId, { comments: "" });
+				const { _id, ...old } = data.pitReports.find(
+					(r) => r._id === comment.dbId,
+				)!;
+				return api.updatePitreport(comment.dbId, {
+					data: { ...old.data, comments: "" },
+				});
 			}
 
 			function removeSubjectiveComment(comment: Comment) {
