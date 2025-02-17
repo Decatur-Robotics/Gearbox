@@ -330,7 +330,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	return {
 		props: {
-			pitReport: SerializeDatabaseObject(pitreport),
+			pitReport: makeObjSerializeable(SerializeDatabaseObject(pitreport)),
 			layout: makeObjSerializeable(game.pitReportLayout),
 			teamNumber: resolved.team?.number,
 			compName: resolved.competition?.name,

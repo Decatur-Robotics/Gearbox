@@ -193,9 +193,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		submitted: true,
 	});
 
-	const pitReports = await db.findObjects(CollectionId.PitReports, {
-		_id: { $in: resolved.competition?.pitReports },
-	});
+	const pitReports = !resolved.competition
+		? []
+		: await db.findObjects(CollectionId.PitReports, {
+				_id: {
+					$in: resolved.competition.pitReports.map((id) => new ObjectId(id)),
+				},
+			});
 
 	const subjectiveReports = await db.findObjects(
 		CollectionId.SubjectiveReports,
@@ -208,6 +212,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		CollectionId.Picklists,
 		new ObjectId(resolved.competition?.picklist),
 	);
+	console.log("Picklists", picklists);
 
 	return {
 		props: {

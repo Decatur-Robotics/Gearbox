@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { getDatabase } from "./MongoDB";
 import { User } from "./Types";
 import CollectionId from "./client/CollectionId";
+import { ObjectId } from "bson";
 
 const resend = new Resend(process.env.SMTP_PASSWORD);
 
@@ -41,13 +42,16 @@ export class ResendUtils implements ResendInterface {
 		}
 
 		const db = await getDatabase();
-		// Going around our own interface is a red flag, but it's 11 PM and I'm tired -Renato
-		db.db
-			?.collection(CollectionId.Users)
-			.updateOne(
-				{ email: user.email },
-				{ $set: { resendContactId: res.data.id } },
-			);
+		const id = (await db.findObject(CollectionId.Users, { email: user.email }))
+			?._id;
+		if (!id) {
+			console.error("User not found in database", user.email);
+			return;
+		}
+
+		db.updateObjectById(CollectionId.Users, new ObjectId(id), {
+			resendContactId: res.data.id,
+		});
 	}
 
 	async emailDevelopers(subject: string, message: string) {
