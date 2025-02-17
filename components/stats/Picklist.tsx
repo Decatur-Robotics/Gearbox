@@ -324,7 +324,13 @@ export default function PicklistScreen(props: {
 	useEffect(() => {
 		if (loadingPicklists !== LoadState.Loaded) return;
 		savePicklistGroup(props.picklist._id, picklists, strikethroughs, api);
-	}, [props.picklist._id, picklists, strikethroughs]);
+	}, [
+		props.picklist._id,
+		picklists,
+		strikethroughs,
+		LoadState.Loaded,
+		loadingPicklists,
+	]);
 
 	const updatePicklist = useCallback(
 		(picklist: Picklist) => {
