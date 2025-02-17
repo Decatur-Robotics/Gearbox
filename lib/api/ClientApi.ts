@@ -2317,4 +2317,18 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			return res.status(200).send(stats);
 		},
 	});
+
+	getCachedValue = createNextRoute<
+		[string],
+		object | undefined,
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, {}, authData, [key]) => {
+			if (!global.cache) return res.status(500).send({ error: "No cache" });
+			const val = global.cache.get(key) as object | undefined;
+			return res.status(200).send(val);
+		},
+	});
 }

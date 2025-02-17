@@ -35,6 +35,7 @@ export async function getDatabase(): Promise<DbInterface> {
 		const dbInterface = new CachedDbInterface(
 			new MongoDBInterface(clientPromise),
 			{ stdTTL: 120, useClones: false },
+			true,
 		);
 		await dbInterface.init();
 		global.interface = dbInterface;
