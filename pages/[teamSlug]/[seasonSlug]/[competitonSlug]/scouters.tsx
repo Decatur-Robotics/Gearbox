@@ -8,7 +8,7 @@ import {
 	Report,
 	SubjectiveReport,
 } from "@/lib/Types";
-import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import { serializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -508,8 +508,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	return {
 		props: {
-			team: SerializeDatabaseObject(team),
-			competition: SerializeDatabaseObject(comp),
+			team: serializeDatabaseObject(team),
+			competition: serializeDatabaseObject(comp),
 		},
 	};
 };

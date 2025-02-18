@@ -1,6 +1,6 @@
 import UrlResolver, {
-	SerializeDatabaseObject,
-	SerializeDatabaseObjects,
+	serializeDatabaseObject,
+	serializeDatabaseObjects,
 } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
@@ -646,9 +646,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		props: {
 			team: resolved.team,
 			users: makeObjSerializeable(users),
-			currentCompetition: SerializeDatabaseObject(comp),
-			currentSeason: SerializeDatabaseObject(currentSeason),
-			pastSeasons: SerializeDatabaseObjects(seasons),
+			currentCompetition: serializeDatabaseObject(comp),
+			currentSeason: serializeDatabaseObject(currentSeason),
+			pastSeasons: serializeDatabaseObjects(seasons),
 		},
 	};
 };

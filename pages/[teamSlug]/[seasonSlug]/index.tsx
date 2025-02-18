@@ -1,5 +1,5 @@
 import ClientApi from "@/lib/api/ClientApi";
-import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
+import UrlResolver, { serializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import { Competition, Season, Team } from "@/lib/Types";
 import Container from "@/components/Container";
@@ -106,7 +106,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		props: {
 			team: team,
 			season: season,
-			competitions: SerializeDatabaseObjects(comp),
+			competitions: serializeDatabaseObjects(comp),
 		},
 	};
 };

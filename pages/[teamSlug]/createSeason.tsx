@@ -1,5 +1,5 @@
 import { League, Season, Team } from "../../lib/Types";
-import UrlResolver, { SerializeDatabaseObjects } from "@/lib/UrlResolver";
+import UrlResolver, { serializeDatabaseObjects } from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
 import { getDatabase } from "@/lib/MongoDB";
@@ -112,7 +112,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	return {
 		props: {
 			team: resolved.team,
-			existingSeasons: SerializeDatabaseObjects(existingSeasons),
+			existingSeasons: serializeDatabaseObjects(existingSeasons),
 		},
 	};
 };

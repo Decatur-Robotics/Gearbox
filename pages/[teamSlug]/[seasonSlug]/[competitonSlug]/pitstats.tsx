@@ -7,7 +7,7 @@ import {
 	QuantData,
 	Report,
 } from "@/lib/Types";
-import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import { serializeDatabaseObject } from "@/lib/UrlResolver";
 
 import { GetServerSideProps } from "next";
 import { BsGearFill } from "react-icons/bs";
@@ -493,6 +493,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	});
 
 	return {
-		props: { competition: SerializeDatabaseObject(comp) },
+		props: { competition: serializeDatabaseObject(comp) },
 	};
 };

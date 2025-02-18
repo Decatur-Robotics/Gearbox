@@ -14,8 +14,8 @@ import { games } from "@/lib/games";
 import CollectionId from "@/lib/client/CollectionId";
 import { getDatabase } from "@/lib/MongoDB";
 import UrlResolver, {
-	SerializeDatabaseObjects,
-	SerializeDatabaseObject,
+	serializeDatabaseObjects,
+	serializeDatabaseObject,
 } from "@/lib/UrlResolver";
 import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
@@ -216,10 +216,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	return {
 		props: {
-			reports: SerializeDatabaseObjects(reports),
-			pitReports: SerializeDatabaseObjects(pitReports),
-			subjectiveReports: SerializeDatabaseObjects(subjectiveReports),
-			picklists: SerializeDatabaseObject(picklists),
+			reports: serializeDatabaseObjects(reports),
+			pitReports: serializeDatabaseObjects(pitReports),
+			subjectiveReports: serializeDatabaseObjects(subjectiveReports),
+			picklists: serializeDatabaseObject(picklists),
 			competition: resolved.competition,
 		},
 	};
