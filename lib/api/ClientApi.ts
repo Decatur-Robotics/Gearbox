@@ -618,24 +618,51 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				);
 			return res.status(200).send(reports);
 		},
+		fallback: async ([compId, submitted, usePublicData]) => {
+			const localDb = new LocalStorageDbInterface();
+			await localDb.init();
+
+			const comp = await localDb.findObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+			);
+
+			if (!comp) return [];
+
+			const usedComps =
+				usePublicData && comp.tbaId !== NotLinkedToTba
+					? await localDb.findObjects(CollectionId.Competitions, {
+							publicData: true,
+							tbaId: comp.tbaId,
+							gameId: comp.gameId,
+						})
+					: [comp];
+
+			if (usePublicData && !comp.publicData) usedComps.push(comp);
+
+			const reports = (
+				await localDb.findObjects(CollectionId.Reports, {
+					match: { $in: usedComps.flatMap((m) => m.matches) },
+					submitted: submitted ? true : { $exists: true },
+				})
+			)
+				// Filter out comments from other competitions
+				.map((report) =>
+					comp.matches.includes(report.match)
+						? report
+						: { ...report, data: { ...report.data, comments: "" } },
+				);
+			return reports;
+		},
 		afterResponse: async (res, ranFallback) => {
 			if (ranFallback || !res) return;
 
-			console.log("Adding reports to local db:", res);
-
 			const localDb = new LocalStorageDbInterface();
 			await localDb.init();
-			for (const report of res) {
-				console.log(report, new ObjectId(res[0]._id), new ObjectId(res[0]._id).toString());
-				await localDb.addObject(CollectionId.Reports, report);
-			}
 
-			// await Promise.all(
-			// 	res.map((report) => {
-			// 		console.log("Adding report to local db:", report);
-			// 		return localDb.addObject(CollectionId.Reports, report).then(() => console.log("Added report to local db:", report));
-			// 	}),
-			// );
+			await Promise.all(
+				res.map((report) => localDb.addObject(CollectionId.Reports, report)),
+			);
 		},
 	});
 
