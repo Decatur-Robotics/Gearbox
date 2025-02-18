@@ -429,12 +429,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				),
 			);
 
-			season.competitions = [...season.competitions, String(comp._id)];
+			const { _id, ...updatedSeason } = season;
+
+			updatedSeason.competitions = [...season.competitions, String(comp._id)];
 
 			await db.updateObjectById(
 				CollectionId.Seasons,
 				new ObjectId(season._id),
-				season,
+				updatedSeason,
 			);
 
 			// Create reports
