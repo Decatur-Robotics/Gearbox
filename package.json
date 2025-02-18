@@ -1,6 +1,6 @@
 {
 	"name": "sj3",
-	"version": "1.2.0",
+	"version": "1.2.2",
 	"private": true,
 	"repository": "https://github.com/Decatur-Robotics/Gearbox",
 	"license": "CC BY-NC-SA 4.0",
@@ -35,7 +35,7 @@
 		"jose": "^5.9.6",
 		"levenary": "^1.1.1",
 		"minimongo": "^6.19.0",
-		"mongo-anywhere": "^1.0.21",
+		"mongo-anywhere": "^1.1.5",
 		"mongodb": "^5.0.0",
 		"next": "^15.1.6",
 		"next-auth": "^4.24.11",

@@ -223,7 +223,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	createTeam = createNextRoute<
-		[string, string, number, League],
+		[string, string, number, League, boolean],
 		Team | undefined,
 		ApiDependencies,
 		void
@@ -234,7 +234,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			res,
 			{ db: dbPromise, resend, userPromise },
 			authData,
-			[name, tbaId, number, league],
+			[name, tbaId, number, league, alliance],
 		) => {
 			const user = (await userPromise)!;
 			const db = await dbPromise;
@@ -257,6 +257,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				tbaId,
 				number,
 				league,
+				alliance,
 				[user._id!.toString()],
 				[user._id!.toString()],
 				[user._id!.toString()],
@@ -2320,6 +2321,34 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			// Send the response
 			res.status(200).send(responseObj);
+		},
+	});
+
+	getCacheStats = createNextRoute<
+		[],
+		object | undefined,
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, {}, authData, args) => {
+			if (!global.cache) return res.status(200).send(undefined);
+			const stats = global.cache.getStats();
+			return res.status(200).send(stats);
+		},
+	});
+
+	getCachedValue = createNextRoute<
+		[string],
+		object | undefined,
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, {}, authData, [key]) => {
+			if (!global.cache) return res.status(500).send({ error: "No cache" });
+			const val = global.cache.get(key) as object | undefined;
+			return res.status(200).send(val);
 		},
 	});
 }

@@ -19,7 +19,7 @@ import { GameId } from "@/lib/client/GameId";
 import CollectionId from "@/lib/client/CollectionId";
 import { games } from "@/lib/games";
 import { getDatabase } from "@/lib/MongoDB";
-import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import UrlResolver, { serializeDatabaseObject } from "@/lib/UrlResolver";
 import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import Flex from "@/components/Flex";
@@ -330,7 +330,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	return {
 		props: {
-			pitReport: SerializeDatabaseObject(pitreport),
+			pitReport: makeObjSerializeable(serializeDatabaseObject(pitreport)),
 			layout: makeObjSerializeable(game.pitReportLayout),
 			teamNumber: resolved.team?.number,
 			compName: resolved.competition?.name,

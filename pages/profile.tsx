@@ -14,7 +14,7 @@ import { FaPlus } from "react-icons/fa";
 import { getDatabase } from "@/lib/MongoDB";
 import CollectionId from "@/lib/client/CollectionId";
 import { GetServerSideProps } from "next";
-import { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import { serializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
@@ -240,7 +240,7 @@ export default function Profile(props: { teamList: Team[] }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
 	const db = await getDatabase();
 	const teams = await db.findObjects(CollectionId.Teams, {});
-	const serializedTeams = teams.map((team) => SerializeDatabaseObject(team));
+	const serializedTeams = teams.map((team) => serializeDatabaseObject(team));
 
 	return {
 		props: { teamList: serializedTeams },
