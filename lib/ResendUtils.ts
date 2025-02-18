@@ -5,14 +5,18 @@ import { User } from "./Types";
 import CollectionId from "./client/CollectionId";
 import { ObjectId } from "bson";
 
-const resend = new Resend(process.env.SMTP_PASSWORD);
-
 export interface ResendInterface {
 	createContact: (rawUser: NextAuthUser) => Promise<void>;
 	emailDevelopers: (subject: string, message: string) => void;
 }
 
 export class ResendUtils implements ResendInterface {
+	private static resend: Resend;
+
+	constructor() {
+		ResendUtils.resend ??= new Resend(process.env.SMTP_PASSWORD);
+	}
+
 	async createContact(rawUser: NextAuthUser) {
 		const user = rawUser as User;
 
@@ -27,7 +31,7 @@ export class ResendUtils implements ResendInterface {
 
 		const nameParts = user.name?.split(" ");
 
-		const res = await resend.contacts.create({
+		const res = await ResendUtils.resend.contacts.create({
 			email: user.email,
 			firstName: nameParts[0],
 			lastName: nameParts.length > 1 ? nameParts[1] : "",
@@ -60,7 +64,7 @@ export class ResendUtils implements ResendInterface {
 			return;
 		}
 
-		resend.emails.send({
+		ResendUtils.resend.emails.send({
 			from: "Gearbox Server <server-no-reply@4026.org>",
 			to: JSON.parse(process.env.DEVELOPER_EMAILS), // Environment variables are always strings, so we need to parse it
 			subject,
