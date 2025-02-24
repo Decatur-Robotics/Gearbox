@@ -98,6 +98,8 @@ export const AuthenticationOptions: AuthOptions = {
 		 * For email sign in, runs when the "Sign In" button is clicked (before email is sent).
 		 */
 		async signIn({ user }) {
+			console.log(`User is signing in: ${user.name}, ${user.email}, ${user.id}`);
+
 			Analytics.signIn(user.name ?? "Unknown User");
 			const db = await getDatabase(false);
 
