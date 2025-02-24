@@ -141,15 +141,13 @@ export const AuthenticationOptions: AuthOptions = {
 				today.toDateString()
 			) {
 				// We use user.id since user._id strangely doesn't exist on user.
-				await getDatabase().then((db) =>
 					db.updateObjectById(
 						CollectionId.Users,
 						new ObjectId(typedUser._id?.toString()),
 						{
 							lastSignInDateTime: today,
 						},
-					),
-				);
+					);
 			}
 
 			new ResendUtils().createContact(typedUser as User);
