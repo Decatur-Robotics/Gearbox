@@ -12,10 +12,6 @@ declare const self: ServiceWorkerGlobalScope;
 
 const serwist = new Serwist({
 	precacheEntries: self.__SW_MANIFEST,
-	// precacheOptions: {
-	// 	cleanupOutdatedCaches: true,
-	// 	concurrency: 20,
-	// },
 	skipWaiting: true,
 	clientsClaim: true,
 	navigationPreload: true,
