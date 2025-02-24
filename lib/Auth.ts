@@ -16,6 +16,8 @@ import { wait } from "./client/ClientUtils";
 
 const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
 
+const cachedDb = getDatabase();
+
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
 	providers: [
@@ -28,11 +30,7 @@ export const AuthenticationOptions: AuthOptions = {
 					profile.email,
 					profile.picture,
 					false,
-					await GenerateSlug(
-						await getDatabase(),
-						CollectionId.Users,
-						profile.name,
-					),
+					await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
 					[],
 					[],
 				);
@@ -60,11 +58,7 @@ export const AuthenticationOptions: AuthOptions = {
 					profile.email,
 					profile.picture,
 					false,
-					await GenerateSlug(
-						await getDatabase(),
-						CollectionId.Users,
-						profile.name,
-					),
+					await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
 					[],
 					[],
 					profile.sub,
@@ -90,7 +84,7 @@ export const AuthenticationOptions: AuthOptions = {
 	callbacks: {
 		async session({ session, user }) {
 			session.user = await (
-				await getDatabase()
+				await cachedDb
 			).findObjectById(CollectionId.Users, new ObjectId(user.id));
 
 			return session;
@@ -141,13 +135,13 @@ export const AuthenticationOptions: AuthOptions = {
 				today.toDateString()
 			) {
 				// We use user.id since user._id strangely doesn't exist on user.
-					db.updateObjectById(
-						CollectionId.Users,
-						new ObjectId(typedUser._id?.toString()),
-						{
-							lastSignInDateTime: today,
-						},
-					);
+				db.updateObjectById(
+					CollectionId.Users,
+					new ObjectId(typedUser._id?.toString()),
+					{
+						lastSignInDateTime: today,
+					},
+				);
 			}
 
 			new ResendUtils().createContact(typedUser as User);
