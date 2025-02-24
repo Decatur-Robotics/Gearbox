@@ -14,8 +14,6 @@ import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 import { wait } from "./client/ClientUtils";
 
-const db = getDatabase();
-
 const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
 
 export const AuthenticationOptions: AuthOptions = {
@@ -92,7 +90,7 @@ export const AuthenticationOptions: AuthOptions = {
 	callbacks: {
 		async session({ session, user }) {
 			session.user = await (
-				await db
+				await getDatabase()
 			).findObjectById(CollectionId.Users, new ObjectId(user.id));
 
 			return session;
@@ -107,6 +105,7 @@ export const AuthenticationOptions: AuthOptions = {
 		 */
 		async signIn({ user }) {
 			Analytics.signIn(user.name ?? "Unknown User");
+			const db = await getDatabase(false);
 
 			let typedUser = user as Partial<User>;
 			if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
@@ -116,9 +115,9 @@ export const AuthenticationOptions: AuthOptions = {
 					);
 					let foundUser: User | undefined = undefined;
 					while (!foundUser) {
-						foundUser = await (
-							await db
-						).findObject(CollectionId.Users, { email: typedUser.email });
+						foundUser = await db.findObject(CollectionId.Users, {
+							email: typedUser.email,
+						});
 
 						if (!foundUser) await wait(50);
 					}
@@ -128,7 +127,7 @@ export const AuthenticationOptions: AuthOptions = {
 					typedUser._id = foundUser._id;
 					typedUser.lastSignInDateTime = new Date();
 
-					typedUser = await repairUser(await db, typedUser);
+					typedUser = await repairUser(db, typedUser);
 
 					console.log("User updated:", typedUser._id?.toString());
 				};

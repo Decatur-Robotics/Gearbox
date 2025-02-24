@@ -30,13 +30,17 @@ clientPromise = global.clientPromise;
 
 export { clientPromise };
 
-export async function getDatabase(): Promise<DbInterface> {
+export async function getDatabase(
+	useCache: boolean = true,
+): Promise<DbInterface> {
 	if (!global.interface) {
 		await clientPromise;
-		const dbInterface = new CachedDbInterface(
-			new MongoDBInterface(clientPromise),
-			cacheOptions,
-		);
+
+		const mongo = new MongoDBInterface(clientPromise);
+
+		const dbInterface = useCache
+			? new CachedDbInterface(mongo, cacheOptions)
+			: mongo;
 		await dbInterface.init();
 		global.interface = dbInterface;
 
