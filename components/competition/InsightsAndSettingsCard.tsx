@@ -306,7 +306,6 @@ export default function InsightsAndSettingsCard(props: {
 							type="number"
 							placeholder="Team #"
 							className="input input-md input-bordered w-full mt-2"
-							value={teamToAdd}
 							onChange={(e) => {
 								setTeamToAdd(Number(e.target.value));
 							}}
