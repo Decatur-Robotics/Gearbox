@@ -127,13 +127,14 @@ export default function MatchScheduleCard(props: {
 					<div className="w-full flex flex-col items-center space-y-2">
 						{noMatches || matches.length === 0 ? (
 							<div className="flex flex-col items-center justify-center font-bold space-y-4">
-								{loadingMatches ? 
-									(<h1>No Match Schedule Available</h1>)
-								 : 
-									(<><Loading size={72} />
-									<h1>Matches Loading</h1></>)
-
-								}
+								{loadingMatches ? (
+									<h1>No Match Schedule Available</h1>
+								) : (
+									<>
+										<Loading size={72} />
+										<h1>Matches Loading</h1>
+									</>
+								)}
 								<button
 									onClick={reloadCompetition}
 									className="btn btn-lg btn-primary"
@@ -207,9 +208,9 @@ export default function MatchScheduleCard(props: {
 															<a
 																href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
 																key={reportId}
-																className={`${color} ${mine && !submitted ? "border-4" : "border-2"} 
+																className={`${color} ${mine && !submitted ? "border-6 border-purple-500" : "border-2 border-white"} 
                                   ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
-                                  rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
+                                  rounded-lg w-12 h-12 flex items-center justify-center text-white`}
 															>
 																<h1>{report.robotNumber}</h1>
 															</a>
