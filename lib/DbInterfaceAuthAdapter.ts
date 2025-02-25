@@ -174,7 +174,10 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Unlinking account:", providerAccountId.providerAccountId);
+			console.log(
+				"[AUTH] Unlinking account:",
+				providerAccountId.providerAccountId,
+			);
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: providerAccountId.providerAccountId,
