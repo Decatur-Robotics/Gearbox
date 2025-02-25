@@ -1,6 +1,5 @@
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState } from "react";
-
 import ClientApi from "@/lib/api/ClientApi";
 import { Team } from "@/lib/Types";
 import Container from "@/components/Container";
@@ -11,10 +10,6 @@ import Avatar from "@/components/Avatar";
 import { IoCheckmarkCircle, IoMail } from "react-icons/io5";
 import Loading from "@/components/Loading";
 import { FaPlus } from "react-icons/fa";
-import { getDatabase } from "@/lib/MongoDB";
-import CollectionId from "@/lib/client/CollectionId";
-import { GetServerSideProps } from "next";
-import { serializeDatabaseObject } from "@/lib/UrlResolver";
 import TeamCard from "@/components/TeamCard";
 import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
@@ -23,10 +18,9 @@ import XpProgressBar from "@/components/XpProgressBar";
 
 const api = new ClientApi();
 
-export default function Profile(props: { teamList: Team[] }) {
-	const { session, status } = useCurrentSession();
+export default function Profile() {
+	const { session } = useCurrentSession();
 	const user = session?.user;
-	const teamList = props.teamList;
 
 	const owner = user?.owner ? user?.owner?.length > 0 : false;
 	const member = user?.teams ? user.teams?.length > 0 : false;
@@ -70,6 +64,9 @@ export default function Profile(props: { teamList: Team[] }) {
 			hideMenu={false}
 			title="Profile"
 		>
+			<button onClick={() => console.log(fetch("https://localhost/api/ping"))}>
+				Fetch
+			</button>
 			<UpdateModal />
 			<Flex
 				className="my-8 space-y-4"
@@ -190,7 +187,7 @@ export default function Profile(props: { teamList: Team[] }) {
 												) : loadingRequest ? (
 													<Loading></Loading>
 												) : (
-													teamList.map((team) => (
+													teams.map((team) => (
 														<div
 															className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
 															onClick={() => {
@@ -236,13 +233,3 @@ export default function Profile(props: { teamList: Team[] }) {
 		</Container>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-	const db = await getDatabase();
-	const teams = await db.findObjects(CollectionId.Teams, {});
-	const serializedTeams = teams.map((team) => serializeDatabaseObject(team));
-
-	return {
-		props: { teamList: serializedTeams },
-	};
-};
