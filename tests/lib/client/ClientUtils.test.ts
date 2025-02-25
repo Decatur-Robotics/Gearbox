@@ -5,6 +5,7 @@ import {
 	removeWhitespaceAndMakeLowerCase,
 	rotateArray,
 	toDict,
+	wait,
 } from "@/lib/client/ClientUtils";
 
 test(camelCaseToTitleCase.name, () => {
@@ -73,4 +74,42 @@ test(`${promisify.name}: Rejects`, async () => {
 
 	const funcAsync = promisify(func);
 	return expect(funcAsync()).rejects.toBe("error");
+});
+
+describe(wait.name, () => {
+	test("Waits for at least the specified time", async () => {
+		const durations = [10, 50, 100, 500, 1000];
+
+		for (const duration of durations) {
+			const start = Date.now();
+			await wait(duration);
+			const end = Date.now();
+			expect(end - start).toBeGreaterThanOrEqual(duration - 2);
+		}
+	});
+
+	test("Waits for at most the specified time", async () => {
+		const durations = [10, 50, 100, 500, 1000];
+		const iterations = 10;
+
+		// The value of each trial is how much it overshot the duration
+		const trials: Promise<number>[] = [];
+		for (let i = 0; i < iterations; i++) {
+			for (const duration of durations) {
+				trials.push(
+					(async () => {
+						const start = Date.now();
+						await wait(duration);
+						const end = Date.now();
+						return end - start - duration;
+					})(),
+				);
+			}
+		}
+
+		const results = await Promise.all(trials);
+		for (const result of results) {
+			expect(result).toBeLessThanOrEqual(150);
+		}
+	});
 });

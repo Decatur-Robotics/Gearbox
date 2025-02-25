@@ -198,7 +198,7 @@ export default function MatchScheduleCard(props: {
 																1000;
 
 														return (
-															<Link
+															<a
 																href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
 																key={reportId}
 																className={`${color} ${mine && !submitted ? "border-4" : "border-2"} 
@@ -206,7 +206,7 @@ export default function MatchScheduleCard(props: {
                                   rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
 															>
 																<h1>{report.robotNumber}</h1>
-															</Link>
+															</a>
 														);
 													})}
 												</div>
@@ -230,6 +230,7 @@ export default function MatchScheduleCard(props: {
 																		showLevel={false}
 																		borderThickness={2}
 																		onClick={() => remindUserOnSlack(user._id!)}
+																		gearSize={25}
 																	/>
 																) : (
 																	<div className="w-12 h-12"></div>
@@ -287,7 +288,7 @@ export default function MatchScheduleCard(props: {
 													<div>No subjective scouter assigned</div>
 												)}
 											</div>
-											<Link
+											<a
 												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`}
 												href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}
 											>
@@ -301,7 +302,7 @@ export default function MatchScheduleCard(props: {
 															: 0
 													} in progress`}
 												)
-											</Link>
+											</a>
 										</div>
 									))}
 								</div>

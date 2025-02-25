@@ -4,6 +4,9 @@ import CollectionId, { CollectionIdToType } from "./client/CollectionId";
 import DbInterface, {
 	WithStringOrObjectIdId,
 } from "./client/dbinterfaces/DbInterface";
+import { default as BaseMongoDbInterface } from "mongo-anywhere/MongoDbInterface";
+import CachedDbInterface from "./client/dbinterfaces/CachedDbInterface";
+import { cacheOptions } from "./client/dbinterfaces/CachedDbInterface";
 
 if (!process.env.MONGODB_URI) {
 	// Necessary to allow connections from files running outside of Next
@@ -27,10 +30,17 @@ clientPromise = global.clientPromise;
 
 export { clientPromise };
 
-export async function getDatabase(): Promise<MongoDBInterface> {
+export async function getDatabase(
+	useCache: boolean = true,
+): Promise<DbInterface> {
 	if (!global.interface) {
 		await clientPromise;
-		const dbInterface = new MongoDBInterface(clientPromise);
+
+		const mongo = new MongoDBInterface(clientPromise);
+
+		const dbInterface = useCache
+			? new CachedDbInterface(mongo, cacheOptions)
+			: mongo;
 		await dbInterface.init();
 		global.interface = dbInterface;
 
@@ -40,97 +50,57 @@ export async function getDatabase(): Promise<MongoDBInterface> {
 	return global.interface;
 }
 
-export class MongoDBInterface implements DbInterface {
-	promise: Promise<MongoClient> | undefined;
-	client: MongoClient | undefined;
-	db: Db | undefined;
-
-	constructor(promise: Promise<MongoClient>) {
-		this.promise = promise;
-	}
-
+export class MongoDBInterface
+	extends BaseMongoDbInterface<CollectionId, CollectionIdToType<CollectionId>>
+	implements DbInterface
+{
 	async init() {
-		this.client = await this.promise;
-		this.db = this.client?.db(process.env.DB);
-		//@ts-ignore
-
-		const CollectionId = (await this.db
-			?.listCollections()
-			.toArray()) as CollectionId;
-		if (CollectionId?.length === 0) {
-			try {
-				Object.values(CollectionId).forEach(
-					async (collectionName) =>
-						await this.db?.createCollection(collectionName),
-				);
-			} catch (e) {
-				console.log(
-					"Failed to create CollectionId... (probably exist already)",
-				);
-			}
-		}
+		super.init(Object.values(CollectionId));
 	}
 
 	async addObject<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
 	>(collection: TId, object: WithStringOrObjectIdId<TObj>): Promise<TObj> {
-		if (object._id && typeof object._id === "string")
-			object._id = new ObjectId(object._id);
-
-		const ack = await this?.db
-			?.collection(collection)
-			.insertOne(object as Document & { _id?: ObjectId });
-		object._id = ack?.insertedId;
-		return object as TObj;
+		return super.addObject(collection, object);
 	}
 
 	async deleteObjectById(collection: CollectionId, id: ObjectId) {
-		var query = { _id: id };
-		await this?.db?.collection(collection).deleteOne(query);
+		await this?.db?.collection(collection).deleteOne({ _id: id });
 	}
 
 	updateObjectById<
 		TId extends CollectionId,
 		TObj extends CollectionIdToType<TId>,
 	>(collection: TId, id: ObjectId, newValues: Partial<TObj>): Promise<void> {
-		var query = { _id: id };
-		var updated = { $set: newValues };
-		this?.db?.collection(collection).updateOne(query, updated);
-
-		return Promise.resolve();
+		return super.updateObjectById(collection, id, newValues);
 	}
 
-	async findObjectById<Type>(
-		collection: CollectionId,
-		id: ObjectId,
-	): Promise<Type> {
-		return (await this?.db
-			?.collection(collection)
-			.findOne({ _id: id })) as Type;
+	async findObjectById<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, id: ObjectId): Promise<TObj> {
+		return super.findObjectById(collection, id);
 	}
 
-	async findObject<Type>(
-		collection: CollectionId,
-		query: object,
-	): Promise<Type> {
-		return (await this?.db?.collection(collection).findOne(query)) as Type;
+	async findObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, query: object): Promise<TObj> {
+		return super.findObject(collection, query);
 	}
 
-	async findObjects<Type>(
-		collection: CollectionId,
-		query: object,
-	): Promise<Type[]> {
-		return (await this?.db
-			?.collection(collection)
-			.find(query)
-			.toArray()) as Type[];
+	async findObjects<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, query: object): Promise<TObj[]> {
+		return super.findObjects(collection, query);
 	}
 
 	async countObjects(
 		collection: CollectionId,
 		query: object,
 	): Promise<number | undefined> {
-		return await this?.db?.collection(collection).countDocuments(query);
+		return super.countObjects(collection, query);
 	}
 }

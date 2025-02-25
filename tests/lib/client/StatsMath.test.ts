@@ -1,6 +1,7 @@
 import {
 	BooleanAverage,
 	ComparativePercent,
+	ComparativePercentMulti,
 	MostCommonValue,
 	NumericalAverage,
 	NumericalTotal,
@@ -90,4 +91,26 @@ test(ComparativePercent.name, () => {
 			reports as any,
 		),
 	).toBe("25%");
+});
+
+test(ComparativePercentMulti.name, () => {
+	const reports = [
+		{ data: { a: 1, b: 2, c: 4, d: 3 } },
+		{ data: { a: 1, b: 2, c: 4, d: 3 } },
+	];
+
+	expect(
+		ComparativePercentMulti(["a", "b", "c", "d"], reports as any),
+	).toStrictEqual(["10%", "20%", "40%", "30%"]);
+	expect(
+		ComparativePercentMulti(
+			[
+				(r) => (r as any).a,
+				(r) => (r as any).b,
+				(r) => (r as any).c,
+				(r) => (r as any).d,
+			],
+			reports as any,
+		),
+	).toStrictEqual(["10%", "20%", "40%", "30%"]);
 });

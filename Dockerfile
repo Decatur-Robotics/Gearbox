@@ -7,12 +7,13 @@ LABEL org.opencontainers.image.licenses=CC-BY-NC-SA-4.0
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm i
+RUN npm ci
 
 COPY . .
 
 RUN npm run build
 
-EXPOSE 443
+EXPOSE 80
 
-CMD npm run start
+# ENTRYPOINT [ "bash" ] # Uncomment to operate the terminal in the container
+CMD ["/usr/local/bin/npm", "run", "start"]

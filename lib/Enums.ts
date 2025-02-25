@@ -81,3 +81,31 @@ export namespace IntoTheDeepEnums {
 		HighLevelClimb = "High Level Climb",
 	}
 }
+
+export namespace ReefscapeEnums {
+	export enum EndgameClimbStatus {
+		None = "None",
+		Park = "Park",
+		High = "High",
+		Low = "Low",
+	}
+
+	export enum DriveThroughDeepCage {
+		No = "No",
+		Slow = "Slow",
+		Fast = "Fast",
+	}
+
+	export enum AutoCapabilities {
+		NoAuto = "No Auto",
+		MovePastStart = "Move Past Start",
+		ScoreOneCoral = "Score One Coral",
+		ScoreMoreThanOneCoral = "ScoreMoreThanOneCoral",
+	}
+
+	export enum Climbing {
+		No = "No",
+		Deep = "Deep",
+		Shallow = "Shallow",
+	}
+}

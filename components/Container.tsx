@@ -226,6 +226,7 @@ export default function Container(props: ContainerProps) {
 										imgHeightOverride="h-11"
 										showLevel={false}
 										borderThickness={2}
+										gearSize={24}
 									/>
 								</Link>
 							) : (
@@ -361,7 +362,8 @@ export default function Container(props: ContainerProps) {
 
 								<Link href={`/${selectedTeam?.slug}`}>
 									<button className="btn btn-ghost normal-case bg-base-100">
-										<BiHome className="text-2xl"></BiHome>Team Home
+										<BiHome className="text-2xl"></BiHome>
+										{selectedTeam?.alliance ? "Alliance Home" : "Team Home"}
 									</button>
 								</Link>
 

@@ -1,6 +1,12 @@
+/**
+ * @tested_by tests/lib/TheOrangeAlliance.test.ts
+ */
+import DbInterface from "./client/dbinterfaces/DbInterface";
 import { League, Team } from "./Types";
+import { GenerateSlug } from "./Utils";
+import CollectionId from "./client/CollectionId";
 
-async function request(suburl: string): Promise<any> {
+export async function request(suburl: string): Promise<any> {
 	var res = await fetch(process.env.TOA_URL + suburl, {
 		method: "GET",
 		headers: {
@@ -31,8 +37,12 @@ export namespace TheOrangeAlliance {
 		website: string;
 	};
 
-	export async function getTeam(teamNumber: number): Promise<Team | undefined> {
-		const teams = (await request(`/team/${teamNumber}`)) as SimpleTeam[];
+	export async function getTeam(
+		teamNumber: number,
+		db: DbInterface,
+		requestFromApi: (suburl: string) => Promise<any> = request,
+	): Promise<Team | undefined> {
+		const teams = (await requestFromApi(`/team/${teamNumber}`)) as SimpleTeam[];
 
 		if (teams.length === 0) return undefined;
 
@@ -41,8 +51,8 @@ export namespace TheOrangeAlliance {
 
 		return new Team(
 			team.team_name_short,
-			team.team_name_long,
-			team.robot_name,
+			await GenerateSlug(db, CollectionId.Teams, team.team_name_short),
+			"",
 			team.team_number,
 			League.FTC,
 		);

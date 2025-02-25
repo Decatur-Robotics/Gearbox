@@ -2,12 +2,11 @@ import { ObjectId } from "bson";
 import CollectionId from "../client/CollectionId";
 import AccessLevels from "./AccessLevels";
 import ApiDependencies from "./ApiDependencies";
-import ApiLib from "./ApiLib";
 import {
 	Alliance,
 	Competition,
 	CompetitonNameIdPair,
-	DbPicklist,
+	CompPicklistGroup,
 	League,
 	Match,
 	MatchType,
@@ -18,8 +17,9 @@ import {
 	SubjectiveReportSubmissionType,
 	Team,
 	User,
-	Report,
-	WebhookHolder,
+	LeaderboardUser,
+	LeaderboardTeam,
+	LinkedList,
 } from "@/lib/Types";
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
@@ -35,26 +35,37 @@ import { GenerateSlug, isDeveloper, mentionUserInSlack } from "../Utils";
 import { fillTeamWithFakeUsers } from "../dev/FakeData";
 import { GameId } from "../client/GameId";
 import {
-	AssignScoutersToCompetitionMatches,
+	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
-import { games } from "../games";
+import { CenterStage, Crescendo, games, IntoTheDeep } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
-import { request } from "http";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
+import toast from "react-hot-toast";
+import { RequestHelper } from "unified-api";
+import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
+import { Report } from "../Types";
+
+const requestHelper = new RequestHelper(
+	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
+	(url) =>
+		toast.error(
+			`Failed API request: ${url}. If this is an error, please contact the developers.`,
+		),
+);
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
  */
-export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
+export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	constructor() {
-		super(false);
+		super(requestHelper, false);
 		this.init();
 	}
 
-	hello = ApiLib.createRoute<
+	hello = createNextRoute<
 		[],
 		{ message: string; db: string; data: any },
 		ApiDependencies,
@@ -70,7 +81,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	requestToJoinTeam = ApiLib.createRoute<
+	requestToJoinTeam = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -80,7 +91,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db, userPromise }, authData, [teamId]) => {
 			let team = await (
 				await db
-			).findObjectById<Team>(CollectionId.Teams, new ObjectId(teamId));
+			).findObjectById(CollectionId.Teams, new ObjectId(teamId));
 
 			if (!team) {
 				return res.error(404, "Team not found");
@@ -103,7 +114,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	handleTeamJoinRequest = ApiLib.createRoute<
+	handleTeamJoinRequest = createNextRoute<
 		[boolean, string, string],
 		Team,
 		ApiDependencies,
@@ -119,12 +130,12 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const teamPromise = db.findObjectById<Team>(
+			const teamPromise = db.findObjectById(
 				CollectionId.Teams,
 				new ObjectId(teamId.toString()),
 			);
 
-			const joineePromise = db.findObjectById<User>(
+			const joineePromise = db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(userId.toString()),
 			);
@@ -164,14 +175,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getTeamAutofillData = ApiLib.createRoute<
+	getTeamAutofillData = createNextRoute<
 		[number, League],
 		Team | undefined,
 		ApiDependencies,
 		void
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { tba }, authData, [number, league]) => {
+		handler: async (req, res, { tba, db }, authData, [number, league]) => {
 			if (number <= 0) {
 				return res.status(200).send(undefined);
 			}
@@ -180,13 +191,13 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				.status(200)
 				.send(
 					league === League.FTC
-						? await TheOrangeAlliance.getTeam(number)
+						? await TheOrangeAlliance.getTeam(number, await db)
 						: await tba.getTeamAutofillData(number),
 				);
 		},
 	});
 
-	competitionAutofill = ApiLib.createRoute<
+	competitionAutofill = createNextRoute<
 		[string],
 		Competition | undefined,
 		ApiDependencies,
@@ -198,7 +209,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	competitionMatches = ApiLib.createRoute<
+	competitionMatches = createNextRoute<
 		[string],
 		Match | undefined,
 		ApiDependencies,
@@ -210,8 +221,8 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createTeam = ApiLib.createRoute<
-		[string, string, number, League],
+	createTeam = createNextRoute<
+		[string, string, number, League, boolean],
 		Team | undefined,
 		ApiDependencies,
 		void
@@ -222,13 +233,13 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			res,
 			{ db: dbPromise, resend, userPromise },
 			authData,
-			[name, tbaId, number, league],
+			[name, tbaId, number, league, alliance],
 		) => {
 			const user = (await userPromise)!;
 			const db = await dbPromise;
 
 			// Find if team already exists
-			const existingTeam = await db.findObject<Team>(CollectionId.Teams, {
+			const existingTeam = await db.findObject(CollectionId.Teams, {
 				number,
 				...(league === League.FRC
 					? { $or: [{ league: League.FRC }, { league: undefined }] }
@@ -245,6 +256,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				tbaId,
 				number,
 				league,
+				alliance,
 				[user._id!.toString()],
 				[user._id!.toString()],
 				[user._id!.toString()],
@@ -266,14 +278,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			);
 
 			if (process.env.FILL_TEAMS === "true") {
-				fillTeamWithFakeUsers(20, team._id.toString(), db);
+				fillTeamWithFakeUsers(20, team._id, db);
 			}
 
 			return res.status(200).send(team);
 		},
 	});
 
-	createSeason = ApiLib.createRoute<
+	createSeason = createNextRoute<
 		[string, number, string, GameId],
 		Season,
 		ApiDependencies,
@@ -303,19 +315,21 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 					gameId,
 				),
 			);
-			team!.seasons = [...team!.seasons, String(season._id)];
+
+			const { _id, ...updatedTeam } = team;
+			updatedTeam.seasons = [...team.seasons, String(season._id)];
 
 			await db.updateObjectById(
 				CollectionId.Teams,
 				new ObjectId(teamId),
-				team!,
+				updatedTeam!,
 			);
 
 			return res.status(200).send(season);
 		},
 	});
 
-	reloadCompetition = ApiLib.createRoute<
+	reloadCompetition = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -365,7 +379,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createCompetition = ApiLib.createRoute<
+	createCompetition = createNextRoute<
 		[string, number, number, string, string, boolean],
 		Competition,
 		ApiDependencies,
@@ -396,6 +410,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			const picklist = await db.addObject(CollectionId.Picklists, {
 				picklists: {},
+				strikethroughs: [],
 			});
 
 			const comp = await db.addObject(
@@ -414,12 +429,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				),
 			);
 
-			season.competitions = [...season.competitions, String(comp._id)];
+			const { _id, ...updatedSeason } = season;
+
+			updatedSeason.competitions = [...season.competitions, String(comp._id)];
 
 			await db.updateObjectById(
 				CollectionId.Seasons,
 				new ObjectId(season._id),
-				season,
+				updatedSeason,
 			);
 
 			// Create reports
@@ -432,7 +449,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createMatch = ApiLib.createRoute<
+	createMatch = createNextRoute<
 		[string, number, number, MatchType, Alliance, Alliance],
 		Match,
 		ApiDependencies,
@@ -478,7 +495,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	searchCompetitionByName = ApiLib.createRoute<
+	searchCompetitionByName = createNextRoute<
 		[string],
 		{ value: number; pair: CompetitonNameIdPair }[],
 		ApiDependencies,
@@ -490,7 +507,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	assignScouters = ApiLib.createRoute<
+	assignScouters = createNextRoute<
 		[string, boolean],
 		{ result: string },
 		ApiDependencies,
@@ -509,18 +526,17 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			if (!team?._id) return res.status(400).send({ error: "Team not found" });
 
-			const result = await AssignScoutersToCompetitionMatches(
+			const result = await assignScoutersToCompetitionMatches(
 				db,
-				team?._id?.toString(),
-				compId,
+				team._id,
+				new ObjectId(compId),
 			);
 
-			console.log(result);
 			return res.status(200).send({ result: result });
 		},
 	});
 
-	submitForm = ApiLib.createRoute<
+	submitForm = createNextRoute<
 		[string, QuantData],
 		{ result: string },
 		ApiDependencies,
@@ -563,7 +579,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	competitionReports = ApiLib.createRoute<
+	competitionReports = createNextRoute<
 		[string, boolean, boolean],
 		Report[],
 		ApiDependencies,
@@ -582,7 +598,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			const usedComps =
 				usePublicData && comp.tbaId !== NotLinkedToTba
-					? await db.findObjects<Competition>(CollectionId.Competitions, {
+					? await db.findObjects(CollectionId.Competitions, {
 							publicData: true,
 							tbaId: comp.tbaId,
 							gameId: comp.gameId,
@@ -592,7 +608,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			if (usePublicData && !comp.publicData) usedComps.push(comp);
 
 			const reports = (
-				await db.findObjects<Report>(CollectionId.Reports, {
+				await db.findObjects(CollectionId.Reports, {
 					match: { $in: usedComps.flatMap((m) => m.matches) },
 					submitted: submitted ? true : { $exists: true },
 				})
@@ -607,7 +623,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	allCompetitionMatches = ApiLib.createRoute<
+	allCompetitionMatches = createNextRoute<
 		[string],
 		Match[],
 		ApiDependencies,
@@ -624,14 +640,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const matches = await db.findObjects<Match>(CollectionId.Matches, {
+			const matches = await db.findObjects(CollectionId.Matches, {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
 			return res.status(200).send(matches);
 		},
 	});
 
-	matchReports = ApiLib.createRoute<
+	matchReports = createNextRoute<
 		[string],
 		Report[],
 		ApiDependencies,
@@ -648,14 +664,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects<Report>(CollectionId.Reports, {
+			const reports = await db.findObjects(CollectionId.Reports, {
 				_id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
 			});
 			return res.status(200).send(reports);
 		},
 	});
 
-	changePFP = ApiLib.createRoute<
+	changePFP = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -682,7 +698,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	checkInForReport = ApiLib.createRoute<
+	checkInForReport = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -707,7 +723,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	checkInForSubjectiveReport = ApiLib.createRoute<
+	checkInForSubjectiveReport = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -739,7 +755,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	remindSlack = ApiLib.createRoute<
+	remindSlack = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -755,14 +771,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			[teamId, targetUserId],
 		) => {
 			const db = await dbPromise;
-			const targetUserPromise = db.findObjectById<User>(
+			const targetUserPromise = db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(targetUserId),
 			);
 
 			if (!team.slackWebhook) throw new SlackNotLinkedError(res);
 
-			const webhookHolder = await db.findObjectById<WebhookHolder>(
+			const webhookHolder = await db.findObjectById(
 				CollectionId.Webhooks,
 				new ObjectId(team.slackWebhook),
 			);
@@ -787,7 +803,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setSlackWebhook = ApiLib.createRoute<
+	setSlackWebhook = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -836,7 +852,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setSlackId = ApiLib.createRoute<
+	setSlackId = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -863,7 +879,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	initialEventData = ApiLib.createRoute<
+	initialEventData = createNextRoute<
 		[string],
 		{
 			firstRanking: TheBlueAlliance.SimpleRank[];
@@ -880,14 +896,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			const tbaOPRPromise = tba.req.getCompetitonOPRS(eventKey);
 
 			return res.status(200).send({
-				firstRanking: (await compRankingsPromise).rankings,
+				firstRanking: (await compRankingsPromise)?.rankings,
 				comp: await eventInformationPromise,
 				oprRanking: await tbaOPRPromise,
 			});
 		},
 	});
 
-	compRankings = ApiLib.createRoute<
+	compRankings = createNextRoute<
 		[string],
 		TheBlueAlliance.SimpleRank[],
 		ApiDependencies,
@@ -896,11 +912,11 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { tba }, authData, [tbaId]) => {
 			const compRankings = await tba.req.getCompetitonRanking(tbaId);
-			return res.status(200).send(compRankings.rankings);
+			return res.status(200).send(compRankings?.rankings);
 		},
 	});
 
-	statboticsTeamEvent = ApiLib.createRoute<
+	statboticsTeamEvent = createNextRoute<
 		[string, string],
 		Statbotics.TeamEvent,
 		ApiDependencies,
@@ -913,7 +929,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getMainPageCounterData = ApiLib.createRoute<
+	getMainPageCounterData = createNextRoute<
 		[],
 		{
 			teams: number | undefined;
@@ -941,8 +957,32 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 				{},
 			);
 
-			const dataPointsPerReport = Reflect.ownKeys(QuantData).length;
-			const dataPointsPerPitReports = Reflect.ownKeys(Pitreport).length;
+			const quantReportTypes = [
+				Crescendo.QuantitativeData,
+				CenterStage.QuantitativeData,
+				IntoTheDeep.QuantitativeData,
+			];
+			const pitReportTypes = [
+				Crescendo.PitData,
+				CenterStage.PitData,
+				IntoTheDeep.PitData,
+			];
+
+			const dataPointsPerReport =
+				Reflect.ownKeys(QuantData).length +
+				quantReportTypes.reduce(
+					(acc, game) => acc + Reflect.ownKeys(game).length,
+					0,
+				) /
+					quantReportTypes.length;
+
+			const dataPointsPerPitReports =
+				Reflect.ownKeys(Pitreport).length +
+				pitReportTypes.reduce(
+					(acc, game) => acc + Reflect.ownKeys(game).length,
+					0,
+				) /
+					pitReportTypes.length;
 			const dataPointsPerSubjectiveReport =
 				Reflect.ownKeys(SubjectiveReport).length + 5;
 
@@ -968,7 +1008,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	exportCompAsCsv = ApiLib.createRoute<
+	exportCompAsCsv = createNextRoute<
 		[string],
 		{ csv: string },
 		ApiDependencies,
@@ -985,10 +1025,10 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const matches = await db.findObjects<Match>(CollectionId.Matches, {
+			const matches = await db.findObjects(CollectionId.Matches, {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
-			const allReports = await db.findObjects<Report>(CollectionId.Reports, {
+			const allReports = await db.findObjects(CollectionId.Reports, {
 				match: { $in: matches.map((match) => match?._id?.toString()) },
 			});
 			const reports = allReports.filter((report) => report.submitted);
@@ -1028,7 +1068,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	teamCompRanking = ApiLib.createRoute<
+	teamCompRanking = createNextRoute<
 		[string, number],
 		{ place: number | string; max: number | string },
 		ApiDependencies,
@@ -1063,7 +1103,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getPitReports = ApiLib.createRoute<
+	getPitReports = createNextRoute<
 		[string],
 		Pitreport[],
 		ApiDependencies,
@@ -1080,18 +1120,15 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const pitReports = await db.findObjects<Pitreport>(
-				CollectionId.PitReports,
-				{
-					_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
-				},
-			);
+			const pitReports = await db.findObjects(CollectionId.PitReports, {
+				_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+			});
 
 			return res.status(200).send(pitReports);
 		},
 	});
 
-	changeScouterForReport = ApiLib.createRoute<
+	changeScouterForReport = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -1116,7 +1153,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getCompReports = ApiLib.createRoute<
+	getCompReports = createNextRoute<
 		[string],
 		Report[],
 		ApiDependencies,
@@ -1133,7 +1170,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects<Report>(CollectionId.Reports, {
+			const reports = await db.findObjects(CollectionId.Reports, {
 				match: { $in: comp.matches },
 			});
 
@@ -1141,7 +1178,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findScouterManagementData = ApiLib.createRoute<
+	findScouterManagementData = createNextRoute<
 		[string],
 		{
 			scouters: User[];
@@ -1175,7 +1212,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			for (const scouterId of team?.scouters) {
 				promises.push(
 					db
-						.findObjectById<User>(CollectionId.Users, new ObjectId(scouterId))
+						.findObjectById(CollectionId.Users, new ObjectId(scouterId))
 						.then((scouter) => scouter && scouters.push(scouter)),
 				);
 			}
@@ -1183,14 +1220,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			for (const matchId of comp.matches) {
 				promises.push(
 					db
-						.findObjectById<Match>(CollectionId.Matches, new ObjectId(matchId))
+						.findObjectById(CollectionId.Matches, new ObjectId(matchId))
 						.then((match) => match && matches.push(match)),
 				);
 			}
 
 			promises.push(
 				db
-					.findObjects<Report>(CollectionId.Reports, {
+					.findObjects(CollectionId.Reports, {
 						match: { $in: comp.matches },
 					})
 					.then((r) => quantitativeReports.push(...r)),
@@ -1198,7 +1235,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			promises.push(
 				db
-					.findObjects<Pitreport>(CollectionId.PitReports, {
+					.findObjects(CollectionId.PitReports, {
 						_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
 						submitted: true,
 					})
@@ -1207,7 +1244,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 
 			promises.push(
 				db
-					.findObjects<SubjectiveReport>(CollectionId.SubjectiveReports, {
+					.findObjects(CollectionId.SubjectiveReports, {
 						match: { $in: comp.matches },
 					})
 					.then((r) => subjectiveReports.push(...r)),
@@ -1225,9 +1262,9 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getPicklistFromComp = ApiLib.createRoute<
+	getPicklistFromComp = createNextRoute<
 		[string],
-		DbPicklist | undefined,
+		CompPicklistGroup | undefined,
 		ApiDependencies,
 		{ comp: Competition }
 	>({
@@ -1236,20 +1273,22 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db: dbPromise }, { comp }, [compId]) => {
 			const db = await dbPromise;
 
-			const picklist = await db.findObjectById<DbPicklist>(
+			const picklist = await db.findObjectById(
 				CollectionId.Picklists,
 				new ObjectId(comp.picklist),
 			);
+
+			if (picklist) picklist.strikethroughs ??= [];
 
 			return res.status(200).send(picklist);
 		},
 	});
 
-	getPicklist = ApiLib.createRoute<
+	getPicklistGroup = createNextRoute<
 		[string],
-		DbPicklist | undefined,
+		CompPicklistGroup | undefined,
 		ApiDependencies,
-		{ picklist: DbPicklist }
+		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklistId]) =>
 			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklistId),
@@ -1258,11 +1297,11 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updatePicklist = ApiLib.createRoute<
-		[DbPicklist],
+	updatePicklist = createNextRoute<
+		[CompPicklistGroup],
 		{ result: string },
 		ApiDependencies,
-		{ picklist: DbPicklist }
+		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklist]) =>
 			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklist._id),
@@ -1285,7 +1324,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setCompPublicData = ApiLib.createRoute<
+	setCompPublicData = createNextRoute<
 		[string, boolean],
 		{ result: string },
 		ApiDependencies,
@@ -1311,7 +1350,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setOnboardingCompleted = ApiLib.createRoute<
+	setOnboardingCompleted = createNextRoute<
 		[string],
 		{ result: string },
 		ApiDependencies,
@@ -1336,7 +1375,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	submitSubjectiveReport = ApiLib.createRoute<
+	submitSubjectiveReport = createNextRoute<
 		[SubjectiveReport, string],
 		{ result: string },
 		ApiDependencies,
@@ -1404,7 +1443,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getSubjectiveReportsForComp = ApiLib.createRoute<
+	getSubjectiveReportsForComp = createNextRoute<
 		[string],
 		SubjectiveReport[],
 		ApiDependencies,
@@ -1421,18 +1460,15 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const reports = await db.findObjects<SubjectiveReport>(
-				CollectionId.SubjectiveReports,
-				{
-					match: { $in: comp.matches },
-				},
-			);
+			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: comp.matches },
+			});
 
 			return res.status(200).send(reports);
 		},
 	});
 
-	updateSubjectiveReport = ApiLib.createRoute<
+	updateSubjectiveReport = createNextRoute<
 		[SubjectiveReport],
 		{ result: string },
 		ApiDependencies,
@@ -1463,7 +1499,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	setSubjectiveScouterForMatch = ApiLib.createRoute<
+	setSubjectiveScouterForMatch = createNextRoute<
 		[string, string],
 		{ result: string },
 		ApiDependencies,
@@ -1492,7 +1528,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	regeneratePitReports = ApiLib.createRoute<
+	regeneratePitReports = createNextRoute<
 		[string],
 		{ result: string; pitReports: string[] },
 		ApiDependencies,
@@ -1529,7 +1565,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	createPitReportForTeam = ApiLib.createRoute<
+	createPitReportForTeam = createNextRoute<
 		[number, string],
 		{ result: string },
 		ApiDependencies,
@@ -1571,7 +1607,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateCompNameAndTbaId = ApiLib.createRoute<
+	updateCompNameAndTbaId = createNextRoute<
 		[string, string, string],
 		{ result: string },
 		ApiDependencies,
@@ -1601,27 +1637,27 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	getFtcTeamAutofillData = ApiLib.createRoute<
+	getFtcTeamAutofillData = createNextRoute<
 		[number],
 		Team | undefined,
 		ApiDependencies,
 		void
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
-		handler: async (req, res, { tba }, authData, [teamNumber]) => {
-			const team = await TheOrangeAlliance.getTeam(teamNumber);
+		handler: async (req, res, { tba, db }, authData, [teamNumber]) => {
+			const team = await TheOrangeAlliance.getTeam(teamNumber, await db);
 			return res.status(200).send(team);
 		},
 	});
 
-	ping = ApiLib.createRoute<[], { result: string }, ApiDependencies, void>({
+	ping = createNextRoute<[], { result: string }, ApiDependencies, void>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, authData, args) => {
 			return res.status(200).send({ result: "success" });
 		},
 	});
 
-	getSubjectiveReportsFromMatches = ApiLib.createRoute<
+	getSubjectiveReportsFromMatches = createNextRoute<
 		[string, Match[]],
 		SubjectiveReport[],
 		ApiDependencies,
@@ -1644,18 +1680,15 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			}
 
 			const matchIds = matches.map((match) => match._id?.toString());
-			const reports = await db.findObjects<SubjectiveReport>(
-				CollectionId.SubjectiveReports,
-				{
-					match: { $in: matchIds },
-				},
-			);
+			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: matchIds },
+			});
 
 			return res.status(200).send(reports);
 		},
 	});
 
-	removeUserFromTeam = ApiLib.createRoute<
+	removeUserFromTeam = createNextRoute<
 		[string, string],
 		{ result: string; team: Team },
 		ApiDependencies,
@@ -1672,7 +1705,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const removedUserPromise = db.findObjectById<User>(
+			const removedUserPromise = db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(userId),
 			);
@@ -1714,7 +1747,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findUserById = ApiLib.createRoute<
+	findUserById = createNextRoute<
 		[string],
 		User | undefined,
 		ApiDependencies,
@@ -1723,7 +1756,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const user = await db.findObjectById<User>(
+			const user = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(id),
 			);
@@ -1731,7 +1764,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findBulkUsersById = ApiLib.createRoute<
+	findBulkUsersById = createNextRoute<
 		[string[]],
 		User[],
 		ApiDependencies,
@@ -1740,14 +1773,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [ids]) => {
 			const db = await dbPromise;
-			const users = await db.findObjects<User>(CollectionId.Users, {
+			const users = await db.findObjects(CollectionId.Users, {
 				_id: { $in: ids.map((id) => new ObjectId(id)) },
 			});
 			return res.status(200).send(users);
 		},
 	});
 
-	findTeamById = ApiLib.createRoute<
+	findTeamById = createNextRoute<
 		[string],
 		Team | undefined,
 		ApiDependencies,
@@ -1756,7 +1789,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const team = await db.findObjectById<Team>(
+			const team = await db.findObjectById(
 				CollectionId.Teams,
 				new ObjectId(id),
 			);
@@ -1764,7 +1797,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findTeamByNumberAndLeague = ApiLib.createRoute<
+	findTeamByNumberAndLeague = createNextRoute<
 		[number, League],
 		Team | undefined,
 		ApiDependencies,
@@ -1788,13 +1821,13 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 						}
 					: { number: number, league: league };
 
-			const team = await db.findObject<Team>(CollectionId.Teams, query);
+			const team = await db.findObject(CollectionId.Teams, query);
 
 			return res.status(200).send(team);
 		},
 	});
 
-	findSeasonById = ApiLib.createRoute<
+	findSeasonById = createNextRoute<
 		[string],
 		Season | undefined,
 		ApiDependencies,
@@ -1803,7 +1836,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const season = await db.findObjectById<Season>(
+			const season = await db.findObjectById(
 				CollectionId.Seasons,
 				new ObjectId(id),
 			);
@@ -1811,7 +1844,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findCompetitionById = ApiLib.createRoute<
+	findCompetitionById = createNextRoute<
 		[string],
 		Competition | undefined,
 		ApiDependencies,
@@ -1820,7 +1853,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const competition = await db.findObjectById<Competition>(
+			const competition = await db.findObjectById(
 				CollectionId.Competitions,
 				new ObjectId(id),
 			);
@@ -1828,7 +1861,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findMatchById = ApiLib.createRoute<
+	findMatchById = createNextRoute<
 		[string],
 		Match | undefined,
 		ApiDependencies,
@@ -1837,7 +1870,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const match = await db.findObjectById<Match>(
+			const match = await db.findObjectById(
 				CollectionId.Matches,
 				new ObjectId(id),
 			);
@@ -1845,7 +1878,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findReportById = ApiLib.createRoute<
+	findReportById = createNextRoute<
 		[string],
 		Report | undefined,
 		ApiDependencies,
@@ -1854,7 +1887,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
 			const db = await dbPromise;
-			const report = await db.findObjectById<Report>(
+			const report = await db.findObjectById(
 				CollectionId.Reports,
 				new ObjectId(id),
 			);
@@ -1862,7 +1895,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findPitreportById = ApiLib.createRoute<
+	findPitreportById = createNextRoute<
 		[string],
 		Pitreport | undefined,
 		ApiDependencies,
@@ -1875,7 +1908,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	findBulkPitReportsById = ApiLib.createRoute<
+	findBulkPitReportsById = createNextRoute<
 		[string[]],
 		Pitreport[],
 		ApiDependencies,
@@ -1898,7 +1931,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateUser = ApiLib.createRoute<
+	updateUser = createNextRoute<
 		[object],
 		{ result: string },
 		ApiDependencies,
@@ -1924,14 +1957,14 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateTeam = ApiLib.createRoute<
+	updateTeam = createNextRoute<
 		[object, string],
 		{ result: string },
 		ApiDependencies,
 		Team
 	>({
 		isAuthorized: (req, res, deps, [newValues, teamId]) =>
-			AccessLevels.IfOnTeam(req, res, deps, teamId),
+			AccessLevels.IfTeamOwner(req, res, deps, teamId),
 		handler: async (
 			req,
 			res,
@@ -1950,7 +1983,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateSeason = ApiLib.createRoute<
+	updateSeason = createNextRoute<
 		[object, string],
 		{ result: string },
 		ApiDependencies,
@@ -1976,7 +2009,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updateReport = ApiLib.createRoute<
+	updateReport = createNextRoute<
 		[Partial<Report>, string],
 		{ result: string },
 		ApiDependencies,
@@ -2002,7 +2035,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	updatePitreport = ApiLib.createRoute<
+	updatePitreport = createNextRoute<
 		[string, object],
 		{ result: string },
 		ApiDependencies,
@@ -2028,7 +2061,7 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 		},
 	});
 
-	speedTest = ApiLib.createRoute<
+	speedTest = createNextRoute<
 		[],
 		{
 			requestTime: number;
@@ -2096,9 +2129,210 @@ export default class ClientApi extends ApiLib.ApiTemplate<ApiDependencies> {
 			},
 		},
 		() =>
-			ApiLib.request("/speedTest", [Date.now()]).then((times) => ({
+			requestHelper.request("/speedTest", [Date.now()]).then((times) => ({
 				...times,
 				responseTime: Date.now() - times.responseTimestamp,
 			})),
 	);
+
+	getLeaderboard = createNextRoute<
+		[],
+		{ users: LeaderboardUser[]; teams: LeaderboardTeam[] },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.AlwaysAuthorized,
+		handler: async (req, res, { db: dbPromise }, authData, args) => {
+			const db = await dbPromise;
+
+			const users = await db.findObjects(CollectionId.Users, {
+				xp: { $gt: 0 },
+				email: { $ne: "totallyrealemail@gmail.com" },
+			});
+
+			console.log(
+				"ID Query:",
+				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
+			);
+
+			const teams = await db.findObjects(CollectionId.Teams, {
+				_id: {
+					$in: users
+						.map((user) => user.teams.map((id) => new ObjectId(id)))
+						.flat(),
+				},
+			});
+
+			console.log("Found", users, teams);
+
+			const leaderboardTeams = teams.reduce(
+				(acc, team) => {
+					acc[team._id!.toString()] = {
+						_id: team._id!.toString(),
+						name: team.name,
+						number: team.number,
+						league: team.league ?? League.FRC,
+						xp: 0,
+					};
+
+					return acc;
+				},
+				{} as { [_id: string]: LeaderboardTeam },
+			);
+
+			const leaderboardUsers = users
+				.map((user) => ({
+					_id: user._id!.toString(),
+					name: user.name?.split(" ")[0] ?? "Unknown",
+					image: user.image,
+					xp: user.xp,
+					level: user.level,
+					teams: user.teams
+						.map((id) => leaderboardTeams[id])
+						.map((team) => `${team.league ?? League.FRC} ${team.number}`),
+				}))
+				.sort((a, b) => b.xp - a.xp);
+
+			users.forEach((user) => {
+				user.teams.forEach((teamId) => {
+					leaderboardTeams[teamId].xp += user.xp;
+				});
+			});
+
+			const leaderboardTeamsArray = Object.values(leaderboardTeams).sort(
+				(a, b) => b.xp - a.xp,
+			);
+
+			return res
+				.status(200)
+				.send({ users: leaderboardUsers, teams: leaderboardTeamsArray });
+		},
+	});
+
+	getUserAnalyticsData = createNextRoute<
+		[],
+		{ [team: string]: { date: Date; count: number }[] },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, { db: dbPromise }, authData, args) => {
+			const db = await dbPromise;
+
+			// Find data from DB
+			const [teams, users] = await Promise.all([
+				db.findObjects(CollectionId.Teams, {}),
+				db.findObjects(CollectionId.Users, {
+					lastSignInDateTime: { $exists: true },
+				}),
+			]);
+
+			// Create a linked list for each team
+			const signInDatesByTeam: {
+				[team: string]: LinkedList<{ date: string; count: number }>;
+			} = teams.reduce(
+				(acc, team) => {
+					acc[team._id!.toString()] = new LinkedList<{
+						date: string;
+						count: number;
+					}>();
+					return acc;
+				},
+				{ All: new LinkedList() } as {
+					[team: string]: LinkedList<{ date: string; count: number }>;
+				},
+			);
+
+			for (const user of users) {
+				// Add the user to each of their teams
+				for (const team of [...user.teams, "All"]) {
+					const signInDates = signInDatesByTeam[team];
+
+					// Iterate through the team's linked list
+					for (let node = signInDates.first(); true; node = node.next) {
+						if (!node) {
+							// We're either at the end of the list, or the list is empty
+
+							// Can't just update signInDates, as that will reference a new object and not change the old one!
+							signInDates.setHead({
+								date: user.lastSignInDateTime!.toDateString(),
+								count: 1,
+							});
+							break;
+						}
+
+						if (
+							node &&
+							node?.date === user.lastSignInDateTime!.toDateString()
+						) {
+							// Found the node with the same date
+							node.count++;
+							break;
+						}
+
+						if (
+							!node?.next ||
+							new Date(user.lastSignInDateTime!.toDateString())! <
+								new Date(node.next.date)
+						) {
+							// The next node's date is after the user's sign-in date
+							signInDates.insertAfter(node!, {
+								date: user.lastSignInDateTime!.toDateString(),
+								count: 1,
+							});
+							break;
+						}
+					}
+				}
+			}
+
+			// Convert linked lists to arrays
+			const responseObj: { [team: string]: { date: Date; count: number }[] } =
+				{};
+			for (const obj of [...teams, "All"]) {
+				// Convert ObjectIds to strings
+				const id = typeof obj === "object" ? obj._id!.toString() : obj;
+				// Pull relevant data from the team to create a label
+				const label =
+					typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
+
+				// Convert date strings to Date objects
+				responseObj[label] = signInDatesByTeam[id].map((node) => ({
+					date: new Date(node.date),
+					count: node.count,
+				}));
+			}
+
+			// Send the response
+			res.status(200).send(responseObj);
+		},
+	});
+
+	getCacheStats = createNextRoute<
+		[],
+		object | undefined,
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, {}, authData, args) => {
+			if (!global.cache) return res.status(200).send(undefined);
+			const stats = global.cache.getStats();
+			return res.status(200).send(stats);
+		},
+	});
+
+	getCachedValue = createNextRoute<
+		[string],
+		object | undefined,
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfDeveloper,
+		handler: async (req, res, {}, authData, [key]) => {
+			if (!global.cache) return res.status(500).send({ error: "No cache" });
+			const val = global.cache.get(key) as object | undefined;
+			return res.status(200).send(val);
+		},
+	});
 }

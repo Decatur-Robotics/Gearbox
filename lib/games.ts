@@ -1,9 +1,11 @@
+import { Dot } from "@/components/stats/Heatmap";
 import {
 	CenterStageEnums,
 	Defense,
 	FrcDrivetrain,
 	IntakeTypes,
 	IntoTheDeepEnums,
+	ReefscapeEnums,
 } from "./Enums";
 import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
 import {
@@ -461,6 +463,7 @@ export namespace Crescendo {
 		pitStatsLayout,
 		"Crescendo",
 		"https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/crescendo/crescendo.png",
+		"",
 		getBadges,
 		getAvgPoints,
 	);
@@ -822,12 +825,13 @@ export namespace CenterStage {
 		pitStatsLayout,
 		"CenterStage",
 		"https://www.firstinspires.org/sites/default/files/uploads/resource_library/ftc/centerstage/centerstage.png",
+		"",
 		getBadges,
 		getAvgPoints,
 	);
 }
 
-namespace IntoTheDeep {
+export namespace IntoTheDeep {
 	export class QuantitativeData extends QuantData {
 		StartedWith: IntoTheDeepEnums.StartedWith =
 			IntoTheDeepEnums.StartedWith.Nothing;
@@ -1155,12 +1159,435 @@ namespace IntoTheDeep {
 		pitStatsLayout,
 		"IntoTheDeep",
 		"https://info.firstinspires.org/hubfs/Dive/into-the-deep.svg",
+		"invert",
+		getBadges,
+		getAvgPoints,
+	);
+}
+
+namespace Reefscape {
+	export class QuantitativeData extends QuantData {
+		AutoMovedPastStartingline: boolean = false;
+
+		AutoCoralScoredLevelOne: number = 0;
+		AutoCoralScoredLevelTwo: number = 0;
+		AutoCoralScoredLevelThree: number = 0;
+		AutoCoralScoredLevelFour: number = 0;
+
+		AutoAlgaeRemovedFromReef: number = 0;
+		AutoAlgaeScoredProcessor: number = 0;
+		AutoAlgaeScoredNet: number = 0;
+
+		TeleopCoralScoredLevelOne: number = 0;
+		TeleopCoralScoredLevelTwo: number = 0;
+		TeleopCoralScoredLevelThree: number = 0;
+		TeleopCoralScoredLevelFour: number = 0;
+
+		TeleopAlgaeRemovedFromReef: number = 0;
+		TeleopAlgaeScoredProcessor: number = 0;
+		TeleopAlgaeScoredNet: number = 0;
+
+		EndgameClimbStatus: ReefscapeEnums.EndgameClimbStatus =
+			ReefscapeEnums.EndgameClimbStatus.None;
+	}
+
+	export class PitData extends PitReportData {
+		CanDriveUnderShallowCage: boolean = false;
+		DriveThroughDeepCage: ReefscapeEnums.DriveThroughDeepCage =
+			ReefscapeEnums.DriveThroughDeepCage.No;
+		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
+			ReefscapeEnums.AutoCapabilities.NoAuto;
+		CanRemoveAlgae: boolean = false;
+		CanScoreAlgaeInProcessor: boolean = false;
+		CanScoreAlgaeInNet: boolean = false;
+		AlgaeScoredAuto: number = 0;
+		CoralScoredAuto: number = 0;
+		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
+	}
+
+	const pitReportLayout: FormLayoutProps<PitData> = {
+		Capabilities: [
+			{
+				key: "CanDriveUnderShallowCage",
+				label: "Can Drive Under Shallow Cage?",
+			},
+			{ key: "CanRemoveAlgae", label: "Can Remove Algae?" },
+			{
+				key: "CanScoreAlgaeInProcessor",
+				label: "Can Score Algae in Processor?",
+			},
+			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
+			{ key: "Climbing", label: "Climbing?" },
+		],
+		"Auto (Describe more in comments)": [
+			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
+			{ key: "CoralScoredAuto", label: "Average Coral Scored In Auto" },
+			{ key: "AlgaeScoredAuto", label: "Average Algae Scored In Auto" },
+		],
+	};
+
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+		Auto: [
+			{ key: "AutoMovedPastStartingLine", label: "Moved Past Starting Line" },
+			[
+				[
+					{ key: "AutoCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "AutoCoralScoredLevelThree",
+						label: "Coral Scored Level Three",
+					},
+				],
+				[
+					{
+						key: "AutoCoralScoredLevelTwo",
+						label: "Coral Scored Level Two",
+					},
+					{ key: "AutoCoralScoredLevelFour", label: "Coral Scored Level Four" },
+				],
+			],
+			[
+				[{ key: "AutoAlgaeRemovedFromReef", label: "Algae Removed From Reef" }],
+				[{ key: "AutoAlgaeScoredProcessor", label: "Algae Scored Processor" }],
+				[{ key: "AutoAlgaeScoredNet", label: "Algae Scored Net" }],
+			],
+		],
+		Teleop: [
+			[
+				[
+					{ key: "TeleopCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "TeleopCoralScoredLevelThree",
+						label: "Coral Scored Level Three",
+					},
+				],
+				[
+					{
+						key: "TeleopCoralScoredLevelTwo",
+						label: "Coral Scored Level Two",
+					},
+					{
+						key: "TeleopCoralScoredLevelFour",
+						label: "Coral Scored Level Four",
+					},
+				],
+			],
+			[
+				[
+					{
+						key: "TeleopAlgaeRemovedFromReef",
+						label: "Algae Removed From Reef",
+					},
+				],
+				[
+					{
+						key: "TeleopAlgaeScoredProcessor",
+						label: "Algae Scored Processor",
+					},
+				],
+				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net" }],
+			],
+		],
+		"Post Match": ["EndgameClimbStatus"],
+	};
+
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+		sections: {
+			Auto: [
+				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
+				{
+					key: "AutoCoralScoredLevelOne",
+					label: "Avg Amt Of Coral Scored Level One Auto",
+				},
+				{
+					key: "AutoCoralScoredLevelTwo",
+					label: "Avg Amt Of Coral Scored Level Two Auto",
+				},
+				{
+					key: "AutoCoralScoredLevelThree",
+					label: "Avg Amt Of Coral Scored Level Three Auto",
+				},
+				{
+					key: "AutoCoralScoredLevelFour",
+					label: "Avg Amt Of Coral Scored Level Four Auto",
+				},
+				{
+					key: "AutoAlgaeRemovedFromReef",
+					label: "Avg Amt of Algae Removed From Reef",
+				},
+				{
+					key: "AutoAlgaeScoredProcessor",
+					label: "Avg Amt of Algae Scored Processor Auto",
+				},
+				{
+					key: "AutoAlgaeScoredNet",
+					label: "Avg Amt of Algae Scored Net Auto",
+				},
+			],
+			Teleop: [
+				{
+					key: "TeleopCoralScoredLevelOne",
+					label: "Avg Amt Of Coral Scored Level One Teleop",
+				},
+				{
+					key: "TeleopCoralScoredLevelTwo",
+					label: "Avg Amt Of Coral Scored Level Two Teleop",
+				},
+				{
+					key: "TeleopCoralScoredLevelThree",
+					label: "Avg Amt Of Coral Scored Level Three Teleop",
+				},
+				{
+					key: "TeleopCoralScoredLevelFour",
+					label: "Avg Amt Of Coral Scored Level Four Teleop",
+				},
+				{
+					key: "TeleopAlgaeRemovedFromReef",
+					label: "Avg Amt of Algae Removed From Reef",
+				},
+				{
+					key: "TeleopAlgaeScoredProcessor",
+					label: "Avg Amt of Algae Scored Processor Teleop",
+				},
+				{
+					key: "TeleopAlgaeScoredNet",
+					label: "Avg Amt of Algae Scored Net Teleop",
+				},
+			],
+		},
+		getGraphDots: function (
+			quantitativeReports: Report<QuantitativeData>[],
+			pitReport?: Pitreport<PitData> | undefined,
+		): Dot[] {
+			return [];
+		},
+	};
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [
+			{
+				label: "Average Algae Scored In Auto",
+				key: "AlgaeScoredAuto",
+			},
+			{
+				label: "Average Coral Scored In Auto",
+				key: "CoralScoredAuto",
+			},
+		],
+		individualSlideStats: [
+			{
+				label: "Average Auto Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const CoralLvlOne = NumericalTotal(
+						"AutoCoralScoredLevelOne",
+						quantitativeReports,
+					);
+
+					const CoralLvlTwo = NumericalTotal(
+						"AutoCoralScoredLevelTwo",
+						quantitativeReports,
+					);
+
+					const CoralLvlThree = NumericalTotal(
+						"AutoCoralScoredLevelThree",
+						quantitativeReports,
+					);
+
+					const CoralLvlFour = NumericalTotal(
+						"AutoCoralScoredLevelFour",
+						quantitativeReports,
+					);
+
+					const AlgaeNet = NumericalTotal(
+						"AutoAlgaeScoredNet",
+						quantitativeReports,
+					);
+
+					const AlgaeProcessor = NumericalTotal(
+						"AutoAlgaeScoredProcessor",
+						quantitativeReports,
+					);
+
+					return (
+						(CoralLvlOne +
+							CoralLvlTwo +
+							CoralLvlThree +
+							CoralLvlFour +
+							AlgaeNet +
+							AlgaeProcessor) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Average Teleop Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const CoralLvlOne = NumericalTotal(
+						"TeleopCoralScoredLevelOne",
+						quantitativeReports,
+					);
+
+					const CoralLvlTwo = NumericalTotal(
+						"TeleopCoralScoredLevelTwo",
+						quantitativeReports,
+					);
+
+					const CoralLvlThree = NumericalTotal(
+						"TeleopCoralScoredLevelThree",
+						quantitativeReports,
+					);
+
+					const CoralLvlFour = NumericalTotal(
+						"TeleopCoralScoredLevelFour",
+						quantitativeReports,
+					);
+
+					const AlgaeNet = NumericalTotal(
+						"TeleopAlgaeScoredNet",
+						quantitativeReports,
+					);
+
+					const AlgaeProcessor = NumericalTotal(
+						"TeleopAlgaeScoredProcessor",
+						quantitativeReports,
+					);
+
+					return (
+						(CoralLvlOne +
+							CoralLvlTwo +
+							CoralLvlThree +
+							CoralLvlFour +
+							AlgaeNet +
+							AlgaeProcessor) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Avg Endgame Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const climbed = NumericalTotal(
+						"EndgameClimbStatus",
+						quantitativeReports,
+					);
+
+					return Round(climbed) / quantitativeReports.length;
+				},
+			},
+		],
+		robotCapabilities: [
+			{
+				key: "CanDriveUnderShallowCage",
+				label: "Can Drive Under Shallow Cage?",
+			},
+			{ key: "CanRemoveAlgae", label: "Can Remove Algae?" },
+			{
+				key: "CanScoreAlgaeInProcessor",
+				label: "Can Score Algae in Processor?",
+			},
+			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
+			{ key: "Climbing", label: "Climbing?" },
+		],
+		graphStat: {
+			label: "Average Algae Scored In The Net During Teleop",
+			key: "TeleopAlgaeScoredNet",
+		},
+	};
+
+	function getBadges(
+		pitReport: Pitreport<PitData> | undefined,
+		quantitativeReports: Report<QuantitativeData>[] | undefined,
+		card: boolean,
+	) {
+		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+		if (pitReport?.data?.CanRemoveAlgae)
+			badges.push({ text: "Can Remove Algae", color: "primary" });
+		if (pitReport?.data?.CanScoreAlgaeInNet)
+			badges.push({ text: "Can Score Algae Net", color: "secondary" });
+		if (pitReport?.data?.CanScoreAlgaeInProcessor)
+			badges.push({ text: "Can Score Algae Processor", color: "success" });
+		if (pitReport?.data?.CanDriveUnderShallowCage)
+			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
+
+		return badges;
+	}
+
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+		if (!reports) return 0;
+
+		let totalPoints = 0;
+
+		for (const report of reports.map((r) => r.data)) {
+			switch (report.EndgameClimbStatus) {
+				case ReefscapeEnums.EndgameClimbStatus.None:
+					break;
+				case ReefscapeEnums.EndgameClimbStatus.Park:
+					totalPoints += 2;
+					break;
+				case ReefscapeEnums.EndgameClimbStatus.High:
+					totalPoints += 6;
+					break;
+				case ReefscapeEnums.EndgameClimbStatus.Low:
+					totalPoints += 12;
+					break;
+			}
+
+			totalPoints += report.TeleopCoralScoredLevelOne * 2;
+			totalPoints +=
+				(report.AutoCoralScoredLevelOne + report.TeleopCoralScoredLevelTwo) * 3;
+			totalPoints +=
+				(report.AutoCoralScoredLevelTwo +
+					report.TeleopCoralScoredLevelThree +
+					report.AutoAlgaeScoredNet +
+					report.TeleopAlgaeScoredNet) *
+				4;
+			totalPoints += report.TeleopCoralScoredLevelFour * 5;
+			totalPoints +=
+				(report.AutoAlgaeScoredProcessor +
+					report.TeleopAlgaeScoredProcessor +
+					report.AutoCoralScoredLevelThree) *
+				6;
+			totalPoints += report.AutoCoralScoredLevelFour * 7;
+		}
+
+		return totalPoints / Math.max(reports.length, 1);
+	}
+
+	export const game = new Game(
+		"Reefscape",
+		2025,
+		League.FRC,
+		QuantitativeData,
+		PitData,
+		pitReportLayout,
+		quantitativeReportLayout,
+		statsLayout,
+		pitStatsLayout,
+		"Reefscape",
+		"https://info.firstinspires.org/hubfs/Dive/reef-scape.svg",
+		"invert",
 		getBadges,
 		getAvgPoints,
 	);
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
+	[GameId.Reefscape]: Reefscape.game,
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
 	[GameId.Crescendo]: Crescendo.game,
 	[GameId.CenterStage]: CenterStage.game,

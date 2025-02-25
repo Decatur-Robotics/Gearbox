@@ -418,7 +418,7 @@ export default function InsightsAndSettingsCard(props: {
 										? (+(
 												Round(submittedReports / reports.length) * 100
 											)).toFixed(0)
-										: "?"}
+										: "0"}
 									%
 								</div>
 								<div className="stat-desc"></div>
@@ -445,7 +445,7 @@ export default function InsightsAndSettingsCard(props: {
 												? (+(
 														Round(submittedReports / reports.length) * 100
 													)).toFixed(0)
-												: "?"}
+												: "0"}
 											%
 										</div>
 										<div className="stat-desc">
@@ -463,12 +463,9 @@ export default function InsightsAndSettingsCard(props: {
 									<FaUserGroup size={40}></FaUserGroup>
 								</div>
 								<div className="stat-value text-primary">
-									{!submittedPitreports && submittedPitreports !== 0
-										? "?"
-										: submittedPitreports}
-									/
+									{!submittedPitreports ? "0" : submittedPitreports}/
 									{!pitreports || pitreports.length === 0
-										? "?"
+										? "0"
 										: pitreports.length}
 								</div>
 							</div>

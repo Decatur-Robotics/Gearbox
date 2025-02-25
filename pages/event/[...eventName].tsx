@@ -28,19 +28,11 @@ export default function PublicEvent() {
 
 	useEffect(() => {
 		const eventName = window.location.pathname.split("/event/")[1];
-		if (eventData === null) {
-			api.initialEventData(eventName).then((data) => {
-				setEventData(data);
-			});
-			setTimeout(() => {
-				console.log("Event not found");
-				if (stateRef.current === null) {
-					console.log("Event is null");
-					setEventData(undefined);
-				}
-			}, 10000);
-		} else if (teamEvents === null) {
-			const firstRanking = eventData?.firstRanking;
+		api.initialEventData(eventName).then((data) => {
+			console.log(data);
+			setEventData(data);
+
+			const firstRanking = data?.firstRanking;
 
 			firstRanking?.map(({ team_key }) =>
 				api
@@ -55,8 +47,8 @@ export default function PublicEvent() {
 						}),
 					),
 			);
-		}
-	});
+		});
+	}, []);
 
 	// We must always have the same number of React hooks, so we generate refs even if we aren't using them yet
 	const countdownRefs = {
@@ -82,7 +74,7 @@ export default function PublicEvent() {
 		);
 	}
 
-	if (eventData === undefined || eventData.firstRanking === undefined) {
+	if (eventData === undefined) {
 		return (
 			<Container
 				requireAuthentication={false}
@@ -94,20 +86,14 @@ export default function PublicEvent() {
 						size={48}
 						color="red"
 					/>
-					<div className="text-4xl font-bold">
-						Error:{" "}
-						{eventData?.comp.tbaId === NotLinkedToTba
-							? "Comp Not Linked to TBA"
-							: "Event not found"}
-					</div>
+					<div className="text-4xl font-bold">Error: Event not found</div>
 				</div>
 			</Container>
 		);
 	}
 
-	const oprs = eventData!.oprRanking.oprs;
-	//@ts-ignore
-	const first = eventData!.firstRanking;
+	const oprs = eventData.oprRanking?.oprs;
+	const firstRanking = eventData.firstRanking;
 	const statbotics = teamEvents ?? [];
 
 	const findStatboticsStats = (key: string) => {
@@ -350,15 +336,15 @@ export default function PublicEvent() {
 					</div>
 				)}
 
-				{first.length > 0 ? (
+				{firstRanking?.length > 0 ? (
 					<div className="card w-5/6 bg-base-200 shadow-xl mt-6 overflow-x-scroll">
 						<div className="card-body">
 							<h2 className="card-title font-bold text-4xl">Ranking</h2>
-							{statbotics.length < first.length && (
+							{statbotics.length < firstRanking.length && (
 								<progress
 									className="progress progress-primary w-100%"
 									value={statbotics.length}
-									max={first.length}
+									max={firstRanking.length}
 								></progress>
 							)}
 							<div className="w-full h-full flex flex-row">
@@ -383,7 +369,7 @@ export default function PublicEvent() {
 											</tr>
 										</thead>
 										<tbody>
-											{first.map((ranking: any, index: number) => (
+											{firstRanking.map((ranking: any, index: number) => (
 												<tr key={ranking.team_key}>
 													<th>
 														{findStatboticsStats(ranking.team_key)?.record.qual

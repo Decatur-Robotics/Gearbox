@@ -1,44 +1,67 @@
 import { join } from "path";
-import { createServer } from "https";
+import { createServer as createServerHttps } from "https";
 import { parse } from "url";
 import next from "next";
-import fs, { readFileSync } from "fs";
-import { IncomingMessage, ServerResponse, request } from "http";
+import fs, { existsSync, readFileSync } from "fs";
+import {
+	IncomingMessage,
+	ServerResponse,
+	request,
+	createServer as createServerHttp,
+} from "http";
 
 console.log("Starting server...");
 
 const dev = process.env.NODE_ENV !== "production";
-const port = 443;
-const app = next({ dev, port });
-const handle = app.getRequestHandler();
 
 console.log("Constants set");
 
-const httpsOptions = {
-	key: readFileSync("./certs/key.pem"),
-	cert: readFileSync("./certs/cert.pem"),
-};
+const useHttps =
+	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem");
 
-console.log("HTTPS options set");
+const httpsOptions = useHttps
+	? {
+			key: readFileSync("./certs/key.pem"),
+			cert: readFileSync("./certs/cert.pem"),
+		}
+	: {};
+
+const port = useHttps ? 443 : 80;
+console.log(`Using port ${port}`);
+
+const app = next({ dev, port });
+const handle = app.getRequestHandler();
 
 console.log("App preparing...");
 app.prepare().then(() => {
 	console.log("App prepared. Creating server...");
 
-	try {
-		const server = createServer(
-			httpsOptions,
-			async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
-				if (!req.url) return;
+	async function handleRaw(
+		req: IncomingMessage,
+		res: ServerResponse<IncomingMessage>,
+	) {
+		const start = Date.now();
+		console.log(`IN: ${req.method} ${req.url}`);
+		if (!req.url) return;
 
-				const parsedUrl = parse(req.url, true);
-				handle(req, res, parsedUrl);
-			},
+		const parsedUrl = parse(req.url, true);
+		handle(req, res, parsedUrl).then(() =>
+			console.log(
+				`OUT: ${req.method} ${req.url} ${res.statusCode} in ${Date.now() - start}ms`,
+			),
+		);
+	}
+
+	try {
+		const server = (
+			useHttps
+				? createServerHttps(httpsOptions, handleRaw)
+				: createServerHttp(handleRaw)
 		)
 			.listen(port, () => {
 				console.log(
 					process.env.NODE_ENV +
-						" HTTPS Server Running At: https://localhost:" +
+						` Server Running At: ${useHttps ? "https" : "http"}://localhost:` +
 						port,
 				);
 			})

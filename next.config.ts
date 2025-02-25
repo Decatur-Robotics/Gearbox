@@ -1,3 +1,14 @@
+import packageConfig from "./package.json";
+import withSerwistInit from "@serwist/next";
+
+const withSerwist = withSerwistInit({
+	swSrc: "lib/sw.ts",
+	swDest: "public/sw.js",
+	additionalPrecacheEntries: [
+		{ url: "/offline", revision: new Date().toDateString() },
+	],
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: false,
@@ -14,10 +25,11 @@ const nextConfig = {
 	},
 	env: {
 		NEXT_PUBLIC_BUILD_TIME: Date.now().toString(),
+		NEXT_PUBLIC_GEARBOX_VERSION: packageConfig.version,
 	},
 	eslint: {
 		dirs: ["pages", "components", "lib", "tests"],
 	},
 };
 
-module.exports = nextConfig;
+module.exports = withSerwist(nextConfig);

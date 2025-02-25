@@ -175,6 +175,7 @@ export default function Onboarding() {
 			team?.tbaId ?? NotLinkedToTba,
 			teamNumber,
 			league,
+			false,
 		);
 		if (!newTeam) {
 			setErrorMsg("Failed to create team");

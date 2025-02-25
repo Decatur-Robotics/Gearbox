@@ -7,12 +7,14 @@ import {
 	FaGithub,
 	FaInstagram,
 	FaList,
+	FaTrophy,
 } from "react-icons/fa";
 import { TbUfo } from "react-icons/tb";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
 import { HiStatusOnline } from "react-icons/hi";
 import { useEffect, useState } from "react";
+import Leaderboard from "../pages/leaderboard";
 
 export default function Footer() {
 	const [swStatus, setSwStatus] = useState("Finding service worker...");
@@ -24,11 +26,9 @@ export default function Footer() {
 					? `SW Status: ${registration.active?.state}`
 					: "Service worker not found",
 			);
-			console.log("Service worker registration: ", registration);
 			if (registration) {
 				registration.addEventListener("updatefound", () => {
 					setSwStatus("Service worker update found");
-					console.log("Service worker update found");
 					registration.installing?.addEventListener("statechange", () => {
 						console.log(
 							"Service worker state change: ",
@@ -39,14 +39,6 @@ export default function Footer() {
 
 				registration.active?.addEventListener("statechange", () => {
 					setSwStatus(`SW Status: ${registration.active?.state}`);
-					console.log(
-						"Service worker state change: ",
-						registration.active?.state,
-					);
-				});
-
-				registration.update().then(() => {
-					console.log("Service worker update initiated");
 				});
 			}
 		});
@@ -136,11 +128,22 @@ export default function Footer() {
 					/>
 					About Us
 				</Link>
+				<Link
+					className="link link-hover"
+					href="/leaderboard"
+				>
+					<FaTrophy
+						className="inline mr-1"
+						size={16}
+					/>
+					Leaderboard
+				</Link>
 			</nav>
 			<nav className="max-sm:pl-8">
 				<h6 className="footer-title">Debug</h6>
+				<div>Version {process.env.NEXT_PUBLIC_GEARBOX_VERSION}</div>
 				<div>
-					Version{" "}
+					Build Time:{" "}
 					{(() => {
 						const timestamp = new Date(+process.env.NEXT_PUBLIC_BUILD_TIME);
 						return timestamp.toDateString() + " " + timestamp.toTimeString();

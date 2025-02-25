@@ -6,7 +6,7 @@ import {
 	Pitreport,
 	SubjectiveReport,
 	Report,
-	DbPicklist,
+	CompPicklistGroup,
 } from "@/lib/Types";
 import { useState, useEffect, useCallback } from "react";
 import Container from "@/components/Container";
@@ -14,8 +14,8 @@ import { games } from "@/lib/games";
 import CollectionId from "@/lib/client/CollectionId";
 import { getDatabase } from "@/lib/MongoDB";
 import UrlResolver, {
-	SerializeDatabaseObjects,
-	SerializeDatabaseObject,
+	serializeDatabaseObjects,
+	serializeDatabaseObject,
 } from "@/lib/UrlResolver";
 import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
@@ -30,7 +30,7 @@ export default function Stats(props: {
 	pitReports: Pitreport[];
 	subjectiveReports: SubjectiveReport[];
 	competition: Competition;
-	picklists: DbPicklist;
+	picklists: CompPicklistGroup;
 }) {
 	const [update, setUpdate] = useState(Date.now());
 	const [updating, setUpdating] = useState(false);
@@ -85,11 +85,6 @@ export default function Stats(props: {
 	subjectiveReports.forEach((r) =>
 		Object.keys(r.robotComments).forEach((c) => teams.add(+c)),
 	); //+str converts to number
-
-	console.log("Reports", reports);
-	console.log("PitReports", pitReports);
-	console.log("SubjectiveReports", subjectiveReports);
-	console.log("Teams", teams);
 
 	return (
 		<Container
@@ -193,34 +188,38 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		return resolved;
 	}
 
-	const reports = await db.findObjects<Report>(CollectionId.Reports, {
+	const reports = await db.findObjects(CollectionId.Reports, {
 		match: { $in: resolved.competition?.matches },
 		submitted: true,
 	});
 
-	const pitReports = await db.findObjects<Pitreport>(CollectionId.PitReports, {
-		_id: { $in: resolved.competition?.pitReports },
-	});
+	const pitReports = !resolved.competition
+		? []
+		: await db.findObjects(CollectionId.PitReports, {
+				_id: {
+					$in: resolved.competition.pitReports.map((id) => new ObjectId(id)),
+				},
+			});
 
-	const subjectiveReports = await db.findObjects<SubjectiveReport>(
+	const subjectiveReports = await db.findObjects(
 		CollectionId.SubjectiveReports,
 		{
 			match: { $in: resolved.competition?.matches },
 		},
 	);
 
-	const picklists = await db.findObjectById<DbPicklist>(
+	const picklists = await db.findObjectById(
 		CollectionId.Picklists,
 		new ObjectId(resolved.competition?.picklist),
 	);
-	console.log("Found picklists:", resolved.competition?.picklist, picklists);
+	console.log("Picklists", picklists);
 
 	return {
 		props: {
-			reports: SerializeDatabaseObjects(reports),
-			pitReports: SerializeDatabaseObjects(pitReports),
-			subjectiveReports: SerializeDatabaseObjects(subjectiveReports),
-			picklists: SerializeDatabaseObject(picklists),
+			reports: serializeDatabaseObjects(reports),
+			pitReports: serializeDatabaseObjects(pitReports),
+			subjectiveReports: serializeDatabaseObjects(subjectiveReports),
+			picklists: serializeDatabaseObject(picklists),
 			competition: resolved.competition,
 		},
 	};

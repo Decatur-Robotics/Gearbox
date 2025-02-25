@@ -10,7 +10,7 @@ import {
 	User,
 	Team,
 	Competition,
-	DbPicklist,
+	CompPicklistGroup,
 	Season,
 } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
@@ -387,7 +387,11 @@ export default function CompetitionIndex({
 		setMatchBeingEdited(match._id);
 	}
 
-	useInterval(() => loadMatches(true), 5000);
+	const loadMatchesInterval = useCallback(
+		() => loadMatches(true),
+		[loadMatches],
+	);
+	useInterval(loadMatchesInterval, 5000);
 
 	function remindUserOnSlack(userId: string) {
 		if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))

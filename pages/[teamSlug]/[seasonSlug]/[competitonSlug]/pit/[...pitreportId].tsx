@@ -19,7 +19,7 @@ import { GameId } from "@/lib/client/GameId";
 import CollectionId from "@/lib/client/CollectionId";
 import { games } from "@/lib/games";
 import { getDatabase } from "@/lib/MongoDB";
-import UrlResolver, { SerializeDatabaseObject } from "@/lib/UrlResolver";
+import UrlResolver, { serializeDatabaseObject } from "@/lib/UrlResolver";
 import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import Flex from "@/components/Flex";
@@ -27,6 +27,7 @@ import Checkbox from "@/components/forms/Checkboxes";
 import FieldPositionSelector from "@/components/forms/FieldPositionSelector";
 import ImageUpload from "@/components/forms/ImageUpload";
 import Card from "@/components/Card";
+import Container from "@/components/Container";
 
 const api = new ClientApi();
 
@@ -270,48 +271,50 @@ export default function PitReportForm(props: {
 	});
 
 	return (
-		<Flex
-			mode="col"
-			className="items-center w-screen h-full space-y-4"
+		<Container
+			requireAuthentication={true}
+			title={`${props.pitReport.teamNumber} | Pit Scouting`}
 		>
-			<Card
-				className="w-1/4"
-				coloredTop="bg-accent"
+			<Flex
+				mode="col"
+				className="items-center w-screen h-full space-y-4"
 			>
-				<Flex
-					center={true}
-					mode="col"
+				<Card
+					className="w-1/4"
+					coloredTop="bg-accent"
 				>
-					<h1 className="text-4xl font-semibold">Pitscouting</h1>
-					<div className="divider"></div>
-					<h1 className="font-semibold text-2xl">
-						<FaRobot
-							className="inline mr-2"
-							size={30}
-						></FaRobot>
-						Team <span className="text-accent">{pitreport.teamNumber}</span>
-					</h1>
-				</Flex>
-			</Card>
-			<Card>
-				{components}
-				<button
-					className="btn btn-primary "
-					onClick={submit}
-				>
-					Submit
-				</button>
-			</Card>
-		</Flex>
+					<Flex
+						center={true}
+						mode="col"
+					>
+						<h1 className="text-4xl font-semibold">Pitscouting</h1>
+						<div className="divider"></div>
+						<h1 className="font-semibold text-2xl">
+							<FaRobot
+								className="inline mr-2"
+								size={30}
+							></FaRobot>
+							Team <span className="text-accent">{pitreport.teamNumber}</span>
+						</h1>
+					</Flex>
+				</Card>
+				<Card>
+					{components}
+					<button
+						className="btn btn-primary "
+						onClick={submit}
+					>
+						Submit
+					</button>
+				</Card>
+			</Flex>
+		</Container>
 	);
 }
 
 async function getPitreport(id: string) {
 	const db = await getDatabase();
-	return await db.findObjectById<Pitreport>(
-		CollectionId.PitReports,
-		new ObjectId(id),
-	);
+	return await db.findObjectById(CollectionId.PitReports, new ObjectId(id));
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -327,7 +330,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	return {
 		props: {
-			pitReport: SerializeDatabaseObject(pitreport),
+			pitReport: makeObjSerializeable(serializeDatabaseObject(pitreport)),
 			layout: makeObjSerializeable(game.pitReportLayout),
 			teamNumber: resolved.team?.number,
 			compName: resolved.competition?.name,

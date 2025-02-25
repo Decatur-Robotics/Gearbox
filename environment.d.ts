@@ -23,7 +23,6 @@ declare global {
 			TOA_KEY: string;
 			TOA_APP_ID: string;
 
-			API_URL: string;
 			API_KEY: string;
 
 			DEFAULT_IMAGE: string;
@@ -46,6 +45,7 @@ declare global {
 			NEXT_PUBLIC_FORCE_OFFLINE_MODE: string;
 
 			NEXT_PUBLIC_BUILD_TIME: string;
+			NEXT_PUBLIC_GEARBOX_VERSION: string;
 
 			DEVELOPER_EMAILS: string;
 
