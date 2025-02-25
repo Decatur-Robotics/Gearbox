@@ -127,7 +127,12 @@ export default function MatchScheduleCard(props: {
 					<div className="w-full flex flex-col items-center space-y-2">
 						{noMatches || matches.length === 0 ? (
 							<div className="flex flex-col items-center justify-center font-bold space-y-4">
-								<h1>No Match Schedule Available</h1>
+								{loadingMatches ? 
+									(<h1>No Match Schedule Available</h1>)
+								 : 
+									(<><Loading size={72} /></>)
+
+								}
 								<button
 									onClick={reloadCompetition}
 									className="btn btn-lg btn-primary"
