@@ -83,9 +83,7 @@ export const AuthenticationOptions: AuthOptions = {
 	],
 	callbacks: {
 		async session({ session, user }) {
-			session.user = await (
-				await cachedDb
-			).findObjectById(CollectionId.Users, new ObjectId(user.id));
+			session.user = user;
 
 			return session;
 		},
