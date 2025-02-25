@@ -16,7 +16,10 @@ import { wait } from "./client/ClientUtils";
 import MongoAuthAdapter from "./DbInterfaceAuthAdapter";
 
 const cachedDb = getDatabase();
-const adapter = MongoAuthAdapter(cachedDb);
+// const adapter = MongoAuthAdapter(cachedDb);
+const adapter = MongoDBAdapter(clientPromise, {
+	databaseName: process.env.DB,
+});
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
