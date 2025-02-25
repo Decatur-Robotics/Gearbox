@@ -130,7 +130,8 @@ export default function MatchScheduleCard(props: {
 								{loadingMatches ? 
 									(<h1>No Match Schedule Available</h1>)
 								 : 
-									(<><Loading size={72} /></>)
+									(<><Loading size={72} />
+									<h1>Matches Loading</h1></>)
 
 								}
 								<button
