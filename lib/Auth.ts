@@ -13,10 +13,10 @@ import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 import { wait } from "./client/ClientUtils";
-
-const adapter = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
+import MongoAuthAdapter from "./DbInterfaceAuthAdapter";
 
 const cachedDb = getDatabase();
+const adapter = MongoAuthAdapter(cachedDb);
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,

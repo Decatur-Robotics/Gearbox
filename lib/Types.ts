@@ -30,6 +30,9 @@ export interface Account extends NextAuthAccount {
 
 export interface Session extends NextAuthSession {
 	_id: string;
+	sessionToken: string;
+	userId: ObjectId;
+	expires: string;
 }
 
 export class User implements NextAuthUser {
