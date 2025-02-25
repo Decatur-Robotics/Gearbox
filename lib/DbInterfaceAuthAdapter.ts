@@ -21,6 +21,8 @@ export default function DbInterfaceAuthAdapter(
 
 			const adapterUser = format.to<AdapterUser>(data);
 
+			console.log("Creating user:", adapterUser.name);
+
 			const user = new User(
 				adapterUser.name ?? "Unknown",
 				adapterUser.email,
@@ -48,6 +50,8 @@ export default function DbInterfaceAuthAdapter(
 
 			if (id.length !== 24) return null;
 
+			console.log("Getting user:", id);
+
 			const user = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(id),
@@ -59,6 +63,8 @@ export default function DbInterfaceAuthAdapter(
 		getUserByEmail: async (email: string) => {
 			const db = await dbPromise;
 
+			console.log("Getting user by email:", email);
+
 			const account = await db.findObject(CollectionId.Users, { email });
 
 			if (!account) return null;
@@ -68,6 +74,11 @@ export default function DbInterfaceAuthAdapter(
 			providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
 		) => {
 			const db = await dbPromise;
+
+			console.log(
+				"Getting user by account:",
+				providerAccountId.providerAccountId,
+			);
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: providerAccountId.providerAccountId,
@@ -89,6 +100,8 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const { _id, ...user } = format.to<AdapterUser>(data);
 
+			console.log("Updating user:", _id);
+
 			const existing = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(_id),
@@ -104,6 +117,8 @@ export default function DbInterfaceAuthAdapter(
 		},
 		deleteUser: async (id: string) => {
 			const db = await dbPromise;
+
+			console.log("Deleting user:", id);
 
 			const user = await db.findObjectById(
 				CollectionId.Users,
@@ -143,6 +158,13 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const account = format.to<AdapterAccount>(data);
 
+			console.log(
+				"Linking account:",
+				account.providerAccountId,
+				"User:",
+				account.userId,
+			);
+
 			await db.addObject(CollectionId.Accounts, account);
 
 			return account;
@@ -151,6 +173,8 @@ export default function DbInterfaceAuthAdapter(
 			providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
 		) => {
 			const db = await dbPromise;
+
+			console.log("Unlinking account:", providerAccountId.providerAccountId);
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: providerAccountId.providerAccountId,
@@ -167,6 +191,8 @@ export default function DbInterfaceAuthAdapter(
 		},
 		getSessionAndUser: async (sessionToken: string) => {
 			const db = await dbPromise;
+
+			console.log("Getting session and user:", sessionToken);
 
 			const session = await db.findObject(CollectionId.Sessions, {
 				sessionToken,
@@ -189,6 +215,9 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 
 			const session = format.to<AdapterSession>(data);
+
+			console.log("Creating session:", session.sessionToken);
+
 			session.userId = new ObjectId(session.userId) as any;
 
 			await db.addObject(CollectionId.Sessions, session as unknown as Session);
@@ -200,6 +229,8 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 			const { _id, ...session } = format.to<AdapterSession>(data);
+
+			console.log("Updating session:", session.sessionToken);
 
 			const existing = await db.findObject(CollectionId.Sessions, {
 				sessionToken: session.sessionToken,
@@ -222,6 +253,8 @@ export default function DbInterfaceAuthAdapter(
 		deleteSession: async (sessionToken: string) => {
 			const db = await dbPromise;
 
+			console.log("Deleting session:", sessionToken);
+
 			const session = await db.findObject(CollectionId.Sessions, {
 				sessionToken,
 			});
@@ -237,6 +270,9 @@ export default function DbInterfaceAuthAdapter(
 		},
 		createVerificationToken: async (token: VerificationToken) => {
 			const db = await dbPromise;
+
+			console.log("Creating verification token:", token.identifier);
+
 			await db.addObject(
 				CollectionId.VerificationTokens,
 				format.to(token) as VerificationToken,
@@ -248,6 +284,8 @@ export default function DbInterfaceAuthAdapter(
 			token: string;
 		}) => {
 			const db = await dbPromise;
+
+			console.log("Using verification token:", token.identifier);
 
 			const existing = await db.findObject(CollectionId.VerificationTokens, {
 				token: token.token,
