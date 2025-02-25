@@ -1,4 +1,3 @@
-import { VerificationToken } from "next-auth/adapters";
 import {
 	Season,
 	Competition,
@@ -13,7 +12,6 @@ import {
 	CompPicklistGroup,
 	WebhookHolder,
 } from "../Types";
-import { ObjectId } from "bson";
 
 enum CollectionId {
 	Seasons = "Seasons",
@@ -24,7 +22,6 @@ enum CollectionId {
 	Users = "users",
 	Accounts = "accounts",
 	Sessions = "sessions",
-	VerificationTokens = "verification_tokens",
 	Forms = "Forms",
 	PitReports = "Pitreports",
 	Picklists = "Picklists",
@@ -54,16 +51,14 @@ export type CollectionIdToType<Id extends CollectionId> =
 								? Account
 								: Id extends CollectionId.Sessions
 									? Session
-									: Id extends CollectionId.VerificationTokens
-										? VerificationToken & { _id: ObjectId }
-										: Id extends CollectionId.PitReports
-											? Pitreport
-											: Id extends CollectionId.Picklists
-												? CompPicklistGroup
-												: Id extends CollectionId.SubjectiveReports
-													? SubjectiveReport
-													: Id extends CollectionId.Webhooks
-														? WebhookHolder
-														: Id extends CollectionId.Misc
-															? any
-															: any;
+									: Id extends CollectionId.PitReports
+										? Pitreport
+										: Id extends CollectionId.Picklists
+											? CompPicklistGroup
+											: Id extends CollectionId.SubjectiveReports
+												? SubjectiveReport
+												: Id extends CollectionId.Webhooks
+													? WebhookHolder
+													: Id extends CollectionId.Misc
+														? any
+														: any;
