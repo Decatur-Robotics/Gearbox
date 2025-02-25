@@ -15,9 +15,7 @@ import { ObjectId } from "bson";
 export default function DbInterfaceAuthAdapter(
 	dbPromise: Promise<DbInterface>,
 ): Adapter {
-	const base = MongoDBAdapter(clientPromise, { databaseName: process.env.DB });
-
-	const overrides: Adapter = {
+	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
 			const db = await dbPromise;
 
@@ -266,8 +264,5 @@ export default function DbInterfaceAuthAdapter(
 		},
 	};
 
-	return {
-		...base,
-		...overrides,
-	};
+	return adapter;
 }
