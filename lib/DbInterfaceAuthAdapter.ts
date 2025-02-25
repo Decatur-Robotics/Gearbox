@@ -213,7 +213,7 @@ export default function DbInterfaceAuthAdapter(
 				session.userId = new ObjectId(session.userId) as any;
 			}
 
-			const result = await db.updateObjectById(
+			await db.updateObjectById(
 				CollectionId.Sessions,
 				new ObjectId(existing._id),
 				session as unknown as Partial<Session>,
