@@ -27,6 +27,7 @@ export const AuthenticationOptions: AuthOptions = {
 		Google({
 			clientId: process.env.GOOGLE_ID,
 			clientSecret: process.env.GOOGLE_SECRET,
+			allowDangerousEmailAccountLinking: true,
 			profile: async (profile) => {
 				const user = new User(
 					profile.name,
@@ -55,6 +56,7 @@ export const AuthenticationOptions: AuthOptions = {
 		SlackProvider({
 			clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
 			clientSecret: process.env.SLACK_CLIENT_SECRET as string,
+			allowDangerousEmailAccountLinking: true,
 			profile: async (profile) => {
 				const user = new User(
 					profile.name,
@@ -86,7 +88,9 @@ export const AuthenticationOptions: AuthOptions = {
 	],
 	callbacks: {
 		async session({ session, user }) {
-			session.user = user;
+			session.user = await (
+				await cachedDb
+			).findObjectById(CollectionId.Users, new ObjectId(user.id));
 
 			return session;
 		},
