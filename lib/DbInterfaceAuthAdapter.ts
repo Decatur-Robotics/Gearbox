@@ -260,17 +260,19 @@ export default function DbInterfaceAuthAdapter(
 			};
 		},
 		createSession: async (data: Record<string, unknown>) => {
+			logger.debug("Creating session:", data);
+
 			const db = await dbPromise;
-
 			const session = format.to<AdapterSession>(data);
-
-			logger.debug("Creating session:", session);
 
 			session.userId = new ObjectId(session.userId) as any;
 
-			await db.addObject(CollectionId.Sessions, session as unknown as Session);
+			const dbSession = await db.addObject(
+				CollectionId.Sessions,
+				session as unknown as Session,
+			);
 
-			return format.from<AdapterSession>(session);
+			return format.from<AdapterSession>(dbSession);
 		},
 		updateSession: async (
 			data: Partial<AdapterSession> & Pick<AdapterSession, "sessionToken">,
