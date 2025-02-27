@@ -49,11 +49,6 @@ export default function CompetitionIndex({
 			team?.owners.includes(session?.user?._id)) ??
 		false;
 
-	const [showSettings, setShowSettings] = useState(false);
-	const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
-	const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
-	const [redAlliance, setRedAlliance] = useState<number[]>([]);
-
 	const [matches, setMatches] = useState<Match[]>([]);
 
 	const [showSubmittedMatches, setShowSubmittedMatches] = useState(false);
@@ -104,11 +99,6 @@ export default function CompetitionIndex({
 	const [matchBeingEdited, setMatchBeingEdited] = useState<
 		string | undefined
 	>();
-
-	const [teamToAdd, setTeamToAdd] = useState<number>(0);
-
-	const [newCompName, setNewCompName] = useState(comp?.name);
-	const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
 
 	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
@@ -348,23 +338,6 @@ export default function CompetitionIndex({
 		}
 	};
 
-	const createMatch = async () => {
-		try {
-			await api.createMatch(
-				comp?._id!,
-				Number(matchNumber),
-				0,
-				MatchType.Qualifying,
-				blueAlliance as number[],
-				redAlliance as number[],
-			);
-		} catch (e) {
-			console.error(e);
-		}
-
-		location.reload();
-	};
-
 	// useEffect(() => {
 	//   if (
 	//     qualificationMatches.length > 0 &&
@@ -395,29 +368,6 @@ export default function CompetitionIndex({
 		loadMatches(matches !== undefined);
 	}
 
-	const [exportPending, setExportPending] = useState(false);
-
-	const exportAsCsv = async () => {
-		setExportPending(true);
-
-		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
-			console.error(e);
-			return { csv: undefined };
-		});
-
-		if (!res) {
-			console.error("failed to export");
-		}
-
-		if (res.csv) {
-			download(`${comp?.name ?? "Competition"}.csv`, res.csv, "text/csv");
-		} else {
-			console.error("No CSV data returned from server");
-		}
-
-		setExportPending(false);
-	};
-
 	useEffect(() => {
 		if (ranking || !comp?.tbaId || !team?.number) return;
 
@@ -442,49 +392,9 @@ export default function CompetitionIndex({
 	);
 	useInterval(loadMatchesInterval, 5000);
 
-	function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
-		if (!comp?._id) return;
-		api.setCompPublicData(comp?._id, e.target.checked);
-	}
-
 	function remindUserOnSlack(userId: string) {
 		if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))
 			api.remindSlack(team._id.toString(), userId);
-	}
-
-	function addTeam() {
-		console.log("Adding pit report for team", teamToAdd);
-		if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
-
-		api
-			.createPitReportForTeam(teamToAdd, comp?._id)
-			// We can't just pass location.reload, it will throw "illegal invocation." I don't know why. -Renato
-			.finally(() => location.reload());
-	}
-
-	async function saveCompChanges() {
-		// Check if tbaId is valid
-		if (!comp?.tbaId || !comp?.name || !comp?._id) return;
-
-		let tbaId = newCompTbaId;
-		const autoFillData = await api.competitionAutofill(tbaId ?? "");
-		if (
-			!autoFillData?.name &&
-			!confirm(`Invalid TBA ID: ${tbaId}. Save changes anyway?`)
-		)
-			return;
-
-		await api.updateCompNameAndTbaId(
-			comp?._id,
-			newCompName ?? "Unnamed",
-			tbaId ?? NotLinkedToTba,
-		);
-		location.reload();
-	}
-
-	const allianceIndices: number[] = [];
-	for (let i = 0; i < games[comp?.gameId ?? defaultGameId].allianceSize; i++) {
-		allianceIndices.push(i);
 	}
 
 	return (
@@ -496,38 +406,17 @@ export default function CompetitionIndex({
 				<div className="w-full sm:w-2/5 flex flex-col items-center flex-grow justify-center space-y-4 h-full">
 					<CompHeaderCard comp={comp} />
 					<InsightsAndSettingsCard
-						showSettings={showSettings}
-						setShowSettings={setShowSettings}
 						isManager={isManager}
 						comp={comp}
-						newCompName={newCompName}
-						setNewCompName={setNewCompName}
-						newCompTbaId={newCompTbaId}
-						setNewCompTbaId={setNewCompTbaId}
-						saveCompChanges={saveCompChanges}
-						togglePublicData={togglePublicData}
-						exportAsCsv={exportAsCsv}
-						exportPending={exportPending}
 						regeneratePitReports={regeneratePitReports}
 						reloadCompetition={reloadCompetition}
 						toggleShowSubmittedMatches={toggleShowSubmittedMatches}
 						showSubmittedMatches={showSubmittedMatches}
 						pitreports={pitreports}
 						submittedPitreports={submittedPitreports}
-						addTeam={addTeam}
-						teamToAdd={teamToAdd}
-						setTeamToAdd={setTeamToAdd}
 						seasonSlug={season?.slug}
 						assignScouters={assignScouters}
 						assigningMatches={assigningMatches}
-						redAlliance={redAlliance}
-						setRedAlliance={setRedAlliance}
-						blueAlliance={blueAlliance}
-						setBlueAlliance={setBlueAlliance}
-						matchNumber={matchNumber}
-						setMatchNumber={setMatchNumber}
-						createMatch={createMatch}
-						allianceIndices={allianceIndices}
 						submittedReports={submittedReports}
 						team={team}
 						reports={reports}
