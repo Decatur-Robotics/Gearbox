@@ -230,7 +230,7 @@ export default function DbInterfaceAuthAdapter(
 
 			const session = format.to<AdapterSession>(data);
 
-			console.log("[AUTH] Creating session:", session.sessionToken);
+			console.log("[AUTH] Creating session:", session);
 
 			session.userId = new ObjectId(session.userId) as any;
 
