@@ -5,7 +5,7 @@ import { _id } from "@next-auth/mongodb-adapter";
 import { ObjectId } from "bson";
 import { get } from "http";
 
-const prototype = DbInterfaceAuthAdapter(undefined as any, false);
+const prototype = DbInterfaceAuthAdapter(undefined as any);
 
 async function getDatabase() {}
 

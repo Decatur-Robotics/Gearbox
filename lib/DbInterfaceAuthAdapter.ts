@@ -13,12 +13,16 @@ import { GenerateSlug } from "./Utils";
 import { ObjectId } from "bson";
 import Logger from "./client/Logger";
 
+/**
+ * @tested_by tests/lib/DbInterfaceAuthAdapter.test.ts
+ */
 export default function DbInterfaceAuthAdapter(
 	dbPromise: Promise<DbInterface>,
 	baseLogger?: Logger,
 ): Adapter {
 	const logger =
-		(baseLogger && baseLogger.extend(["ADAPTER"])) ?? new Logger(["AUTH"], false);
+		(baseLogger && baseLogger.extend(["ADAPTER"])) ??
+		new Logger(["AUTH"], false);
 
 	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
@@ -110,7 +114,10 @@ export default function DbInterfaceAuthAdapter(
 				account.userId as any as ObjectId,
 			);
 
-			if (!user) return null;
+			if (!user) {
+				logger.warn("User not found:", account.userId);
+				return null;
+			}
 			return format.from<AdapterUser>(user);
 		},
 		updateUser: async (
@@ -143,7 +150,10 @@ export default function DbInterfaceAuthAdapter(
 				CollectionId.Users,
 				new ObjectId(id),
 			);
-			if (!user) return null;
+			if (!user) {
+				logger.warn("User not found:", id);
+				return null;
+			}
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				userId: user._id,
