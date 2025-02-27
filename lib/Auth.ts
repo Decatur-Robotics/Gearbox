@@ -13,10 +13,10 @@ import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 import { wait } from "./client/ClientUtils";
-import MongoAuthAdapter from "./DbInterfaceAuthAdapter";
+import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
 
 const cachedDb = getDatabase();
-// const adapter = MongoAuthAdapter(cachedDb);
+// const adapter = DbInterfaceAuthAdapter(cachedDb);
 const adapter = MongoDBAdapter(clientPromise, {
 	databaseName: process.env.DB,
 });
@@ -103,6 +103,7 @@ export const AuthenticationOptions: AuthOptions = {
 		 * For email sign in, runs when the "Sign In" button is clicked (before email is sent).
 		 */
 		async signIn({ user }) {
+			const startTime = Date.now();
 			console.log(
 				`User is signing in: ${user.name}, ${user.email}, ${user.id}`,
 			);
@@ -155,11 +156,16 @@ export const AuthenticationOptions: AuthOptions = {
 
 			new ResendUtils().createContact(typedUser as User);
 
+			const endTime = Date.now();
+			const elapsedTime = endTime - startTime;
+
 			console.log(
 				"User is signed in:",
 				typedUser.name,
 				typedUser.email,
 				typedUser._id?.toString(),
+				"Elapsed time:",
+				elapsedTime + "ms",
 			);
 			return true;
 		},
