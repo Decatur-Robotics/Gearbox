@@ -92,12 +92,17 @@ export function mentionUserInSlack(user: {
 	return user.slackId ? `<@${user.slackId}>` : (user.name ?? "");
 }
 
-export function populateMissingUserFields(user: Partial<User>): User {
+export async function populateMissingUserFields(
+	user: Partial<User>,
+	generateSlug: (name: string) => Promise<string>,
+): Promise<User> {
+	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
+
 	const filled: Omit<User, "_id"> = {
-		id: user.id ?? "",
-		name: user.name ?? "",
+		id: user.id ?? user._id?.toString() ?? new ObjectId().toString(),
+		name,
 		image: user.image ?? "https://4026.org/user.jpg",
-		slug: user.slug ?? "",
+		slug: user.slug ?? (await generateSlug(name ?? "Unknown User")),
 		email: user.email ?? "",
 		teams: user.teams ?? [],
 		owner: user.owner ?? [],
@@ -148,7 +153,9 @@ export async function repairUser(
 	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
 
 	// User is incomplete, fill in the missing fields
-	user = populateMissingUserFields(user);
+	user = await populateMissingUserFields(user, async (name) =>
+		GenerateSlug(db, CollectionId.Users, name),
+	);
 
 	if (updateDocument) {
 		await db.updateObjectById(
