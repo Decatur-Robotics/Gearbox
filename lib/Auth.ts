@@ -110,32 +110,32 @@ export const AuthenticationOptions: AuthOptions = {
 			const db = await getDatabase(false);
 
 			let typedUser = user as Partial<User>;
-			if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
-				const repairUserOnceItIsInDb = async () => {
-					console.log(
-						"User is incomplete, waiting for it to be in the database.",
-					);
-					let foundUser: User | undefined = undefined;
-					while (!foundUser) {
-						foundUser = await db.findObject(CollectionId.Users, {
-							email: typedUser.email,
-						});
+			// if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
+			// 	const repairUserOnceItIsInDb = async () => {
+			// 		console.log(
+			// 			"User is incomplete, waiting for it to be in the database.",
+			// 		);
+			// 		let foundUser: User | undefined = undefined;
+			// 		while (!foundUser) {
+			// 			foundUser = await db.findObject(CollectionId.Users, {
+			// 				email: typedUser.email,
+			// 			});
 
-						if (!foundUser) await wait(50);
-					}
+			// 			if (!foundUser) await wait(50);
+			// 		}
 
-					console.log("User is incomplete, filling in missing fields.");
+			// 		console.log("User is incomplete, filling in missing fields.");
 
-					typedUser._id = foundUser._id;
-					typedUser.lastSignInDateTime = new Date();
+			// 		typedUser._id = foundUser._id;
+			// 		typedUser.lastSignInDateTime = new Date();
 
-					typedUser = await repairUser(db, typedUser);
+			// 		typedUser = await repairUser(db, typedUser);
 
-					console.log("User updated:", typedUser._id?.toString());
-				};
+			// 		console.log("User updated:", typedUser._id?.toString());
+			// 	};
 
-				repairUserOnceItIsInDb();
-			}
+			// 	repairUserOnceItIsInDb();
+			// }
 
 			const today = new Date();
 			if (
