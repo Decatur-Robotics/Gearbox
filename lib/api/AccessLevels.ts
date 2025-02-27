@@ -294,6 +294,11 @@ namespace AccessLevels {
 		pitReportId: string,
 	) {
 		const user = await userPromise;
+		console.log(
+			"[AccessLevels] IfOnTeamThatOwnsPitReport",
+			pitReportId,
+			user?._id?.toString(),
+		);
 		if (!user) {
 			return { authorized: false, authData: undefined };
 		}
@@ -301,20 +306,29 @@ namespace AccessLevels {
 		const pitReport = await (
 			await db
 		).findObjectById(CollectionId.PitReports, new ObjectId(pitReportId));
+		console.log("[AccessLevels] pitReport", pitReport);
 		if (!pitReport) {
 			return { authorized: false, authData: undefined };
 		}
 
 		const comp = await getCompFromPitReport(await db, pitReport);
+		console.log("[AccessLevels] comp", comp);
 		if (!comp) {
 			return { authorized: false, authData: undefined };
 		}
 
 		const team = await getTeamFromComp(await db, comp);
+		console.log("[AccessLevels] team", team);
 		if (!team) {
 			return { authorized: false, authData: undefined };
 		}
 
+		console.log(
+			"[AccessLevels] team.users",
+			team.users,
+			user._id?.toString(),
+			team?.users.includes(user._id?.toString()!),
+		);
 		return {
 			authorized: team?.users.includes(user._id?.toString()!),
 			authData: { team, comp, pitReport },
