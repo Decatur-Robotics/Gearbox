@@ -258,7 +258,10 @@ export default function DbInterfaceAuthAdapter(
 
 			return {
 				session: format.from<AdapterSession>(session),
-				user: format.from<AdapterUser>(user),
+				user: {
+					...format.from<AdapterUser>(user),
+					_id: user._id,
+				},
 			};
 		},
 		createSession: async (data: Record<string, unknown>) => {
