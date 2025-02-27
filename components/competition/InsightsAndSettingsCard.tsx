@@ -10,7 +10,6 @@ import { FaSync, FaBinoculars, FaUserCheck, FaDatabase } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import ClientApi from "@/lib/api/ClientApi";
 
-
 const api = new ClientApi();
 
 export default function InsightsAndSettingsCard(props: {
@@ -30,7 +29,7 @@ export default function InsightsAndSettingsCard(props: {
 	seasonSlug: string | undefined;
 	team: Team | undefined;
 }) {
-  const [showSettings, setShowSettings] = useState(false);
+	const [showSettings, setShowSettings] = useState(false);
 	const {
 		isManager,
 		comp,
@@ -47,15 +46,15 @@ export default function InsightsAndSettingsCard(props: {
 		seasonSlug,
 		team,
 	} = props;
-  const [newCompName, setNewCompName] = useState(comp?.name);
-  const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
-  const [exportPending, setExportPending] = useState(false);
-  const [teamToAdd, setTeamToAdd] = useState<number>(0);
-  const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
-  const [redAlliance, setRedAlliance] = useState<number[]>([]);
-  const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined,);
+	const [newCompName, setNewCompName] = useState(comp?.name);
+	const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
+	const [exportPending, setExportPending] = useState(false);
+	const [teamToAdd, setTeamToAdd] = useState<number>(0);
+	const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
+	const [redAlliance, setRedAlliance] = useState<number[]>([]);
+	const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
 
-  const exportAsCsv = async () => {
+	const exportAsCsv = async () => {
 		setExportPending(true);
 
 		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
@@ -76,7 +75,7 @@ export default function InsightsAndSettingsCard(props: {
 		setExportPending(false);
 	};
 
-  const createMatch = async () => {
+	const createMatch = async () => {
 		try {
 			await api.createMatch(
 				comp?._id!,
@@ -93,14 +92,10 @@ export default function InsightsAndSettingsCard(props: {
 		location.reload();
 	};
 
-  	const allianceIndices: number[] = [];
-		for (
-			let i = 0;
-			i < games[comp?.gameId ?? defaultGameId].allianceSize;
-			i++
-		) {
-			allianceIndices.push(i);
-		}
+	const allianceIndices: number[] = [];
+	for (let i = 0; i < games[comp?.gameId ?? defaultGameId].allianceSize; i++) {
+		allianceIndices.push(i);
+	}
 
 	async function saveCompChanges() {
 		// Check if tbaId is valid
@@ -122,12 +117,12 @@ export default function InsightsAndSettingsCard(props: {
 		location.reload();
 	}
 
-  function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
+	function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
 		if (!comp?._id) return;
 		api.setCompPublicData(comp?._id, e.target.checked);
 	}
 
-  function addTeam() {
+	function addTeam() {
 		console.log("Adding pit report for team", teamToAdd);
 		if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
 

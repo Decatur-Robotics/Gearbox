@@ -1,6 +1,5 @@
 import { ChangeEvent, useEffect, useState, useCallback } from "react";
 
-
 import ClientApi from "@/lib/api/ClientApi";
 import {
 	Match,
@@ -49,7 +48,6 @@ export default function CompetitionIndex({
 		(session?.user?._id !== undefined &&
 			team?.owners.includes(session?.user?._id)) ??
 		false;
-
 
 	const [matches, setMatches] = useState<Match[]>([]);
 
@@ -398,7 +396,6 @@ export default function CompetitionIndex({
 		if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))
 			api.remindSlack(team._id.toString(), userId);
 	}
-
 
 	return (
 		<Container
