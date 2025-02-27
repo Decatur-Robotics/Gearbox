@@ -97,7 +97,6 @@ export const AuthenticationOptions: AuthOptions = {
 	],
 	callbacks: {
 		async session({ session, user }) {
-			console.log("Session callback:", session, user);
 			session.user = user;
 
 			return session;
