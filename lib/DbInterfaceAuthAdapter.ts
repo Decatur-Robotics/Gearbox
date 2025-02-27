@@ -176,6 +176,18 @@ export default function DbInterfaceAuthAdapter(
 				account.userId,
 			);
 
+			const existing = await db.findObject(CollectionId.Accounts, {
+				providerAccountId: account.providerAccountId,
+			});
+
+			if (existing) {
+				console.log(
+					"[AUTH] Account already exists:",
+					existing.providerAccountId,
+				);
+				return format.from<AdapterAccount>(existing);
+			}
+
 			await db.addObject(CollectionId.Accounts, account);
 
 			return account;
