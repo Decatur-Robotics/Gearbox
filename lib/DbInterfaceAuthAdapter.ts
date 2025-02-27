@@ -133,6 +133,8 @@ export default function DbInterfaceAuthAdapter(
 				new ObjectId(_id),
 			);
 
+			user.id = existing?._id?.toString()!;
+
 			await db.updateObjectById(
 				CollectionId.Users,
 				new ObjectId(_id),
