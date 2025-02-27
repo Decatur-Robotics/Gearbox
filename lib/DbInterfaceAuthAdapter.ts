@@ -23,6 +23,17 @@ export default function DbInterfaceAuthAdapter(
 
 			console.log("[AUTH] Creating user:", adapterUser.name);
 
+			// Check if user already exists
+			const existingUser = await db.findObject(CollectionId.Users, {
+				email: adapterUser.email,
+			});
+
+			if (existingUser) {
+				// If user exists, return existing user
+				console.log("[AUTH] User already exists:", existingUser.name);
+				return format.from<AdapterUser>(existingUser);
+			}
+
 			const user = new User(
 				adapterUser.name ?? "Unknown",
 				adapterUser.email,
