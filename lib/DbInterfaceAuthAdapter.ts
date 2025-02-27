@@ -43,6 +43,8 @@ export default function DbInterfaceAuthAdapter(
 				return format.from<AdapterUser>(existingUser);
 			}
 
+			logger.debug("Creating user:", adapterUser);
+
 			const user = new User(
 				adapterUser.name ?? "Unknown",
 				adapterUser.email,
@@ -55,15 +57,16 @@ export default function DbInterfaceAuthAdapter(
 				),
 				[],
 				[],
-				undefined,
+				adapterUser.id,
 				0,
 				1,
 			);
 
 			user._id = new ObjectId(adapterUser._id) as any;
 
-			await db.addObject(CollectionId.Users, user);
-			return format.from<AdapterUser>(adapterUser);
+			const dbUser = await db.addObject(CollectionId.Users, user);
+			logger.info("Created user:", dbUser._id?.toString());
+			return format.from<AdapterUser>(dbUser);
 		},
 		getUser: async (id: string) => {
 			const db = await dbPromise;

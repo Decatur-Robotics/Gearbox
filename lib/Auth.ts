@@ -62,6 +62,8 @@ export const AuthenticationOptions: AuthOptions = {
 				).findObject(CollectionId.Users, { email: profile.email });
 
 				if (existing) {
+					existing.id = profile.sub;
+					console.log("Found existing user:", existing);
 					return existing;
 				}
 
