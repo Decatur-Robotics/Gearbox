@@ -10,6 +10,7 @@ import { FaSync, FaBinoculars, FaUserCheck, FaDatabase } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import ClientApi from "@/lib/api/ClientApi";
 
+
 const api = new ClientApi();
 
 export default function InsightsAndSettingsCard(props: {
