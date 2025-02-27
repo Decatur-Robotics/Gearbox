@@ -37,7 +37,6 @@ export const AuthenticationOptions: AuthOptions = {
 					[],
 					[],
 				);
-				user.id = profile.sub;
 				return user;
 			},
 		}),
@@ -60,7 +59,6 @@ export const AuthenticationOptions: AuthOptions = {
 					10,
 					1,
 				);
-				user.id = profile.sub;
 				return user;
 			},
 		}),
@@ -92,9 +90,7 @@ export const AuthenticationOptions: AuthOptions = {
 		 */
 		async signIn({ user }) {
 			const startTime = Date.now();
-			logger.debug(
-				`User is signing in: ${user.name}, ${user.email}, ${user.id}`,
-			);
+			logger.debug(`User is signing in: ${user.name}, ${user.email}`);
 
 			Analytics.signIn(user.name ?? "Unknown User");
 			const db = await getDatabase();
@@ -112,7 +108,6 @@ export const AuthenticationOptions: AuthOptions = {
 				(typedUser as User).lastSignInDateTime?.toDateString() !==
 				today.toDateString()
 			) {
-				// We use user.id since user._id strangely doesn't exist on user.
 				db.updateObjectById(
 					CollectionId.Users,
 					new ObjectId(typedUser._id?.toString()),
