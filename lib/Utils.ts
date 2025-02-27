@@ -92,6 +92,29 @@ export function mentionUserInSlack(user: {
 	return user.slackId ? `<@${user.slackId}>` : (user.name ?? "");
 }
 
+export function populateMissingUserFields(user: Partial<User>): User {
+	const filled: Omit<User, "_id"> = {
+		id: user.id ?? "",
+		name: user.name ?? "",
+		image: user.image ?? "https://4026.org/user.jpg",
+		slug: user.slug ?? "",
+		email: user.email ?? "",
+		teams: user.teams ?? [],
+		owner: user.owner ?? [],
+		slackId: user.slackId ?? "",
+		onboardingComplete: user.onboardingComplete ?? false,
+		admin: user.admin ?? false,
+		xp: user.xp ?? 0,
+		level: user.level ?? 0,
+		resendContactId: user.resendContactId ?? undefined,
+		lastSignInDateTime: user.lastSignInDateTime ?? undefined,
+	};
+
+	if (user._id) (filled as User)._id = user._id as unknown as string;
+
+	return filled as User;
+}
+
 /**
  * If a user is missing fields, this function will populate them with default values and update the user in the DB.
  *
@@ -125,20 +148,7 @@ export async function repairUser(
 	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
 
 	// User is incomplete, fill in the missing fields
-	user = {
-		...user,
-		id: id?.toString(),
-		name,
-		image: user.image ?? "https://4026.org/user.jpg",
-		slug: user.slug ?? (await GenerateSlug(db, CollectionId.Users, name)),
-		teams: user.teams ?? [],
-		owner: user.owner ?? [],
-		slackId: user.slackId ?? "",
-		onboardingComplete: user.onboardingComplete ?? false,
-		admin: user.admin ?? false,
-		xp: user.xp ?? 0,
-		level: user.level ?? 0,
-	} as User;
+	user = populateMissingUserFields(user);
 
 	if (updateDocument) {
 		await db.updateObjectById(

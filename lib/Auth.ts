@@ -16,10 +16,10 @@ import { wait } from "./client/ClientUtils";
 import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
 
 const cachedDb = getDatabase();
-// const adapter = DbInterfaceAuthAdapter(cachedDb);
-const adapter = MongoDBAdapter(clientPromise, {
-	databaseName: process.env.DB,
-});
+const adapter = DbInterfaceAuthAdapter(cachedDb);
+// const adapter = MongoDBAdapter(clientPromise, {
+// 	databaseName: process.env.DB,
+// });
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
@@ -88,9 +88,7 @@ export const AuthenticationOptions: AuthOptions = {
 	],
 	callbacks: {
 		async session({ session, user }) {
-			session.user = await (
-				await cachedDb
-			).findObjectById(CollectionId.Users, new ObjectId(user.id));
+			session.user = user;
 
 			return session;
 		},
