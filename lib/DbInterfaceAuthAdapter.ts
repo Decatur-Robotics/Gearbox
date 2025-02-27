@@ -87,7 +87,7 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 
 			console.log(
-				"Getting user by account:",
+				"[AUTH] Getting user by account:",
 				providerAccountId.providerAccountId,
 			);
 
@@ -170,7 +170,7 @@ export default function DbInterfaceAuthAdapter(
 			const account = format.to<AdapterAccount>(data);
 
 			console.log(
-				"Linking account:",
+				"[AUTH] Linking account:",
 				account.providerAccountId,
 				"User:",
 				account.userId,

@@ -103,13 +103,20 @@ export const AuthenticationOptions: AuthOptions = {
 		async signIn({ user }) {
 			const startTime = Date.now();
 			console.log(
-				`User is signing in: ${user.name}, ${user.email}, ${user.id}`,
+				`[AUTH] User is signing in: ${user.name}, ${user.email}, ${user.id}`,
 			);
 
 			Analytics.signIn(user.name ?? "Unknown User");
 			const db = await getDatabase(false);
 
 			let typedUser = user as Partial<User>;
+
+			const existingUser = await db.findObject(CollectionId.Users, {
+				email: typedUser.email,
+			});
+
+			typedUser._id = existingUser?._id;
+
 			// if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
 			// 	const repairUserOnceItIsInDb = async () => {
 			// 		console.log(
@@ -158,7 +165,7 @@ export const AuthenticationOptions: AuthOptions = {
 			const elapsedTime = endTime - startTime;
 
 			console.log(
-				"User is signed in:",
+				"[AUTH] User is signed in:",
 				typedUser.name,
 				typedUser.email,
 				typedUser._id?.toString(),
