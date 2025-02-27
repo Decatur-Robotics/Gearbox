@@ -11,17 +11,21 @@ import CollectionId from "./client/CollectionId";
 import { User, Session } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "bson";
+import Logger from "./client/Logger";
 
 export default function DbInterfaceAuthAdapter(
 	dbPromise: Promise<DbInterface>,
+	enableLogs: boolean = true,
 ): Adapter {
+	const logger = new Logger(["AUTH"], enableLogs);
+
 	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
 			const db = await dbPromise;
 
 			const adapterUser = format.to<AdapterUser>(data);
 
-			console.log("[AUTH] Creating user:", adapterUser.name);
+			logger.debug("Creating user:", adapterUser.name);
 
 			// Check if user already exists
 			const existingUser = await db.findObject(CollectionId.Users, {
@@ -30,7 +34,7 @@ export default function DbInterfaceAuthAdapter(
 
 			if (existingUser) {
 				// If user exists, return existing user
-				console.log("[AUTH] User already exists:", existingUser.name);
+				logger.warn("User already exists:", existingUser.name);
 				return format.from<AdapterUser>(existingUser);
 			}
 
@@ -61,7 +65,7 @@ export default function DbInterfaceAuthAdapter(
 
 			if (id.length !== 24) return null;
 
-			console.log("[AUTH] Getting user:", id);
+			logger.debug("Getting user:", id);
 
 			const user = await db.findObjectById(
 				CollectionId.Users,
@@ -74,7 +78,7 @@ export default function DbInterfaceAuthAdapter(
 		getUserByEmail: async (email: string) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Getting user by email:", email);
+			logger.debug("Getting user by email:", email);
 
 			const account = await db.findObject(CollectionId.Users, { email });
 
@@ -86,8 +90,8 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 
-			console.log(
-				"[AUTH] Getting user by account:",
+			logger.debug(
+				"Getting user by account:",
 				providerAccountId.providerAccountId,
 			);
 
@@ -95,7 +99,10 @@ export default function DbInterfaceAuthAdapter(
 				providerAccountId: providerAccountId.providerAccountId,
 			});
 
-			if (!account) return null;
+			if (!account) {
+				logger.warn("Account not found:", providerAccountId.provider);
+				return null;
+			}
 
 			const user = await db.findObjectById(
 				CollectionId.Users,
@@ -111,14 +118,14 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const { _id, ...user } = format.to<AdapterUser>(data);
 
-			console.log("[AUTH] Updating user:", _id);
+			logger.debug("Updating user:", _id);
 
 			const existing = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(_id),
 			);
 
-			const result = await db.updateObjectById(
+			await db.updateObjectById(
 				CollectionId.Users,
 				new ObjectId(_id),
 				user as Partial<User>,
@@ -129,7 +136,7 @@ export default function DbInterfaceAuthAdapter(
 		deleteUser: async (id: string) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Deleting user:", id);
+			logger.log("Deleting user:", id);
 
 			const user = await db.findObjectById(
 				CollectionId.Users,
@@ -169,8 +176,8 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const account = format.to<AdapterAccount>(data);
 
-			console.log(
-				"[AUTH] Linking account:",
+			logger.debug(
+				"Linking account:",
 				account.providerAccountId,
 				"User:",
 				account.userId,
@@ -181,8 +188,8 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (existing) {
-				console.log(
-					"[AUTH] Account already exists:",
+				logger.warn(
+					"Account already exists:",
 					existing.providerAccountId,
 				);
 				return format.from<AdapterAccount>(existing);
@@ -197,8 +204,8 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 
-			console.log(
-				"[AUTH] Unlinking account:",
+			logger.debug(
+				"Unlinking account:",
 				providerAccountId.providerAccountId,
 			);
 
@@ -206,7 +213,13 @@ export default function DbInterfaceAuthAdapter(
 				providerAccountId: providerAccountId.providerAccountId,
 			});
 
-			if (!account) return null;
+			if (!account) {
+				logger.warn(
+					"Account not found:",
+					providerAccountId.providerAccountId,
+				);
+				return null;
+			}
 
 			await db.deleteObjectById(
 				CollectionId.Accounts,
@@ -218,20 +231,27 @@ export default function DbInterfaceAuthAdapter(
 		getSessionAndUser: async (sessionToken: string) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Getting session and user:", sessionToken);
+			logger.debug("Getting session and user:", sessionToken);
 
 			const session = await db.findObject(CollectionId.Sessions, {
 				sessionToken,
 			});
 
-			if (!session) return null;
+			if (!session) {
+				logger.warn("Session not found:", sessionToken);
+				return null;
+			}
 
 			const user = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(session.userId),
 			);
 
-			if (!user) return null;
+			if (!user) {
+				logger.warn("User not found:", session.userId);
+				return null;
+			}
+
 			return {
 				session: format.from<AdapterSession>(session),
 				user: format.from<AdapterUser>(user),
@@ -242,7 +262,7 @@ export default function DbInterfaceAuthAdapter(
 
 			const session = format.to<AdapterSession>(data);
 
-			console.log("[AUTH] Creating session:", session);
+			logger.debug("Creating session:", session);
 
 			session.userId = new ObjectId(session.userId) as any;
 
@@ -256,13 +276,16 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const { _id, ...session } = format.to<AdapterSession>(data);
 
-			console.log("[AUTH] Updating session:", session.sessionToken);
+			logger.debug("Updating session:", session.sessionToken);
 
 			const existing = await db.findObject(CollectionId.Sessions, {
 				sessionToken: session.sessionToken,
 			});
 
-			if (!existing) return null;
+			if (!existing) {
+				logger.warn("Session not found:", session.sessionToken);
+				return null;
+			}
 
 			if (session.userId) {
 				session.userId = new ObjectId(session.userId) as any;
@@ -279,13 +302,16 @@ export default function DbInterfaceAuthAdapter(
 		deleteSession: async (sessionToken: string) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Deleting session:", sessionToken);
+			logger.debug("Deleting session:", sessionToken);
 
 			const session = await db.findObject(CollectionId.Sessions, {
 				sessionToken,
 			});
 
-			if (!session) return null;
+			if (!session) {
+				logger.warn("Session not found:", sessionToken);
+				return null;
+			}
 
 			await db.deleteObjectById(
 				CollectionId.Sessions,
@@ -297,7 +323,7 @@ export default function DbInterfaceAuthAdapter(
 		createVerificationToken: async (token: VerificationToken) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Creating verification token:", token.identifier);
+			logger.debug("Creating verification token:", token.identifier);
 
 			await db.addObject(
 				CollectionId.VerificationTokens,
@@ -311,13 +337,16 @@ export default function DbInterfaceAuthAdapter(
 		}) => {
 			const db = await dbPromise;
 
-			console.log("[AUTH] Using verification token:", token.identifier);
+			logger.info("Using verification token:", token.identifier);
 
 			const existing = await db.findObject(CollectionId.VerificationTokens, {
 				token: token.token,
 			});
 
-			if (!existing) return null;
+			if (!existing) {
+				logger.warn("Verification token not found:", token.token);
+				return null;
+			}
 
 			await db.deleteObjectById(
 				CollectionId.VerificationTokens,
