@@ -128,7 +128,7 @@ export const AuthenticationOptions: AuthOptions = {
 			const elapsedTime = endTime - startTime;
 
 			logger.log(
-				"[AUTH] User is signed in:",
+				"User is signed in:",
 				typedUser.name,
 				typedUser.email,
 				typedUser._id?.toString(),
