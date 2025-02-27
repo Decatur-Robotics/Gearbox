@@ -155,6 +155,12 @@ export const AuthenticationOptions: AuthOptions = {
 
 			new ResendUtils().createContact(typedUser as User);
 
+			console.log(
+				"User is signed in:",
+				typedUser.name,
+				typedUser.email,
+				typedUser._id?.toString(),
+			);
 			return true;
 		},
 	},
