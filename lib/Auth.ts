@@ -107,7 +107,7 @@ export const AuthenticationOptions: AuthOptions = {
 			);
 
 			Analytics.signIn(user.name ?? "Unknown User");
-			const db = await getDatabase(false);
+			const db = await getDatabase();
 
 			let typedUser = user as Partial<User>;
 
