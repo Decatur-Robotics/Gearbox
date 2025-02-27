@@ -15,9 +15,10 @@ import Logger from "./client/Logger";
 
 export default function DbInterfaceAuthAdapter(
 	dbPromise: Promise<DbInterface>,
-	enableLogs: boolean = true,
+	baseLogger?: Logger,
 ): Adapter {
-	const logger = new Logger(["AUTH"], enableLogs);
+	const logger =
+		(baseLogger && baseLogger.extend(["ADAPTER"])) ?? new Logger(["AUTH"], false);
 
 	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
@@ -188,10 +189,7 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (existing) {
-				logger.warn(
-					"Account already exists:",
-					existing.providerAccountId,
-				);
+				logger.warn("Account already exists:", existing.providerAccountId);
 				return format.from<AdapterAccount>(existing);
 			}
 
@@ -204,20 +202,14 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 
-			logger.debug(
-				"Unlinking account:",
-				providerAccountId.providerAccountId,
-			);
+			logger.debug("Unlinking account:", providerAccountId.providerAccountId);
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: providerAccountId.providerAccountId,
 			});
 
 			if (!account) {
-				logger.warn(
-					"Account not found:",
-					providerAccountId.providerAccountId,
-				);
+				logger.warn("Account not found:", providerAccountId.providerAccountId);
 				return null;
 			}
 

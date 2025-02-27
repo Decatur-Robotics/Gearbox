@@ -1,25 +1,22 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
 import SlackProvider from "next-auth/providers/slack";
-import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import { getDatabase, clientPromise } from "./MongoDB";
+import { getDatabase } from "./MongoDB";
 import { ObjectId } from "bson";
 import { User } from "./Types";
-import { GenerateSlug, repairUser } from "./Utils";
+import { GenerateSlug } from "./Utils";
 import { Analytics } from "@/lib/client/Analytics";
 import Email from "next-auth/providers/email";
 import ResendUtils from "./ResendUtils";
 import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
-import { wait } from "./client/ClientUtils";
 import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
+import Logger from "./client/Logger";
+
+const logger = new Logger(["AUTH"], true);
 
 const cachedDb = getDatabase();
 const adapter = DbInterfaceAuthAdapter(cachedDb);
-// const adapter = MongoDBAdapter(clientPromise, {
-// 	databaseName: process.env.DB,
-// });
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
@@ -29,6 +26,8 @@ export const AuthenticationOptions: AuthOptions = {
 			clientSecret: process.env.GOOGLE_SECRET,
 			allowDangerousEmailAccountLinking: true,
 			profile: async (profile) => {
+				logger.debug("Google profile:", profile);
+
 				const user = new User(
 					profile.name,
 					profile.email,
@@ -42,22 +41,13 @@ export const AuthenticationOptions: AuthOptions = {
 				return user;
 			},
 		}),
-		/*
-        GitHubProvider({
-          clientId: process.env.GITHUB_ID as string,
-          clientSecret: process.env.GITHUB_SECRET as string,
-          profile: async (profile) => {
-            const user = new User(profile.login, profile.email, profile.avatar_url, false, await GenerateSlug(CollectionId.Users, profile.login), [], []);
-            user.id = profile.id;
-            return user;
-        },
-      }),
-      */
 		SlackProvider({
 			clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
 			clientSecret: process.env.SLACK_CLIENT_SECRET as string,
 			allowDangerousEmailAccountLinking: true,
 			profile: async (profile) => {
+				logger.debug("Slack profile:", profile);
+
 				const user = new User(
 					profile.name,
 					profile.email,
@@ -102,8 +92,8 @@ export const AuthenticationOptions: AuthOptions = {
 		 */
 		async signIn({ user }) {
 			const startTime = Date.now();
-			console.log(
-				`[AUTH] User is signing in: ${user.name}, ${user.email}, ${user.id}`,
+			logger.debug(
+				`User is signing in: ${user.name}, ${user.email}, ${user.id}`,
 			);
 
 			Analytics.signIn(user.name ?? "Unknown User");
@@ -116,33 +106,6 @@ export const AuthenticationOptions: AuthOptions = {
 			});
 
 			typedUser._id = existingUser?._id;
-
-			// if (!typedUser.slug || typedUser._id?.toString() != typedUser.id) {
-			// 	const repairUserOnceItIsInDb = async () => {
-			// 		console.log(
-			// 			"User is incomplete, waiting for it to be in the database.",
-			// 		);
-			// 		let foundUser: User | undefined = undefined;
-			// 		while (!foundUser) {
-			// 			foundUser = await db.findObject(CollectionId.Users, {
-			// 				email: typedUser.email,
-			// 			});
-
-			// 			if (!foundUser) await wait(50);
-			// 		}
-
-			// 		console.log("User is incomplete, filling in missing fields.");
-
-			// 		typedUser._id = foundUser._id;
-			// 		typedUser.lastSignInDateTime = new Date();
-
-			// 		typedUser = await repairUser(db, typedUser);
-
-			// 		console.log("User updated:", typedUser._id?.toString());
-			// 	};
-
-			// 	repairUserOnceItIsInDb();
-			// }
 
 			const today = new Date();
 			if (
@@ -164,7 +127,7 @@ export const AuthenticationOptions: AuthOptions = {
 			const endTime = Date.now();
 			const elapsedTime = endTime - startTime;
 
-			console.log(
+			logger.log(
 				"[AUTH] User is signed in:",
 				typedUser.name,
 				typedUser.email,
