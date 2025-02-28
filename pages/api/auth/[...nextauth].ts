@@ -27,9 +27,11 @@ async function getAuth(req: NextApiRequest, res: NextApiResponse<any>) {
 			.catch((err) => {
 				throw new Error(`Error in Google Siteverify API. ${err.message}`);
 			});
-		console.log("IS HUMAN", isHuman, email);
+
 		if (!isHuman) {
 			res.status(400).end();
+
+			console.log("User is not human:", email);
 			return;
 		}
 	}
