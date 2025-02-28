@@ -268,7 +268,7 @@ export default function Container(props: ContainerProps) {
 									<h2 className="card-title">Wait a minute...</h2>
 									<p>You need to sign in first!</p>
 									<div className="card-actions justify-end">
-										<Link href={"/api/auth/signin"}>
+										<Link href={"/signin"}>
 											<button className="btn btn-primary">Sign In</button>
 										</Link>
 									</div>
