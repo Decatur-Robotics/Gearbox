@@ -12,11 +12,24 @@ import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
 import Logger from "./client/Logger";
+import { allowEmailSignIn } from "./AuthUtils";
 
 const logger = new Logger(["AUTH"], true);
 
 const cachedDb = getDatabase();
 const adapter = DbInterfaceAuthAdapter(cachedDb);
+
+const email = Email({
+	server: {
+		host: process.env.SMTP_HOST,
+		port: process.env.SMTP_PORT,
+		auth: {
+			user: process.env.SMTP_USER,
+			pass: process.env.SMTP_PASSWORD,
+		},
+	},
+	from: process.env.SMTP_FROM,
+});
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
@@ -86,15 +99,17 @@ export const AuthenticationOptions: AuthOptions = {
 			},
 		}),
 		Email({
-			server: {
-				host: process.env.SMTP_HOST,
-				port: process.env.SMTP_PORT,
-				auth: {
-					user: process.env.SMTP_USER,
-					pass: process.env.SMTP_PASSWORD,
-				},
+			...email,
+			sendVerificationRequest: async (data) => {
+				const { identifier } = data;
+
+				if (!allowEmailSignIn(identifier)) {
+					logger.warn("User is not allowed to sign in with email:", identifier);
+					return;
+				}
+
+				email.sendVerificationRequest(data);
 			},
-			from: process.env.SMTP_FROM,
 		}),
 	],
 	callbacks: {
