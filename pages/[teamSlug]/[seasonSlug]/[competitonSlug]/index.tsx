@@ -397,10 +397,6 @@ export default function CompetitionIndex({
 			api.remindSlack(team._id.toString(), userId);
 	}
 
-	useEffect(() => {
-		console.log("Comp:", comp);
-	}, [comp]);
-
 	return (
 		<Container
 			requireAuthentication
