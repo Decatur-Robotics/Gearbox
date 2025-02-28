@@ -63,11 +63,14 @@ export default function MatchScheduleCard(props: {
 		showSubmittedMatches,
 	} = props;
 
-	const displayedMatches = showSubmittedMatches
-		? matches
-		: matches.filter((match) =>
-				match.reports.some((reportId) => !reportsById[reportId]?.submitted),
-			);
+	const unsubmittedMatches: Match[] = [];
+
+	for (const match of matches) {
+		if (match.reports.some((reportId) => !reportsById[reportId]?.submitted))
+			unsubmittedMatches.push(match);
+	}
+
+	const displayedMatches = showSubmittedMatches ? matches : unsubmittedMatches;
 
 	useEffect(() => {
 		console.log("Matches", matches);
@@ -87,7 +90,7 @@ export default function MatchScheduleCard(props: {
 				{isManager &&
 				matchesAssigned === false &&
 				Object.keys(usersById).length >= 6 ? (
-					matchesAssigned !== undefined ? (
+					matchesAssigned ? (
 						<div className="opacity-100 font-bold text-warning flex flex-row items-center justify-start space-x-3">
 							<div>
 								{!assigningMatches
