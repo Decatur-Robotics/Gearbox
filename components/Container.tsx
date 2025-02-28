@@ -231,7 +231,7 @@ export default function Container(props: ContainerProps) {
 								</Link>
 							) : (
 								<a
-									href={"/api/auth/signin"}
+									href={"/signin"}
 									rel="noopener noreferrer"
 									target="_blank"
 								>
