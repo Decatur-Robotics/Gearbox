@@ -14,6 +14,7 @@ import { MdErrorOutline } from "react-icons/md";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
 import { AdvancedSession } from "@/lib/client/useCurrentSession";
+import { useEffect } from "react";
 
 export default function MatchScheduleCard(props: {
 	team: Team | undefined;
@@ -67,6 +68,10 @@ export default function MatchScheduleCard(props: {
 		: matches.filter((match) =>
 				match.reports.some((reportId) => !reportsById[reportId]?.submitted),
 			);
+
+	useEffect(() => {
+		console.log("Matches", matches);
+	}, [matches]);
 
 	return (
 		<div className="w-full card bg-base-200 shadow-xl ">
