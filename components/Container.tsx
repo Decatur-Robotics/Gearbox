@@ -74,11 +74,6 @@ export default function Container(props: ContainerProps) {
 	}, [eventSearch]);
 
 	useEffect(() => {
-		if (window.location.href.includes("signin")) {
-			console.log("triggered");
-			location.reload();
-		}
-
 		const loadTeams = async () => {
 			if (!user) {
 				return;

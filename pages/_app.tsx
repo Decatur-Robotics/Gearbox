@@ -36,45 +36,41 @@ export default function App({
 					href="/manifest.json"
 				/>
 			</Head>
-			<GoogleReCaptchaProvider
-				reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_KEY}
-			>
-				<SessionProvider session={session}>
-					<DndProvider backend={HTML5Backend}>
-						<NextSeo
-							title="Gearbox"
-							description="The best FIRST Scouting App"
-							canonical="https://4026.org/"
-							openGraph={{
-								url: "https://4026.org/",
-								title: "Gearbox",
-								description: "The best FIRST Scouting App",
-								images: [
-									{
-										url: "https://4026.org/art/4026Bench.svg",
-										width: 800,
-										height: 600,
-										alt: "Og Image Alt",
-										type: "image/jpeg",
-									},
-								],
-								siteName: "Gearbox",
-							}}
-						/>
-						<Toaster
-							toastOptions={{
-								style: {
-									background: (
-										tailwind.theme.backgroundColor["zinc"] as any
-									)[900].toString(),
-									color: tailwind.theme.textColor["base-100"].toString(),
+			<SessionProvider session={session}>
+				<DndProvider backend={HTML5Backend}>
+					<NextSeo
+						title="Gearbox"
+						description="The best FIRST Scouting App"
+						canonical="https://4026.org/"
+						openGraph={{
+							url: "https://4026.org/",
+							title: "Gearbox",
+							description: "The best FIRST Scouting App",
+							images: [
+								{
+									url: "https://4026.org/art/4026Bench.svg",
+									width: 800,
+									height: 600,
+									alt: "Og Image Alt",
+									type: "image/jpeg",
 								},
-							}}
-						/>
-						<Component {...pageProps} />
-					</DndProvider>
-				</SessionProvider>
-			</GoogleReCaptchaProvider>
+							],
+							siteName: "Gearbox",
+						}}
+					/>
+					<Toaster
+						toastOptions={{
+							style: {
+								background: (
+									tailwind.theme.backgroundColor["zinc"] as any
+								)[900].toString(),
+								color: tailwind.theme.textColor["base-100"].toString(),
+							},
+						}}
+					/>
+					<Component {...pageProps} />
+				</DndProvider>
+			</SessionProvider>
 		</>
 	);
 }
