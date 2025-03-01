@@ -16,6 +16,8 @@ const dev = process.env.NODE_ENV !== "production";
 
 console.log("Constants set");
 
+console.log("Recaptcha key: " + process.env.NEXT_PUBLIC_RECAPTCHA_KEY);
+
 const useHttps =
 	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem");
 
