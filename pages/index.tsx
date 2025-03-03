@@ -32,7 +32,7 @@ export default function Homepage() {
 	function formatDataPoint(num: number | null): string {
 		if (num === null || num === undefined) return "?";
 
-		return num.toString();
+		return num.toLocaleString();
 	}
 
 	const hide = status === "authenticated";
@@ -158,7 +158,7 @@ export default function Homepage() {
 										<div className="stat-value loading loading-spinner text-primary"></div>
 									) : (
 										<div className="stat-value text-primary">
-											{formatDataPoint(counterData.teams - 6)}
+											{formatDataPoint(counterData.teams)}
 										</div>
 									)}
 									<div className="stat-desc">Depend on Gearbox</div>

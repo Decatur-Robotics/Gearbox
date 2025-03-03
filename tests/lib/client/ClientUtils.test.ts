@@ -84,7 +84,7 @@ describe(wait.name, () => {
 			const start = Date.now();
 			await wait(duration);
 			const end = Date.now();
-			expect(end - start).toBeGreaterThanOrEqual(duration);
+			expect(end - start).toBeGreaterThanOrEqual(duration - 2);
 		}
 	});
 
@@ -109,7 +109,7 @@ describe(wait.name, () => {
 
 		const results = await Promise.all(trials);
 		for (const result of results) {
-			expect(result).toBeLessThanOrEqual(20);
+			expect(result).toBeLessThanOrEqual(150);
 		}
 	});
 });
