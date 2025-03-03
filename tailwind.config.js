@@ -28,8 +28,8 @@ module.exports = {
 			xs: "2px",
 		},
 	},
-	daisyui: {
-		themes: ["dark", "light"],
-	},
-	plugins: [require("daisyui")],
+	// daisyui: {
+	// 	themes: ["dark", "light"],
+	// },
+	// plugins: [require("daisyui")],
 };
