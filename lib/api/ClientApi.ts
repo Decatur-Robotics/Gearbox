@@ -1710,7 +1710,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				new ObjectId(userId),
 			);
 
-			const newTeam: Team = {
+			const { _id, ...newTeam } = {
 				...team,
 				users: team.users.filter((id) => id !== userId),
 				owners: team.owners.filter((id) => id !== userId),
@@ -1743,7 +1743,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			await teamPromise;
 
-			return res.status(200).send({ result: "success", team: newTeam });
+			return res
+				.status(200)
+				.send({ result: "success", team: { _id, ...newTeam } });
 		},
 	});
 
