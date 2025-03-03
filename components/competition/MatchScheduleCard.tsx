@@ -103,7 +103,7 @@ export default function MatchScheduleCard(props: {
 						<progress className="progress w-full" />
 					))}
 				<div className="divider my-0"></div>
-				{loadingMatches || loadingReports || loadingUsers ? (
+				{!(loadingMatches && loadingReports && loadingUsers) ? (
 					<div className="w-full flex flex-col items-center space-y-2">
 						{noMatches || matches.length === 0 ? (
 							<div className="flex flex-col items-center justify-center font-bold space-y-4">
