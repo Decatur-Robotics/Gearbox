@@ -49,6 +49,9 @@ declare global {
 
 			DEVELOPER_EMAILS: string;
 
+			NEXT_PUBLIC_RECAPTCHA_KEY: string;
+			RECAPTCHA_SECRET: string;
+
 			NODE_ENV: "development" | "production";
 		}
 	}

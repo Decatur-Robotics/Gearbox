@@ -316,12 +316,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 					gameId,
 				),
 			);
-			team!.seasons = [...team!.seasons, String(season._id)];
+
+			const { _id, ...updatedTeam } = team;
+			updatedTeam.seasons = [...team.seasons, String(season._id)];
 
 			await db.updateObjectById(
 				CollectionId.Teams,
 				new ObjectId(teamId),
-				team!,
+				updatedTeam!,
 			);
 
 			return res.status(200).send(season);
@@ -428,12 +430,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				),
 			);
 
-			season.competitions = [...season.competitions, String(comp._id)];
+			const { _id, ...updatedSeason } = season;
+
+			updatedSeason.competitions = [...season.competitions, String(comp._id)];
 
 			await db.updateObjectById(
 				CollectionId.Seasons,
 				new ObjectId(season._id),
-				season,
+				updatedSeason,
 			);
 
 			// Create reports

@@ -14,6 +14,7 @@ import { MdErrorOutline } from "react-icons/md";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
 import { AdvancedSession } from "@/lib/client/useCurrentSession";
+import { useEffect } from "react";
 
 export default function MatchScheduleCard(props: {
 	team: Team | undefined;
@@ -62,11 +63,14 @@ export default function MatchScheduleCard(props: {
 		showSubmittedMatches,
 	} = props;
 
-	const displayedMatches = showSubmittedMatches
-		? matches
-		: matches.filter((match) =>
-				match.reports.some((reportId) => !reportsById[reportId]?.submitted),
-			);
+	const unsubmittedMatches: Match[] = [];
+
+	for (const match of matches) {
+		if (match.reports.some((reportId) => !reportsById[reportId]?.submitted))
+			unsubmittedMatches.push(match);
+	}
+
+	const displayedMatches = showSubmittedMatches ? matches : unsubmittedMatches;
 
 	return (
 		<div className="w-full card bg-base-200 shadow-xl ">
@@ -80,38 +84,24 @@ export default function MatchScheduleCard(props: {
 					)}
 				</h1>
 				{isManager &&
-				matchesAssigned === false &&
-				Object.keys(usersById).length >= 6 ? (
-					matchesAssigned !== undefined ? (
+					matchesAssigned === false &&
+					Object.keys(usersById).length >= 6 &&
+					(!assigningMatches ? (
 						<div className="opacity-100 font-bold text-warning flex flex-row items-center justify-start space-x-3">
-							<div>
-								{!assigningMatches
-									? "Matches are not assigned"
-									: "Assigning matches"}
-							</div>
-							{!assigningMatches ? (
-								<button
-									className={
-										"btn btn-primary btn-sm " +
-										(assigningMatches ? "disabled" : "")
-									}
-									onClick={assignScouters}
-								>
-									Assign Matches
-								</button>
-							) : (
-								<BsGearFill
-									size={30}
-									className="animate-spin-slow text-white"
-								/>
-							)}
+							<div>Matches are not assigned.</div>
+							<button
+								className={
+									"btn btn-primary btn-sm " +
+									(assigningMatches ? "disabled" : "")
+								}
+								onClick={assignScouters}
+							>
+								Assign Matches
+							</button>
 						</div>
 					) : (
 						<progress className="progress w-full" />
-					)
-				) : (
-					<></>
-				)}
+					))}
 				<div className="divider my-0"></div>
 				{loadingMatches || loadingReports || loadingUsers ? (
 					<div className="w-full flex flex-col items-center justify-center">

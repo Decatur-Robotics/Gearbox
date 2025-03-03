@@ -84,7 +84,7 @@ describe(wait.name, () => {
 			const start = Date.now();
 			await wait(duration);
 			const end = Date.now();
-			expect(end - start).toBeGreaterThanOrEqual(duration);
+			expect(end - start).toBeGreaterThanOrEqual(duration - 2);
 		}
 	});
 

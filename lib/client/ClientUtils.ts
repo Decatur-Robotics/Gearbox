@@ -144,7 +144,7 @@ export function promisify<TReturn>(
 }
 
 /**
- * Tested to be accurate to within 150ms
+ * Tested to not go more than 150ms over the specified time and not less than 2ms under the specified time
  *
  * @tested_by tests/lib/client/ClientUtils.test.ts
  */
