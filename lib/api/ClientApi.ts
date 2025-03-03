@@ -1712,11 +1712,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const { _id, ...newTeam } = {
 				...team,
-				users: team.users.filter((id) => id !== userId),
-				owners: team.owners.filter((id) => id !== userId),
-				scouters: team.scouters.filter((id) => id !== userId),
+				users: team.users.filter((id) => id != userId),
+				owners: team.owners.filter((id) => id != userId),
+				scouters: team.scouters.filter((id) => id != userId),
 				subjectiveScouters: team.subjectiveScouters.filter(
-					(id) => id !== userId,
+					(id) => id != userId,
 				),
 			};
 
