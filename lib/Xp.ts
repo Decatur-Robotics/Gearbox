@@ -1,12 +1,18 @@
-// Use the /dev/leveling page to visualize these functions. Be sure to update MAX_LEVEL in that file!
+/**
+ * Use the /dev/leveling page to visualize these functions. Be sure to update MAX_LEVEL in that file!
+ *
+ * @tested_by /lib/Xp.test.ts
+ */
 
-const XP_PER_LEVEL = 20;
+export const XP_PER_LEVEL = 20;
 
 export function xpToLevel(xp: number) {
+	if (xp < 0) return 0;
 	return Math.floor(xp / XP_PER_LEVEL);
 }
 
 export function levelToXp(level: number) {
+	if (level < 0) return 0;
 	return level * XP_PER_LEVEL;
 }
 

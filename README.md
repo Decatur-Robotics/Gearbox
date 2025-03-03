@@ -69,6 +69,10 @@ See the [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terrafor
 
 1. Run `npm run test`
 
+#### Scripts
+
+There's a few scripts in the /scripts folder that can be run with `npx tsx scripts/<script_name>.ts`.
+
 ## Contributing
 
 You've made it past set up and are ready to contibure to the future of scouting - here's how.

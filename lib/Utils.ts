@@ -9,6 +9,8 @@ import { removeWhitespaceAndMakeLowerCase } from "./client/ClientUtils";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 import { Redirect } from "next";
+import { User } from "./Types";
+import { ObjectId } from "bson";
 
 /**
  * Generates a SLUG from a supplied name- ensures it is unique
@@ -88,4 +90,82 @@ export function mentionUserInSlack(user: {
 	name: string | undefined;
 }): string {
 	return user.slackId ? `<@${user.slackId}>` : (user.name ?? "");
+}
+
+export async function populateMissingUserFields(
+	user: Partial<User>,
+	generateSlug: (name: string) => Promise<string>,
+): Promise<User> {
+	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
+
+	const filled: Omit<User, "_id"> = {
+		id: user._id?.toString() ?? new ObjectId().toString(),
+		name,
+		image: user.image ?? "https://4026.org/user.jpg",
+		slug: user.slug ?? (await generateSlug(name ?? "Unknown User")),
+		email: user.email ?? "",
+		teams: user.teams ?? [],
+		owner: user.owner ?? [],
+		slackId: user.slackId ?? "",
+		onboardingComplete: user.onboardingComplete ?? false,
+		admin: user.admin ?? false,
+		xp: user.xp ?? 0,
+		level: user.level ?? 0,
+		resendContactId: user.resendContactId ?? undefined,
+		lastSignInDateTime: user.lastSignInDateTime ?? undefined,
+	};
+
+	if (user._id) (filled as User)._id = user._id as unknown as string;
+
+	return filled as User;
+}
+
+/**
+ * If a user is missing fields, this function will populate them with default values and update the user in the DB.
+ *
+ * @param [updateDocument=true] If true, the user will be updated in the database. If false, the user will only be returned.
+ * 	If true, will throw an error if the user is not in the DB.
+ * @returns the updated user
+ */
+export async function repairUser(
+	db: DbInterface,
+	user: Partial<User>,
+	updateDocument: boolean = true,
+): Promise<User> {
+	let id: ObjectId | string | undefined = user._id;
+
+	if (!id && user.id) {
+		try {
+			id = new ObjectId(user.id);
+		} catch (e) {
+			if (!id) {
+				console.log("Finding user based on email...");
+				const userFromEmail = await db.findObject(CollectionId.Users, {
+					email: user.email,
+				});
+				console.log("Found user:", userFromEmail);
+				id = userFromEmail?._id ?? new ObjectId();
+			}
+			console.error("Invalid ObjectId:", user.id, "Using", id, "instead");
+		}
+	}
+
+	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
+
+	// User is incomplete, fill in the missing fields
+	user = await populateMissingUserFields(user, async (name) =>
+		GenerateSlug(db, CollectionId.Users, name),
+	);
+
+	if (updateDocument) {
+		await db.updateObjectById(
+			CollectionId.Users,
+			user._id as unknown as ObjectId,
+			user,
+		);
+	}
+
+	user._id = id as unknown as string;
+
+	return user as User;
 }

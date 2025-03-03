@@ -1,7 +1,10 @@
 import Container from "@/components/Container";
 import ClientApi from "@/lib/api/ClientApi";
 import { Round } from "@/lib/client/StatsMath";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import useInterval from "@/lib/client/useInterval";
 import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -23,17 +26,21 @@ const SPEED_TEST_LENGTH = 12000;
 const SPEED_TEST_PARALLEL_REQUESTS = 120;
 
 export default function SpeedTest() {
-	const [times, setTimes] = useState<SpeedTestResponse>();
-	const [resultsCompleted, setResultsCompleted] = useState<number | undefined>(
-		undefined,
-	);
+	const { session, status } = useCurrentSession();
+
 	const [trialCountByThread, setTrialCountByThread] = useState<number[]>();
+	const [results, setResults] = useState<SpeedTestResponse[]>([]);
+	const [avgResult, setAvgResult] = useState<SpeedTestResponse>();
 
 	const runSpeedTest = useCallback(async () => {
-		setResultsCompleted(undefined);
+		if (!session?.user) {
+			toast.error("You must be logged in to run a speed test");
+			return;
+		}
+
+		console.log("Running Speed Test");
 
 		const newResults: SpeedTestResponse[] = [];
-
 		const trialCountByThread: number[] = [];
 
 		function onTrialComplete(
@@ -43,6 +50,8 @@ export default function SpeedTest() {
 			>,
 			thread: number,
 		) {
+			delete newTimes.responseTimestamp;
+
 			newResults.push({
 				...newTimes,
 				dbTime:
@@ -55,10 +64,10 @@ export default function SpeedTest() {
 				totalTime: Object.values(newTimes).reduce((acc, time) => acc + time, 0),
 			} as SpeedTestResponse);
 
-			setResultsCompleted(newResults.length);
-
 			trialCountByThread[thread]++;
 			setTrialCountByThread(trialCountByThread);
+
+			setResults(newResults);
 
 			if (newResults.length < SPEED_TEST_LENGTH)
 				api.speedTest().then((res) => onTrialComplete(res, thread));
@@ -69,11 +78,12 @@ export default function SpeedTest() {
 			trialCountByThread[thread] = 0;
 			api.speedTest().then((res) => onTrialComplete(res, thread));
 		}
+	}, [session]);
 
-		while (newResults.length < SPEED_TEST_LENGTH)
-			await new Promise((resolve) => setTimeout(resolve, 25));
+	const updateResults = useCallback(() => {
+		if (!results) return;
 
-		const avgTimes: typeof times = newResults.reduce(
+		const avgTimes: typeof avgResult = results.reduce(
 			(acc, times) => {
 				Object.entries(times).forEach(([key, value]) => {
 					acc[key] += value;
@@ -95,57 +105,64 @@ export default function SpeedTest() {
 		);
 
 		Object.keys(avgTimes).forEach((key) => {
-			avgTimes[key] /= newResults.length;
+			avgTimes[key] /= results.length;
 		});
 
-		setTimes(avgTimes);
-		setResultsCompleted(undefined);
-	}, []);
+		setAvgResult(avgTimes);
+	}, [results]);
 
-	useEffect(() => {
-		runSpeedTest();
-	}, [runSpeedTest]);
+	useInterval(updateResults, 1000);
 
 	return (
 		<Container
 			requireAuthentication={true}
 			title={"Speed Test"}
 		>
-			{resultsCompleted !== undefined && (
-				<div className="h-[70%] flex flex-col gap-0">
-					{trialCountByThread!.map((count, index) => (
-						<progress
-							key={index}
-							value={count}
-							max={Math.round(SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS)}
-							className={`w-full h-[1/${SPEED_TEST_PARALLEL_REQUESTS}]`}
-						/>
-					))}
-				</div>
-			)}
-			{times ? (
+			<div className="flex w-screen h-screen">
 				<div>
-					{Object.entries(times).map(([key, value]) => (
-						<div
-							key={key}
-							className={`${key === "dbTime" && "mt-4"}`}
-						>
-							{key}: {Round(value)}ms ({Round((value / times.totalTime) * 100)}
-							%)
+					{avgResult ? (
+						<div>
+							<div>
+								Results: {results.length}/{SPEED_TEST_LENGTH} Trials Complete
+							</div>
+							{Object.entries(avgResult).map(([key, value]) => (
+								<div
+									key={key}
+									className={`${key === "dbTime" && "mt-4"}`}
+								>
+									{key}: {Round(value)}ms (
+									{Round((value / avgResult.totalTime) * 100)}
+									%)
+								</div>
+							))}
 						</div>
-					))}
+					) : (
+						<div>Loading...</div>
+					)}
+					<button
+						onClick={runSpeedTest}
+						className={`btn btn-${session?.user ? "primary" : "disabled"} mt-4`}
+						disabled={!session?.user}
+					>
+						Run Speed Test
+					</button>
+					<div>Auth Status: {status}</div>
 				</div>
-			) : (
-				<div>
-					Loading... {resultsCompleted}/{SPEED_TEST_LENGTH} Trials Complete
-				</div>
-			)}
-			<button
-				onClick={runSpeedTest}
-				className="btn btn-primary mt-4"
-			>
-				Run Speed Test
-			</button>
+				{results && trialCountByThread && (
+					<div className="h-[70%] w-full flex flex-col gap-0">
+						{trialCountByThread!.map((count, index) => (
+							<progress
+								key={index}
+								value={count}
+								max={Math.round(
+									SPEED_TEST_LENGTH / SPEED_TEST_PARALLEL_REQUESTS,
+								)}
+								className={`h-[1/${SPEED_TEST_PARALLEL_REQUESTS}]`}
+							/>
+						))}
+					</div>
+				)}
+			</div>
 		</Container>
 	);
 }

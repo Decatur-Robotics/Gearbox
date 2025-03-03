@@ -1,7 +1,6 @@
 import { getDatabase } from "@/lib/MongoDB";
 import CollectionId from "@/lib/client/CollectionId";
 import ResendUtils from "@/lib/ResendUtils";
-import { User } from "@/lib/Types";
 
 async function loadUsersIntoResend() {
 	console.log("Loading users into Resend...");
@@ -26,6 +25,8 @@ async function loadUsersIntoResend() {
 	}
 
 	console.log("Done!");
+
+	process.exit(0); // Needed to avoid having to Ctrl+C the script
 }
 
 loadUsersIntoResend();
