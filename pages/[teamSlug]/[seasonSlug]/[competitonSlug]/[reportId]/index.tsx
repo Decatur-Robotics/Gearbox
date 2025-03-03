@@ -14,9 +14,6 @@ import ClientApi from "@/lib/api/ClientApi";
 const api = new ClientApi();
 
 export default function Homepage(props: FormProps) {
-	const { session, status } = useCurrentSession();
-	const hide = status === "authenticated";
-
 	useEffect(() => {
 		if (props.report)
 			setInterval(() => api.checkInForReport(props.report._id!), 5000);
@@ -24,8 +21,7 @@ export default function Homepage(props: FormProps) {
 
 	return (
 		<Container
-			requireAuthentication={false}
-			hideMenu={!hide}
+			requireAuthentication={true}
 			title={`${props.report.robotNumber} | Quant Scouting`}
 		>
 			{props.report ? <Form {...props} /> : <p className="text-error">Welp.</p>}

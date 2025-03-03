@@ -74,11 +74,6 @@ export default function Container(props: ContainerProps) {
 	}, [eventSearch]);
 
 	useEffect(() => {
-		if (window.location.href.includes("signin")) {
-			console.log("triggered");
-			location.reload();
-		}
-
 		const loadTeams = async () => {
 			if (!user) {
 				return;
@@ -231,7 +226,7 @@ export default function Container(props: ContainerProps) {
 								</Link>
 							) : (
 								<a
-									href={"/api/auth/signin"}
+									href={"/signin"}
 									rel="noopener noreferrer"
 									target="_blank"
 								>
@@ -268,7 +263,7 @@ export default function Container(props: ContainerProps) {
 									<h2 className="card-title">Wait a minute...</h2>
 									<p>You need to sign in first!</p>
 									<div className="card-actions justify-end">
-										<Link href={"/api/auth/signin"}>
+										<Link href={"/signin"}>
 											<button className="btn btn-primary">Sign In</button>
 										</Link>
 									</div>
@@ -362,7 +357,8 @@ export default function Container(props: ContainerProps) {
 
 								<Link href={`/${selectedTeam?.slug}`}>
 									<button className="btn btn-ghost normal-case bg-base-100">
-										<BiHome className="text-2xl"></BiHome>Team Home
+										<BiHome className="text-2xl"></BiHome>
+										{selectedTeam?.alliance ? "Alliance Home" : "Team Home"}
 									</button>
 								</Link>
 

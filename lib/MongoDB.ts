@@ -5,6 +5,8 @@ import DbInterface, {
 	WithStringOrObjectIdId,
 } from "./client/dbinterfaces/DbInterface";
 import { default as BaseMongoDbInterface } from "mongo-anywhere/MongoDbInterface";
+import CachedDbInterface from "./client/dbinterfaces/CachedDbInterface";
+import { cacheOptions } from "./client/dbinterfaces/CachedDbInterface";
 
 if (!process.env.MONGODB_URI) {
 	// Necessary to allow connections from files running outside of Next
@@ -28,10 +30,17 @@ clientPromise = global.clientPromise;
 
 export { clientPromise };
 
-export async function getDatabase(): Promise<MongoDBInterface> {
+export async function getDatabase(
+	useCache: boolean = true,
+): Promise<DbInterface> {
 	if (!global.interface) {
 		await clientPromise;
-		const dbInterface = new MongoDBInterface(clientPromise);
+
+		const mongo = new MongoDBInterface(clientPromise);
+
+		const dbInterface = useCache
+			? new CachedDbInterface(mongo, cacheOptions)
+			: mongo;
 		await dbInterface.init();
 		global.interface = dbInterface;
 

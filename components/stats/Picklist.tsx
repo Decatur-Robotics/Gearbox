@@ -20,6 +20,8 @@ import {
 const SHOW_PICKLISTS_ON_TEAM_CARDS = false;
 const SHOW_CARD_IDS = false;
 
+const api = new ClientApi();
+
 function TeamCard(props: {
 	entry: PicklistEntry;
 	draggable: boolean;
@@ -297,8 +299,6 @@ export function TeamList(props: {
 	);
 }
 
-const api = new ClientApi();
-
 export default function PicklistScreen(props: {
 	teams: number[];
 	reports: Report[];
@@ -321,10 +321,16 @@ export default function PicklistScreen(props: {
 	const teams = props.teams.map((team) => ({ number: team }));
 
 	// Save picklists
-	useEffect(
-		() => savePicklistGroup(props.picklist._id, picklists, strikethroughs, api),
-		[props.picklist._id, picklists, strikethroughs],
-	);
+	useEffect(() => {
+		if (loadingPicklists !== LoadState.Loaded) return;
+		savePicklistGroup(props.picklist._id, picklists, strikethroughs, api);
+	}, [
+		props.picklist._id,
+		picklists,
+		strikethroughs,
+		LoadState.Loaded,
+		loadingPicklists,
+	]);
 
 	const updatePicklist = useCallback(
 		(picklist: Picklist) => {
