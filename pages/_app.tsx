@@ -11,12 +11,7 @@ import { NextSeo } from "next-seo";
 import ReactGA from "react-ga4";
 import { Toaster } from "react-hot-toast";
 
-import resolveConfig from "tailwindcss/resolveConfig";
-import tailwindConfig from "../tailwind.config.js";
 import Head from "next/head";
-import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
-
-const tailwind = resolveConfig(tailwindConfig);
 
 if (
 	process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID !== undefined &&
@@ -59,14 +54,16 @@ export default function App({
 						}}
 					/>
 					<Toaster
-						toastOptions={{
-							style: {
-								background: (
-									tailwind.theme.backgroundColor["zinc"] as any
-								)[900].toString(),
-								color: tailwind.theme.textColor["base-100"].toString(),
-							},
-						}}
+						toastOptions={
+							{
+								// style: {
+								// 	background: (
+								// 		tailwind.theme.backgroundColor["zinc"] as any
+								// 	)[900].toString(),
+								// 	color: tailwind.theme.textColor["base-100"].toString(),
+								// },
+							}
+						}
 					/>
 					<Component {...pageProps} />
 				</DndProvider>
