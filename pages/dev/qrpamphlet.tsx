@@ -18,12 +18,12 @@ export default function QrPamphlet() {
 				<div className="flex flex-row w-full">
 					<div className="flex flex-col w-1/2">
 						<ul className="text-3xl list-disc pl-5 space-y-1">
-							<li>Easy scouting for FTC & FRC</li>
-							<li>Pre-made scouting forms</li>
-							<li>Set up in under 5 minutes</li>
-							<li>Powerful data analytics</li>
-							<li>Works on any device</li>
-							<li>Optionally share your data</li>
+							<li>Easy scouting for FTC & FRC!</li>
+							<li>Pre-made scouting forms!</li>
+							<li>Set up in under 5 minutes!</li>
+							<li>Powerful data analytics!</li>
+							<li>Works on any device!</li>
+							<li>Optionally share your data!</li>
 						</ul>
 					</div>
 					<div className="flex flex-col justify-center w-3/5">
