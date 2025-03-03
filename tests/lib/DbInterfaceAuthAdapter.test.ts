@@ -7,8 +7,6 @@ import { get } from "http";
 
 const prototype = DbInterfaceAuthAdapter(undefined as any);
 
-async function getDatabase() {}
-
 async function getAdapterAndDb() {
 	const db = new InMemoryDbInterface();
 	await db.init();
@@ -80,6 +78,21 @@ describe(prototype.createUser.name, () => {
 		expect(foundUser?.name).toBeDefined();
 		expect(foundUser?.image).toBeDefined();
 	});
+
+	test("Does not create a new user if one already exists", async () => {
+		const { db, adapter } = await getAdapterAndDb();
+
+		const user = {
+			email: "test@gmail.com",
+		};
+
+		await adapter.createUser(user);
+		await adapter.createUser(user);
+
+		expect(
+			await db.countObjects(CollectionId.Users, { email: user.email }),
+		).toBe(1);
+	});
 });
 
 describe(prototype.getUser!.name, () => {
@@ -116,5 +129,43 @@ describe(prototype.getUser!.name, () => {
 		const foundUser = await adapter.getUser!(new ObjectId().toString());
 
 		expect(foundUser).toBeNull();
+	});
+});
+
+describe(prototype.getUserByEmail!.name, () => {
+	test("Returns a user from the database", async () => {
+		const { db, adapter } = await getAdapterAndDb();
+
+		const user = {
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const { _id, ...addedUser } = await db.addObject(
+			CollectionId.Users,
+			user as any,
+		);
+
+		const foundUser = await adapter.getUserByEmail!(user.email);
+
+		expect(foundUser).toMatchObject(addedUser);
+	});
+
+	test("Returns user without their _id", async () => {
+		const { db, adapter } = await getAdapterAndDb();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		await db.addObject(CollectionId.Users, user as any);
+
+		const foundUser = await adapter.getUserByEmail!(user.email);
+
+		const { _id, ...userWithoutId } = user;
+
+		expect(foundUser).toMatchObject(userWithoutId);
 	});
 });

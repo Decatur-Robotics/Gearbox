@@ -14,6 +14,7 @@ import { Toaster } from "react-hot-toast";
 import resolveConfig from "tailwindcss/resolveConfig";
 import tailwindConfig from "../tailwind.config.js";
 import Head from "next/head";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 const tailwind = resolveConfig(tailwindConfig);
 
