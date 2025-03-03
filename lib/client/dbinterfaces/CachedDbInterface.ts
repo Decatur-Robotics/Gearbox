@@ -8,7 +8,7 @@ import NodeCache from "node-cache";
 import { CacheOperation } from "mongo-anywhere/CachedDbInterface";
 
 export const cacheOptions: NodeCache.Options = {
-	stdTTL: 10 * 60,
+	stdTTL: 3 * 60,
 	useClones: false,
 };
 
