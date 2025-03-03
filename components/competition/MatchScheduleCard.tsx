@@ -19,7 +19,7 @@ export default function MatchScheduleCard(props: {
 	team: Team | undefined;
 	matches: Match[];
 	ranking: { place: number | string; max: number | string } | null;
-	matchesLoaded: boolean;
+	loadingMatches: boolean;
 	loadingReports: boolean;
 	loadingUsers: boolean;
 	noMatches: boolean;
@@ -42,7 +42,7 @@ export default function MatchScheduleCard(props: {
 		team,
 		matches,
 		ranking,
-		matchesLoaded,
+		loadingMatches,
 		loadingReports,
 		loadingUsers,
 		noMatches,
@@ -113,27 +113,17 @@ export default function MatchScheduleCard(props: {
 					<></>
 				)}
 				<div className="divider my-0"></div>
-				{matchesLoaded || loadingReports || loadingUsers ? (
-					<div className="w-full flex flex-col items-center justify-center">
-						<BsGearFill
-							className="animate-spin-slow"
-							size={75}
-						/>
-						{matchesLoaded && <h1>Loading Matches...</h1>}
-						{loadingReports && <h1>Loading Reports...</h1>}
-						{loadingUsers && <h1>Loading Users...</h1>}
-					</div>
-				) : (
+				{loadingMatches || loadingReports || loadingUsers ? (
 					<div className="w-full flex flex-col items-center space-y-2">
 						{noMatches || matches.length === 0 ? (
 							<div className="flex flex-col items-center justify-center font-bold space-y-4">
-								{matchesLoaded ? (
-									<h1>No Match Schedule Available</h1>
-								) : (
+								{loadingMatches ? (
 									<>
 										<Loading size={72} />
 										<h1>Matches Loading</h1>
 									</>
+								) : (
+									<h1>No Match Schedule Available</h1>
 								)}
 								<button
 									onClick={reloadCompetition}
@@ -318,6 +308,16 @@ export default function MatchScheduleCard(props: {
 								</div>
 							</div>
 						)}
+					</div>
+				) : (
+					<div className="w-full flex flex-col items-center justify-center">
+						<BsGearFill
+							className="animate-spin-slow"
+							size={75}
+						/>
+						{loadingMatches && <h1>Loading Matches...</h1>}
+						{loadingReports && <h1>Loading Reports...</h1>}
+						{loadingUsers && <h1>Loading Users...</h1>}
 					</div>
 				)}
 			</div>
