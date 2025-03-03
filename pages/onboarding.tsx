@@ -175,6 +175,7 @@ export default function Onboarding() {
 			team?.tbaId ?? NotLinkedToTba,
 			teamNumber,
 			league,
+			false,
 		);
 		if (!newTeam) {
 			setErrorMsg("Failed to create team");
@@ -326,12 +327,12 @@ export default function Onboarding() {
 															<br />
 															<br />
 															If you have any further questions, don&apos;t
-															hesitate to reach out on{" "}
+															hesitate to reach out on our{" "}
 															<a
 																className="link link-hover"
 																href="https://discord.gg/ha7AnqxFDD"
 															>
-																Discord
+																Discord server
 															</a>
 															.
 														</div>

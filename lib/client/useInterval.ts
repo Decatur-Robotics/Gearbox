@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /**
  * Can be janky. You've been warned.
  */
+
 export default function useInterval(
 	func: () => any,
 	interval: number,
 	deps: any[] = [],
 ) {
-	const [id, setId] = useState<NodeJS.Timeout | undefined>(undefined);
+	const [id, setId] = useState<NodeJS.Timeout>();
+	const callback = useCallback(func, [func, ...deps]);
 
 	useEffect(() => {
-		setId(setInterval(func, interval));
-		return () => clearInterval(id);
-	}, [func.name, interval, func, id, deps]);
+		console.log("Setting interval", interval);
+		const newInterval = setInterval(callback, interval);
+		setId(newInterval);
+		return () => clearInterval(newInterval);
+	}, [interval, callback]);
 
 	return id;
 }

@@ -34,6 +34,7 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
 				"tbaId",
 				1234,
 				League.FRC,
+				false,
 				[user._id!.toString()],
 				[user._id!.toString()],
 			),
@@ -131,7 +132,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 		const teamId = new ObjectId();
 
 		await db.addObject(CollectionId.Teams, {
-			...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
+			...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, false, [
 				user._id!.toString(),
 			]),
 			_id: teamId,
@@ -163,7 +164,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 		const teamId = new ObjectId();
 
 		await db.addObject(CollectionId.Teams, {
-			...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
+			...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, false, [
 				user._id!.toString(),
 			]),
 			_id: teamId,
@@ -578,9 +579,15 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
 	test(`${ClientApi.name}.${api.updateTeam.name}: Updates team`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
-			user._id!.toString(),
-		]);
+		const team = new Team(
+			"Test Team",
+			"test-team",
+			"tbaId",
+			1234,
+			League.FRC,
+			false,
+			[user._id!.toString()],
+		);
 		await db.addObject(CollectionId.Teams, team);
 
 		const newValues = { name: "Updated Team" };
@@ -623,9 +630,15 @@ describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
 	test(`${ClientApi.name}.${api.updateSeason.name}: Updates season`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
-			user._id!.toString(),
-		]);
+		const team = new Team(
+			"Test Team",
+			"test-team",
+			"tbaId",
+			1234,
+			League.FRC,
+			false,
+			[user._id!.toString()],
+		);
 		await db.addObject(CollectionId.Teams, team);
 
 		const season: Season = new Season(
@@ -683,9 +696,15 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 	test(`${ClientApi.name}.${api.updateReport.name}: Updates report`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
-			user._id!.toString(),
-		]);
+		const team = new Team(
+			"Test Team",
+			"test-team",
+			"tbaId",
+			1234,
+			League.FRC,
+			false,
+			[user._id!.toString()],
+		);
 		await db.addObject(CollectionId.Teams, team);
 
 		const match: Match = new Match(
@@ -754,9 +773,15 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
 	test(`${ClientApi.name}.${api.updatePitreport.name}: Updates pitreport`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
-			user._id!.toString(),
-		]);
+		const team = new Team(
+			"Test Team",
+			"test-team",
+			"tbaId",
+			1234,
+			League.FRC,
+			false,
+			[user._id!.toString()],
+		);
 		await db.addObject(CollectionId.Teams, team);
 
 		const competition = {
@@ -830,9 +855,15 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 	test(`${ClientApi.name}.${api.setSlackWebhook.name}: Sets webhook URL when team does not already have one`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
-			user._id!.toString(),
-		]);
+		const team = new Team(
+			"Test Team",
+			"test-team",
+			"tbaId",
+			1234,
+			League.FRC,
+			false,
+			[user._id!.toString()],
+		);
 		await db.addObject(CollectionId.Teams, team);
 
 		const webhookUrl = "test-webhook-url";
@@ -866,9 +897,15 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 	test(`${ClientApi.name}.${api.setSlackWebhook.name}: Updates webhook URL when team already has one`, async () => {
 		const { db, res, user } = await getTestApiUtils();
 
-		const team = new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, [
-			user._id!.toString(),
-		]);
+		const team = new Team(
+			"Test Team",
+			"test-team",
+			"tbaId",
+			1234,
+			League.FRC,
+			false,
+			[user._id!.toString()],
+		);
 		await db.addObject(CollectionId.Teams, team);
 
 		const webhookUrl = "test-webhook-url";

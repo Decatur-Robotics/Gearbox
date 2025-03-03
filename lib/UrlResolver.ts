@@ -29,7 +29,7 @@ export interface ResolvedUrlData {
  * @param object - Any `Object` with a `_id` property
  * @returns - The same object, but with `_id` set as a string
  */
-export function SerializeDatabaseObject(object: any): any {
+export function serializeDatabaseObject(object: any): any {
 	if (!object) {
 		return null;
 	}
@@ -46,8 +46,8 @@ export function SerializeDatabaseObject(object: any): any {
 	return object;
 }
 
-export function SerializeDatabaseObjects(objectArray: any[]): any[] {
-	return objectArray.map((obj) => SerializeDatabaseObject(obj));
+export function serializeDatabaseObjects(objectArray: any[]): any[] {
+	return objectArray.map((obj) => serializeDatabaseObject(obj));
 }
 
 /**
@@ -115,10 +115,10 @@ export default async function UrlResolver(
 		// find these slugs, and convert them to a JSON safe condition
 		// if they dont exist, simply return nothing
 		const data: ResolvedUrlData = {
-			team: SerializeDatabaseObject(await promises[0]),
-			season: SerializeDatabaseObject(await promises[1]),
-			competition: SerializeDatabaseObject(await promises[2]),
-			report: SerializeDatabaseObject(await promises[3]),
+			team: serializeDatabaseObject(await promises[0]),
+			season: serializeDatabaseObject(await promises[1]),
+			competition: serializeDatabaseObject(await promises[2]),
+			report: serializeDatabaseObject(await promises[3]),
 		};
 		return data;
 	} catch (error) {

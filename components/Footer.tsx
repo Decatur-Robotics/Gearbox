@@ -26,11 +26,9 @@ export default function Footer() {
 					? `SW Status: ${registration.active?.state}`
 					: "Service worker not found",
 			);
-			console.log("Service worker registration: ", registration);
 			if (registration) {
 				registration.addEventListener("updatefound", () => {
 					setSwStatus("Service worker update found");
-					console.log("Service worker update found");
 					registration.installing?.addEventListener("statechange", () => {
 						console.log(
 							"Service worker state change: ",
@@ -41,14 +39,6 @@ export default function Footer() {
 
 				registration.active?.addEventListener("statechange", () => {
 					setSwStatus(`SW Status: ${registration.active?.state}`);
-					console.log(
-						"Service worker state change: ",
-						registration.active?.state,
-					);
-				});
-
-				registration.update().then(() => {
-					console.log("Service worker update initiated");
 				});
 			}
 		});
