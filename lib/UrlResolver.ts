@@ -5,6 +5,7 @@ import { ObjectId } from "bson";
 import CollectionId from "./client/CollectionId";
 import { redirect } from "next/dist/server/api-utils";
 import { createRedirect } from "./Utils";
+import slugToId from "./slugToId";
 
 // fetches the database
 const gdb = getDatabase();
@@ -81,19 +82,13 @@ export default async function UrlResolver(
 
 	try {
 		const promises = [
-			db.findObject(CollectionId.Teams, { slug: teamSlug }),
-			seasonSlug
-				? db.findObject(CollectionId.Seasons, { slug: seasonSlug })
-				: null,
+			db.findObjectBySlug(CollectionId.Teams, teamSlug),
+			seasonSlug ? db.findObjectBySlug(CollectionId.Seasons, seasonSlug) : null,
 			competitionSlug
-				? db.findObject(CollectionId.Competitions, {
-						slug: competitionSlug,
-					})
+				? db.findObjectBySlug(CollectionId.Competitions, competitionSlug)
 				: null,
 			reportId
-				? db.findObject(CollectionId.Reports, {
-						_id: new ObjectId(reportId),
-					})
+				? db.findObjectById(CollectionId.Reports, new ObjectId(reportId))
 				: null,
 		];
 

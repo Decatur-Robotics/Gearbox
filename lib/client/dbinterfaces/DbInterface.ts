@@ -1,6 +1,10 @@
 import { ObjectId, Document } from "bson";
-import CollectionId, { CollectionIdToType } from "../CollectionId";
+import CollectionId, {
+	CollectionIdToType,
+	SluggedCollectionId,
+} from "../CollectionId";
 import { default as BaseDbInterface } from "mongo-anywhere/DbInterface";
+import slugToId from "@/lib/slugToId";
 
 export type WithStringOrObjectIdId<Type> = Omit<Type, "_id"> & {
 	_id?: ObjectId | string;
@@ -32,6 +36,14 @@ export default interface DbInterface
 	>(
 		collection: TId,
 		id: ObjectId,
+	): Promise<TObj | undefined>;
+
+	findObjectBySlug<
+		TId extends SluggedCollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(
+		collection: TId,
+		slug: string,
 	): Promise<TObj | undefined>;
 
 	findObject<TId extends CollectionId, TObj extends CollectionIdToType<TId>>(
