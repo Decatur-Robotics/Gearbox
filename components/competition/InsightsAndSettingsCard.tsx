@@ -54,7 +54,7 @@ export default function InsightsAndSettingsCard(props: {
 	const [redAlliance, setRedAlliance] = useState<number[]>([]);
 	const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
 
-	const exportAsCsv = async () => { 
+	const exportAsCsv = async () => {
 		setExportPending(true);
 
 		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
