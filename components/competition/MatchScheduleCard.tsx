@@ -267,8 +267,7 @@ export default function MatchScheduleCard(props: {
 														) : (
 															<div>
 																Subjective Scouter:{" "}
-																{usersById[match.subjectiveScouter ?? ""].name}
-																{" "}
+																{usersById[match.subjectiveScouter ?? ""].name}{" "}
 																<div
 																	className="tooltip before:w-[10rem] "
 																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
