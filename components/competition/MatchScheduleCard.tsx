@@ -9,7 +9,7 @@ import {
 } from "@/lib/Types";
 import Link from "next/link";
 import { BsGearFill } from "react-icons/bs";
-import { FaSync, FaCheck } from "react-icons/fa";
+import { FaSync, FaCheck, FaInfoCircle } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
@@ -268,11 +268,26 @@ export default function MatchScheduleCard(props: {
 															<div>
 																Subjective Scouter:{" "}
 																{usersById[match.subjectiveScouter ?? ""].name}
+																{" "}
+																<div
+																	className="tooltip before:w-[10rem] "
+																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
+																>
+																	<FaInfoCircle></FaInfoCircle>
+																</div>
 															</div>
 														)}
 													</div>
 												) : (
-													<div>No subjective scouter assigned</div>
+													<div>
+														No subjective scouter assigned{" "}
+														<div
+															className="tooltip before:w-[10rem] "
+															data-tip="Subjective Scouters watch the entire match and comment on what's going on"
+														>
+															<FaInfoCircle></FaInfoCircle>
+														</div>
+													</div>
 												)}
 											</div>
 											<a
