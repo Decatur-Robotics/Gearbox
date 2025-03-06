@@ -376,6 +376,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 					pitReports: pitReports,
 				},
 			);
+
+			// Create reports
+			const reportCreationPromises = matches.map((match) =>
+				generateReportsForMatch(db, match, comp.gameId),
+			);
+			await Promise.all(reportCreationPromises);
+
 			res.status(200).send({ result: "success" });
 		},
 	});
