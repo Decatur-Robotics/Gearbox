@@ -88,6 +88,11 @@ export default function Onboarding() {
 				return api.getTeamAutofillData(number, league ?? League.FRC);
 			})) ?? { number, name: "" };
 
+		if (team.number !== number) {
+			console.log("Team number mismatch", team.number, number);
+			return;
+		}
+
 		setTeam({
 			...team,
 			_id: (team as any)._id?.toString(),
@@ -126,6 +131,8 @@ export default function Onboarding() {
 			console.error("No team found for", teamNumber, league);
 			return;
 		}
+
+		console.log(team, session.user);
 
 		const requestPending =
 			team.requests?.includes(session?.user?._id ?? "") ?? false;

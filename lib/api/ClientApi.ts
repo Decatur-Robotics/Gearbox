@@ -97,18 +97,19 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.error(404, "Team not found");
 			}
 
-			if (team.users.indexOf((await userPromise)?._id?.toString() ?? "") > -1) {
+			const user = await userPromise;
+			if (team.users.includes(user!._id!.toString())) {
 				return res.status(200).send({ result: "Already on team" });
 			}
 
-			team.requests = removeDuplicates([
-				...team.requests,
-				(await userPromise)?._id?.toString(),
-			]);
-
 			await (
 				await db
-			).updateObjectById(CollectionId.Teams, new ObjectId(teamId), team);
+			).updateObjectById(CollectionId.Teams, new ObjectId(teamId), {
+				requests: removeDuplicates([
+					...team.requests,
+					(await userPromise)?._id?.toString(),
+				]),
+			});
 
 			return res.status(200).send({ result: "Success" });
 		},
