@@ -146,7 +146,7 @@ export default function Onboarding() {
 		else if (joinRequestStatus === JoinRequestStatus.Requested)
 			setJoinRequestStatus(JoinRequestStatus.Rejected);
 	}, [
-		session?.user?._id,
+		session?.user,
 		teamNumber,
 		league,
 		joinRequestStatus,

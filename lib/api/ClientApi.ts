@@ -2338,4 +2338,44 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			return res.status(200).send(val);
 		},
 	});
+
+	changeUserName = createNextRoute<
+		[string],
+		{ result: string },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfSignedIn,
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise, userPromise },
+			authData,
+			[name],
+		) => {
+			const db = await dbPromise;
+			const user = await userPromise;
+
+			if (name.length < 3 || name.length > 30)
+				return res
+					.status(400)
+					.send({ error: "Name must be between 1 and 30 characters" });
+
+			// Check if name is alphanumeric
+			for (const char of name) {
+				const code = char.toLowerCase().charCodeAt(0);
+				if (
+					!(code >= 97 && code <= 122) &&
+					!(code >= 48 && code <= 57) &&
+					code !== 32
+				)
+					return res.status(400).send({ error: "Name must be alphanumeric" });
+			}
+
+			await db.updateObjectById(CollectionId.Users, new ObjectId(user?._id!), {
+				name,
+			});
+			return res.status(200).send({ result: "success" });
+		},
+	});
 }

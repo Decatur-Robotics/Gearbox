@@ -942,3 +942,74 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 		expect(updatedWebhook?.url).toEqual(webhookUrl);
 	});
 });
+
+describe(`${ClientApi.name}.${api.changeUserName.name}`, () => {
+	test(`${ClientApi.name}.${api.changeUserName.name}: Updates user name`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const newName = "Updated User";
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, [newName])),
+		);
+
+		const updatedUser = await db.findObjectById(
+			CollectionId.Users,
+			new ObjectId(user._id!),
+		);
+		expect(updatedUser?.name).toEqual(newName);
+	});
+
+	test(`${ClientApi.name}.${api.changeUserName.name}: Returns 400 if name is empty`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, [""])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+	});
+
+	test(`${ClientApi.name}.${api.changeUserName.name}: Returns 400 if name is too long`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, ["a".repeat(101)])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+	});
+
+	test(`${ClientApi.name}.${api.changeUserName.name}: Returns 400 if name is too short`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, ["a"])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+	});
+
+	test(`${ClientApi.name}.${api.changeUserName.name}: Returns 400 if name is not alphanumeric (can include spaces)`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, ["^".repeat(10)])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		res.status.mockClear();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, ["a\\ b"])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		res.status.mockClear();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, ["<a b>"])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+	});
+});
