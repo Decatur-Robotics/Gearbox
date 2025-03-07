@@ -10,6 +10,9 @@ import {
 	createServer as createServerHttp,
 } from "http";
 import Logger from "./lib/client/Logger";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 const logger = new Logger(["STARTUP"]);
 
