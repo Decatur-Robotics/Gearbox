@@ -129,6 +129,7 @@ export default function DbInterfaceAuthAdapter(
 				providerAccountId.providerAccountId,
 				"=> User",
 				user._id,
+				user.name,
 			);
 
 			user.id = user._id?.toString()!;

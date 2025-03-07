@@ -1,17 +1,14 @@
-import { join } from "path";
 import { createServer as createServerHttps } from "https";
 import { parse } from "url";
 import next from "next";
-import fs, { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import {
 	IncomingMessage,
 	ServerResponse,
-	request,
 	createServer as createServerHttp,
 } from "http";
 import Logger from "./lib/client/Logger";
 import { configDotenv } from "dotenv";
-import { postDeployToRollbar } from "./lib/RollbarServerUtils";
 
 configDotenv();
 
@@ -74,8 +71,6 @@ app.prepare().then(() => {
 						` Server Running At: ${useHttps ? "https" : "http"}://localhost:` +
 						port,
 				);
-
-				postDeployToRollbar();
 			})
 			.on("error", (err: Error) => {
 				logger.error(err);
