@@ -1203,6 +1203,8 @@ namespace Reefscape {
 		AlgaeScoredAuto: number = 0;
 		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
+		HighestCoralLevel: ReefscapeEnums.CoralLevel =
+			ReefscapeEnums.CoralLevel.None;
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1218,6 +1220,7 @@ namespace Reefscape {
 			},
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
+			{ key: "HighestCoralLevel", label: "Highest Coral Level" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
@@ -1523,6 +1526,24 @@ namespace Reefscape {
 			badges.push({ text: "Can Score Algae Processor", color: "success" });
 		if (pitReport?.data?.CanDriveUnderShallowCage)
 			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
+
+		switch (pitReport?.data?.HighestCoralLevel) {
+			case ReefscapeEnums.CoralLevel.None:
+				badges.push({ text: "No Coral", color: "warning" });
+				break;
+			case ReefscapeEnums.CoralLevel.L1:
+				badges.push({ text: "L1 Coral", color: "info" });
+				break;
+			case ReefscapeEnums.CoralLevel.L2:
+				badges.push({ text: "L2 Coral", color: "secondary" });
+				break;
+			case ReefscapeEnums.CoralLevel.L3:
+				badges.push({ text: "L3 Coral", color: "primary" });
+				break;
+			case ReefscapeEnums.CoralLevel.L4:
+				badges.push({ text: "L4 Coral", color: "accent" });
+				break;
+		}
 
 		return badges;
 	}
