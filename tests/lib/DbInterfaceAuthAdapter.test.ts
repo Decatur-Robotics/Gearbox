@@ -4,7 +4,8 @@ import DbInterfaceAuthAdapter from "@/lib/DbInterfaceAuthAdapter";
 import { getTestRollbar } from "@/lib/testutils/TestUtils";
 import { _id } from "@next-auth/mongodb-adapter";
 import { ObjectId } from "bson";
-import { Account } from "next-auth";
+import { Account, Session } from "next-auth";
+import { AdapterSession } from "next-auth/adapters";
 
 const prototype = DbInterfaceAuthAdapter(undefined as any, undefined as any);
 
@@ -501,5 +502,324 @@ describe(prototype.linkAccount!.name, () => {
 		});
 
 		expect(foundAccounts).toHaveLength(1);
+	});
+});
+
+describe(prototype.unlinkAccount!.name, () => {
+	test("Unlinks an account from a user", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const account: Account = {
+			_id: new ObjectId(),
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: user._id as any,
+		};
+
+		await Promise.all([
+			db.addObject(CollectionId.Users, user as any),
+			db.addObject(CollectionId.Accounts, account),
+		]);
+
+		await adapter.unlinkAccount(account);
+
+		const foundAccount = await db.findObject(CollectionId.Accounts, {
+			provider: account.provider,
+			providerAccountId: account.providerAccountId,
+		});
+
+		expect(foundAccount).toBeUndefined();
+	});
+
+	test("Errors if the account doesn't exist", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		const account: Account = {
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: new ObjectId() as any,
+		};
+
+		await expect(adapter.unlinkAccount!(account)).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+
+	test("Does not delete the user", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const account: Account = {
+			_id: new ObjectId(),
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: user._id as any,
+		};
+
+		await Promise.all([
+			db.addObject(CollectionId.Users, user as any),
+			db.addObject(CollectionId.Accounts, account),
+		]);
+
+		await adapter.unlinkAccount(account);
+
+		const foundUser = await db.findObject(CollectionId.Users, {
+			email: user.email,
+		});
+
+		expect(foundUser).toEqual(user);
+	});
+});
+
+describe(prototype.getSessionAndUser!.name, () => {
+	test("Returns a session and user from the database", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const { _id, ...addedUser } = await db.addObject(
+			CollectionId.Users,
+			user as any,
+		);
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: _id as any,
+			expires: new Date(),
+		};
+
+		await db.addObject(CollectionId.Sessions, session as any);
+
+		const sessionAndUser = await adapter.getSessionAndUser!(
+			session.sessionToken,
+		);
+
+		expect(sessionAndUser?.session.sessionToken).toBe(session.sessionToken);
+		expect(sessionAndUser?.user).toMatchObject(addedUser);
+	});
+
+	test("Errors if the session doesn't exist", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		await expect(adapter.getSessionAndUser!("1234567890")).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+
+	test("Errors if the user doesn't exist", async () => {
+		const { adapter, db, rollbar } = await getDeps();
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: new ObjectId() as any,
+			expires: new Date(),
+		};
+
+		await db.addObject(CollectionId.Sessions, session as any);
+
+		await expect(
+			adapter.getSessionAndUser!(session.sessionToken),
+		).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+});
+
+describe(prototype.createSession!.name, () => {
+	test("Creates a session in the database", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		await db.addObject(CollectionId.Users, user as any);
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: user._id as any,
+			expires: new Date(),
+		};
+
+		await adapter.createSession!(session);
+
+		const foundSession = await db.findObject(CollectionId.Sessions, {
+			sessionToken: session.sessionToken,
+		});
+
+		expect(foundSession?.userId).toEqual(session.userId);
+	});
+
+	test("Errors if not given a userId", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: undefined as any,
+			expires: new Date(),
+		};
+
+		await expect(adapter.createSession!(session)).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+
+	test("Errors if the user doesn't exist", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: new ObjectId() as any,
+			expires: new Date(),
+		};
+
+		await expect(adapter.createSession!(session)).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+});
+
+describe(prototype.updateSession!.name, () => {
+	test("Updates a session in the database", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const { _id: userId } = await db.addObject(CollectionId.Users, user as any);
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: userId as any,
+			expires: new Date(),
+		};
+
+		const { _id: sessionId } = await db.addObject(
+			CollectionId.Sessions,
+			session as any,
+		);
+
+		const updatedSession = {
+			sessionToken: "1234567890",
+			userId: new ObjectId() as any,
+		};
+
+		await adapter.updateSession!(updatedSession);
+
+		const foundSession = await db.findObject(CollectionId.Sessions, {
+			sessionToken: updatedSession.sessionToken,
+		});
+
+		expect(foundSession?.userId).toEqual(updatedSession.userId);
+	});
+
+	test("Errors if not given a sessionToken", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		const session: AdapterSession = {
+			sessionToken: undefined as any,
+			userId: new ObjectId() as any,
+			expires: new Date(),
+		};
+
+		await expect(adapter.updateSession!(session as any)).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+
+	test("Errors if the session doesn't exist", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: new ObjectId() as any,
+			expires: new Date(),
+		};
+
+		await expect(adapter.updateSession!(session)).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+});
+
+describe(prototype.deleteSession!.name, () => {
+	test("Deletes a session from the database", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const { _id: userId } = await db.addObject(CollectionId.Users, user as any);
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: userId as any,
+			expires: new Date(),
+		};
+
+		const { _id: sessionId } = await db.addObject(
+			CollectionId.Sessions,
+			session as any,
+		);
+
+		await adapter.deleteSession!(session.sessionToken);
+
+		const foundSession = await db.findObject(CollectionId.Sessions, {
+			sessionToken: session.sessionToken,
+		});
+
+		expect(foundSession).toBeUndefined();
+	});
+
+	test("Errors if the session doesn't exist", async () => {
+		const { adapter, rollbar } = await getDeps();
+
+		await expect(adapter.deleteSession!("1234567890")).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
+
+	test("Does not delete the user", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const { _id: userId } = await db.addObject(CollectionId.Users, user as any);
+
+		const session: AdapterSession = {
+			sessionToken: "1234567890",
+			userId: userId as any,
+			expires: new Date(),
+		};
+
+		await db.addObject(CollectionId.Sessions, session as any);
+
+		await adapter.deleteSession!(session.sessionToken);
+
+		const foundUser = await db.findObject(CollectionId.Users, {
+			email: user.email,
+		});
+
+		expect(foundUser).toEqual(user);
 	});
 });

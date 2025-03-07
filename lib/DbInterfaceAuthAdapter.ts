@@ -287,6 +287,9 @@ export default function DbInterfaceAuthAdapter(
 
 			return account;
 		},
+		/**
+		 * Deletes an account, but not the user
+		 */
 		unlinkAccount: async (
 			providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
 		) => {
@@ -362,7 +365,9 @@ export default function DbInterfaceAuthAdapter(
 		},
 		createSession: async (data: Record<string, unknown>) => {
 			const db = await dbPromise;
+
 			const session = format.to<AdapterSession>(data);
+			session.userId = data["userId"] as any; // userId gets overwritten for some reason
 
 			if (!session.userId) {
 				logger.error("User ID not found in session:", session);
@@ -392,19 +397,6 @@ export default function DbInterfaceAuthAdapter(
 				throw new Error("User not found");
 			}
 
-			if (!user) {
-				logger.error(
-					"Session has invalid user. ID:",
-					session.userId,
-					"Session:",
-					session,
-				);
-				rollbar.error("Session has invalid user when creating session", {
-					session,
-				});
-				throw new Error("Session has invalid user.");
-			}
-
 			session.userId = user._id as any;
 
 			const dbSession = await db.addObject(
@@ -419,6 +411,7 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 			const { _id, ...session } = format.to<AdapterSession>(data);
+			session.userId = data["userId"] as any; // userId gets overwritten for some reason
 
 			logger.debug("Updating session:", session.sessionToken);
 
