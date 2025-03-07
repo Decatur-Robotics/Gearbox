@@ -51,13 +51,6 @@ describe(findObjectBySlugLookUp.name, () => {
 
 		await db.addObject("collection" as any, { _id: id, slug });
 
-		console.log("slugLookup", global.slugLookup);
-		console.log("obj by id", await db.findObjectById("collection" as any, id));
-		console.log(
-			"obj by slug",
-			await db.findObject("collection" as any, { slug }),
-		);
-
 		const obj = await findObjectBySlugLookUp(db, "collection" as any, slug);
 
 		expect(obj).toStrictEqual({ _id: id, slug });

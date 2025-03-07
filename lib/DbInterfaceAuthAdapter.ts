@@ -12,7 +12,7 @@ import { User, Session } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "bson";
 import Logger from "./client/Logger";
-import rollbar, { RollbarInterface } from "./client/RollbarUtils";
+import { RollbarInterface } from "./client/RollbarUtils";
 
 /**
  * @tested_by tests/lib/DbInterfaceAuthAdapter.test.ts
@@ -71,7 +71,7 @@ export default function DbInterfaceAuthAdapter(
 			user._id = new ObjectId(adapterUser._id) as any;
 
 			const dbUser = await db.addObject(CollectionId.Users, user);
-			logger.info("Created user:", dbUser._id?.toString());
+			logger.info("Created user:", dbUser._id!.toString());
 			return format.from<AdapterUser>(dbUser);
 		},
 		getUser: async (id: string) => {
@@ -91,9 +91,9 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.error("User not found when getting user", {
 					id,
 				});
-				return null;
+				throw new Error("User not found");
 			}
-			user.id = user._id?.toString()!;
+			user.id = user._id!.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		getUserByEmail: async (email: string) => {
@@ -103,8 +103,15 @@ export default function DbInterfaceAuthAdapter(
 
 			const user = await db.findObject(CollectionId.Users, { email });
 
-			if (!user) return null;
-			user.id = user._id?.toString()!;
+			if (!user) {
+				logger.error("User not found by email:", email);
+				rollbar.error("User not found when getting user by email", {
+					email,
+				});
+				throw new Error("User not found");
+			}
+
+			user.id = user._id!.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		getUserByAccount: async (
@@ -150,7 +157,7 @@ export default function DbInterfaceAuthAdapter(
 				user.name,
 			);
 
-			user.id = user._id?.toString()!;
+			user.id = user._id!.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		updateUser: async (
@@ -159,6 +166,14 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const { _id, ...user } = format.to<AdapterUser>(data);
 
+			if (!_id) {
+				logger.error("User ID not found when updating user:", user);
+				rollbar.error("User ID not found when updating user", {
+					user,
+				});
+				throw new Error("User ID not found");
+			}
+
 			logger.debug("Updating user:", _id);
 
 			const existing = await db.findObjectById(
@@ -166,7 +181,16 @@ export default function DbInterfaceAuthAdapter(
 				new ObjectId(_id),
 			);
 
-			user.id = existing?._id?.toString()!;
+			if (!existing) {
+				logger.error("User not found:", _id);
+				rollbar.error("User not found when updating user", {
+					_id,
+					user,
+				});
+				throw new Error("User not found");
+			}
+
+			user.id = existing._id!.toString()!;
 
 			await db.updateObjectById(
 				CollectionId.Users,
@@ -197,12 +221,12 @@ export default function DbInterfaceAuthAdapter(
 				userId: user._id,
 			});
 
-			const session = await db.findObject(CollectionId.Sessions, {
+			const sessions = await db.findObjects(CollectionId.Sessions, {
 				userId: user._id,
 			});
 
-			const promises = [
-				db.deleteObjectById(CollectionId.Users, new ObjectId(id)),
+			const promises: Promise<any>[] = [
+				db.deleteObjectById(CollectionId.Users, user._id as any as ObjectId),
 			];
 
 			if (account) {
@@ -211,9 +235,16 @@ export default function DbInterfaceAuthAdapter(
 				);
 			}
 
-			if (session) {
+			if (sessions.length) {
 				promises.push(
-					db.deleteObjectById(CollectionId.Sessions, new ObjectId(session._id)),
+					Promise.all(
+						sessions.map((session) =>
+							db.deleteObjectById(
+								CollectionId.Sessions,
+								new ObjectId(session._id),
+							),
+						),
+					),
 				);
 			}
 
