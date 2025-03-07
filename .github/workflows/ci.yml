@@ -17,7 +17,7 @@ jobs:
         with:
           tags: ghcr.io/decatur-robotics/gearbox:latest
           outputs: type=docker,dest=/tmp/gearbox.tar
-          secret-envs: \
+          secret-envs: |
             DEPLOY_ID=${{ needs.notify_rollbar.outputs.deploy_id }}
             GIT_SHA=${{ github.sha }}
 
