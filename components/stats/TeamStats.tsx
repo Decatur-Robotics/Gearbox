@@ -117,7 +117,7 @@ export default function TeamStats(props: {
 			props.selectedReports?.filter(
 				(report) => report.data?.comments.length > 0,
 			) ?? [];
-		if (commentList.length === 0) return setComments(newComments);
+		// if (commentList.length === 0) return setComments(newComments);
 
 		const promises = commentList.map((report) =>
 			api
