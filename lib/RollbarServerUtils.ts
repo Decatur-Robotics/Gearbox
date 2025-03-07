@@ -1,9 +1,9 @@
-export async function postDeployToRollbar() {
-	const gitCommitSha = require("child_process")
-		.execSync("git rev-parse HEAD")
-		.toString()
-		.trim();
+const gitCommitSha = require("child_process")
+	.execSync("git rev-parse HEAD")
+	.toString()
+	.trim();
 
+export async function postDeployToRollbar() {
 	const url = `https://api.rollbar.com/api/1/deploy/`;
 	const options = {
 		method: "POST",
