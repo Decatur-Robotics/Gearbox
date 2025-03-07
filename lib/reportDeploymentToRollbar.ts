@@ -1,6 +1,6 @@
 import getRollbar from "./client/RollbarUtils";
 
-export default async function reportDeploymentToRollbar() {
+export default function reportDeploymentToRollbar() {
 	const gitSha = process.env.GIT_SHA;
 	const deployId = process.env.DEPLOY_ID;
 
@@ -22,5 +22,7 @@ export default async function reportDeploymentToRollbar() {
 		}),
 	};
 
-	fetch(url, options);
+	fetch(url, options)
+		.then(() => console.log("Deployment reported to Rollbar"))
+		.catch((err) => getRollbar().error(err));
 }
