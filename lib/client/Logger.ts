@@ -1,5 +1,5 @@
 import Rollbar from "rollbar";
-import getRollbar from "../RollbarUtil";
+import getRollbar from "./RollbarUtils";
 export enum LogLevel {
 	Error,
 	Warning,
@@ -15,7 +15,7 @@ export default class Logger {
 	 */
 	constructor(
 		private tags: string[],
-		private rollbarThreshold: LogLevel | undefined = LogLevel.Error,
+		private rollbarThreshold: LogLevel | undefined = LogLevel.Warning,
 		private enabled: boolean = true,
 	) {
 		if (rollbarThreshold != undefined && !Logger.rollbar)

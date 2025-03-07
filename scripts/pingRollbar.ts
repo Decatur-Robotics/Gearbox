@@ -1,4 +1,4 @@
-import getRollbar from "@/lib/RollbarUtil";
+import getRollbar from "@/lib/client/RollbarUtils";
 
 console.log("Initializing Rollbar...");
 
