@@ -398,22 +398,6 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(200).send({ result: "not linked to TBA" });
 			}
 
-			const pitReports = await generatePitReports(
-				tba,
-				db,
-				comp.tbaId,
-				comp.gameId,
-			);
-
-			await db.updateObjectById(
-				CollectionId.Competitions,
-				new ObjectId(compId),
-				{
-					matches: matches.map((match) => String(match._id)),
-					pitReports: pitReports,
-				},
-			);
-
 			// Create reports
 			const reportCreationPromises = matches.map((match) =>
 				generateReportsForMatch(db, match, comp.gameId),

@@ -320,7 +320,7 @@ export default function CompetitionIndex({
 		const num = Math.floor(Math.random() * 1000000);
 		if (
 			prompt(
-				`Are you sure you want to reload the competition? This will overwrite ALL your data. We CANNOT recover your data. If you are sure, type '${num}'`,
+				`Are you sure you want to reload the competition? This will overwrite ALL your match scouting. We CANNOT recover your data. If you are sure, type '${num}'`,
 			) !== String(num)
 		) {
 			alert("Cancelled");
