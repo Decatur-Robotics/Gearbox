@@ -4,6 +4,7 @@ import DbInterfaceAuthAdapter from "@/lib/DbInterfaceAuthAdapter";
 import { getTestRollbar } from "@/lib/testutils/TestUtils";
 import { _id } from "@next-auth/mongodb-adapter";
 import { ObjectId } from "bson";
+import exp from "constants";
 import { Account, Session } from "next-auth";
 import { AdapterSession } from "next-auth/adapters";
 
@@ -821,5 +822,81 @@ describe(prototype.deleteSession!.name, () => {
 		});
 
 		expect(foundUser).toEqual(user);
+	});
+});
+
+describe(prototype.createVerificationToken!.name, () => {
+	test("Returns token", async () => {
+		const testToken = {
+			identifier: "hi",
+			expires: new Date(),
+			token: "hello",
+		};
+		const { adapter } = await getDeps();
+		const returnToken = await adapter.createVerificationToken!(testToken);
+		expect(returnToken).toBe(testToken);
+	});
+
+	test("Token is added to database", async () => {
+		const testToken = {
+			identifier: "hi",
+			expires: new Date(),
+			token: "hello",
+		};
+		const { adapter, db } = await getDeps();
+		await adapter.createVerificationToken!(testToken);
+		const foundToken = await db.findObject(CollectionId.VerificationTokens, {
+			identifier: testToken.identifier,
+		});
+		expect(foundToken?.identifier).toBe(testToken.identifier);
+		expect(foundToken?.token).toBe(testToken.token);
+	});
+});
+
+describe(prototype.useVerificationToken!.name, () => {
+	test("Returns token", async () => {
+		const testToken = {
+			identifier: "hi",
+			expires: new Date(),
+			token: "hello",
+		}
+
+		const { adapter, db } = await getDeps();
+
+		await db.addObject(CollectionId.VerificationTokens, testToken);
+		const foundToken = await adapter.useVerificationToken!(testToken);
+
+		expect(foundToken?.identifier).toBe(testToken.identifier);
+		expect(foundToken?.token).toBe(testToken.token);
+	});
+
+	test("Token is removed from database", async () => {
+		const testToken = {
+			identifier: "hi",
+			expires: new Date(),
+			token: "hello",
+		};
+
+		const { adapter, db } = await getDeps();
+
+		await db.addObject(CollectionId.VerificationTokens, testToken);
+		await adapter.useVerificationToken!(testToken);
+		const foundToken = await db.findObject(CollectionId.VerificationTokens, {
+			identifier: testToken.identifier,
+			token: testToken.token,
+		});
+
+		expect(foundToken).toBeUndefined();
+	});
+
+	test("Error if token doesn't exist", async () => {
+		const testToken = {
+			identifier: "hi",
+			expires: new Date(),
+			token: "hello",
+		};
+		const { adapter, rollbar } = await getDeps();
+		await expect(adapter.useVerificationToken!(testToken)).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
 	});
 });
