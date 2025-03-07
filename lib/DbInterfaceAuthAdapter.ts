@@ -204,9 +204,9 @@ export default function DbInterfaceAuthAdapter(
 			const account = format.to<AdapterAccount>(data);
 
 			logger.debug(
-				"Linking account:",
+				"Linking account: providerAccountId",
 				account.providerAccountId,
-				"User:",
+				"userId:",
 				account.userId,
 			);
 
@@ -249,8 +249,6 @@ export default function DbInterfaceAuthAdapter(
 		getSessionAndUser: async (sessionToken: string) => {
 			const db = await dbPromise;
 
-			logger.debug("Getting session and user:", sessionToken);
-
 			const session = await db.findObject(CollectionId.Sessions, {
 				sessionToken,
 			});
@@ -269,6 +267,14 @@ export default function DbInterfaceAuthAdapter(
 				logger.warn("User not found:", session.userId);
 				return null;
 			}
+
+			logger.debug(
+				"Got session and user. Session Token:",
+				sessionToken,
+				"User:",
+				user._id,
+				user.name,
+			);
 
 			return {
 				session: format.from<AdapterSession>(session),
