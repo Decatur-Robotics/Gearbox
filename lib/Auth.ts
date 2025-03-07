@@ -45,8 +45,6 @@ export const AuthenticationOptions: AuthOptions = {
 					[],
 				);
 
-				user.id = profile.sub;
-
 				return user;
 			},
 		}),
@@ -62,7 +60,7 @@ export const AuthenticationOptions: AuthOptions = {
 				).findObject(CollectionId.Users, { email: profile.email });
 
 				if (existing) {
-					existing.id = profile.sub;
+					existing.slackId = profile.sub;
 					console.log("Found existing user:", existing);
 					return existing;
 				}
@@ -80,7 +78,7 @@ export const AuthenticationOptions: AuthOptions = {
 					1,
 				);
 
-				user.id = profile.sub;
+				user.slackId = profile.sub;
 
 				return user;
 			},

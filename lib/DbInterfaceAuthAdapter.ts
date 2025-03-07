@@ -81,6 +81,7 @@ export default function DbInterfaceAuthAdapter(
 			);
 
 			if (!user) return null;
+			user.id = user._id?.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		getUserByEmail: async (email: string) => {
@@ -88,10 +89,11 @@ export default function DbInterfaceAuthAdapter(
 
 			logger.debug("Getting user by email:", email);
 
-			const account = await db.findObject(CollectionId.Users, { email });
+			const user = await db.findObject(CollectionId.Users, { email });
 
-			if (!account) return null;
-			return format.from<AdapterUser>(account);
+			if (!user) return null;
+			user.id = user._id?.toString()!;
+			return format.from<AdapterUser>(user);
 		},
 		getUserByAccount: async (
 			providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
@@ -121,6 +123,13 @@ export default function DbInterfaceAuthAdapter(
 				logger.warn("User not found:", account.userId);
 				return null;
 			}
+
+			logger.debug(
+				"Found user by account: Account",
+				providerAccountId.providerAccountId,
+				"=> User",
+				user._id,
+			);
 
 			user.id = user._id?.toString()!;
 			return format.from<AdapterUser>(user);
@@ -298,7 +307,27 @@ export default function DbInterfaceAuthAdapter(
 				throw new Error("User not found");
 			}
 
-			session.userId = new ObjectId(session.userId) as any;
+			if (!session.userId) {
+				logger.error("User ID not found in session:", session);
+				throw new Error("User ID not found in session.");
+			}
+
+			const user = await db.findObjectById(
+				CollectionId.Users,
+				new ObjectId(session.userId),
+			);
+
+			if (!user) {
+				logger.error(
+					"Session has invalid user. ID:",
+					session.userId,
+					"Session:",
+					session,
+				);
+				throw new Error("Session has invalid user.");
+			}
+
+			session.userId = user._id as any;
 
 			const dbSession = await db.addObject(
 				CollectionId.Sessions,
