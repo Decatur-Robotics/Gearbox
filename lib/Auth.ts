@@ -12,11 +12,13 @@ import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
 import Logger from "./client/Logger";
+import getRollbar from "./client/RollbarUtils";
 
 const logger = new Logger(["AUTH"]);
 
 const cachedDb = getDatabase();
-const adapter = DbInterfaceAuthAdapter(cachedDb, logger);
+const rollbar = getRollbar();
+const adapter = DbInterfaceAuthAdapter(cachedDb, rollbar, logger);
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,

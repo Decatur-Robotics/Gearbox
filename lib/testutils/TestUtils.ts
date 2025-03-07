@@ -8,6 +8,7 @@ import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
 import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
 import { NextResponse } from "unified-api-nextjs";
+import { RollbarInterface } from "../client/RollbarUtils";
 
 export class TestRes extends NextResponse<any> {
 	status = jest.fn((code) => this);
@@ -97,4 +98,13 @@ export async function getTestApiParams<
 		authData,
 		args,
 	];
+}
+
+export function getTestRollbar(): RollbarInterface {
+	return {
+		error: jest.fn(),
+		warn: jest.fn(),
+		info: jest.fn(),
+		debug: jest.fn(),
+	};
 }

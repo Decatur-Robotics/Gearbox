@@ -8,55 +8,21 @@ export enum LogLevel {
 }
 
 export default class Logger {
-	private static rollbar: Rollbar | undefined;
-
-	/**
-	 * @param rollbarThreshold Pass undefined to disable Rollbar
-	 */
 	constructor(
 		private tags: string[],
-		private rollbarThreshold: LogLevel | undefined = LogLevel.Warning,
 		private enabled: boolean = true,
-	) {
-		if (rollbarThreshold != undefined && !Logger.rollbar)
-			Logger.rollbar = getRollbar();
-	}
+	) {}
 
 	private prefix(level: LogLevel) {
 		return `[${this.tags.join(", ")}] [${LogLevel[level]}]`;
 	}
 
 	public extend(tags: string[]) {
-		return new Logger(
-			[...this.tags, ...tags],
-			this.rollbarThreshold,
-			this.enabled,
-		);
+		return new Logger([...this.tags, ...tags], this.enabled);
 	}
 
 	public event(level: LogLevel, ...args: unknown[]) {
 		if (!this.enabled) return;
-
-		if (this.rollbarThreshold !== undefined && level <= this.rollbarThreshold) {
-			const msg = args
-				.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
-				.join(" ");
-
-			switch (level) {
-				case LogLevel.Error:
-					Logger.rollbar!.error(msg);
-					break;
-				case LogLevel.Warning:
-					Logger.rollbar!.warning(msg);
-					break;
-				case LogLevel.Info:
-					Logger.rollbar!.info(msg);
-					break;
-				case LogLevel.Debug:
-					Logger.rollbar!.debug(msg);
-					break;
-			}
-		}
 
 		const prefix = this.prefix(level);
 

@@ -12,17 +12,19 @@ import { User, Session } from "./Types";
 import { GenerateSlug } from "./Utils";
 import { ObjectId } from "bson";
 import Logger from "./client/Logger";
+import rollbar, { RollbarInterface } from "./client/RollbarUtils";
 
 /**
  * @tested_by tests/lib/DbInterfaceAuthAdapter.test.ts
  */
 export default function DbInterfaceAuthAdapter(
 	dbPromise: Promise<DbInterface>,
+	rollbar: RollbarInterface,
 	baseLogger?: Logger,
 ): Adapter {
 	const logger =
 		(baseLogger && baseLogger.extend(["ADAPTER"])) ??
-		new Logger(["AUTH"], undefined, false);
+		new Logger(["AUTH"], false);
 
 	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
@@ -40,6 +42,10 @@ export default function DbInterfaceAuthAdapter(
 			if (existingUser) {
 				// If user exists, return existing user
 				logger.warn("User already exists:", existingUser.name);
+				rollbar.warn("User already exists when creating user", {
+					existingUser,
+					data,
+				});
 				return format.from<AdapterUser>(existingUser);
 			}
 
@@ -111,6 +117,9 @@ export default function DbInterfaceAuthAdapter(
 					"Account not found by providerAccountId:",
 					providerAccountId.providerAccountId,
 				);
+				rollbar.warn("Account not found when getting user by account", {
+					providerAccountId,
+				});
 				return null;
 			}
 
@@ -121,6 +130,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found:", account.userId);
+				rollbar.warn("User not found when getting user by account", {
+					providerAccountId,
+				});
 				return null;
 			}
 
@@ -169,6 +181,9 @@ export default function DbInterfaceAuthAdapter(
 			);
 			if (!user) {
 				logger.warn("User not found:", id);
+				rollbar.warn("User not found when deleting user", {
+					id,
+				});
 				return null;
 			}
 
@@ -217,6 +232,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (existing) {
 				logger.warn("Account already exists:", existing.providerAccountId);
+				rollbar.warn("Account already exists when linking account", {
+					account,
+				});
 				return format.from<AdapterAccount>(existing);
 			}
 
@@ -240,6 +258,9 @@ export default function DbInterfaceAuthAdapter(
 					"Account not found by providerAccountId:",
 					providerAccountId.providerAccountId,
 				);
+				rollbar.warn("Account not found when unlinking account", {
+					providerAccountId,
+				});
 				return null;
 			}
 
@@ -259,6 +280,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!session) {
 				logger.warn("Session not found:", sessionToken);
+				rollbar.warn("Session not found when getting session and user", {
+					sessionToken,
+				});
 				return null;
 			}
 
@@ -269,6 +293,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found:", session.userId);
+				rollbar.warn("User not found when getting session and user", {
+					sessionToken,
+				});
 				return null;
 			}
 
@@ -293,7 +320,10 @@ export default function DbInterfaceAuthAdapter(
 			const session = format.to<AdapterSession>(data);
 
 			if (!session.userId) {
-				logger.error("User ID not found in session:", session);
+				logger.warn("User ID not found in session:", session);
+				rollbar.warn("User ID not found in session when creating session", {
+					session,
+				});
 				throw new Error("User ID not found in session.");
 			}
 
@@ -311,16 +341,22 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found:", session.userId);
+				rollbar.warn("User not found", {
+					session,
+				});
 				throw new Error("User not found");
 			}
 
 			if (!user) {
-				logger.error(
+				logger.warn(
 					"Session has invalid user. ID:",
 					session.userId,
 					"Session:",
 					session,
 				);
+				rollbar.warn("Session has invalid user when creating session", {
+					session,
+				});
 				throw new Error("Session has invalid user.");
 			}
 
@@ -347,6 +383,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!existing) {
 				logger.warn("Session not found:", session.sessionToken);
+				rollbar.warn("Session not found when updating session", {
+					session,
+				});
 				return null;
 			}
 
@@ -373,6 +412,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!session) {
 				logger.warn("Session not found:", sessionToken);
+				rollbar.warn("Session not found when deleting session", {
+					sessionToken,
+				});
 				return null;
 			}
 
@@ -408,6 +450,9 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!existing) {
 				logger.warn("Verification token not found:", token.token);
+				rollbar.warn("Verification token not found when using token", {
+					token,
+				});
 				return null;
 			}
 

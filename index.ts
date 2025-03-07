@@ -9,6 +9,7 @@ import {
 } from "http";
 import Logger from "./lib/client/Logger";
 import { configDotenv } from "dotenv";
+import getRollbar from "./lib/client/RollbarUtils";
 
 configDotenv();
 
@@ -74,6 +75,7 @@ app.prepare().then(() => {
 			})
 			.on("error", (err: Error) => {
 				logger.error(err);
+				getRollbar().error(err);
 				throw err;
 			});
 
