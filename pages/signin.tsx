@@ -8,6 +8,10 @@ import {
 } from "react-google-recaptcha-v3";
 import { FaGoogle, FaSlack } from "react-icons/fa";
 
+const errorMessages: { [error: string]: string } = {
+	OAuthCallback: "Failed to sign in with OAuth provider",
+};
+
 function SignInCard() {
 	const router = useRouter();
 	const emailRef = useRef<HTMLInputElement>(null);
@@ -17,6 +21,8 @@ function SignInCard() {
 
 	useEffect(() => {
 		if (router.query.error) {
+			const error = router.query.error as string;
+			const message = error in errorMessages ? errorMessages[error] : error;
 			setError(router.query.error as string);
 		}
 	}, [router.query.error]);

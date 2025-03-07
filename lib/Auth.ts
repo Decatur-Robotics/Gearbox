@@ -34,6 +34,7 @@ export const AuthenticationOptions: AuthOptions = {
 					await cachedDb
 				).findObject(CollectionId.Users, { email: profile.email });
 				if (existingUser) {
+					existingUser.id = profile.sub;
 					return existingUser;
 				}
 
@@ -46,6 +47,8 @@ export const AuthenticationOptions: AuthOptions = {
 					[],
 					[],
 				);
+
+				user.id = profile.sub;
 
 				return user;
 			},
@@ -63,6 +66,7 @@ export const AuthenticationOptions: AuthOptions = {
 
 				if (existing) {
 					existing.slackId = profile.sub;
+					existing.id = profile.sub;
 					console.log("Found existing user:", existing);
 					return existing;
 				}
@@ -80,7 +84,7 @@ export const AuthenticationOptions: AuthOptions = {
 					1,
 				);
 
-				user.slackId = profile.sub;
+				user.id = profile.sub;
 
 				return user;
 			},
