@@ -1,14 +1,3 @@
-import Rollbar from "rollbar";
-
-export default function getRollbar() {
-	const rollbar = new Rollbar({
-		accessToken: process.env.ROLLBAR_TOKEN,
-		captureUncaught: true,
-		captureUnhandledRejections: true,
-	});
-	return rollbar;
-}
-
 export async function postDeployToRollbar() {
 	const gitCommitSha = require("child_process")
 		.execSync("git rev-parse HEAD")

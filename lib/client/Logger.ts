@@ -1,5 +1,5 @@
 import Rollbar from "rollbar";
-import getRollbar from "../RollbarUtil";
+import getRollbar from "./RollbarUtils";
 export enum LogLevel {
 	Error,
 	Warning,

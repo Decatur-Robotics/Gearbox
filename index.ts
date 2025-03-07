@@ -11,7 +11,7 @@ import {
 } from "http";
 import Logger from "./lib/client/Logger";
 import { configDotenv } from "dotenv";
-import { postDeployToRollbar } from "./lib/RollbarUtil";
+import { postDeployToRollbar } from "./lib/RollbarServerUtils";
 
 configDotenv();
 
