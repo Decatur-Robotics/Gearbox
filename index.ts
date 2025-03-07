@@ -10,6 +10,7 @@ import {
 import Logger from "./lib/client/Logger";
 import { configDotenv } from "dotenv";
 import getRollbar from "./lib/client/RollbarUtils";
+import reportDeploymentToRollbar from "./lib/reportDeploymentToRollbar";
 
 configDotenv();
 
@@ -72,6 +73,8 @@ app.prepare().then(() => {
 						` Server Running At: ${useHttps ? "https" : "http"}://localhost:` +
 						port,
 				);
+
+				reportDeploymentToRollbar();
 			})
 			.on("error", (err: Error) => {
 				logger.error(err);
