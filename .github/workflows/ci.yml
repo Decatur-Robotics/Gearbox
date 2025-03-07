@@ -17,9 +17,9 @@ jobs:
         with:
           tags: ghcr.io/decatur-robotics/gearbox:latest
           outputs: type=docker,dest=/tmp/gearbox.tar
-        env:
-          DEPLOY_ID: ${{ needs.notify_rollbar.outputs.deploy_id }}
-          GIT_SHA: ${{ github.sha }}
+          secret-envs: \
+            DEPLOY_ID=${{ needs.notify_rollbar.outputs.deploy_id }}
+            GIT_SHA=${{ github.sha }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
