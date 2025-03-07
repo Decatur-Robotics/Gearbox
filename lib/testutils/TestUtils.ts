@@ -93,6 +93,7 @@ export async function getTestApiParams<
 			userPromise: Promise.resolve(user),
 			tba: undefined,
 			resend: deps.resend ?? new TestResend(),
+			rollbar: getTestRollbar(),
 			...deps,
 		} as ApiDependencies,
 		authData,

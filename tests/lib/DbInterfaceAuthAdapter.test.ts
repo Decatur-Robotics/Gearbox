@@ -1,18 +1,19 @@
 import CollectionId from "@/lib/client/CollectionId";
 import InMemoryDbInterface from "@/lib/client/dbinterfaces/InMemoryDbInterface";
 import DbInterfaceAuthAdapter from "@/lib/DbInterfaceAuthAdapter";
+import { getTestRollbar } from "@/lib/testutils/TestUtils";
 import { _id } from "@next-auth/mongodb-adapter";
 import { ObjectId } from "bson";
 import { get } from "http";
 
-const prototype = DbInterfaceAuthAdapter(undefined as any);
+const prototype = DbInterfaceAuthAdapter(undefined as any, undefined as any);
 
 async function getAdapterAndDb() {
 	const db = new InMemoryDbInterface();
 	await db.init();
 
 	return {
-		adapter: DbInterfaceAuthAdapter(Promise.resolve(db)),
+		adapter: DbInterfaceAuthAdapter(Promise.resolve(db), getTestRollbar()),
 		db,
 	};
 }

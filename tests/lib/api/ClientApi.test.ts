@@ -1012,4 +1012,14 @@ describe(`${ClientApi.name}.${api.changeUserName.name}`, () => {
 
 		expect(res.status).toHaveBeenCalledWith(400);
 	});
+
+	test(`${ClientApi.name}.${api.changeUserName.name}: Allows certain special characters`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await api.changeUserName.handler(
+			...(await getTestApiParams(res, { db, user }, ["a-b_c'd e"])),
+		);
+
+		expect(res.status).toHaveBeenCalledWith(200);
+	});
 });

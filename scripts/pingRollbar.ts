@@ -8,6 +8,6 @@ const rollbar = getRollbar();
 console.log("Rollbar initialized");
 
 // record a generic message and send it to Rollbar
-rollbar.log("Pinged manually!");
+rollbar.info("Pinged manually!");
 
 console.log("Sent message to Rollbar");
