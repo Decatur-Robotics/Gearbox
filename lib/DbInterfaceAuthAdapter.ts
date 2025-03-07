@@ -81,6 +81,7 @@ export default function DbInterfaceAuthAdapter(
 			);
 
 			if (!user) return null;
+			user.id = user._id?.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		getUserByEmail: async (email: string) => {
@@ -88,10 +89,11 @@ export default function DbInterfaceAuthAdapter(
 
 			logger.debug("Getting user by email:", email);
 
-			const account = await db.findObject(CollectionId.Users, { email });
+			const user = await db.findObject(CollectionId.Users, { email });
 
-			if (!account) return null;
-			return format.from<AdapterUser>(account);
+			if (!user) return null;
+			user.id = user._id?.toString()!;
+			return format.from<AdapterUser>(user);
 		},
 		getUserByAccount: async (
 			providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
@@ -128,6 +130,8 @@ export default function DbInterfaceAuthAdapter(
 				"=> User",
 				user._id,
 			);
+
+			user.id = user._id?.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		updateUser: async (
