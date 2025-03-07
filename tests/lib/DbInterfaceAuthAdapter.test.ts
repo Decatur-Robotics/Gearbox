@@ -313,6 +313,22 @@ describe(prototype.updateUser!.name, () => {
 
 		expect(returnedUser).toMatchObject(expectedUser);
 	});
+
+	test("Errors if no _id is provided", async () => {
+		const { adapter, db, rollbar } = await getDeps();
+
+		const user = {
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		await db.addObject(CollectionId.Users, user as any);
+
+		await expect(
+			adapter.updateUser!({ name: "Test User 2" } as any),
+		).rejects.toThrow();
+		expect(rollbar.error).toHaveBeenCalled();
+	});
 });
 
 describe(prototype.deleteUser!.name, () => {
@@ -404,5 +420,86 @@ describe(prototype.deleteUser!.name, () => {
 		});
 
 		expect(foundSessions).toHaveLength(0);
+	});
+});
+
+describe(prototype.linkAccount!.name, () => {
+	test("Links an account to a user", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const account: Account = {
+			_id: new ObjectId(),
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: user._id as any,
+		};
+
+		await db.addObject(CollectionId.Users, user as any);
+
+		await adapter.linkAccount(account);
+
+		const foundAccount = await db.findObject(CollectionId.Accounts, {
+			provider: account.provider,
+			providerAccountId: account.providerAccountId,
+		});
+
+		expect(foundAccount).toEqual(account);
+	});
+
+	test("Warns if the account already exists", async () => {
+		const { adapter, db, rollbar } = await getDeps();
+
+		const account: Account = {
+			_id: new ObjectId(),
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: new ObjectId() as any,
+		};
+
+		await db.addObject(CollectionId.Accounts, account);
+
+		await adapter.linkAccount!(account);
+
+		expect(rollbar.warn).toHaveBeenCalled();
+	});
+
+	test("Does not create another account if one already exists", async () => {
+		const { db, adapter } = await getDeps();
+
+		const user = {
+			_id: new ObjectId(),
+			name: "Test User",
+			email: "test@gmail.com",
+		};
+
+		const account: Account = {
+			_id: new ObjectId(),
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: user._id as any,
+		};
+
+		await Promise.all([
+			db.addObject(CollectionId.Users, user as any),
+			db.addObject(CollectionId.Accounts, account),
+		]);
+
+		await adapter.linkAccount(account);
+
+		const foundAccounts = await db.findObjects(CollectionId.Accounts, {
+			provider: account.provider,
+			providerAccountId: account.providerAccountId,
+		});
+
+		expect(foundAccounts).toHaveLength(1);
 	});
 });

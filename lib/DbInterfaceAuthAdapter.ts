@@ -252,9 +252,14 @@ export default function DbInterfaceAuthAdapter(
 
 			return format.from<AdapterUser>(user);
 		},
+		/**
+		 * Creates an account
+		 */
 		linkAccount: async (data: Record<string, unknown>) => {
 			const db = await dbPromise;
+
 			const account = format.to<AdapterAccount>(data);
+			account.userId = data["userId"] as any; // userId gets overwritten for some reason
 
 			logger.debug(
 				"Linking account: providerAccountId",
@@ -263,16 +268,19 @@ export default function DbInterfaceAuthAdapter(
 				account.userId,
 			);
 
-			const existing = await db.findObject(CollectionId.Accounts, {
+			const existingAccount = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: account.providerAccountId,
 			});
 
-			if (existing) {
-				logger.warn("Account already exists:", existing.providerAccountId);
+			if (existingAccount) {
+				logger.warn(
+					"Account already exists:",
+					existingAccount.providerAccountId,
+				);
 				rollbar.warn("Account already exists when linking account", {
 					account,
 				});
-				return format.from<AdapterAccount>(existing);
+				return format.from<AdapterAccount>(existingAccount);
 			}
 
 			await db.addObject(CollectionId.Accounts, account);
