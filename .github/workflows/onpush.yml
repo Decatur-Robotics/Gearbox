@@ -10,6 +10,8 @@ on:
 jobs:
   notify_rollbar:
     uses: ./.github/workflows/notify_rollbar.yml
+    secrets:
+      ROLLBAR_ACCESS_TOKEN: ${{ secrets.ROLLBAR_ACCESS_TOKEN }}
 
   ci:
     needs: notify_rollbar
