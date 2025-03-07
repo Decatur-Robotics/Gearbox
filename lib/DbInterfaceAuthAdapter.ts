@@ -290,6 +290,12 @@ export default function DbInterfaceAuthAdapter(
 		createSession: async (data: Record<string, unknown>) => {
 			const db = await dbPromise;
 			const session = format.to<AdapterSession>(data);
+
+			if (!session.userId) {
+				logger.error("User ID not found in session:", session);
+				throw new Error("User ID not found in session.");
+			}
+
 			logger.debug(
 				"Creating session:",
 				session._id,
@@ -306,16 +312,6 @@ export default function DbInterfaceAuthAdapter(
 				logger.warn("User not found:", session.userId);
 				throw new Error("User not found");
 			}
-
-			if (!session.userId) {
-				logger.error("User ID not found in session:", session);
-				throw new Error("User ID not found in session.");
-			}
-
-			const user = await db.findObjectById(
-				CollectionId.Users,
-				new ObjectId(session.userId),
-			);
 
 			if (!user) {
 				logger.error(
