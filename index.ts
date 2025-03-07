@@ -10,6 +10,9 @@ import {
 	createServer as createServerHttp,
 } from "http";
 import Logger from "./lib/client/Logger";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 const logger = new Logger(["STARTUP"]);
 
@@ -36,6 +39,9 @@ const app = next({ dev, port });
 const handle = app.getRequestHandler();
 
 logger.debug("App preparing...");
+
+logger.error("This is an error");
+
 app.prepare().then(() => {
 	logger.debug("App prepared. Creating server...");
 

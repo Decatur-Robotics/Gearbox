@@ -1,3 +1,5 @@
+import Rollbar from "rollbar";
+import getRollbar from "../RollbarUtil";
 export enum LogLevel {
 	Error,
 	Warning,
@@ -6,21 +8,55 @@ export enum LogLevel {
 }
 
 export default class Logger {
+	private static rollbar: Rollbar | undefined;
+
+	/**
+	 * @param rollbarThreshold Pass undefined to disable Rollbar
+	 */
 	constructor(
 		private tags: string[],
+		private rollbarThreshold: LogLevel | undefined = LogLevel.Error,
 		private enabled: boolean = true,
-	) {}
+	) {
+		if (rollbarThreshold != undefined && !Logger.rollbar)
+			Logger.rollbar = getRollbar();
+	}
 
 	private prefix(level: LogLevel) {
 		return `[${this.tags.join(", ")}] [${LogLevel[level]}]`;
 	}
 
 	public extend(tags: string[]) {
-		return new Logger([...this.tags, ...tags], this.enabled);
+		return new Logger(
+			[...this.tags, ...tags],
+			this.rollbarThreshold,
+			this.enabled,
+		);
 	}
 
-	public print(level: LogLevel, ...args: unknown[]) {
+	public event(level: LogLevel, ...args: unknown[]) {
 		if (!this.enabled) return;
+
+		if (this.rollbarThreshold !== undefined && level <= this.rollbarThreshold) {
+			const msg = args
+				.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
+				.join(" ");
+
+			switch (level) {
+				case LogLevel.Error:
+					Logger.rollbar!.error(msg);
+					break;
+				case LogLevel.Warning:
+					Logger.rollbar!.warning(msg);
+					break;
+				case LogLevel.Info:
+					Logger.rollbar!.info(msg);
+					break;
+				case LogLevel.Debug:
+					Logger.rollbar!.debug(msg);
+					break;
+			}
+		}
 
 		const prefix = this.prefix(level);
 
@@ -36,19 +72,19 @@ export default class Logger {
 	}
 
 	public error(...args: unknown[]) {
-		this.print(LogLevel.Error, ...args);
+		this.event(LogLevel.Error, ...args);
 	}
 
 	public warn(...args: unknown[]) {
-		this.print(LogLevel.Warning, ...args);
+		this.event(LogLevel.Warning, ...args);
 	}
 
 	public info(...args: unknown[]) {
-		this.print(LogLevel.Info, ...args);
+		this.event(LogLevel.Info, ...args);
 	}
 
 	public debug(...args: unknown[]) {
-		this.print(LogLevel.Debug, ...args);
+		this.event(LogLevel.Debug, ...args);
 	}
 
 	public log(...args: unknown[]) {

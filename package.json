@@ -1,6 +1,6 @@
 {
 	"name": "sj3",
-	"version": "1.2.9",
+	"version": "1.2.10",
 	"private": true,
 	"repository": "https://github.com/Decatur-Robotics/Gearbox",
 	"license": "CC BY-NC-SA 4.0",
@@ -55,6 +55,7 @@
 		"react-p5": "^1.4.1",
 		"react-qr-code": "^2.0.15",
 		"resend": "^4.1.2",
+		"rollbar": "^2.26.4",
 		"string-similarity-js": "^2.1.4",
 		"ts-node": "^10.9.2",
 		"tsx": "^4.19.2",

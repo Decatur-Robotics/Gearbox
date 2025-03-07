@@ -22,7 +22,7 @@ export default function DbInterfaceAuthAdapter(
 ): Adapter {
 	const logger =
 		(baseLogger && baseLogger.extend(["ADAPTER"])) ??
-		new Logger(["AUTH"], false);
+		new Logger(["AUTH"], undefined, false);
 
 	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
@@ -100,17 +100,17 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 
-			logger.debug(
-				"Getting user by account:",
-				providerAccountId.providerAccountId,
-			);
+			logger.debug("Getting user by account:", providerAccountId);
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: providerAccountId.providerAccountId,
 			});
 
 			if (!account) {
-				logger.warn("Account not found:", providerAccountId.provider);
+				logger.warn(
+					"Account not found by providerAccountId:",
+					providerAccountId.providerAccountId,
+				);
 				return null;
 			}
 
@@ -235,7 +235,10 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!account) {
-				logger.warn("Account not found:", providerAccountId.providerAccountId);
+				logger.warn(
+					"Account not found by providerAccountId:",
+					providerAccountId.providerAccountId,
+				);
 				return null;
 			}
 
@@ -285,8 +288,6 @@ export default function DbInterfaceAuthAdapter(
 			};
 		},
 		createSession: async (data: Record<string, unknown>) => {
-			logger.debug("Creating session:", data);
-
 			const db = await dbPromise;
 			const session = format.to<AdapterSession>(data);
 
@@ -295,10 +296,22 @@ export default function DbInterfaceAuthAdapter(
 				throw new Error("User ID not found in session.");
 			}
 
+			logger.debug(
+				"Creating session:",
+				session._id,
+				"with user",
+				session.userId,
+			);
+
 			const user = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(session.userId),
 			);
+
+			if (!user) {
+				logger.warn("User not found:", session.userId);
+				throw new Error("User not found");
+			}
 
 			if (!user) {
 				logger.error(
