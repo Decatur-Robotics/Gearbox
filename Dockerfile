@@ -21,11 +21,5 @@ ARG DEPLOY_ID
 ENV GIT_SHA=${GIT_SHA}
 ENV DEPLOY_ID=${DEPLOY_ID}
 
-RUN echo "-----------------"
-RUN echo "Environment Variables:"
-RUN echo "GIT_SHA=${GIT_SHA}"
-RUN echo "DEPLOY_ID=${DEPLOY_ID}"
-RUN echo "-----------------"
-
 # ENTRYPOINT [ "bash" ] # Uncomment to operate the terminal in the container
 CMD ["/usr/local/bin/npm", "run", "start"]
