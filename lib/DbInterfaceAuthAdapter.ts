@@ -121,6 +121,13 @@ export default function DbInterfaceAuthAdapter(
 				logger.warn("User not found:", account.userId);
 				return null;
 			}
+
+			logger.debug(
+				"Found user by account: Account",
+				providerAccountId.providerAccountId,
+				"=> User",
+				user._id,
+			);
 			return format.from<AdapterUser>(user);
 		},
 		updateUser: async (
@@ -273,7 +280,27 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 			const session = format.to<AdapterSession>(data);
 
-			session.userId = new ObjectId(session.userId) as any;
+			if (!session.userId) {
+				logger.error("User ID not found in session:", session);
+				throw new Error("User ID not found in session.");
+			}
+
+			const user = await db.findObjectById(
+				CollectionId.Users,
+				new ObjectId(session.userId),
+			);
+
+			if (!user) {
+				logger.error(
+					"Session has invalid user. ID:",
+					session.userId,
+					"Session:",
+					session,
+				);
+				throw new Error("Session has invalid user.");
+			}
+
+			session.userId = user._id as any;
 
 			const dbSession = await db.addObject(
 				CollectionId.Sessions,
