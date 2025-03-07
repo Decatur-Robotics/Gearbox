@@ -13,7 +13,7 @@ import { AdapterUser } from "next-auth/adapters";
 import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
 import Logger from "./client/Logger";
 
-const logger = new Logger(["AUTH"], true);
+const logger = new Logger(["AUTH"]);
 
 const cachedDb = getDatabase();
 const adapter = DbInterfaceAuthAdapter(cachedDb, logger);

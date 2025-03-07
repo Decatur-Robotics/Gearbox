@@ -6,6 +6,7 @@ export default function getRollbar() {
 		captureUncaught: true,
 		captureUnhandledRejections: true,
 	});
-	rollbar.error("Rollbar initialized");
+	console.log("Rollbar initialized", process.env.ROLLBAR_TOKEN);
+	console.log(rollbar.log("Rollbar initialized"));
 	return rollbar;
 }

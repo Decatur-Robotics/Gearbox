@@ -98,17 +98,17 @@ export default function DbInterfaceAuthAdapter(
 		) => {
 			const db = await dbPromise;
 
-			logger.debug(
-				"Getting user by account:",
-				providerAccountId.providerAccountId,
-			);
+			logger.debug("Getting user by account:", providerAccountId);
 
 			const account = await db.findObject(CollectionId.Accounts, {
 				providerAccountId: providerAccountId.providerAccountId,
 			});
 
 			if (!account) {
-				logger.warn("Account not found:", providerAccountId.provider);
+				logger.warn(
+					"Account not found by providerAccountId:",
+					providerAccountId.providerAccountId,
+				);
 				return null;
 			}
 
@@ -226,7 +226,10 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!account) {
-				logger.warn("Account not found:", providerAccountId.providerAccountId);
+				logger.warn(
+					"Account not found by providerAccountId:",
+					providerAccountId.providerAccountId,
+				);
 				return null;
 			}
 
