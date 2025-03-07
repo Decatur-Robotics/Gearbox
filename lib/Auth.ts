@@ -174,6 +174,17 @@ export const AuthenticationOptions: AuthOptions = {
 	pages: {
 		signIn: "/signin",
 	},
+	logger: {
+		warn: (code) => {
+			logger.warn(code);
+			rollbar.warn(code);
+		},
+		error: (code, metadata) => {
+			logger.error(code, metadata);
+			rollbar.error(code, metadata);
+		},
+		debug: (code, metadata) => logger.debug(code, metadata),
+	},
 };
 
 export default NextAuth(AuthenticationOptions);
