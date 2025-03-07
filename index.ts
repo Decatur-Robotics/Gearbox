@@ -40,8 +40,6 @@ const handle = app.getRequestHandler();
 
 logger.debug("App preparing...");
 
-logger.error("This is an error");
-
 app.prepare().then(() => {
 	logger.debug("App prepared. Creating server...");
 
