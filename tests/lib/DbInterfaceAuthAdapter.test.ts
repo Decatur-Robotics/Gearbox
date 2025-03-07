@@ -4,7 +4,6 @@ import DbInterfaceAuthAdapter from "@/lib/DbInterfaceAuthAdapter";
 import { getTestRollbar } from "@/lib/testutils/TestUtils";
 import { _id } from "@next-auth/mongodb-adapter";
 import { ObjectId } from "bson";
-import { get } from "http";
 
 const prototype = DbInterfaceAuthAdapter(undefined as any, undefined as any);
 

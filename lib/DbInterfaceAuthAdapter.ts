@@ -86,7 +86,13 @@ export default function DbInterfaceAuthAdapter(
 				new ObjectId(id),
 			);
 
-			if (!user) return null;
+			if (!user) {
+				logger.error("User not found:", id);
+				rollbar.error("User not found when getting user", {
+					id,
+				});
+				return null;
+			}
 			user.id = user._id?.toString()!;
 			return format.from<AdapterUser>(user);
 		},
