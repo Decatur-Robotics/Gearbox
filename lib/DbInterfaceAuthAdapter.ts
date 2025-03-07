@@ -22,7 +22,7 @@ export default function DbInterfaceAuthAdapter(
 ): Adapter {
 	const logger =
 		(baseLogger && baseLogger.extend(["ADAPTER"])) ??
-		new Logger(["AUTH"], false);
+		new Logger(["AUTH"], undefined, false);
 
 	const adapter: Adapter = {
 		createUser: async (data: Record<string, unknown>) => {
