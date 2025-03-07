@@ -6,5 +6,6 @@ export default function getRollbar() {
 		captureUncaught: true,
 		captureUnhandledRejections: true,
 	});
+	rollbar.error("Rollbar initialized");
 	return rollbar;
 }

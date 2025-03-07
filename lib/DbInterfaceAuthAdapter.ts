@@ -121,6 +121,8 @@ export default function DbInterfaceAuthAdapter(
 				logger.warn("User not found:", account.userId);
 				return null;
 			}
+
+			user.id = user._id?.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		updateUser: async (

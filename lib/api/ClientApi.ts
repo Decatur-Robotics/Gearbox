@@ -47,6 +47,7 @@ import toast from "react-hot-toast";
 import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
+import Logger from "../client/Logger";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -55,6 +56,8 @@ const requestHelper = new RequestHelper(
 			`Failed API request: ${url}. If this is an error, please contact the developers.`,
 		),
 );
+
+const logger = new Logger(["API"]);
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
@@ -2160,7 +2163,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				email: { $ne: "totallyrealemail@gmail.com" },
 			});
 
-			console.log(
+			logger.log(
 				"ID Query:",
 				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
 			);
@@ -2173,7 +2176,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				},
 			});
 
-			console.log("Found", users, teams);
+			logger.log("Found", users, teams);
 
 			const leaderboardTeams = teams.reduce(
 				(acc, team) => {

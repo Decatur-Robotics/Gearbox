@@ -18,7 +18,8 @@ export default class Logger {
 		private rollbarThreshold: LogLevel | undefined = LogLevel.Error,
 		private enabled: boolean = true,
 	) {
-		if (rollbarThreshold && !Logger.rollbar) Logger.rollbar = getRollbar();
+		if (rollbarThreshold != undefined && !Logger.rollbar)
+			Logger.rollbar = getRollbar();
 	}
 
 	private prefix(level: LogLevel) {
@@ -36,23 +37,23 @@ export default class Logger {
 	public event(level: LogLevel, ...args: unknown[]) {
 		if (!this.enabled) return;
 
-		if (this.rollbarThreshold && level <= this.rollbarThreshold) {
+		if (this.rollbarThreshold !== undefined && level <= this.rollbarThreshold) {
 			const msg = args
 				.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
 				.join(" ");
 
 			switch (level) {
 				case LogLevel.Error:
-					Logger.rollbar?.error(msg);
+					Logger.rollbar!.error(msg);
 					break;
 				case LogLevel.Warning:
-					Logger.rollbar?.warning(msg);
+					Logger.rollbar!.warning(msg);
 					break;
 				case LogLevel.Info:
-					Logger.rollbar?.info(msg);
+					Logger.rollbar!.info(msg);
 					break;
 				case LogLevel.Debug:
-					Logger.rollbar?.debug(msg);
+					Logger.rollbar!.debug(msg);
 					break;
 			}
 		}
