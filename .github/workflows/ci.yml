@@ -12,6 +12,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Check envs
+        run: echo |
+          DEPLOY_ID=${{ needs.notify_rollbar.outputs.deploy_id }}
+          GIT_SHA=${{ github.sha }}
+
       - name: Build and export
         uses: docker/build-push-action@v6
         with:
