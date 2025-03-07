@@ -16,7 +16,7 @@ import Logger from "./client/Logger";
 const logger = new Logger(["AUTH"], true);
 
 const cachedDb = getDatabase();
-const adapter = DbInterfaceAuthAdapter(cachedDb);
+const adapter = DbInterfaceAuthAdapter(cachedDb, logger);
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
