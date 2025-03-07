@@ -382,9 +382,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			{ comp, team },
 			[compId],
 		) => {
-			const matches = await tba.getCompetitionQualifyingMatches(comp.tbaId!);
+			if (!comp.tbaId || comp.tbaId === NotLinkedToTba) {
+				return res.status(400).send({ result: "not linked to TBA" });
+			}
+
+			const matches = await tba.getCompetitionQualifyingMatches(comp.tbaId);
 			if (!matches || matches.length <= 0) {
-				res.status(200).send({ result: "none" });
+				res.status(404).send({ result: "No matches in TBA" });
 				return;
 			}
 
@@ -394,9 +398,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				async (match) => (await db.addObject(CollectionId.Matches, match))._id,
 			);
 
-			if (!comp.tbaId || comp.tbaId === NotLinkedToTba) {
-				return res.status(200).send({ result: "not linked to TBA" });
-			}
+			comp.matches = matches.map((match) => String(match._id));
+			await db.updateObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+				comp,
+			);
 
 			// Create reports
 			const reportCreationPromises = matches.map((match) =>
