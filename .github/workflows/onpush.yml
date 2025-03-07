@@ -16,6 +16,8 @@ jobs:
   ci:
     needs: notify_rollbar
     uses: ./.github/workflows/ci.yml
+    with:
+      deploy_id: ${{ needs.notify_rollbar.outputs.deploy_id }}
 
   cd:
     needs:
