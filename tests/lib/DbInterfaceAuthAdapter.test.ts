@@ -615,11 +615,12 @@ describe(prototype.getSessionAndUser!.name, () => {
 		expect(sessionAndUser?.user).toMatchObject(addedUser);
 	});
 
-	test("Errors if the session doesn't exist", async () => {
+	test("Returns null if the session doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
-		await expect(adapter.getSessionAndUser!("1234567890")).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		const session = await adapter.getSessionAndUser!("1234567890");
+
+		expect(session).toBeNull();
 	});
 
 	test("Errors if the user doesn't exist", async () => {

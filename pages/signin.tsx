@@ -9,7 +9,8 @@ import {
 import { FaGoogle, FaSlack } from "react-icons/fa";
 
 const errorMessages: { [error: string]: string } = {
-	OAuthCallback: "Failed to sign in with OAuth provider",
+	oauthcallback: "Failed to sign in with OAuth provider",
+	callback: "A server-side error occurred during sign in",
 };
 
 function SignInCard() {
@@ -21,9 +22,9 @@ function SignInCard() {
 
 	useEffect(() => {
 		if (router.query.error) {
-			const error = router.query.error as string;
+			const error = (router.query.error as string).toLowerCase();
 			const message = error in errorMessages ? errorMessages[error] : error;
-			setError(router.query.error as string);
+			setError(message);
 		}
 	}, [router.query.error]);
 

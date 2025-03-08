@@ -31,6 +31,7 @@ export default function DbInterfaceAuthAdapter(
 			const db = await dbPromise;
 
 			const adapterUser = format.to<AdapterUser>(data);
+			adapterUser._id = data["_id"] as any;
 
 			logger.debug("Creating user:", adapterUser.name);
 
@@ -327,11 +328,12 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!session) {
-				logger.error("Session not found:", sessionToken);
-				rollbar.error("Session not found when getting session and user", {
+				// Weirdly, this is ok.
+				logger.warn("Session not found:", sessionToken);
+				rollbar.warn("Session not found when getting session and user", {
 					sessionToken,
 				});
-				throw new Error("Session not found");
+				return null;
 			}
 
 			const user = await db.findObjectById(
