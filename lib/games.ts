@@ -1234,43 +1234,62 @@ namespace Reefscape {
 			{ key: "AutoMovedPastStartingLine", label: "Moved Past Starting Line" },
 			[
 				[
-					{ key: "AutoCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "AutoCoralScoredLevelOne",
+						label: "Coral Scored Level One (Auto)",
+					},
 					{
 						key: "AutoCoralScoredLevelThree",
-						label: "Coral Scored Level Three",
+						label: "Coral Scored Level Three (Auto)",
 					},
 				],
 				[
 					{
 						key: "AutoCoralScoredLevelTwo",
-						label: "Coral Scored Level Two",
+						label: "Coral Scored Level Two (Auto)",
 					},
-					{ key: "AutoCoralScoredLevelFour", label: "Coral Scored Level Four" },
+					{
+						key: "AutoCoralScoredLevelFour",
+						label: "Coral Scored Level Four (Auto)",
+					},
 				],
 			],
 			[
-				[{ key: "AutoAlgaeRemovedFromReef", label: "Algae Removed From Reef" }],
-				[{ key: "AutoAlgaeScoredProcessor", label: "Algae Scored Processor" }],
-				[{ key: "AutoAlgaeScoredNet", label: "Algae Scored Net" }],
+				[
+					{
+						key: "AutoAlgaeRemovedFromReef",
+						label: "Algae Removed From Reef (Auto)",
+					},
+				],
+				[
+					{
+						key: "AutoAlgaeScoredProcessor",
+						label: "Algae Scored Processor (Auto)",
+					},
+				],
+				[{ key: "AutoAlgaeScoredNet", label: "Algae Scored Net (Auto)" }],
 			],
 		],
 		Teleop: [
 			[
 				[
-					{ key: "TeleopCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "TeleopCoralScoredLevelOne",
+						label: "Coral Scored Level One (Teleop)",
+					},
 					{
 						key: "TeleopCoralScoredLevelThree",
-						label: "Coral Scored Level Three",
+						label: "Coral Scored Level Three (Teleop)",
 					},
 				],
 				[
 					{
 						key: "TeleopCoralScoredLevelTwo",
-						label: "Coral Scored Level Two",
+						label: "Coral Scored Level Two (Teleop)",
 					},
 					{
 						key: "TeleopCoralScoredLevelFour",
-						label: "Coral Scored Level Four",
+						label: "Coral Scored Level Four (Teleop)",
 					},
 				],
 			],
@@ -1278,16 +1297,16 @@ namespace Reefscape {
 				[
 					{
 						key: "TeleopAlgaeRemovedFromReef",
-						label: "Algae Removed From Reef",
+						label: "Algae Removed From Reef (Teleop)",
 					},
 				],
 				[
 					{
 						key: "TeleopAlgaeScoredProcessor",
-						label: "Algae Scored Processor",
+						label: "Algae Scored Processor (Teleop)",
 					},
 				],
-				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net" }],
+				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net (Teleop)" }],
 			],
 		],
 		"Post Match": ["EndgameClimbStatus"],
