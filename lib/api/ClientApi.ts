@@ -1250,20 +1250,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(400).send({ result: "match not found" });
 			}
 
-			match.blueAlliance = match.blueAlliance.map((team) => {
-				if (team === oldReport.robotNumber) {
-					return teamNumber;
+			for (let i = 0; i < match.blueAlliance.length + match.redAlliance.length) {
+				const arr = i < match.blueAlliance.length ? match.blueAlliance : match.redAlliance;
+				if (arr[i % arr.length] === oldReport.robotNumber) {
+					arr[i % arr.length] = teamNumber;
+					break;
 				}
-				return team;
-			});
-
-			match.redAlliance = match.redAlliance.map((team) => {
-				if (team === oldReport.robotNumber) {
-					return teamNumber;
-				}
-				return team;
-			});
-
+			}
+			
 			await db.updateObjectById(CollectionId.Matches, new ObjectId(matchId), {
 				blueAlliance: match.blueAlliance,
 				redAlliance: match.redAlliance,
