@@ -88,11 +88,11 @@ export default function DbInterfaceAuthAdapter(
 			);
 
 			if (!user) {
-				logger.error("User not found:", id);
-				rollbar.error("User not found when getting user", {
+				logger.warn("User not found:", id);
+				rollbar.warn("User not found when getting user", {
 					id,
 				});
-				throw new Error("User not found");
+				return null;
 			}
 			user.id = user._id!.toString()!;
 			return format.from<AdapterUser>(user);
@@ -105,11 +105,11 @@ export default function DbInterfaceAuthAdapter(
 			const user = await db.findObject(CollectionId.Users, { email });
 
 			if (!user) {
-				logger.error("User not found by email:", email);
-				rollbar.error("User not found when getting user by email", {
+				logger.warn("User not found by email:", email);
+				rollbar.warn("User not found when getting user by email", {
 					email,
 				});
-				throw new Error("User not found");
+				return null;
 			}
 
 			user.id = user._id!.toString()!;
@@ -143,11 +143,11 @@ export default function DbInterfaceAuthAdapter(
 			);
 
 			if (!user) {
-				logger.error("User not found:", account.userId);
-				rollbar.error("User not found when getting user by account", {
+				logger.warn("User not found:", account.userId);
+				rollbar.warn("User not found when getting user by account", {
 					providerAccountId,
 				});
-				throw new Error("User not found");
+				return null;
 			}
 
 			logger.debug(
@@ -342,11 +342,14 @@ export default function DbInterfaceAuthAdapter(
 			);
 
 			if (!user) {
-				logger.error("User not found:", session.userId);
-				rollbar.error("User not found when getting session and user", {
+				logger.warn("User not found:", session.userId);
+				rollbar.warn("User not found when getting session and user", {
 					sessionToken,
 				});
-				throw new Error("User not found");
+				return {
+					session: format.from<AdapterSession>(session),
+					user: null as any,
+				};
 			}
 
 			logger.debug(

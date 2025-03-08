@@ -129,11 +129,13 @@ describe(prototype.getUser!.name, () => {
 		expect(foundUser).toBeNull();
 	});
 
-	test("Errors if the user doesn't exist", async () => {
+	test("Warns and returns null if the user doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
-		await expect(adapter.getUser!(new ObjectId().toString())).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		const user = await adapter.getUser!(new ObjectId().toString());
+
+		expect(user).toBeNull();
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -174,11 +176,13 @@ describe(prototype.getUserByEmail!.name, () => {
 		expect(foundUser).toMatchObject(userWithoutId);
 	});
 
-	test("Errors if the user doesn't exist", async () => {
+	test("Warns and returns null if the user doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
-		await expect(adapter.getUserByEmail!("test@gmail.com")).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		const user = await adapter.getUserByEmail!("test@gmail.com");
+
+		expect(user).toBeNull();
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -224,7 +228,7 @@ describe(prototype.getUserByAccount!.name, () => {
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 
-	test("Errors if the user doesn't exist", async () => {
+	test("Warns and returns null if the user doesn't exist", async () => {
 		const { adapter, db, rollbar } = await getDeps();
 
 		const account: Account = {
@@ -236,8 +240,10 @@ describe(prototype.getUserByAccount!.name, () => {
 
 		await db.addObject(CollectionId.Accounts, account);
 
-		await expect(adapter.getUserByAccount!(account)).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		const user = await adapter.getUserByAccount!(account);
+
+		expect(user).toBeNull();
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -623,7 +629,7 @@ describe(prototype.getSessionAndUser!.name, () => {
 		expect(session).toBeNull();
 	});
 
-	test("Errors if the user doesn't exist", async () => {
+	test("Warns and returns null if the user doesn't exist", async () => {
 		const { adapter, db, rollbar } = await getDeps();
 
 		const session: AdapterSession = {
@@ -634,10 +640,13 @@ describe(prototype.getSessionAndUser!.name, () => {
 
 		await db.addObject(CollectionId.Sessions, session as any);
 
-		await expect(
-			adapter.getSessionAndUser!(session.sessionToken),
-		).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		const sessionAndUser = await adapter.getSessionAndUser!(
+			session.sessionToken,
+		);
+
+		expect(sessionAndUser?.session).toBeDefined();
+		expect(sessionAndUser?.user).toBeNull();
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
