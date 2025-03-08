@@ -859,7 +859,7 @@ describe(prototype.useVerificationToken!.name, () => {
 			identifier: "hi",
 			expires: new Date(),
 			token: "hello",
-		}
+		};
 
 		const { adapter, db } = await getDeps();
 
