@@ -322,7 +322,7 @@ export default function TeamStats(props: {
 									className="w-full"
 								>
 									<strong>Match {match.matchNum}</strong>
-									<ul className="w-full">
+									<ul className="w-full ml-2">
 										{match.content
 											.sort((a, b) => a.order - b.order)
 											.map((content, index) => (
