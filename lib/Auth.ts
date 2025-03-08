@@ -182,11 +182,11 @@ export const AuthenticationOptions: AuthOptions = {
 	logger: {
 		warn: (code) => {
 			logger.warn(code);
-			rollbar.warn(code);
+			rollbar.warn("Next-Auth: " + code);
 		},
 		error: (code, metadata) => {
 			logger.error(code, metadata);
-			rollbar.error(code, metadata);
+			rollbar.error("Next-Auth: " + code, metadata);
 		},
 		debug: (code, metadata) => logger.debug(code, metadata),
 	},
