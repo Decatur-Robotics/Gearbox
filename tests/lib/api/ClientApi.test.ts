@@ -1023,3 +1023,87 @@ describe(`${ClientApi.name}.${api.changeUserName.name}`, () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 	});
 });
+
+describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
+	test(`${ClientApi.name}.${api.changeTeamNumberForReport.name}: Updates team number for report`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const match: Match = new Match(
+			0,
+			"test-match",
+			"test-tbaId",
+			0,
+			MatchType.Qualifying,
+			[],
+			[],
+			[],
+		);
+		await db.addObject(CollectionId.Matches, match);
+
+		const report = new Report(
+			new ObjectId().toString(),
+			undefined as any,
+			0,
+			AllianceColor.Blue,
+			"",
+		);
+		await db.addObject(CollectionId.Reports, report);
+
+		const newTeam = 1;
+
+		await api.changeTeamNumberForReport.handler(
+			...(await getTestApiParams(res, { db, user }, [
+				match._id!.toString(),
+				report._id!.toString(),
+				newTeam,
+			])),
+		);
+
+		const updatedReport = await db.findObjectById(
+			CollectionId.Reports,
+			new ObjectId(report._id!),
+		);
+
+		expect(updatedReport?.robotNumber).toEqual(newTeam);
+	});
+
+	test(`${ClientApi.name}.${api.changeTeamNumberForReport.name}: Updates team number in match`, async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const report = new Report(
+			new ObjectId().toString(),
+			undefined as any,
+			0,
+			AllianceColor.Blue,
+			"",
+		);
+		const { _id: reportId } = await db.addObject(CollectionId.Reports, report);
+
+		const match: Match = new Match(
+			0,
+			"test-match",
+			"test-tbaId",
+			0,
+			MatchType.Qualifying,
+			[1, 2, 3],
+			[4, 5, 6],
+			[reportId!.toString()],
+		);
+		const { _id: matchId } = await db.addObject(CollectionId.Matches, match);
+
+		const newTeam = 0;
+
+		await api.changeTeamNumberForReport.handler(
+			...(await getTestApiParams(res, { db, user }, [
+				matchId!.toString(),
+				reportId!.toString(),
+				newTeam,
+			])),
+		);
+
+		const updatedMatch = await db.findObjectById(
+			CollectionId.Matches,
+			new ObjectId(match._id!),
+		);
+	});
+});

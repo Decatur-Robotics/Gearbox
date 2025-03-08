@@ -1211,6 +1211,68 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
+	changeTeamNumberForReport = createNextRoute<
+		[string, string, number],
+		{ result: string },
+		ApiDependencies,
+		any
+	>({
+		isAuthorized: (req, res, deps, [matchId, reportId]) =>
+			AccessLevels.IfReportOwner(req, res, deps, reportId),
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise, userPromise },
+			authData,
+			[matchId, reportId, teamNumber],
+		) => {
+			const db = await dbPromise;
+
+			const oldReport = await db.findObjectById(
+				CollectionId.Reports,
+				new ObjectId(reportId),
+			);
+
+			if (!oldReport) {
+				return res.status(400).send({ result: "report not found" });
+			}
+
+			await db.updateObjectById(CollectionId.Reports, new ObjectId(reportId), {
+				robotNumber: teamNumber,
+			});
+
+			// Update match
+			const match = await db.findObjectById(
+				CollectionId.Matches,
+				new ObjectId(matchId),
+			);
+			if (!match) {
+				return res.status(400).send({ result: "match not found" });
+			}
+
+			match.blueAlliance = match.blueAlliance.map((team) => {
+				if (team === oldReport.robotNumber) {
+					return teamNumber;
+				}
+				return team;
+			});
+
+			match.redAlliance = match.redAlliance.map((team) => {
+				if (team === oldReport.robotNumber) {
+					return teamNumber;
+				}
+				return team;
+			});
+
+			await db.updateObjectById(CollectionId.Matches, new ObjectId(matchId), {
+				blueAlliance: match.blueAlliance,
+				redAlliance: match.redAlliance,
+			});
+
+			return res.status(200).send({ result: "success" });
+		},
+	});
+
 	getCompReports = createNextRoute<
 		[string],
 		Report[],
