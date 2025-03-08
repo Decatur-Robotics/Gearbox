@@ -1314,6 +1314,24 @@ namespace Reefscape {
 					label: "Avg Amt Of Coral Scored Level Four Auto",
 				},
 				{
+					label: "Avg Auto Coral",
+					get(pitData, quantitativeReports) {
+						if (!quantitativeReports) return 0;
+
+						return (
+							quantitativeReports?.reduce(
+								(acc, report) =>
+									acc +
+									report.data.AutoCoralScoredLevelOne +
+									report.data.AutoCoralScoredLevelTwo +
+									report.data.AutoCoralScoredLevelThree +
+									report.data.AutoCoralScoredLevelFour,
+								0,
+							) / quantitativeReports?.length
+						);
+					},
+				},
+				{
 					key: "AutoAlgaeRemovedFromReef",
 					label: "Avg Amt of Algae Removed From Reef",
 				},
@@ -1342,6 +1360,24 @@ namespace Reefscape {
 				{
 					key: "TeleopCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Teleop",
+				},
+				{
+					label: "Avg Teleop Coral",
+					get(pitData, quantitativeReports) {
+						if (!quantitativeReports) return 0;
+
+						return (
+							quantitativeReports?.reduce(
+								(acc, report) =>
+									acc +
+									report.data.TeleopCoralScoredLevelOne +
+									report.data.TeleopCoralScoredLevelTwo +
+									report.data.TeleopCoralScoredLevelThree +
+									report.data.TeleopCoralScoredLevelFour,
+								0,
+							) / quantitativeReports?.length
+						);
+					},
 				},
 				{
 					key: "TeleopAlgaeRemovedFromReef",
