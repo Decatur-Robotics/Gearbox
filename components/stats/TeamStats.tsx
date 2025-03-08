@@ -179,7 +179,7 @@ export default function TeamStats(props: {
 		)[],
 	) {
 		const statElements = stats.map((stat, index) => {
-			if ((stat as Stat<PitReportData, QuantData>).key) {
+			if (!("stats" in stat)) {
 				// Single stat
 				const singleStat = stat as Stat<PitReportData, QuantData>;
 
@@ -189,14 +189,16 @@ export default function TeamStats(props: {
 						className="max-sm:text-xs"
 					>
 						{singleStat.label}:{" "}
-						{NumericalAverage(singleStat.key as string, props.selectedReports)}
+						{stat.get?.(pitReport ?? undefined, props.selectedReports) ??
+							NumericalAverage(singleStat.key as string, props.selectedReports)}
 					</h1>
 				);
 			}
 
 			// Stat pair
 			const pair = stat as StatPair<PitReportData, QuantData>;
-			if (pair.stats.length !== 2) {
+
+			if (pair.stats?.length !== 2) {
 				console.error("Invalid stat pair. Wrong # of stats provided.", pair);
 				return <></>;
 			}
