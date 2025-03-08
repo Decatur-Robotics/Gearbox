@@ -214,7 +214,7 @@ describe(prototype.getUserByAccount!.name, () => {
 		expect(foundUser).toMatchObject(addedUser);
 	});
 
-	test("Errors if the account doesn't exist", async () => {
+	test("Warns and returns null if the account doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
 		const account: Account = {
@@ -224,8 +224,10 @@ describe(prototype.getUserByAccount!.name, () => {
 			userId: new ObjectId() as any,
 		};
 
-		await expect(adapter.getUserByAccount!(account)).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		const user = await adapter.getUserByAccount!(account);
+
+		expect(user).toBeNull();
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
 	test("Warns and returns null if the user doesn't exist", async () => {
@@ -545,7 +547,7 @@ describe(prototype.unlinkAccount!.name, () => {
 		expect(foundAccount).toBeUndefined();
 	});
 
-	test("Errors if the account doesn't exist", async () => {
+	test("Warns if the account doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
 		const account: Account = {
@@ -555,8 +557,9 @@ describe(prototype.unlinkAccount!.name, () => {
 			userId: new ObjectId() as any,
 		};
 
-		await expect(adapter.unlinkAccount!(account)).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		await adapter.unlinkAccount!(account);
+
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
 	test("Does not delete the user", async () => {
@@ -690,7 +693,7 @@ describe(prototype.createSession!.name, () => {
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 
-	test("Errors if the user doesn't exist", async () => {
+	test("Warns if the user doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
 		const session: AdapterSession = {
@@ -699,8 +702,9 @@ describe(prototype.createSession!.name, () => {
 			expires: new Date(),
 		};
 
-		await expect(adapter.createSession!(session)).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		await adapter.createSession!(session);
+
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -749,7 +753,8 @@ describe(prototype.updateSession!.name, () => {
 			expires: new Date(),
 		};
 
-		await expect(adapter.updateSession!(session as any)).rejects.toThrow();
+		await adapter.updateSession!(session);
+
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 
@@ -762,7 +767,8 @@ describe(prototype.updateSession!.name, () => {
 			expires: new Date(),
 		};
 
-		await expect(adapter.updateSession!(session)).rejects.toThrow();
+		await adapter.updateSession!(session);
+
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 });
@@ -799,11 +805,12 @@ describe(prototype.deleteSession!.name, () => {
 		expect(foundSession).toBeUndefined();
 	});
 
-	test("Errors if the session doesn't exist", async () => {
+	test("Warns if the session doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
-		await expect(adapter.deleteSession!("1234567890")).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+		await adapter.deleteSession!("1234567890");
+
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
 	test("Does not delete the user", async () => {
@@ -899,14 +906,16 @@ describe(prototype.useVerificationToken!.name, () => {
 		expect(foundToken).toBeUndefined();
 	});
 
-	test("Error if token doesn't exist", async () => {
+	test("Warns if token doesn't exist", async () => {
 		const testToken = {
 			identifier: "hi",
 			expires: new Date(),
 			token: "hello",
 		};
 		const { adapter, rollbar } = await getDeps();
-		await expect(adapter.useVerificationToken!(testToken)).rejects.toThrow();
-		expect(rollbar.error).toHaveBeenCalled();
+
+		await adapter.useVerificationToken!(testToken);
+
+		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });

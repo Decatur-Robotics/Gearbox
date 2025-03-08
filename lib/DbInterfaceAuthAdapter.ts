@@ -127,14 +127,14 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!account) {
-				logger.error(
+				logger.warn(
 					"Account not found by providerAccountId:",
 					providerAccountId.providerAccountId,
 				);
-				rollbar.error("Account not found when getting user by account", {
+				rollbar.warn("Account not found when getting user by account", {
 					providerAccountId,
 				});
-				throw new Error("Account not found");
+				return null;
 			}
 
 			const user = await db.findObjectById(
@@ -303,14 +303,14 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!account) {
-				logger.error(
+				logger.warn(
 					"Account not found by providerAccountId:",
 					providerAccountId.providerAccountId,
 				);
-				rollbar.error("Account not found when unlinking account", {
+				rollbar.warn("Account not found when unlinking account", {
 					providerAccountId,
 				});
-				throw new Error("Account not found");
+				return null;
 			}
 
 			await db.deleteObjectById(
@@ -395,14 +395,11 @@ export default function DbInterfaceAuthAdapter(
 			);
 
 			if (!user) {
-				logger.error("User not found:", session.userId);
-				rollbar.error("User not found", {
+				logger.warn("User not found:", session.userId);
+				rollbar.warn("User not found", {
 					session,
 				});
-				throw new Error("User not found");
-			}
-
-			session.userId = user._id as any;
+			} else session.userId = user._id as any;
 
 			const dbSession = await db.addObject(
 				CollectionId.Sessions,
@@ -429,7 +426,7 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.error("Session not found when updating session", {
 					session,
 				});
-				throw new Error("Session not found");
+				return null;
 			}
 
 			if (session.userId) {
@@ -454,11 +451,11 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!session) {
-				logger.error("Session not found:", sessionToken);
-				rollbar.error("Session not found when deleting session", {
+				logger.warn("Session not found:", sessionToken);
+				rollbar.warn("Session not found when deleting session", {
 					sessionToken,
 				});
-				throw new Error("Session not found");
+				return null;
 			}
 
 			await db.deleteObjectById(
@@ -492,11 +489,11 @@ export default function DbInterfaceAuthAdapter(
 			});
 
 			if (!existing) {
-				logger.error("Verification token not found:", token.token);
-				rollbar.error("Verification token not found when using token", {
+				logger.warn("Verification token not found:", token.token);
+				rollbar.warn("Verification token not found when using token", {
 					token,
 				});
-				throw new Error("Verification token not found");
+				return null;
 			}
 
 			await db.deleteObjectById(
