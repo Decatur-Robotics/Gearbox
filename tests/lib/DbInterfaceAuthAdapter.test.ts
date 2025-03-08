@@ -648,8 +648,7 @@ describe(prototype.getSessionAndUser!.name, () => {
 			session.sessionToken,
 		);
 
-		expect(sessionAndUser?.session).toBeDefined();
-		expect(sessionAndUser?.user).toBeNull();
+		expect(sessionAndUser).toBeNull();
 		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });

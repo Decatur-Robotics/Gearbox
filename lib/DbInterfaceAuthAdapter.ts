@@ -347,10 +347,7 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.warn("User not found when getting session and user", {
 					sessionToken,
 				});
-				return {
-					session: format.from<AdapterSession>(session),
-					user: null as any,
-				};
+				return null;
 			}
 
 			logger.debug(
