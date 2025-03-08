@@ -284,7 +284,8 @@ describe(prototype.updateUser!.name, () => {
 			email: "test@gmail.com",
 		};
 
-		await expect(adapter.updateUser!(user as any)).rejects.toThrow();
+		await adapter.updateUser!(user as any);
+
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 
@@ -296,7 +297,8 @@ describe(prototype.updateUser!.name, () => {
 			email: "test@gmail.com",
 		};
 
-		await expect(adapter.updateUser!(user as any)).rejects.toThrow();
+		await adapter.updateUser!(user as any);
+
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 
@@ -334,9 +336,8 @@ describe(prototype.updateUser!.name, () => {
 
 		await db.addObject(CollectionId.Users, user as any);
 
-		await expect(
-			adapter.updateUser!({ name: "Test User 2" } as any),
-		).rejects.toThrow();
+		await adapter.updateUser!({ name: "Test User 2" } as any);
+
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 });
@@ -362,12 +363,12 @@ describe(prototype.deleteUser!.name, () => {
 		expect(foundUser).toBeUndefined();
 	});
 
-	test("Errors if the user doesn't exist", async () => {
+	test("Errors but returns null if the user doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
-		await expect(
-			adapter.deleteUser!(new ObjectId().toString()),
-		).rejects.toThrow();
+		const user = await adapter.deleteUser!(new ObjectId().toString());
+
+		expect(user).toBeNull();
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 
@@ -689,7 +690,7 @@ describe(prototype.createSession!.name, () => {
 			expires: new Date(),
 		};
 
-		await expect(adapter.createSession!(session)).rejects.toThrow();
+		await adapter.createSession!(session);
 		expect(rollbar.error).toHaveBeenCalled();
 	});
 

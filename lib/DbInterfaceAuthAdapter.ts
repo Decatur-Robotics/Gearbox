@@ -172,7 +172,8 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.error("User ID not found when updating user", {
 					user,
 				});
-				throw new Error("User ID not found");
+
+				return format.from<AdapterUser>(user);
 			}
 
 			logger.debug("Updating user:", _id);
@@ -188,7 +189,7 @@ export default function DbInterfaceAuthAdapter(
 					_id,
 					user,
 				});
-				throw new Error("User not found");
+				return format.from<AdapterUser>(user);
 			}
 
 			user.id = existing._id!.toString()!;
@@ -215,7 +216,7 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.error("User not found when deleting user", {
 					id,
 				});
-				throw new Error("User not found");
+				return null;
 			}
 
 			const account = await db.findObject(CollectionId.Accounts, {
@@ -379,7 +380,13 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.error("User ID not found in session when creating session", {
 					session,
 				});
-				throw new Error("User ID not found in session.");
+
+				const dbSession = await db.addObject(
+					CollectionId.Sessions,
+					session as unknown as Session,
+				);
+
+				return format.from<AdapterSession>(dbSession);
 			}
 
 			logger.debug(
