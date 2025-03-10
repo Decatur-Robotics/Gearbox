@@ -186,7 +186,7 @@ export default function TeamStats(props: {
 				return (
 					<h1
 						key={index}
-						className="max-sm:text-xs"
+						className="max-sm:text-s"
 					>
 						{singleStat.label}:{" "}
 						{stat.get?.(pitReport ?? undefined, props.selectedReports) ??
