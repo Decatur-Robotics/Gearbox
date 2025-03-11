@@ -1200,11 +1200,13 @@ namespace Reefscape {
 		CanRemoveAlgae: boolean = false;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNet: boolean = false;
+		CanScoreCoral1: boolean = false;
+		CanScoreCoral2: boolean = false;
+		CanScoreCoral3: boolean = false;
+		CanScoreCoral4: boolean = false;
 		AlgaeScoredAuto: number = 0;
 		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
-		HighestCoralLevel: ReefscapeEnums.CoralLevel =
-			ReefscapeEnums.CoralLevel.None;
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1219,8 +1221,11 @@ namespace Reefscape {
 				label: "Can Score Algae in Processor?",
 			},
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
+			{ key: "CanScoreCoral1", label: "Can Score Coral at L1?" },
+			{ key: "CanScoreCoral2", label: "Can Score Coral at L2?" },
+			{ key: "CanScoreCoral3", label: "Can Score Coral at L13" },
+			{ key: "CanScoreCoral4", label: "Can Score Coral at L4?" },
 			{ key: "Climbing", label: "Climbing?" },
-			{ key: "HighestCoralLevel", label: "Highest Coral Level" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
