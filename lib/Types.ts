@@ -7,7 +7,7 @@ import {
 import { TheBlueAlliance } from "./TheBlueAlliance";
 import { GameId, defaultGameId } from "./client/GameId";
 import { Defense, FrcDrivetrain, Motors, SwerveLevel } from "./Enums";
-import { 
+import {
 	FormLayoutProps,
 	FormLayout,
 	Badge,
