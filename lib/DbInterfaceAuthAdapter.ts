@@ -270,7 +270,8 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.warn("Account already exists when linking account", {
 					account,
 				});
-				return format.from<AdapterAccount>(existingAccount);
+
+				return format.from<AdapterAccount>(account);
 			}
 
 			await db.addObject(CollectionId.Accounts, account);

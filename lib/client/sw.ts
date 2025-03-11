@@ -1,7 +1,6 @@
-import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { CacheFirst, Serwist } from "serwist";
-import { request } from "@/lib/TheOrangeAlliance";
+import { Serwist } from "serwist";
+import { defaultCache } from "@serwist/next/worker";
 
 declare global {
 	interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -16,18 +15,7 @@ const serwist = new Serwist({
 	skipWaiting: true,
 	clientsClaim: true,
 	navigationPreload: true,
-	runtimeCaching: [
-		{
-			matcher: ({ request }) => {
-				console.log(request);
-				return request.destination === "" && request.url.includes("api");
-			},
-			handler: new CacheFirst({
-				cacheName: "api",
-			}),
-		},
-		...defaultCache,
-	],
+	runtimeCaching: defaultCache,
 	fallbacks: {
 		entries: [
 			{
@@ -38,11 +26,11 @@ const serwist = new Serwist({
 	},
 });
 
-self.addEventListener("fetch", async (event) => {
-	console.log(event.request);
-	event.respondWith(
-		await serwist.handleRequest({ request: event.request, event: event })!,
-	);
-});
+// self.addEventListener("fetch", async (event) => {
+// 	console.log(event.request);
+// 	event.respondWith(
+// 		await serwist.handleRequest({ request: event.request, event: event })!,
+// 	);
+// });
 
 serwist.addEventListeners();

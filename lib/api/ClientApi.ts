@@ -668,7 +668,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				);
 			return res.status(200).send(reports);
 		},
-		fallback: async ([compId, submitted, usePublicData]) => {
+		fallback: async (compId, submitted, usePublicData) => {
+			console.log("Running fallback for competitionReports...");
+
 			const localDb = new LocalStorageDbInterface();
 			await localDb.init();
 
