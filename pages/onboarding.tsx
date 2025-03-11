@@ -10,6 +10,7 @@ import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { ObjectId } from "bson";
 
 const api = new ClientApi();
 
@@ -22,7 +23,7 @@ export default function Onboarding() {
 		number | undefined
 	>();
 	const [team, setTeam] = useState<{
-		_id?: string;
+		_id?: ObjectId;
 		name: string;
 		number: number;
 		slug?: string;
@@ -109,7 +110,7 @@ export default function Onboarding() {
 		if (!session?.user?._id || !teamNumber) return;
 
 		setJoinRequestStatus(JoinRequestStatus.Requested);
-		await api.requestToJoinTeam(team?._id!);
+		await api.requestToJoinTeam(team?._id!.toString()!);
 	}
 
 	const updateTeamRequestStatus = useCallback(async () => {

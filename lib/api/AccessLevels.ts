@@ -83,7 +83,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		teamId: string,
+		teamId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {

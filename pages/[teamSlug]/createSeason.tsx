@@ -28,7 +28,7 @@ export default function CreateSeason(props: CreateSeasonProps) {
 		const s = await api.createSeason(
 			game.name,
 			game.year,
-			team?._id.toString(),
+			team?._id,
 			gameId,
 		);
 		const win: Window = window;

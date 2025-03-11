@@ -395,7 +395,7 @@ export default function CompetitionIndex({
 
 	function remindUserOnSlack(userId: string) {
 		if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))
-			api.remindSlack(team._id.toString(), userId);
+			api.remindSlack(team._id, userId);
 	}
 
 	return (

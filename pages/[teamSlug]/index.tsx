@@ -195,7 +195,7 @@ function Roster(props: TeamPageProps) {
 			scouters?.push(userId);
 		}
 
-		await api.updateTeam({ scouters }, team?._id.toString()!);
+		await api.updateTeam({ scouters }, team?._id!);
 		setTeam(teamClone);
 	};
 
@@ -213,7 +213,7 @@ function Roster(props: TeamPageProps) {
 
 		await api.updateTeam(
 			{ subjectiveScouters: scouters },
-			team?._id.toString()!,
+			team?._id!,
 		);
 		setTeam(teamClone);
 	};
@@ -227,7 +227,7 @@ function Roster(props: TeamPageProps) {
 			owners?.push(userId);
 		}
 
-		await api.updateTeam({ owners }, team?._id.toString()!);
+		await api.updateTeam({ owners }, team?._id!);
 		setTeam(teamClone);
 	};
 
@@ -237,7 +237,7 @@ function Roster(props: TeamPageProps) {
 		}
 
 		const { team: newTeam } = await api.removeUserFromTeam(
-			team?._id.toString() ?? "",
+			team?._id!,
 			userId,
 		);
 		setTeam(newTeam);
@@ -421,7 +421,7 @@ function Settings(props: TeamPageProps) {
 			return;
 		}
 
-		await api.updateTeam({ name: teamName }, props.team?._id.toString()!);
+		await api.updateTeam({ name: teamName }, props.team?._id!);
 		location.reload();
 	};
 
@@ -544,7 +544,7 @@ export default function TeamIndex(props: TeamPageProps) {
 						{team?.owners.includes(session?.user?._id ?? "") && (
 							<AddToSlack
 								edit={team?.slackWebhook !== undefined}
-								teamId={team._id.toString()}
+								teamId={team._id}
 							/>
 						)}
 					</div>
@@ -627,7 +627,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	users = users.map((user) => {
 		var c = structuredClone(user);
 		c._id = user?._id?.toString();
-		c.teams = user.teams.map((id) => String(id));
+		c.teams = user.teams.map((id) => (id));
 		return c;
 	});
 

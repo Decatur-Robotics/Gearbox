@@ -318,7 +318,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	createSeason = createNextRoute<
-		[string, number, string, GameId],
+		[string, number, ObjectId, GameId],
 		Season,
 		ApiDependencies,
 		Team
@@ -805,7 +805,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	remindSlack = createNextRoute<
-		[string, string],
+		[ObjectId, string],
 		{ result: string },
 		ApiDependencies,
 		Team
@@ -857,7 +857,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	setSlackWebhook = createNextRoute<
-		[string, string],
+		[ObjectId, string],
 		{ result: string },
 		ApiDependencies,
 		Team
@@ -1831,7 +1831,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	removeUserFromTeam = createNextRoute<
-		[string, string],
+		[ObjectId, string],
 		{ result: string; team: Team },
 		ApiDependencies,
 		Team
@@ -1880,7 +1880,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const newUserData: User = {
 				...removedUser,
 				teams: removedUser.teams.filter((id) => id !== teamId),
-				owner: removedUser.owner.filter((id) => id !== teamId),
+				owner: removedUser.owner.filter((id) => new ObjectId(id) !== teamId),
 			};
 
 			await db.updateObjectById(
@@ -1930,7 +1930,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findTeamById = createNextRoute<
-		[string],
+		[ObjectId],
 		Team | undefined,
 		ApiDependencies,
 		void
@@ -2107,7 +2107,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	updateTeam = createNextRoute<
-		[object, string],
+		[object, ObjectId],
 		{ result: string },
 		ApiDependencies,
 		Team
@@ -2319,7 +2319,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const leaderboardTeams = teams.reduce(
 				(acc, team) => {
 					acc[team._id!.toString()] = {
-						_id: team._id!.toString(),
+						_id: team._id!,
 						name: team.name,
 						number: team.number,
 						league: team.league ?? League.FRC,
@@ -2339,14 +2339,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 					xp: user.xp,
 					level: user.level,
 					teams: user.teams
-						.map((id) => leaderboardTeams[id])
+						.map((id) => leaderboardTeams[id.toString()])
 						.map((team) => `${team.league ?? League.FRC} ${team.number}`),
 				}))
 				.sort((a, b) => b.xp - a.xp);
 
 			users.forEach((user) => {
 				user.teams.forEach((teamId) => {
-					leaderboardTeams[teamId].xp += user.xp;
+					leaderboardTeams[teamId.toString()].xp += user.xp;
 				});
 			});
 
@@ -2397,7 +2397,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			for (const user of users) {
 				// Add the user to each of their teams
 				for (const team of [...user.teams, "All"]) {
-					const signInDates = signInDatesByTeam[team];
+					const signInDates = signInDatesByTeam[team.toString()];
 
 					// Iterate through the team's linked list
 					for (let node = signInDates.first(); true; node = node.next) {

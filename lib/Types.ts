@@ -43,7 +43,7 @@ export class User implements NextAuthUser {
 	image: string;
 	admin: boolean;
 	slug: string | undefined;
-	teams: string[];
+	teams: ObjectId[];
 	owner: string[];
 	slackId: string = "";
 	xp: number = 10;
@@ -58,7 +58,7 @@ export class User implements NextAuthUser {
 		image: string = process.env.DEFAULT_IMAGE,
 		admin: boolean = false,
 		slug: string | undefined,
-		teams: string[] = [],
+		teams: ObjectId[] = [],
 		owner: string[] = [],
 		slackId: string = "",
 		xp: number = 10,
@@ -720,7 +720,7 @@ export type LeaderboardUser = {
 };
 
 export type LeaderboardTeam = {
-	_id: string;
+	_id: ObjectId;
 	name: string;
 	number: number;
 	league: League;
