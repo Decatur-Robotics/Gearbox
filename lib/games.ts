@@ -1221,11 +1221,11 @@ namespace Reefscape {
 				label: "Can Score Algae in Processor?",
 			},
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
+			{ key: "Climbing", label: "Climbing?" },
 			{ key: "CanScoreCoral1", label: "Can Score Coral at L1?" },
 			{ key: "CanScoreCoral2", label: "Can Score Coral at L2?" },
 			{ key: "CanScoreCoral3", label: "Can Score Coral at L13" },
 			{ key: "CanScoreCoral4", label: "Can Score Coral at L4?" },
-			{ key: "Climbing", label: "Climbing?" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
