@@ -12,7 +12,7 @@ export default function Offline() {
 		>
 			<div className="w-full h-[70%] flex justify-center items-center">
 				<Card>
-					The page you are trying to access ({router.pathname}) is not available
+					The page you are trying to access is not available
 					offline. If this is an error, please contact the developers.
 				</Card>
 			</div>

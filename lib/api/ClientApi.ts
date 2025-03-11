@@ -49,6 +49,7 @@ import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
 import Logger from "../client/Logger";
 import getRollbar, { RollbarInterface } from "../client/RollbarUtils";
+import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -666,6 +667,52 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 						: { ...report, data: { ...report.data, comments: "" } },
 				);
 			return res.status(200).send(reports);
+		},
+		fallback: async ([compId, submitted, usePublicData]) => {
+			const localDb = new LocalStorageDbInterface();
+			await localDb.init();
+
+			const comp = await localDb.findObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+			);
+
+			if (!comp) return [];
+
+			const usedComps =
+				usePublicData && comp.tbaId !== NotLinkedToTba
+					? await localDb.findObjects(CollectionId.Competitions, {
+							publicData: true,
+							tbaId: comp.tbaId,
+							gameId: comp.gameId,
+						})
+					: [comp];
+
+			if (usePublicData && !comp.publicData) usedComps.push(comp);
+
+			const reports = (
+				await localDb.findObjects(CollectionId.Reports, {
+					match: { $in: usedComps.flatMap((m) => m.matches) },
+					submitted: submitted ? true : { $exists: true },
+				})
+			)
+				// Filter out comments from other competitions
+				.map((report) =>
+					comp.matches.includes(report.match)
+						? report
+						: { ...report, data: { ...report.data, comments: "" } },
+				);
+			return reports;
+		},
+		afterResponse: async (res, ranFallback) => {
+			if (ranFallback || !res) return;
+
+			const localDb = new LocalStorageDbInterface();
+			await localDb.init();
+
+			await Promise.all(
+				res.map((report) => localDb.addObject(CollectionId.Reports, report)),
+			);
 		},
 	});
 
