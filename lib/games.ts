@@ -1588,6 +1588,15 @@ namespace Reefscape {
 			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
 
 		if (pitReport?.data?.CanScoreCoral1)
+			badges.push({text: "L1 Coral", color: "info"});
+		if (pitReport?.data?.CanScoreCoral2)
+			badges.push({ text: "L2 Coral", color: "secondary" });
+		if (pitReport?.data?.CanScoreCoral3)
+			badges.push({ text: "L3 Coral", color: "primary" });
+		if (pitReport?.data?.CanScoreCoral4)
+			badges.push({ text: "L4 Coral", color: "accent" });
+		if (!(pitReport?.data?.CanScoreCoral1 || pitReport?.data?.CanScoreCoral2 || pitReport?.data?.CanScoreCoral3 || pitReport?.data?.CanScoreCoral4))
+			badges.push({ text: "No Coral", color: "warning" });
 
 		switch (pitReport?.data?.HighestCoralLevel) {
 			case ReefscapeEnums.CoralLevel.None:
