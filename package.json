@@ -58,7 +58,7 @@
 		"rollbar": "^2.26.4",
 		"string-similarity-js": "^2.1.4",
 		"ts-node": "^10.9.2",
-		"tsx": "^4.19.2",
+		"tsx": "^4.19.3",
 		"typescript": "5.7.3",
 		"unified-api-nextjs": "^1.0.9"
 	},
