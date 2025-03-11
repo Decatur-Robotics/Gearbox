@@ -12,11 +12,13 @@ import CollectionId from "./client/CollectionId";
 import { AdapterUser } from "next-auth/adapters";
 import DbInterfaceAuthAdapter from "./DbInterfaceAuthAdapter";
 import Logger from "./client/Logger";
+import getRollbar from "./client/RollbarUtils";
 
-const logger = new Logger(["AUTH"], true);
+const logger = new Logger(["AUTH"]);
 
 const cachedDb = getDatabase();
-const adapter = DbInterfaceAuthAdapter(cachedDb);
+const rollbar = getRollbar();
+const adapter = DbInterfaceAuthAdapter(cachedDb, rollbar, logger);
 
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
@@ -28,6 +30,14 @@ export const AuthenticationOptions: AuthOptions = {
 			profile: async (profile) => {
 				logger.debug("Google profile:", profile);
 
+				const existingUser = await (
+					await cachedDb
+				).findObject(CollectionId.Users, { email: profile.email });
+				if (existingUser) {
+					existingUser.id = profile.sub;
+					return existingUser;
+				}
+
 				const user = new User(
 					profile.name,
 					profile.email,
@@ -37,7 +47,9 @@ export const AuthenticationOptions: AuthOptions = {
 					[],
 					[],
 				);
+
 				user.id = profile.sub;
+
 				return user;
 			},
 		}),
@@ -47,6 +59,17 @@ export const AuthenticationOptions: AuthOptions = {
 			allowDangerousEmailAccountLinking: true,
 			profile: async (profile) => {
 				logger.debug("Slack profile:", profile);
+
+				const existing = await (
+					await cachedDb
+				).findObject(CollectionId.Users, { email: profile.email });
+
+				if (existing) {
+					existing.slackId = profile.sub;
+					existing.id = profile.sub;
+					console.log("Found existing user:", existing);
+					return existing;
+				}
 
 				const user = new User(
 					profile.name,
@@ -60,7 +83,9 @@ export const AuthenticationOptions: AuthOptions = {
 					10,
 					1,
 				);
+
 				user.id = profile.sub;
+
 				return user;
 			},
 		}),
@@ -91,50 +116,52 @@ export const AuthenticationOptions: AuthOptions = {
 		 * For email sign in, runs when the "Sign In" button is clicked (before email is sent).
 		 */
 		async signIn({ user }) {
-			const startTime = Date.now();
-			logger.debug(
-				`User is signing in: ${user.name}, ${user.email}, ${user.id}`,
-			);
+			try {
+				const startTime = Date.now();
+				logger.debug(`User is signing in: ${user.name}, ${user.email}`);
 
-			Analytics.signIn(user.name ?? "Unknown User");
-			const db = await getDatabase();
+				Analytics.signIn(user.name ?? "Unknown User");
+				const db = await getDatabase();
 
-			let typedUser = user as Partial<User>;
+				let typedUser = user as Partial<User>;
 
-			const existingUser = await db.findObject(CollectionId.Users, {
-				email: typedUser.email,
-			});
+				const existingUser = await db.findObject(CollectionId.Users, {
+					email: typedUser.email,
+				});
 
-			typedUser._id = existingUser?._id;
+				typedUser._id = existingUser?._id;
 
-			const today = new Date();
-			if (
-				(typedUser as User).lastSignInDateTime?.toDateString() !==
-				today.toDateString()
-			) {
-				// We use user.id since user._id strangely doesn't exist on user.
-				db.updateObjectById(
-					CollectionId.Users,
-					new ObjectId(typedUser._id?.toString()),
-					{
-						lastSignInDateTime: today,
-					},
+				const today = new Date();
+				if (
+					(typedUser as User).lastSignInDateTime?.toDateString() !==
+					today.toDateString()
+				) {
+					db.updateObjectById(
+						CollectionId.Users,
+						new ObjectId(typedUser._id?.toString()),
+						{
+							lastSignInDateTime: today,
+						},
+					);
+				}
+
+				new ResendUtils().createContact(typedUser as User);
+
+				const endTime = Date.now();
+				const elapsedTime = endTime - startTime;
+
+				logger.log(
+					"User is signed in:",
+					typedUser.name,
+					typedUser.email,
+					typedUser._id?.toString(),
+					"Elapsed time:",
+					elapsedTime + "ms",
 				);
+			} catch (error) {
+				logger.error("Error during sign in:", error);
+				rollbar.error("Error during sign in:", error);
 			}
-
-			new ResendUtils().createContact(typedUser as User);
-
-			const endTime = Date.now();
-			const elapsedTime = endTime - startTime;
-
-			logger.log(
-				"[AUTH] User is signed in:",
-				typedUser.name,
-				typedUser.email,
-				typedUser._id?.toString(),
-				"Elapsed time:",
-				elapsedTime + "ms",
-			);
 			return true;
 		},
 	},
@@ -150,7 +177,18 @@ export const AuthenticationOptions: AuthOptions = {
 		},
 	},
 	pages: {
-		//signIn: "/signin",
+		signIn: "/signin",
+	},
+	logger: {
+		warn: (code) => {
+			logger.warn(code);
+			rollbar.warn("Next-Auth: " + code);
+		},
+		error: (code, metadata) => {
+			logger.error(code, metadata);
+			rollbar.error("Next-Auth: " + code, metadata);
+		},
+		debug: (code, metadata) => logger.debug(code, metadata),
 	},
 };
 

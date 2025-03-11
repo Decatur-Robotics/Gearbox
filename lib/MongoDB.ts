@@ -1,12 +1,16 @@
 import { Db, MongoClient, MongoClientOptions } from "mongodb";
 import { ObjectId, Document } from "bson";
-import CollectionId, { CollectionIdToType } from "./client/CollectionId";
+import CollectionId, {
+	CollectionIdToType,
+	SluggedCollectionId,
+} from "./client/CollectionId";
 import DbInterface, {
 	WithStringOrObjectIdId,
 } from "./client/dbinterfaces/DbInterface";
 import { default as BaseMongoDbInterface } from "mongo-anywhere/MongoDbInterface";
 import CachedDbInterface from "./client/dbinterfaces/CachedDbInterface";
 import { cacheOptions } from "./client/dbinterfaces/CachedDbInterface";
+import { findObjectBySlugLookUp } from "./slugToId";
 
 if (!process.env.MONGODB_URI) {
 	// Necessary to allow connections from files running outside of Next
@@ -102,5 +106,12 @@ export class MongoDBInterface
 		query: object,
 	): Promise<number | undefined> {
 		return super.countObjects(collection, query);
+	}
+
+	findObjectBySlug<
+		TId extends SluggedCollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, slug: string): Promise<TObj | undefined> {
+		return findObjectBySlugLookUp(this, collection, slug);
 	}
 }

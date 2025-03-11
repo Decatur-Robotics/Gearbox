@@ -1,20 +1,26 @@
-import { join } from "path";
 import { createServer as createServerHttps } from "https";
 import { parse } from "url";
 import next from "next";
-import fs, { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import {
 	IncomingMessage,
 	ServerResponse,
-	request,
 	createServer as createServerHttp,
 } from "http";
+import Logger from "./lib/client/Logger";
+import { configDotenv } from "dotenv";
+import getRollbar from "./lib/client/RollbarUtils";
+import reportDeploymentToRollbar from "./lib/reportDeploymentToRollbar";
 
-console.log("Starting server...");
+configDotenv();
+
+const logger = new Logger(["STARTUP"]);
+
+logger.log("Starting server...");
 
 const dev = process.env.NODE_ENV !== "production";
 
-console.log("Constants set");
+logger.debug("Constants set");
 
 const useHttps =
 	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem");
@@ -27,26 +33,29 @@ const httpsOptions = useHttps
 	: {};
 
 const port = useHttps ? 443 : 80;
-console.log(`Using port ${port}`);
+logger.debug(`Using port ${port}`);
 
 const app = next({ dev, port });
 const handle = app.getRequestHandler();
 
-console.log("App preparing...");
+logger.debug("App preparing...");
+
 app.prepare().then(() => {
-	console.log("App prepared. Creating server...");
+	logger.debug("App prepared. Creating server...");
+
+	const ioLogger = new Logger(["NETWORKIO"]);
 
 	async function handleRaw(
 		req: IncomingMessage,
 		res: ServerResponse<IncomingMessage>,
 	) {
 		const start = Date.now();
-		console.log(`IN: ${req.method} ${req.url}`);
+		ioLogger.debug(`IN: ${req.method} ${req.url}`);
 		if (!req.url) return;
 
 		const parsedUrl = parse(req.url, true);
 		handle(req, res, parsedUrl).then(() =>
-			console.log(
+			ioLogger.debug(
 				`OUT: ${req.method} ${req.url} ${res.statusCode} in ${Date.now() - start}ms`,
 			),
 		);
@@ -59,20 +68,23 @@ app.prepare().then(() => {
 				: createServerHttp(handleRaw)
 		)
 			.listen(port, () => {
-				console.log(
+				logger.info(
 					process.env.NODE_ENV +
 						` Server Running At: ${useHttps ? "https" : "http"}://localhost:` +
 						port,
 				);
+
+				reportDeploymentToRollbar();
 			})
 			.on("error", (err: Error) => {
-				console.log(err);
+				logger.error(err);
+				getRollbar().error(err);
 				throw err;
 			});
 
-		console.log("Server created. Listening: " + server.listening);
+		logger.debug("Server created. Listening: " + server.listening);
 	} catch (err) {
-		console.log(err);
+		logger.error(err);
 		throw err;
 	}
 });

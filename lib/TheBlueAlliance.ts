@@ -266,7 +266,7 @@ export namespace TheBlueAlliance {
 					.filter((match) => match.comp_level === CompetitionLevel.QM)
 					.map((data, index) => {
 						return new Match(
-							index + 1,
+							data.match_number,
 							undefined,
 							data.key,
 							data.time,

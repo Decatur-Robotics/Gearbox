@@ -237,8 +237,8 @@ function Roster(props: TeamPageProps) {
 		}
 
 		const { team: newTeam } = await api.removeUserFromTeam(
-			userId,
 			team?._id.toString() ?? "",
+			userId,
 		);
 		setTeam(newTeam);
 		setUsers(users.filter((user) => user._id !== userId));

@@ -99,7 +99,7 @@ export async function populateMissingUserFields(
 	const name = user.name ?? user.email?.split("@")[0] ?? "Unknown User";
 
 	const filled: Omit<User, "_id"> = {
-		id: user.id ?? user._id?.toString() ?? new ObjectId().toString(),
+		id: user._id?.toString() ?? new ObjectId().toString(),
 		name,
 		image: user.image ?? "https://4026.org/user.jpg",
 		slug: user.slug ?? (await generateSlug(name ?? "Unknown User")),
