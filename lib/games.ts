@@ -1587,6 +1587,8 @@ namespace Reefscape {
 		if (pitReport?.data?.CanDriveUnderShallowCage)
 			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
 
+		if (pitReport?.data?.CanScoreCoral1)
+
 		switch (pitReport?.data?.HighestCoralLevel) {
 			case ReefscapeEnums.CoralLevel.None:
 				badges.push({ text: "No Coral", color: "warning" });
