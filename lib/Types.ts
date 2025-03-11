@@ -37,7 +37,7 @@ export interface Session extends NextAuthSession {
 
 export class User implements NextAuthUser {
 	id: string = "";
-	_id: ObjectId;
+	_id!: ObjectId;
 	name: string | undefined;
 	email: string | undefined;
 	image: string;
@@ -59,7 +59,7 @@ export class User implements NextAuthUser {
 		admin: boolean = false,
 		slug: string | undefined,
 		teams: ObjectId[] = [],
-		owner: string[] = [],
+		owner: ObjectId[] = [],
 		slackId: string = "",
 		xp: number = 10,
 		level: number = 1,
@@ -114,12 +114,12 @@ export class Team {
 		number: number,
 		league: League = League.FRC,
 		alliance: boolean = false,
-		owners: string[] = [],
-		users: string[] = [],
-		scouters: string[] = [],
-		subjectiveScouters: string[] = [],
-		requests: string[] = [],
-		seasons: string[] = [],
+		owners: ObjectId[] = [],
+		users: ObjectId[] = [],
+		scouters: ObjectId[] = [],
+		subjectiveScouters: ObjectId[] = [],
+		requests: ObjectId[] = [],
+		seasons: ObjectId[] = [],
 	) {
 		this._id = new ObjectId();
 		this.name = name;
@@ -386,7 +386,7 @@ export abstract class PitReportData {
 }
 
 export class Pitreport<TFormData extends PitReportData = PitReportData> {
-	_id: ObjectId;
+	_id!: ObjectId;
 
 	teamNumber: number;
 
@@ -402,7 +402,7 @@ export class Pitreport<TFormData extends PitReportData = PitReportData> {
 }
 
 export class Competition {
-	_id: ObjectId;
+	_id!: ObjectId;
 	name: string;
 	slug: string | undefined;
 	tbaId: string | undefined;
@@ -425,9 +425,9 @@ export class Competition {
 		tbaId: string | undefined,
 		start: number,
 		end: number,
-		pitReports: string[] = [],
-		matches: string[] = [],
-		picklist: string = "",
+		pitReports: ObjectId[] = [],
+		matches: ObjectId[] = [],
+		picklist: ObjectId,
 		publicData = false,
 		gameId: GameId | undefined = undefined,
 	) {
@@ -459,7 +459,7 @@ export enum MatchType {
 
 // add more fields
 export class Match {
-	_id: ObjectId;
+	_id!: ObjectId;
 	slug: string | undefined;
 	tbaId: string | undefined;
 
@@ -485,7 +485,7 @@ export class Match {
 		type: MatchType,
 		blueAlliance: Alliance,
 		redAlliance: Alliance,
-		reports: string[] = [],
+		reports: ObjectId[] = [],
 	) {
 		this.number = number;
 		this.tbaId = tbaId;
@@ -499,7 +499,7 @@ export class Match {
 }
 
 export class Report<TFormData extends QuantData = QuantData> {
-	_id: ObjectId;
+	_id!: ObjectId;
 
 	timestamp: number | undefined; // time it was initially submitted
 	user: ObjectId | undefined; // id of user assigned to report
@@ -515,11 +515,11 @@ export class Report<TFormData extends QuantData = QuantData> {
 	checkInTimestamp: string | undefined;
 
 	constructor(
-		user: string | undefined,
+		user: ObjectId | undefined,
 		data: TFormData,
 		robotNumber: number,
 		color: AllianceColor,
-		match: string,
+		match: ObjectId,
 		timestamp: number = 0,
 		checkInTimestamp: string | undefined = undefined,
 	) {
@@ -541,7 +541,7 @@ export enum SubjectiveReportSubmissionType {
 }
 
 export class SubjectiveReport {
-	_id: ObjectId;
+	_id!: ObjectId;
 	submitter: ObjectId | undefined;
 	submitted: SubjectiveReportSubmissionType =
 		SubjectiveReportSubmissionType.NotSubmitted;
@@ -552,7 +552,7 @@ export class SubjectiveReport {
 	wholeMatchComment: string = "";
 	robotComments: { [key: number]: string } = {};
 
-	constructor(match: string, matchNumber: number) {
+	constructor(match: ObjectId, matchNumber: number) {
 		this.match = match;
 		this.matchNumber = matchNumber;
 	}
