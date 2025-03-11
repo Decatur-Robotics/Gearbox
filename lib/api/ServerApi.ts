@@ -13,6 +13,7 @@ import {
 	NextApiTemplate,
 	NextResponse,
 } from "unified-api-nextjs";
+import getRollbar from "../client/RollbarUtils";
 
 export default class ServerApi extends NextServerApi<ApiDependencies> {
 	constructor(clientApi?: NextApiTemplate<ApiDependencies>) {
@@ -33,6 +34,7 @@ export default class ServerApi extends NextServerApi<ApiDependencies> {
 				AuthenticationOptions,
 			).then((s) => s?.user as User | undefined),
 			resend: new ResendUtils(),
+			rollbar: getRollbar(),
 		};
 	}
 }

@@ -82,8 +82,8 @@ export default function InsightsAndSettingsCard(props: {
 				Number(matchNumber),
 				0,
 				MatchType.Qualifying,
-				blueAlliance as number[],
 				redAlliance as number[],
+				blueAlliance as number[],
 			);
 		} catch (e) {
 			console.error(e);

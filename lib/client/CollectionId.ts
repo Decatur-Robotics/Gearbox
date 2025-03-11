@@ -1,6 +1,5 @@
 import { VerificationToken } from "next-auth/adapters";
 import {
-	Season,
 	Competition,
 	Match,
 	SubjectiveReport,
@@ -12,6 +11,7 @@ import {
 	Pitreport,
 	CompPicklistGroup,
 	WebhookHolder,
+	Season,
 } from "../Types";
 import { ObjectId } from "bson";
 
@@ -67,3 +67,39 @@ export type CollectionIdToType<Id extends CollectionId> =
 														: Id extends CollectionId.Misc
 															? any
 															: any;
+
+export type TypeToCollectionId<Type> = Type extends Season
+	? CollectionId.Seasons
+	: Type extends Competition
+		? CollectionId.Competitions
+		: Type extends Match
+			? CollectionId.Matches
+			: Type extends Report
+				? CollectionId.Reports
+				: Type extends Team
+					? CollectionId.Teams
+					: Type extends User
+						? CollectionId.Users
+						: Type extends Account
+							? CollectionId.Accounts
+							: Type extends Session
+								? CollectionId.Sessions
+								: Type extends VerificationToken
+									? CollectionId.VerificationTokens
+									: Type extends Pitreport
+										? CollectionId.PitReports
+										: Type extends CompPicklistGroup
+											? CollectionId.Picklists
+											: Type extends SubjectiveReport
+												? CollectionId.SubjectiveReports
+												: Type extends WebhookHolder
+													? CollectionId.Webhooks
+													: Type extends any
+														? CollectionId.Misc
+														: any;
+
+export type SluggedCollectionId =
+	| CollectionId.Users
+	| CollectionId.Teams
+	| CollectionId.Seasons
+	| CollectionId.Competitions;

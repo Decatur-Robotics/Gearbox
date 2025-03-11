@@ -8,6 +8,11 @@ import {
 } from "react-google-recaptcha-v3";
 import { FaGoogle, FaSlack } from "react-icons/fa";
 
+const errorMessages: { [error: string]: string } = {
+	oauthcallback: "Failed to sign in with OAuth provider.",
+	callback: "A server-side error occurred during sign in.",
+};
+
 function SignInCard() {
 	const router = useRouter();
 	const emailRef = useRef<HTMLInputElement>(null);
@@ -17,7 +22,12 @@ function SignInCard() {
 
 	useEffect(() => {
 		if (router.query.error) {
-			setError(router.query.error as string);
+			const error = (router.query.error as string).toLowerCase();
+			const message =
+				(error in errorMessages ? errorMessages[error] : error) +
+				" Try clearing your cookies and then signing in again.";
+
+			setError(message);
 		}
 	}, [router.query.error]);
 

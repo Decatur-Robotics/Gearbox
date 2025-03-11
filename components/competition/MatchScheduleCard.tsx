@@ -9,7 +9,7 @@ import {
 } from "@/lib/Types";
 import Link from "next/link";
 import { BsGearFill } from "react-icons/bs";
-import { FaSync, FaCheck } from "react-icons/fa";
+import { FaSync, FaCheck, FaInfoCircle } from "react-icons/fa";
 import { MdErrorOutline } from "react-icons/md";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
@@ -103,21 +103,18 @@ export default function MatchScheduleCard(props: {
 						<progress className="progress w-full" />
 					))}
 				<div className="divider my-0"></div>
-				{loadingMatches || loadingReports || loadingUsers ? (
-					<div className="w-full flex flex-col items-center justify-center">
-						<BsGearFill
-							className="animate-spin-slow"
-							size={75}
-						/>
-						{loadingMatches && <h1>Loading Matches...</h1>}
-						{loadingReports && <h1>Loading Reports...</h1>}
-						{loadingUsers && <h1>Loading Users...</h1>}
-					</div>
-				) : (
+				{!(loadingMatches && loadingReports && loadingUsers) ? (
 					<div className="w-full flex flex-col items-center space-y-2">
 						{noMatches || matches.length === 0 ? (
 							<div className="flex flex-col items-center justify-center font-bold space-y-4">
-								<h1>No Match Schedule Available</h1>
+								{loadingMatches ? (
+									<>
+										<Loading size={72} />
+										<h1>Matches Loading</h1>
+									</>
+								) : (
+									<h1>No Match Schedule Available</h1>
+								)}
 								<button
 									onClick={reloadCompetition}
 									className="btn btn-lg btn-primary"
@@ -191,9 +188,9 @@ export default function MatchScheduleCard(props: {
 															<a
 																href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
 																key={reportId}
-																className={`${color} ${mine && !submitted ? "border-4" : "border-2"} 
+																className={`${color} ${mine && !submitted ? "border-6  border-purple-500" : "border-2 border-white"} 
                                   ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
-                                  rounded-lg w-12 h-12 flex items-center justify-center text-white  border-white`}
+                                  rounded-lg w-12 h-12 flex items-center justify-center text-white`}
 															>
 																<h1>{report.robotNumber}</h1>
 															</a>
@@ -270,12 +267,26 @@ export default function MatchScheduleCard(props: {
 														) : (
 															<div>
 																Subjective Scouter:{" "}
-																{usersById[match.subjectiveScouter ?? ""].name}
+																{usersById[match.subjectiveScouter ?? ""].name}{" "}
+																<div
+																	className="tooltip before:w-[10rem] "
+																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
+																>
+																	<FaInfoCircle></FaInfoCircle>
+																</div>
 															</div>
 														)}
 													</div>
 												) : (
-													<div>No subjective scouter assigned</div>
+													<div>
+														No subjective scouter assigned{" "}
+														<div
+															className="tooltip before:w-[10rem] "
+															data-tip="Subjective Scouters watch the entire match and comment on what's going on"
+														>
+															<FaInfoCircle></FaInfoCircle>
+														</div>
+													</div>
 												)}
 											</div>
 											<a
@@ -301,6 +312,16 @@ export default function MatchScheduleCard(props: {
 								</div>
 							</div>
 						)}
+					</div>
+				) : (
+					<div className="w-full flex flex-col items-center justify-center">
+						<BsGearFill
+							className="animate-spin-slow"
+							size={75}
+						/>
+						{loadingMatches && <h1>Loading Matches...</h1>}
+						{loadingReports && <h1>Loading Reports...</h1>}
+						{loadingUsers && <h1>Loading Users...</h1>}
 					</div>
 				)}
 			</div>

@@ -499,12 +499,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	const db = await getDatabase();
 
 	const teamSlug = context.params?.teamSlug as string;
-	const team = await db.findObject(CollectionId.Teams, { slug: teamSlug });
+	const team = await db.findObjectBySlug(CollectionId.Teams, teamSlug);
 
 	const compSlug = context.params?.competitonSlug as string;
-	const comp = await db.findObject(CollectionId.Competitions, {
-		slug: compSlug,
-	});
+	const comp = await db.findObjectBySlug(CollectionId.Competitions, compSlug);
 
 	return {
 		props: {

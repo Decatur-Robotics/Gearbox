@@ -17,6 +17,17 @@ import { StatsLayout, Stat, StatPair, Badge } from "@/lib/Layout";
 
 const api = new ClientApi();
 
+function Comment({ text, tooltip }: { text: string; tooltip?: string }) {
+	return (
+		<li
+			className={`w-full break-words ml-2 -indent-2 text-wrap ${tooltip && "tooltip tooltip-right"} text-left`}
+			data-tip={tooltip}
+		>
+			{text}
+		</li>
+	);
+}
+
 export default function TeamStats(props: {
 	selectedTeam: number | undefined;
 	selectedReports: Report[];
@@ -30,7 +41,11 @@ export default function TeamStats(props: {
 	layout: StatsLayout<PitReportData, QuantData>;
 }) {
 	const [comments, setComments] = useState<
-		{ matchNum: number; content: { order: number; jsx: ReactNode }[] }[] | null
+		| {
+				matchNum: number;
+				content: { order: number; text: string; tooltip: string | undefined }[];
+		  }[]
+		| null
 	>(null);
 
 	const pitReport = props.pitReport;
@@ -46,21 +61,27 @@ export default function TeamStats(props: {
 
 		const newComments: typeof comments = [];
 
-		function addComment(match: number, order: number, jsx: ReactNode) {
+		function addComment(
+			match: number,
+			order: number,
+			text: string,
+			tooltip: string | undefined = undefined,
+		) {
 			if (!newComments!.some((comment) => comment.matchNum === match))
 				newComments!.push({
 					matchNum: match,
 					content: [
 						{
 							order,
-							jsx,
+							text,
+							tooltip,
 						},
 					],
 				});
 			else
 				newComments!
 					.find((comment) => comment.matchNum === match)!
-					.content.push({ order, jsx });
+					.content.push({ order, text, tooltip });
 		}
 
 		if (pitReport)
@@ -72,7 +93,8 @@ export default function TeamStats(props: {
 					: "No pit report comments.",
 			);
 
-		if (!props.subjectiveReports) addComment(0, 0.1, <Loading size={24} />);
+		if (!props.subjectiveReports)
+			addComment(0, 0.1, "Loading subjective reports...");
 		else if (props.subjectiveReports.length === 0)
 			addComment(0, 0.1, "No subjective reports.");
 		else {
@@ -89,12 +111,8 @@ export default function TeamStats(props: {
 					addComment(
 						report.matchNumber ?? 0,
 						2,
-						<span
-							className="tooltip"
-							data-tip={"By " + submissionType}
-						>
-							Subjective: {report.robotComments[props.selectedTeam ?? 0]}
-						</span>,
+						`Subjective: ${report.robotComments[props.selectedTeam ?? 0]}`,
+						`By ${submissionType}`,
 					);
 				}
 
@@ -102,12 +120,8 @@ export default function TeamStats(props: {
 					addComment(
 						report.matchNumber ?? 0,
 						1,
-						<span
-							className="tooltip"
-							data-tip={"By " + submissionType}
-						>
-							Whole Match: {report.wholeMatchComment}
-						</span>,
+						`Whole Match: ${report.wholeMatchComment}`,
+						`By ${submissionType}`,
 					);
 				}
 			}
@@ -117,7 +131,7 @@ export default function TeamStats(props: {
 			props.selectedReports?.filter(
 				(report) => report.data?.comments.length > 0,
 			) ?? [];
-		if (commentList.length === 0) return setComments(newComments);
+		// if (commentList.length === 0) return setComments(newComments);
 
 		const promises = commentList.map((report) =>
 			api
@@ -133,7 +147,12 @@ export default function TeamStats(props: {
 				),
 		);
 
-		Promise.all(promises).then(() => setComments(newComments));
+		Promise.all(promises).then(() => {
+			const sortedComments = newComments.sort(
+				(a, b) => a.matchNum - b.matchNum,
+			);
+			setComments(sortedComments);
+		});
 	}, [
 		props.selectedTeam,
 		props.selectedReports,
@@ -160,7 +179,7 @@ export default function TeamStats(props: {
 		)[],
 	) {
 		const statElements = stats.map((stat, index) => {
-			if ((stat as Stat<PitReportData, QuantData>).key) {
+			if (!("stats" in stat)) {
 				// Single stat
 				const singleStat = stat as Stat<PitReportData, QuantData>;
 
@@ -170,14 +189,16 @@ export default function TeamStats(props: {
 						className="max-sm:text-xs"
 					>
 						{singleStat.label}:{" "}
-						{NumericalAverage(singleStat.key as string, props.selectedReports)}
+						{stat.get?.(pitReport ?? undefined, props.selectedReports) ??
+							NumericalAverage(singleStat.key as string, props.selectedReports)}
 					</h1>
 				);
 			}
 
 			// Stat pair
 			const pair = stat as StatPair<PitReportData, QuantData>;
-			if (pair.stats.length !== 2) {
+
+			if (pair.stats?.length !== 2) {
 				console.error("Invalid stat pair. Wrong # of stats provided.", pair);
 				return <></>;
 			}
@@ -293,25 +314,38 @@ export default function TeamStats(props: {
 				Comments
 			</h1>
 
-			<div className="w-full h-fit flex flex-row items-center">
-				<ul>
+			<div className="pr-10 w-full h-fit flex flex-row items-center">
+				<ul className="w-full">
 					{comments ? (
 						comments.map((match) =>
 							match.matchNum > 0 ? (
-								<li key={match.matchNum}>
+								<li
+									key={match.matchNum}
+									className="w-full"
+								>
 									<strong>Match {match.matchNum}</strong>
-									<ul className="pl-2">
+									<ul className="w-full ml-2">
 										{match.content
 											.sort((a, b) => a.order - b.order)
 											.map((content, index) => (
-												<li key={index}>{content.jsx}</li>
+												<Comment
+													text={content.text}
+													tooltip={content.tooltip}
+													key={index}
+												/>
 											))}
 									</ul>
 								</li>
 							) : (
 								match.content
 									.sort((a, b) => a.order - b.order)
-									.map((content, index) => <li key={index}>{content.jsx}</li>)
+									.map((content, index) => (
+										<Comment
+											text={content.text}
+											tooltip={content.tooltip}
+											key={index}
+										/>
+									))
 							),
 						)
 					) : (

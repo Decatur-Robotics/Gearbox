@@ -88,6 +88,11 @@ export default function Onboarding() {
 				return api.getTeamAutofillData(number, league ?? League.FRC);
 			})) ?? { number, name: "" };
 
+		if (team.number !== number) {
+			console.log("Team number mismatch", team.number, number);
+			return;
+		}
+
 		setTeam({
 			...team,
 			_id: (team as any)._id?.toString(),
@@ -127,6 +132,8 @@ export default function Onboarding() {
 			return;
 		}
 
+		console.log(team, session.user);
+
 		const requestPending =
 			team.requests?.includes(session?.user?._id ?? "") ?? false;
 		if (
@@ -139,7 +146,7 @@ export default function Onboarding() {
 		else if (joinRequestStatus === JoinRequestStatus.Requested)
 			setJoinRequestStatus(JoinRequestStatus.Rejected);
 	}, [
-		session?.user?._id,
+		session?.user,
 		teamNumber,
 		league,
 		joinRequestStatus,
@@ -327,12 +334,12 @@ export default function Onboarding() {
 															<br />
 															<br />
 															If you have any further questions, don&apos;t
-															hesitate to reach out on{" "}
+															hesitate to reach out on our{" "}
 															<a
 																className="link link-hover"
 																href="https://discord.gg/ha7AnqxFDD"
 															>
-																Discord
+																Discord server
 															</a>
 															.
 														</div>

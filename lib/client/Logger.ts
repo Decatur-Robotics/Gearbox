@@ -1,3 +1,5 @@
+import Rollbar from "rollbar";
+import getRollbar from "./RollbarUtils";
 export enum LogLevel {
 	Error,
 	Warning,
@@ -19,7 +21,7 @@ export default class Logger {
 		return new Logger([...this.tags, ...tags], this.enabled);
 	}
 
-	public print(level: LogLevel, ...args: unknown[]) {
+	public event(level: LogLevel, ...args: unknown[]) {
 		if (!this.enabled) return;
 
 		const prefix = this.prefix(level);
@@ -36,19 +38,19 @@ export default class Logger {
 	}
 
 	public error(...args: unknown[]) {
-		this.print(LogLevel.Error, ...args);
+		this.event(LogLevel.Error, ...args);
 	}
 
 	public warn(...args: unknown[]) {
-		this.print(LogLevel.Warning, ...args);
+		this.event(LogLevel.Warning, ...args);
 	}
 
 	public info(...args: unknown[]) {
-		this.print(LogLevel.Info, ...args);
+		this.event(LogLevel.Info, ...args);
 	}
 
 	public debug(...args: unknown[]) {
-		this.print(LogLevel.Debug, ...args);
+		this.event(LogLevel.Debug, ...args);
 	}
 
 	public log(...args: unknown[]) {

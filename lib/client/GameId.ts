@@ -5,4 +5,4 @@ export enum GameId {
 	Reefscape = "Reefscape",
 }
 
-export const defaultGameId = GameId.Crescendo;
+export const defaultGameId = GameId.Reefscape;
