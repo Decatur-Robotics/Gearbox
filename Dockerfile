@@ -15,10 +15,8 @@ RUN npm run build
 
 EXPOSE 80
 
-ARG GIT_SHA
 ARG DEPLOY_ID
 
-ENV GIT_SHA=${GIT_SHA}
 ENV DEPLOY_ID=${DEPLOY_ID}
 
 # ENTRYPOINT [ "bash" ] # Uncomment to operate the terminal in the container

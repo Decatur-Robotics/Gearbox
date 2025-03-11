@@ -1,10 +1,9 @@
 import getRollbar from "./client/RollbarUtils";
 
 export default function reportDeploymentToRollbar() {
-	const gitSha = process.env.GIT_SHA;
 	const deployId = process.env.DEPLOY_ID;
 
-	if (!gitSha || !deployId) {
+	if (!deployId) {
 		getRollbar().error("Missing gitSha or deployId in environment variables");
 		return;
 	}
