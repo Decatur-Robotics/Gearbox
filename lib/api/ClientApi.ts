@@ -679,6 +679,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				new ObjectId(compId),
 			);
 
+			console.log("comp", comp);
+
 			if (!comp) return [];
 
 			const usedComps =
@@ -688,9 +690,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 							tbaId: comp.tbaId,
 							gameId: comp.gameId,
 						})
-					: [comp];
+					: [];
 
-			if (usePublicData && !comp.publicData) usedComps.push(comp);
+			usedComps.push(comp);
+
+			console.log("usedComps", usedComps);
 
 			const reports = (
 				await localDb.findObjects(CollectionId.Reports, {
@@ -704,6 +708,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 						? report
 						: { ...report, data: { ...report.data, comments: "" } },
 				);
+
+			console.log("reports", reports);
 			return reports;
 		},
 		afterResponse: async (res, ranFallback) => {
@@ -713,7 +719,23 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			await localDb.init();
 
 			await Promise.all(
-				res.map((report) => localDb.addObject(CollectionId.Reports, report)),
+				res.map(async (report) => {
+					if (!report._id) return;
+
+					if (
+						await localDb.findObjectById(
+							CollectionId.Reports,
+							new ObjectId(report._id),
+						)
+					) {
+						return localDb.updateObjectById(
+							CollectionId.Reports,
+							new ObjectId(report._id),
+							report,
+						);
+					}
+					return localDb.addObject(CollectionId.Reports, report);
+				}),
 			);
 		},
 	});

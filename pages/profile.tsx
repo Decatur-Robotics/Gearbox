@@ -89,9 +89,6 @@ export default function Profile() {
 			hideMenu={false}
 			title="Profile"
 		>
-			<button onClick={() => console.log(fetch("https://localhost/api/ping"))}>
-				Fetch
-			</button>
 			<UpdateModal />
 			<Flex
 				className="my-8 space-y-4"
