@@ -47,6 +47,8 @@ import toast from "react-hot-toast";
 import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
+import Logger from "../client/Logger";
+import getRollbar, { RollbarInterface } from "../client/RollbarUtils";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -55,6 +57,8 @@ const requestHelper = new RequestHelper(
 			`Failed API request: ${url}. If this is an error, please contact the developers.`,
 		),
 );
+
+const logger = new Logger(["API"]);
 
 /**
  * @tested_by tests/lib/api/ClientApi.test.ts
@@ -88,27 +92,35 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		void
 	>({
 		isAuthorized: AccessLevels.IfSignedIn,
-		handler: async (req, res, { db, userPromise }, authData, [teamId]) => {
+		handler: async (
+			req,
+			res,
+			{ db, userPromise, rollbar },
+			authData,
+			[teamId],
+		) => {
 			let team = await (
 				await db
 			).findObjectById(CollectionId.Teams, new ObjectId(teamId));
 
 			if (!team) {
+				rollbar.warn("Team not found (API: requestToJoinTeam)", { teamId });
 				return res.error(404, "Team not found");
 			}
 
-			if (team.users.indexOf((await userPromise)?._id?.toString() ?? "") > -1) {
+			const user = await userPromise;
+			if (team.users.includes(user!._id!.toString())) {
 				return res.status(200).send({ result: "Already on team" });
 			}
 
-			team.requests = removeDuplicates([
-				...team.requests,
-				(await userPromise)?._id?.toString(),
-			]);
-
 			await (
 				await db
-			).updateObjectById(CollectionId.Teams, new ObjectId(teamId), team);
+			).updateObjectById(CollectionId.Teams, new ObjectId(teamId), {
+				requests: removeDuplicates([
+					...team.requests,
+					(await userPromise)?._id?.toString(),
+				]),
+			});
 
 			return res.status(200).send({ result: "Success" });
 		},
@@ -124,7 +136,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			authData,
 			[accept, teamId, userId],
 		) => {
@@ -144,16 +156,28 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const team = await teamPromise;
 
 			if (!team) {
+				rollbar.warn("Team not found (API: handleTeamJoinRequest)", {
+					teamId,
+					userId,
+				});
 				return res.error(404, "Team not found");
 			}
 
 			if (!ownsTeam(team, userOnTeam)) {
+				rollbar.warn("User does not own team (API: handleTeamJoinRequest)", {
+					teamId,
+					userId,
+				});
 				return res.error(403, "You do not own this team");
 			}
 
 			const joinee = await joineePromise;
 
 			if (!joinee) {
+				rollbar.warn("Joinee not found (API: handleTeamJoinRequest)", {
+					teamId,
+					userId,
+				});
 				return res.error(404, "User not found");
 			}
 
@@ -231,7 +255,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, resend, userPromise },
+			{ db: dbPromise, resend, userPromise, rollbar },
 			authData,
 			[name, tbaId, number, league, alliance],
 		) => {
@@ -247,6 +271,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			});
 
 			if (existingTeam) {
+				rollbar.warn("Team already exists (API: createTeam)", {
+					name,
+					tbaId,
+					number,
+					league,
+					alliance,
+					user,
+				});
 				return res.error(400, "Team already exists");
 			}
 
@@ -296,13 +328,19 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			team,
 			[name, year, teamId, gameId],
 		) => {
 			const db = await dbPromise;
 
 			if (!ownsTeam(team, await userPromise)) {
+				rollbar.warn("User does not own team (API: createSeason)", {
+					name,
+					year,
+					teamId,
+					gameId,
+				});
 				return res.status(403).send({ error: "Unauthorized" });
 			}
 
@@ -344,9 +382,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			{ comp, team },
 			[compId],
 		) => {
-			const matches = await tba.getCompetitionQualifyingMatches(comp.tbaId!);
+			if (!comp.tbaId || comp.tbaId === NotLinkedToTba) {
+				return res.status(400).send({ result: "not linked to TBA" });
+			}
+
+			const matches = await tba.getCompetitionQualifyingMatches(comp.tbaId);
 			if (!matches || matches.length <= 0) {
-				res.status(200).send({ result: "none" });
+				res.status(404).send({ result: "No matches in TBA" });
 				return;
 			}
 
@@ -356,25 +398,19 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				async (match) => (await db.addObject(CollectionId.Matches, match))._id,
 			);
 
-			if (!comp.tbaId || comp.tbaId === NotLinkedToTba) {
-				return res.status(200).send({ result: "not linked to TBA" });
-			}
-
-			const pitReports = await generatePitReports(
-				tba,
-				db,
-				comp.tbaId,
-				comp.gameId,
-			);
-
+			comp.matches = matches.map((match) => String(match._id));
 			await db.updateObjectById(
 				CollectionId.Competitions,
 				new ObjectId(compId),
-				{
-					matches: matches.map((match) => String(match._id)),
-					pitReports: pitReports,
-				},
+				comp,
 			);
+
+			// Create reports
+			const reportCreationPromises = matches.map((match) =>
+				generateReportsForMatch(db, match, comp.gameId),
+			);
+			await Promise.all(reportCreationPromises);
+
 			res.status(200).send({ result: "success" });
 		},
 	});
@@ -518,13 +554,16 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
-			{ team, comp },
-			[compId, shuffle],
+			{ db: dbPromise, rollbar },
+			{ team },
+			[compId],
 		) => {
 			const db = await dbPromise;
 
-			if (!team?._id) return res.status(400).send({ error: "Team not found" });
+			if (!team?._id) {
+				rollbar.error("Team not found (API: assignScouters)", { team });
+				return res.status(400).send({ error: "Team not found" });
+			}
 
 			const result = await assignScoutersToCompetitionMatches(
 				db,
@@ -547,15 +586,22 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			{ team, report },
 			[reportId, formData],
 		) => {
 			const db = await dbPromise;
 
 			const user = await userPromise;
-			if (!onTeam(team, user) || !user?._id)
+			if (!onTeam(team, user) || !user?._id) {
+				rollbar.warn("User not on team (API: submitForm)", {
+					team,
+					user,
+					reportId,
+					formData,
+				});
 				return res.status(403).send({ error: "Unauthorized" });
+			}
 
 			report.data = formData;
 			report.submitted = true;
@@ -681,14 +727,17 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			authData,
 			[newImage],
 		) => {
 			const db = await dbPromise;
 			const user = await userPromise;
 
-			if (!user?._id) return res.status(403).send({ error: "Unauthorized" });
+			if (!user?._id) {
+				rollbar.error("User not found (API: changePFP)", { newImage });
+				return res.status(403).send({ error: "Unauthorized" });
+			}
 
 			await db.updateObjectById(CollectionId.Users, new ObjectId(user._id), {
 				image: newImage,
@@ -766,7 +815,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, slackClient, userPromise },
+			{ db: dbPromise, slackClient, userPromise, rollbar },
 			team,
 			[teamId, targetUserId],
 		) => {
@@ -791,6 +840,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				!targetUser ||
 				team.users.indexOf(targetUser._id?.toString() ?? "") === -1
 			) {
+				rollbar.warn("User not found (API: remindSlack)", {
+					teamId,
+					targetUserId,
+				});
 				return res.status(400).send({ error: "User not found" });
 			}
 
@@ -862,14 +915,19 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			authData,
 			[slackId],
 		) => {
 			const db = await dbPromise;
 			const user = await userPromise;
 
-			if (!user?._id) return res.status(403).send({ error: "Unauthorized" });
+			if (!user?._id) {
+				rollbar.error("User not found (API: setSlackId)", {
+					slackId,
+				});
+				return res.status(403).send({ error: "Unauthorized" });
+			}
 
 			await db.updateObjectById(CollectionId.Users, new ObjectId(user._id), {
 				slackId: slackId,
@@ -1153,6 +1211,69 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
+	changeTeamNumberForReport = createNextRoute<
+		[string, string, number],
+		{ result: string },
+		ApiDependencies,
+		any
+	>({
+		isAuthorized: (req, res, deps, [matchId, reportId]) =>
+			AccessLevels.IfReportOwner(req, res, deps, reportId),
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise, userPromise },
+			authData,
+			[matchId, reportId, teamNumber],
+		) => {
+			const db = await dbPromise;
+
+			const oldReport = await db.findObjectById(
+				CollectionId.Reports,
+				new ObjectId(reportId),
+			);
+
+			if (!oldReport) {
+				return res.status(400).send({ result: "report not found" });
+			}
+
+			await db.updateObjectById(CollectionId.Reports, new ObjectId(reportId), {
+				robotNumber: teamNumber,
+			});
+
+			// Update match
+			const match = await db.findObjectById(
+				CollectionId.Matches,
+				new ObjectId(matchId),
+			);
+			if (!match) {
+				return res.status(400).send({ result: "match not found" });
+			}
+
+			for (
+				let i = 0;
+				i < match.blueAlliance.length + match.redAlliance.length;
+				i++
+			) {
+				const arr =
+					i < match.blueAlliance.length
+						? match.blueAlliance
+						: match.redAlliance;
+				if (arr[i % arr.length] === oldReport.robotNumber) {
+					arr[i % arr.length] = teamNumber;
+					break;
+				}
+			}
+
+			await db.updateObjectById(CollectionId.Matches, new ObjectId(matchId), {
+				blueAlliance: match.blueAlliance,
+				redAlliance: match.redAlliance,
+			});
+
+			return res.status(200).send({ result: "success" });
+		},
+	});
+
 	getCompReports = createNextRoute<
 		[string],
 		Report[],
@@ -1360,13 +1481,18 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			authData,
 			[userId],
 		) => {
 			const db = await dbPromise;
 			const user = await userPromise;
-			if (!user?._id) return res.status(403).send({ error: "Unauthorized" });
+			if (!user?._id) {
+				rollbar.error("User not found (API: setOnboardingCompleted)", {
+					userId,
+				});
+				return res.status(403).send({ error: "Unauthorized" });
+			}
 
 			await db.updateObjectById(CollectionId.Users, new ObjectId(user._id), {
 				onboardingComplete: true,
@@ -1386,7 +1512,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			{ team, match },
 			[report],
 		) => {
@@ -1395,8 +1521,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const user = await userPromise;
 
-			if (!onTeam(team, user))
+			if (!onTeam(team, user)) {
+				rollbar.warn("User not on team (API: submitSubjectiveReport)", {
+					team,
+					user,
+					report,
+				});
 				return res.status(403).send({ error: "Unauthorized" });
+			}
 
 			const newReport: SubjectiveReport = {
 				...report,
@@ -1576,7 +1708,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			{ team, comp },
 			[teamNumber, compId],
 		) => {
@@ -1590,8 +1722,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				await db.addObject(CollectionId.PitReports, pitReport)
 			)._id?.toString();
 
-			if (!pitReportId)
+			if (!pitReportId) {
+				rollbar.error("Failed to create pit report", { pitReport, comp, team });
 				return res.status(500).send({ error: "Failed to create pit report" });
+			}
 
 			comp.pitReports.push(pitReportId);
 
@@ -1668,15 +1802,23 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			{ team, comp },
 			[compId, matches],
 		) => {
 			const db = await dbPromise;
 
 			for (const match of matches) {
-				if (!comp.matches.find((id) => id === match._id?.toString()))
+				if (!comp.matches.find((id) => id === match._id?.toString())) {
+					rollbar.error(
+						"Match not in competition (API: getSubjectiveReports)",
+						{
+							comp,
+							match,
+						},
+					);
 					return res.status(400).send({ error: "Match not in competition" });
+				}
 			}
 
 			const matchIds = matches.map((match) => match._id?.toString());
@@ -1699,7 +1841,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (
 			req,
 			res,
-			{ db: dbPromise, userPromise },
+			{ db: dbPromise, userPromise, rollbar },
 			team,
 			[teamId, userId],
 		) => {
@@ -1710,13 +1852,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				new ObjectId(userId),
 			);
 
-			const newTeam: Team = {
+			const { _id, ...newTeam } = {
 				...team,
-				users: team.users.filter((id) => id !== userId),
-				owners: team.owners.filter((id) => id !== userId),
-				scouters: team.scouters.filter((id) => id !== userId),
+				users: team.users.filter((id) => id != userId),
+				owners: team.owners.filter((id) => id != userId),
+				scouters: team.scouters.filter((id) => id != userId),
 				subjectiveScouters: team.subjectiveScouters.filter(
-					(id) => id !== userId,
+					(id) => id != userId,
 				),
 			};
 
@@ -1727,8 +1869,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			const removedUser = await removedUserPromise;
-			if (!removedUser)
+			if (!removedUser) {
+				rollbar.error("User not found (API: removeUserFromTeam)", {
+					team,
+					userId,
+				});
 				return res.status(404).send({ error: "User not found" });
+			}
 
 			const newUserData: User = {
 				...removedUser,
@@ -1743,7 +1890,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			await teamPromise;
 
-			return res.status(200).send({ result: "success", team: newTeam });
+			return res
+				.status(200)
+				.send({ result: "success", team: { _id, ...newTeam } });
 		},
 	});
 
@@ -2080,7 +2229,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			handler: async (
 				req,
 				res,
-				{ userPromise, db: dbPromise },
+				{ userPromise, db: dbPromise, rollbar },
 				authData,
 				args,
 			) => {
@@ -2088,8 +2237,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 				const authStart = Date.now();
 				const user = await userPromise;
-				if (!user || !isDeveloper(user.email))
+				if (!user || !isDeveloper(user.email)) {
+					rollbar.error("Unauthorized speedTest", { user });
 					return res.status(403).send({ error: "Unauthorized" });
+				}
 
 				const resObj = {
 					requestTime: Math.max(Date.now() - requestTimestamp, 0),
@@ -2150,7 +2301,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				email: { $ne: "totallyrealemail@gmail.com" },
 			});
 
-			console.log(
+			logger.log(
 				"ID Query:",
 				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
 			);
@@ -2163,7 +2314,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				},
 			});
 
-			console.log("Found", users, teams);
+			logger.log("Found", users, teams);
 
 			const leaderboardTeams = teams.reduce(
 				(acc, team) => {
@@ -2333,6 +2484,54 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			if (!global.cache) return res.status(500).send({ error: "No cache" });
 			const val = global.cache.get(key) as object | undefined;
 			return res.status(200).send(val);
+		},
+	});
+
+	changeUserName = createNextRoute<
+		[string],
+		{ result: string },
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: AccessLevels.IfSignedIn,
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise, userPromise, rollbar },
+			authData,
+			[name],
+		) => {
+			const db = await dbPromise;
+			const user = await userPromise;
+
+			if (name.length < 3 || name.length > 30)
+				return res
+					.status(400)
+					.send({ error: "Name must be between 1 and 30 characters" });
+
+			// Check if name is alphanumeric
+			for (const char of name) {
+				const code = char.toLowerCase().charCodeAt(0);
+				if (
+					!(code >= 97 && code <= 122) &&
+					!(code >= 48 && code <= 57) &&
+					code !== " ".charCodeAt(0) &&
+					code !== "-".charCodeAt(0) &&
+					code !== "_".charCodeAt(0) &&
+					code !== "'".charCodeAt(0)
+				) {
+					rollbar.error("Invalid name (API: changeUserName)", {
+						name,
+						user,
+					});
+					return res.status(400).send({ error: "Name must be alphanumeric" });
+				}
+			}
+
+			await db.updateObjectById(CollectionId.Users, new ObjectId(user?._id!), {
+				name,
+			});
+			return res.status(200).send({ result: "success" });
 		},
 	});
 }

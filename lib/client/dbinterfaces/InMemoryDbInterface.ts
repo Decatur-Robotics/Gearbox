@@ -1,9 +1,13 @@
 import { ObjectId } from "bson";
-import CollectionId, { CollectionIdToType } from "@/lib/client/CollectionId";
+import CollectionId, {
+	CollectionIdToType,
+	SluggedCollectionId,
+} from "@/lib/client/CollectionId";
 import DbInterface, {
 	WithStringOrObjectIdId,
 } from "@/lib/client/dbinterfaces/DbInterface";
 import { default as BaseInMemoryDbInterface } from "mongo-anywhere/InMemoryDbInterface";
+import slugToId, { findObjectBySlugLookUp } from "@/lib/slugToId";
 
 export default class InMemoryDbInterface
 	extends BaseInMemoryDbInterface<
@@ -53,5 +57,12 @@ export default class InMemoryDbInterface
 		query: object,
 	): Promise<number | undefined> {
 		return super.countObjects(collection, query);
+	}
+
+	findObjectBySlug<
+		TId extends SluggedCollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, slug: string): Promise<TObj | undefined> {
+		return findObjectBySlugLookUp(this, collection, slug);
 	}
 }

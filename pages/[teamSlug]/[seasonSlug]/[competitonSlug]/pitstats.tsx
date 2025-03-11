@@ -488,9 +488,7 @@ export default function Pitstats(props: { competition: Competition }) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
 	const db = await getDatabase();
 	const compSlug = context.resolvedUrl.split("/")[3];
-	const comp = await db.findObject(CollectionId.Competitions, {
-		slug: compSlug,
-	});
+	const comp = await db.findObjectBySlug(CollectionId.Competitions, compSlug);
 
 	return {
 		props: { competition: serializeDatabaseObject(comp) },

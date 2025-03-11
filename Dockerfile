@@ -15,5 +15,9 @@ RUN npm run build
 
 EXPOSE 80
 
+ARG DEPLOY_ID
+
+ENV DEPLOY_ID=${DEPLOY_ID}
+
 # ENTRYPOINT [ "bash" ] # Uncomment to operate the terminal in the container
 CMD ["/usr/local/bin/npm", "run", "start"]

@@ -10,7 +10,7 @@ import Card from "@/components/Card";
 import Avatar from "@/components/Avatar";
 import { IoCheckmarkCircle, IoMail } from "react-icons/io5";
 import Loading from "@/components/Loading";
-import { FaPlus } from "react-icons/fa";
+import { FaCheck, FaPlus } from "react-icons/fa";
 import { getDatabase } from "@/lib/MongoDB";
 import CollectionId from "@/lib/client/CollectionId";
 import { GetServerSideProps } from "next";
@@ -20,6 +20,8 @@ import { UpdateModal } from "@/components/UpdateModal";
 import { Analytics } from "@/lib/client/Analytics";
 import { signOut } from "next-auth/react";
 import XpProgressBar from "@/components/XpProgressBar";
+import { HiPencilAlt } from "react-icons/hi";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -37,6 +39,9 @@ export default function Profile(props: { teamList: Team[] }) {
 	const [sentRequest, setSentRequest] = useState(false);
 
 	const [addTeam, setAddTeam] = useState(false);
+
+	const [editingName, setEditingName] = useState(false);
+	const [newName, setNewName] = useState<string>();
 
 	useEffect(() => {
 		const loadTeams = async () => {
@@ -64,6 +69,22 @@ export default function Profile(props: { teamList: Team[] }) {
 		Analytics.requestedToJoinTeam(teamNumber, user?.name ?? "Unknown User");
 	};
 
+	async function toggleEditingName() {
+		setEditingName(!editingName);
+
+		if (!editingName) {
+			setNewName(user?.name);
+			return;
+		}
+
+		if (!newName) return;
+
+		console.log("Updating name to", newName, "from", user?.name);
+		await api.changeUserName(newName);
+		toast.success("Name updated successfully!");
+		location.reload();
+	}
+
 	return (
 		<Container
 			requireAuthentication={true}
@@ -76,10 +97,24 @@ export default function Profile(props: { teamList: Team[] }) {
 				center={true}
 				mode="col"
 			>
-				<Card
-					title={user?.name}
-					coloredTop="bg-accent"
-				>
+				<Card coloredTop="bg-accent">
+					<div className="text-2xl flex items-center gap-2">
+						{editingName ? (
+							<input
+								onChange={(e) => setNewName(e.target.value)}
+								defaultValue={newName}
+								className="input"
+							/>
+						) : (
+							<h1>{user?.name}</h1>
+						)}
+						<button
+							onClick={toggleEditingName}
+							className="btn btn-ghost btn-sm"
+						>
+							{editingName ? <FaCheck /> : <HiPencilAlt />}
+						</button>
+					</div>
 					<Flex
 						mode="row"
 						className="space-x-4 max-sm:flex-col max-sm:items-center"

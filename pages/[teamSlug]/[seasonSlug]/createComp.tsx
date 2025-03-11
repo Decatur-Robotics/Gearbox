@@ -2,7 +2,10 @@ import { CompetitonNameIdPair as CompetitionNameIdPair } from "@/lib/Types";
 import React, { useEffect, useState } from "react";
 
 import ClientApi from "@/lib/api/ClientApi";
-import UrlResolver, { ResolvedUrlData } from "@/lib/UrlResolver";
+import UrlResolver, {
+	ResolvedUrlData,
+	serializeDatabaseObject,
+} from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
 import Flex from "@/components/Flex";
@@ -189,6 +192,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	}
 
 	return {
-		props: resolved,
+		props: {
+			...resolved,
+			season: serializeDatabaseObject(resolved.season),
+		},
 	};
 };
