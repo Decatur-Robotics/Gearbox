@@ -1,15 +1,18 @@
-import { join } from "path";
 import { createServer as createServerHttps } from "https";
 import { parse } from "url";
 import next from "next";
-import fs, { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import {
 	IncomingMessage,
 	ServerResponse,
-	request,
 	createServer as createServerHttp,
 } from "http";
 import Logger from "./lib/client/Logger";
+import { configDotenv } from "dotenv";
+import getRollbar from "./lib/client/RollbarUtils";
+import reportDeploymentToRollbar from "./lib/reportDeploymentToRollbar";
+
+configDotenv();
 
 const logger = new Logger(["STARTUP"]);
 
@@ -36,6 +39,7 @@ const app = next({ dev, port });
 const handle = app.getRequestHandler();
 
 logger.debug("App preparing...");
+
 app.prepare().then(() => {
 	logger.debug("App prepared. Creating server...");
 
@@ -69,9 +73,12 @@ app.prepare().then(() => {
 						` Server Running At: ${useHttps ? "https" : "http"}://localhost:` +
 						port,
 				);
+
+				reportDeploymentToRollbar();
 			})
 			.on("error", (err: Error) => {
 				logger.error(err);
+				getRollbar().error(err);
 				throw err;
 			});
 

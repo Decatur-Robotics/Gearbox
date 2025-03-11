@@ -8,8 +8,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  notify_rollbar:
+    uses: ./.github/workflows/notify_rollbar.yml
+    secrets:
+      ROLLBAR_ACCESS_TOKEN: ${{ secrets.ROLLBAR_ACCESS_TOKEN }}
+
   ci:
+    needs: notify_rollbar
     uses: ./.github/workflows/ci.yml
+    with:
+      deploy_id: ${{ needs.notify_rollbar.outputs.deploy_id }}
 
   cd:
     needs:
@@ -18,3 +26,4 @@ jobs:
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ROLLBAR_ACCESS_TOKEN: ${{ secrets.ROLLBAR_ACCESS_TOKEN }}

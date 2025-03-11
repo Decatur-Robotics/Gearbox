@@ -52,6 +52,10 @@ declare global {
 			NEXT_PUBLIC_RECAPTCHA_KEY: string;
 			RECAPTCHA_SECRET: string;
 
+			ROLLBAR_TOKEN: string;
+
+			DEPLOY_ID: string;
+
 			NODE_ENV: "development" | "production";
 		}
 	}

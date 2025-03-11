@@ -1200,6 +1200,10 @@ namespace Reefscape {
 		CanRemoveAlgae: boolean = false;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNet: boolean = false;
+		CanScoreCoral1: boolean = false;
+		CanScoreCoral2: boolean = false;
+		CanScoreCoral3: boolean = false;
+		CanScoreCoral4: boolean = false;
 		AlgaeScoredAuto: number = 0;
 		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
@@ -1218,6 +1222,10 @@ namespace Reefscape {
 			},
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
+			{ key: "CanScoreCoral1", label: "Can Score Coral at L1?" },
+			{ key: "CanScoreCoral2", label: "Can Score Coral at L2?" },
+			{ key: "CanScoreCoral3", label: "Can Score Coral at L3?" },
+			{ key: "CanScoreCoral4", label: "Can Score Coral at L4?" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
@@ -1231,43 +1239,62 @@ namespace Reefscape {
 			{ key: "AutoMovedPastStartingLine", label: "Moved Past Starting Line" },
 			[
 				[
-					{ key: "AutoCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "AutoCoralScoredLevelOne",
+						label: "Coral Scored Level One (Auto)",
+					},
 					{
 						key: "AutoCoralScoredLevelThree",
-						label: "Coral Scored Level Three",
+						label: "Coral Scored Level Three (Auto)",
 					},
 				],
 				[
 					{
 						key: "AutoCoralScoredLevelTwo",
-						label: "Coral Scored Level Two",
+						label: "Coral Scored Level Two (Auto)",
 					},
-					{ key: "AutoCoralScoredLevelFour", label: "Coral Scored Level Four" },
+					{
+						key: "AutoCoralScoredLevelFour",
+						label: "Coral Scored Level Four (Auto)",
+					},
 				],
 			],
 			[
-				[{ key: "AutoAlgaeRemovedFromReef", label: "Algae Removed From Reef" }],
-				[{ key: "AutoAlgaeScoredProcessor", label: "Algae Scored Processor" }],
-				[{ key: "AutoAlgaeScoredNet", label: "Algae Scored Net" }],
+				[
+					{
+						key: "AutoAlgaeRemovedFromReef",
+						label: "Algae Removed From Reef (Auto)",
+					},
+				],
+				[
+					{
+						key: "AutoAlgaeScoredProcessor",
+						label: "Algae Scored Processor (Auto)",
+					},
+				],
+				[{ key: "AutoAlgaeScoredNet", label: "Algae Scored Net (Auto)" }],
 			],
 		],
 		Teleop: [
 			[
 				[
-					{ key: "TeleopCoralScoredLevelOne", label: "Coral Scored Level One" },
+					{
+						key: "TeleopCoralScoredLevelOne",
+						label: "Coral Scored Level One (Teleop)",
+					},
 					{
 						key: "TeleopCoralScoredLevelThree",
-						label: "Coral Scored Level Three",
+						label: "Coral Scored Level Three (Teleop)",
 					},
 				],
 				[
 					{
 						key: "TeleopCoralScoredLevelTwo",
-						label: "Coral Scored Level Two",
+						label: "Coral Scored Level Two (Teleop)",
 					},
 					{
 						key: "TeleopCoralScoredLevelFour",
-						label: "Coral Scored Level Four",
+						label: "Coral Scored Level Four (Teleop)",
 					},
 				],
 			],
@@ -1275,16 +1302,16 @@ namespace Reefscape {
 				[
 					{
 						key: "TeleopAlgaeRemovedFromReef",
-						label: "Algae Removed From Reef",
+						label: "Algae Removed From Reef (Teleop)",
 					},
 				],
 				[
 					{
 						key: "TeleopAlgaeScoredProcessor",
-						label: "Algae Scored Processor",
+						label: "Algae Scored Processor (Teleop)",
 					},
 				],
-				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net" }],
+				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net (Teleop)" }],
 			],
 		],
 		"Post Match": ["EndgameClimbStatus"],
@@ -1309,6 +1336,24 @@ namespace Reefscape {
 				{
 					key: "AutoCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Auto",
+				},
+				{
+					label: "Avg Auto Coral",
+					get(pitData, quantitativeReports) {
+						if (!quantitativeReports) return 0;
+
+						return (
+							quantitativeReports?.reduce(
+								(acc, report) =>
+									acc +
+									report.data.AutoCoralScoredLevelOne +
+									report.data.AutoCoralScoredLevelTwo +
+									report.data.AutoCoralScoredLevelThree +
+									report.data.AutoCoralScoredLevelFour,
+								0,
+							) / quantitativeReports?.length
+						);
+					},
 				},
 				{
 					key: "AutoAlgaeRemovedFromReef",
@@ -1339,6 +1384,24 @@ namespace Reefscape {
 				{
 					key: "TeleopCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Teleop",
+				},
+				{
+					label: "Avg Teleop Coral",
+					get(pitData, quantitativeReports) {
+						if (!quantitativeReports) return 0;
+
+						return (
+							quantitativeReports?.reduce(
+								(acc, report) =>
+									acc +
+									report.data.TeleopCoralScoredLevelOne +
+									report.data.TeleopCoralScoredLevelTwo +
+									report.data.TeleopCoralScoredLevelThree +
+									report.data.TeleopCoralScoredLevelFour,
+								0,
+							) / quantitativeReports?.length
+						);
+					},
 				},
 				{
 					key: "TeleopAlgaeRemovedFromReef",
@@ -1523,6 +1586,24 @@ namespace Reefscape {
 			badges.push({ text: "Can Score Algae Processor", color: "success" });
 		if (pitReport?.data?.CanDriveUnderShallowCage)
 			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
+
+		if (pitReport?.data?.CanScoreCoral1)
+			badges.push({ text: "L1 Coral", color: "info" });
+		if (pitReport?.data?.CanScoreCoral2)
+			badges.push({ text: "L2 Coral", color: "secondary" });
+		if (pitReport?.data?.CanScoreCoral3)
+			badges.push({ text: "L3 Coral", color: "primary" });
+		if (pitReport?.data?.CanScoreCoral4)
+			badges.push({ text: "L4 Coral", color: "accent" });
+		if (
+			!(
+				pitReport?.data?.CanScoreCoral1 ||
+				pitReport?.data?.CanScoreCoral2 ||
+				pitReport?.data?.CanScoreCoral3 ||
+				pitReport?.data?.CanScoreCoral4
+			)
+		)
+			badges.push({ text: "No Coral", color: "warning" });
 
 		return badges;
 	}

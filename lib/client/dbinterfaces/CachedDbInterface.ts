@@ -12,7 +12,7 @@ import { CacheOperation } from "mongo-anywhere/CachedDbInterface";
 import { findObjectBySlugLookUp } from "@/lib/slugToId";
 
 export const cacheOptions: NodeCache.Options = {
-	stdTTL: 3 * 60,
+	stdTTL: 1 * 60,
 	useClones: false,
 };
 

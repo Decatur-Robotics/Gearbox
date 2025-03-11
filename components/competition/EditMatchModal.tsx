@@ -47,6 +47,31 @@ export default function EditMatchModal(props: {
 			.then(loadMatches);
 	}
 
+	function changeTeamNumber(e: ChangeEvent<HTMLInputElement>, index: number) {
+		e.preventDefault();
+
+		const teamNumber = +e.target.value;
+		if (!teamNumber || !props.match?._id) return;
+
+		const reportId = props.match?.reports[index];
+		if (!props.reportsById[reportId]._id) return;
+
+		console.log(
+			`Changing team ${index} for match ${props.match?._id} to ${teamNumber}`,
+		);
+
+		api
+			.changeTeamNumberForReport(
+				match._id!.toString(),
+				props.reportsById[reportId]._id,
+				teamNumber,
+			)
+			.then(() => {
+				loadMatches();
+				loadReports();
+			});
+	}
+
 	return (
 		<dialog
 			id="edit-match-modal"
@@ -75,7 +100,13 @@ export default function EditMatchModal(props: {
 								<td className={index < 3 ? "text-blue-500" : "text-red-500"}>
 									{index < 3 ? "Blue" : "Red"} {(index % 3) + 1}
 								</td>
-								<td>{team}</td>
+								<td>
+									<input
+										onChange={(e) => changeTeamNumber(e, index)}
+										type="number"
+										defaultValue={team}
+									/>
+								</td>
 								<td>
 									<select onChange={(e) => changeScouter(e, reports[index])}>
 										{reports[index]?.user &&

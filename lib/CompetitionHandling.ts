@@ -72,6 +72,7 @@ export async function assignScoutersToCompetitionMatches(
 		throw new Error("Team not found");
 	}
 
+	// Filter out invalid users
 	team.scouters = team.scouters.filter((s) => team.users.includes(s));
 	team.subjectiveScouters = team.subjectiveScouters.filter((s) =>
 		team.users.includes(s),

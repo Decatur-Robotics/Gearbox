@@ -1,0 +1,35 @@
+name: Notify Rollbar
+
+on:
+  workflow_call:
+    secrets:
+      ROLLBAR_ACCESS_TOKEN:
+        required: true
+    outputs:
+      deploy_id:
+        value: ${{ jobs.notify.outputs.deploy_id }}
+  workflow_dispatch:
+
+permissions:
+  packages: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    environment: Production
+    outputs:
+      deploy_id: ${{ steps.rollbar_pre_deploy.outputs.deploy_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Notify deploy to Rollbar
+        uses: rollbar/github-deploy-action@2.1.2
+        id: rollbar_pre_deploy
+        with:
+          environment: "production"
+          version: ${{ github.sha }}
+          status: "started"
+        env:
+          ROLLBAR_ACCESS_TOKEN: ${{ secrets.ROLLBAR_ACCESS_TOKEN }}
+          ROLLBAR_USERNAME: ${{ github.actor }}
