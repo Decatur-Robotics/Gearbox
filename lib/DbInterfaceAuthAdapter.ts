@@ -89,9 +89,6 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found:", id);
-				rollbar.warn("User not found when getting user", {
-					id,
-				});
 				return null;
 			}
 			user.id = user._id!.toString()!;
@@ -106,9 +103,6 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found by email:", email);
-				rollbar.warn("User not found when getting user by email", {
-					email,
-				});
 				return null;
 			}
 
@@ -131,9 +125,6 @@ export default function DbInterfaceAuthAdapter(
 					"Account not found by providerAccountId:",
 					providerAccountId.providerAccountId,
 				);
-				rollbar.warn("Account not found when getting user by account", {
-					providerAccountId,
-				});
 				return null;
 			}
 
@@ -144,9 +135,6 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found:", account.userId);
-				rollbar.warn("User not found when getting user by account", {
-					providerAccountId,
-				});
 				return null;
 			}
 
@@ -331,9 +319,6 @@ export default function DbInterfaceAuthAdapter(
 			if (!session) {
 				// Weirdly, this is ok.
 				logger.warn("Session not found:", sessionToken);
-				rollbar.warn("Session not found when getting session and user", {
-					sessionToken,
-				});
 				return null;
 			}
 
@@ -344,9 +329,6 @@ export default function DbInterfaceAuthAdapter(
 
 			if (!user) {
 				logger.warn("User not found:", session.userId);
-				rollbar.warn("User not found when getting session and user", {
-					sessionToken,
-				});
 				return null;
 			}
 
