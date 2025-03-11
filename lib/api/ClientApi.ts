@@ -1566,7 +1566,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			addXp(
 				db,
-				user!._id!,
+				user!._id!.toString(),
 				match.subjectiveScouter === user!._id!.toString() ? 10 : 5,
 			);
 
@@ -2333,7 +2333,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const leaderboardUsers = users
 				.map((user) => ({
-					_id: user._id!.toString(),
+					_id: user._id!,
 					name: user.name?.split(" ")[0] ?? "Unknown",
 					image: user.image,
 					xp: user.xp,

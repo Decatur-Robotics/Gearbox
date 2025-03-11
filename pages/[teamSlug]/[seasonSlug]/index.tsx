@@ -27,7 +27,7 @@ export default function Home(props: SeasonPageProps) {
 	const team = props.team;
 	const season = props.season;
 	const comps = props.competitions;
-	const owner = team?.owners.includes(session?.user?._id as string);
+	const owner = team?.owners.includes(session?.user?._id?.toString()!);
 
 	return (
 		<Container

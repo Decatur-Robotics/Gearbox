@@ -6,9 +6,8 @@
 	"editor.formatOnPaste": true,
 	"editor.formatOnSave": true,
 	"[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-	"[typescriptreact]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
+	"[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 	"typescript.format.enable": false,
-	"prettier.configPath": ".prettierrc"
+	"prettier.configPath": ".prettierrc",
+	"C_Cpp.errorSquiggles": "enabled"
 }

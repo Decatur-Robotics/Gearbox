@@ -216,7 +216,7 @@ export default function MatchScheduleCard(props: {
 																		imgHeightOverride="h-12"
 																		showLevel={false}
 																		borderThickness={2}
-																		onClick={() => remindUserOnSlack(user._id!)}
+																		onClick={() => remindUserOnSlack(user._id!.toString())}
 																		gearSize={25}
 																	/>
 																) : (
@@ -257,7 +257,7 @@ export default function MatchScheduleCard(props: {
 																onClick={() =>
 																	remindUserOnSlack(
 																		usersById[match.subjectiveScouter ?? ""]
-																			?._id!,
+																			?._id!.toString(),
 																	)
 																}
 															>

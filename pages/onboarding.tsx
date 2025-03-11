@@ -59,7 +59,7 @@ export default function Onboarding() {
 		async (redirect: string = "/profile") => {
 			if (!session?.user?._id) return;
 
-			api.setOnboardingCompleted(session?.user?._id);
+			api.setOnboardingCompleted(session?.user?._id.toString());
 			router.push(redirect);
 
 			Analytics.onboardingCompleted(
@@ -100,7 +100,7 @@ export default function Onboarding() {
 		});
 		setJoinRequestStatus(
 			"requests" in team &&
-				(team.requests?.includes(session?.user?._id ?? "") ?? false)
+				(team.requests?.includes(session?.user?._id?.toString()!) ?? false)
 				? JoinRequestStatus.Requested
 				: JoinRequestStatus.NotRequested,
 		);
@@ -136,10 +136,10 @@ export default function Onboarding() {
 		console.log(team, session.user);
 
 		const requestPending =
-			team.requests?.includes(session?.user?._id ?? "") ?? false;
+			team.requests?.includes(session?.user?._id.toString()) ?? false;
 		if (
 			joinRequestStatus === JoinRequestStatus.Requested &&
-			(team?.users?.includes(session?.user?._id ?? "") ?? false)
+			(team?.users?.includes(session?.user?._id.toString()) ?? false)
 		)
 			completeOnboarding();
 

@@ -46,7 +46,7 @@ export default function CompetitionIndex({
 	const { session, status } = useCurrentSession();
 	const isManager =
 		(session?.user?._id !== undefined &&
-			team?.owners.includes(session?.user?._id)) ??
+			team?.owners.includes(session?.user?._id.toString())) ??
 		false;
 
 	const [matches, setMatches] = useState<Match[]>([]);

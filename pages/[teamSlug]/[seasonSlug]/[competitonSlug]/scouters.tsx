@@ -26,7 +26,7 @@ export default function Scouters(props: {
 
 	const { session } = useCurrentSession();
 	const isManager = session?.user?._id
-		? team?.owners.includes(session.user?._id)
+		? team?.owners.includes(session.user?._id.toString())
 		: false;
 
 	type Scouter = User & {
@@ -75,7 +75,7 @@ export default function Scouters(props: {
 			// Load scouters
 			const scouterDict: { [id: string]: Scouter } = {};
 			for (const s of data.scouters) {
-				scouterDict[s._id ?? ""] = {
+				scouterDict[s._id?.toString()!] = {
 					...s,
 					missedReports: [],
 					reports: [],
@@ -252,7 +252,7 @@ export default function Scouters(props: {
 				const missedReports = scouterReports.filter((report) => {
 					return (
 						!report.submitted ||
-						(report.submitter && report.submitter !== scouter._id)
+						(report.submitter && report.submitter !== scouter._id?.toString())
 					);
 				});
 
@@ -261,7 +261,7 @@ export default function Scouters(props: {
 						report.submitted &&
 						report.submitter &&
 						report.user !== scouter._id &&
-						report.submitter === scouter._id
+						report.submitter === scouter._id?.toString()
 					);
 				});
 
@@ -282,7 +282,7 @@ export default function Scouters(props: {
 
 			const scouterDict: { [id: string]: Scouter } = {};
 			for (const scouter of newScouters) {
-				scouterDict[scouter._id ?? ""] = scouter;
+				scouterDict[scouter._id?.toString()!] = scouter;
 			}
 
 			setScouters(scouterDict);

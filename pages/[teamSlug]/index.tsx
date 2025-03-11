@@ -143,7 +143,7 @@ function Roster(props: TeamPageProps) {
 	const [loadingRequests, setLoadingRequests] = useState(true);
 	const [requests, setRequests] = useState<User[]>([]);
 
-	const owner = team?.owners.includes(session.user?._id as string);
+	const owner = team?.owners.includes(session.user?._id?.toString()!);
 
 	useEffect(() => {
 		const loadRequests = async () => {
@@ -168,7 +168,7 @@ function Roster(props: TeamPageProps) {
 		);
 
 		const reqClone = structuredClone(requests);
-		const userIndex = reqClone.findIndex((user) => userId === user._id);
+		const userIndex = reqClone.findIndex((user) => userId === user._id?.toString());
 		const user = structuredClone(requests[userIndex]);
 		reqClone.splice(userIndex, 1);
 		setRequests(reqClone);
@@ -241,7 +241,7 @@ function Roster(props: TeamPageProps) {
 			userId,
 		);
 		setTeam(newTeam);
-		setUsers(users.filter((user) => user._id !== userId));
+		setUsers(users.filter((user) => user._id?.toString() !== userId));
 	};
 
 	return (
@@ -355,10 +355,10 @@ function Roster(props: TeamPageProps) {
 									<input
 										type="checkbox"
 										className="toggle toggle-secondary"
-										checked={team?.scouters.includes(user._id as string)}
+										checked={team?.scouters.includes(user._id?.toString()!)}
 										disabled={!owner}
 										onChange={() => {
-											updateScouter(user._id as string);
+											updateScouter(user._id?.toString()!);
 										}}
 									/>
 								</td>
@@ -367,11 +367,11 @@ function Roster(props: TeamPageProps) {
 										type="checkbox"
 										className="toggle toggle-accent"
 										checked={team?.subjectiveScouters?.includes(
-											user._id as string,
+											user._id?.toString()!,
 										)}
 										disabled={!owner}
 										onChange={() => {
-											updateSubjectiveScouter(user._id as string);
+											updateSubjectiveScouter(user._id?.toString()!);
 										}}
 									/>
 								</td>
@@ -379,10 +379,10 @@ function Roster(props: TeamPageProps) {
 									<input
 										type="checkbox"
 										className="toggle toggle-primary"
-										checked={team?.owners.includes(user._id as string)}
+										checked={team?.owners.includes(user._id?.toString()!)}
 										disabled={!owner}
 										onChange={() => {
-											updateOwner(user._id as string);
+											updateOwner(user._id?.toString()!);
 										}}
 									/>
 								</td>
@@ -391,7 +391,7 @@ function Roster(props: TeamPageProps) {
 										className="btn btn-outline btn-error"
 										disabled={!owner}
 										onClick={() => {
-											removeUser(user._id as string);
+											removeUser(user._id?.toString()!);
 										}}
 									>
 										<MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>
@@ -463,7 +463,7 @@ export default function TeamIndex(props: TeamPageProps) {
 
 	const [page, setPage] = useState(0);
 
-	const isManager = team?.owners.includes(session?.user?._id as string);
+	const isManager = team?.owners.includes(session?.user?._id?.toString()!);
 
 	return (
 		<Container
@@ -541,7 +541,7 @@ export default function TeamIndex(props: TeamPageProps) {
 						) : (
 							<div>Not linked to Slack.</div>
 						)}
-						{team?.owners.includes(session?.user?._id ?? "") && (
+						{team?.owners.includes(session?.user?._id!.toString()!) && (
 							<AddToSlack
 								edit={team?.slackWebhook !== undefined}
 								teamId={team._id}
@@ -626,7 +626,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	users = users.map((user) => {
 		var c = structuredClone(user);
-		c._id = user?._id?.toString();
+		c._id = user?._id;
 		c.teams = user.teams.map((id) => (id));
 		return c;
 	});
