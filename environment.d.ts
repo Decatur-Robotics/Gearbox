@@ -54,7 +54,6 @@ declare global {
 
 			ROLLBAR_TOKEN: string;
 
-			GIT_SHA: string;
 			DEPLOY_ID: string;
 
 			NODE_ENV: "development" | "production";
