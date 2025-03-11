@@ -52,7 +52,7 @@ export default function InsightsAndSettingsCard(props: {
 	const [teamToAdd, setTeamToAdd] = useState<number | undefined>(undefined);
 	const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
 	const [redAlliance, setRedAlliance] = useState<number[]>([]);
-	const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
+	const [matchNumber, setMatchNumber] = useState<number>();
 
 	const exportAsCsv = async () => {
 		setExportPending(true);
