@@ -26,7 +26,7 @@
 		"@yudiel/react-qr-scanner": "^2.2.1",
 		"bootstrap": "^5.3.3",
 		"browser-image-compression": "^2.0.2",
-		"bson": "^5.0.0",
+		"bson": "^6.10.3",
 		"dependencies": "^0.0.1",
 		"dotenv": "^16.4.7",
 		"eslint": "9.18.0",
