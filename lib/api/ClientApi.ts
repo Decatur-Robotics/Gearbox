@@ -1667,7 +1667,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; comp: Competition }
 	>({
 		isAuthorized: (req, res, deps, [compId]) =>
-			AccessLevels.IfCompOwner(req, res, deps, compId),
+			AccessLevels.IfCompOwner(req, res, deps, compId.toString()),
 		handler: async (
 			req,
 			res,
