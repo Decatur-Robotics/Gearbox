@@ -57,7 +57,7 @@ export default function InsightsAndSettingsCard(props: {
 	const exportAsCsv = async () => {
 		setExportPending(true);
 
-		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
+		const res = await api.exportCompAsCsv(comp?._id!.toString()!).catch((e) => {
 			console.error(e);
 			return { csv: undefined };
 		});
@@ -78,7 +78,7 @@ export default function InsightsAndSettingsCard(props: {
 	const createMatch = async () => {
 		try {
 			await api.createMatch(
-				comp?._id!,
+				comp?._id!.toString()!,
 				Number(matchNumber),
 				0,
 				MatchType.Qualifying,
@@ -110,7 +110,7 @@ export default function InsightsAndSettingsCard(props: {
 			return;
 
 		await api.updateCompNameAndTbaId(
-			comp?._id,
+			comp?._id.toString(),
 			newCompName ?? "Unnamed",
 			tbaId ?? NotLinkedToTba,
 		);
@@ -119,7 +119,7 @@ export default function InsightsAndSettingsCard(props: {
 
 	function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
 		if (!comp?._id) return;
-		api.setCompPublicData(comp?._id, e.target.checked);
+		api.setCompPublicData(comp?._id.toString(), e.target.checked);
 	}
 
 	function addTeam() {
@@ -127,7 +127,7 @@ export default function InsightsAndSettingsCard(props: {
 		if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
 
 		api
-			.createPitReportForTeam(teamToAdd, comp?._id)
+			.createPitReportForTeam(teamToAdd, comp?._id.toString())
 			// We can't just pass location.reload, it will throw "illegal invocation." I don't know why. -Renato
 			.finally(() => location.reload());
 	}

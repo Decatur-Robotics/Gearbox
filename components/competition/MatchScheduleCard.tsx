@@ -66,7 +66,7 @@ export default function MatchScheduleCard(props: {
 	const unsubmittedMatches: Match[] = [];
 
 	for (const match of matches) {
-		if (match.reports.some((reportId) => !reportsById[reportId]?.submitted))
+		if (match.reports.some((reportId) => !reportsById[reportId.toString()]?.submitted))
 			unsubmittedMatches.push(match);
 	}
 
@@ -151,7 +151,7 @@ export default function MatchScheduleCard(props: {
 											<div className="flex flex-col items-center space-y-4">
 												<div className="w-full flex flex-row items-center space-x-2">
 													{match.reports.map((reportId) => {
-														const report = reportsById[reportId];
+														const report = reportsById[reportId.toString()];
 
 														if (!report)
 															return (
@@ -200,8 +200,8 @@ export default function MatchScheduleCard(props: {
 
 												<div className="w-full flex flex-row items-center space-x-2">
 													{match.reports.map((reportId) => {
-														const report = reportsById[reportId];
-														const user = usersById[report?.user!];
+														const report = reportsById[reportId.toString()];
+														const user = usersById[report?.user!.toString()];
 
 														return (
 															<div
@@ -216,7 +216,9 @@ export default function MatchScheduleCard(props: {
 																		imgHeightOverride="h-12"
 																		showLevel={false}
 																		borderThickness={2}
-																		onClick={() => remindUserOnSlack(user._id!.toString())}
+																		onClick={() =>
+																			remindUserOnSlack(user._id!.toString())
+																		}
 																		gearSize={25}
 																	/>
 																) : (
@@ -229,7 +231,7 @@ export default function MatchScheduleCard(props: {
 											</div>
 											<div>
 												{match.subjectiveScouter &&
-												usersById[match.subjectiveScouter] ? (
+												usersById[match.subjectiveScouter.toString()] ? (
 													<div className="flex flex-row items-center space-x-1">
 														{match.assignedSubjectiveScouterHasSubmitted ? (
 															<FaCheck
@@ -240,7 +242,9 @@ export default function MatchScheduleCard(props: {
 															match.subjectiveReportsCheckInTimestamps &&
 															getIdsInProgressFromTimestamps(
 																match.subjectiveReportsCheckInTimestamps,
-															).includes(match.subjectiveScouter) && (
+															).includes(
+																match.subjectiveScouter.toString(),
+															) && (
 																<div
 																	className="tooltip"
 																	data-tip="Scouting in progress"
@@ -250,24 +254,31 @@ export default function MatchScheduleCard(props: {
 															)
 														)}
 														{isManager &&
-														usersById[match.subjectiveScouter ?? ""]
+														usersById[match.subjectiveScouter.toString()]
 															?.slackId ? (
 															<button
 																className="text-primary hover:underline mb-1"
 																onClick={() =>
 																	remindUserOnSlack(
-																		usersById[match.subjectiveScouter ?? ""]
-																			?._id!.toString(),
+																		usersById[
+																			match.subjectiveScouter!.toString()
+																		]?._id!.toString(),
 																	)
 																}
 															>
 																Subjective Scouter:{" "}
-																{usersById[match.subjectiveScouter].name}
+																{
+																	usersById[match.subjectiveScouter.toString()]
+																		.name
+																}
 															</button>
 														) : (
 															<div>
 																Subjective Scouter:{" "}
-																{usersById[match.subjectiveScouter ?? ""].name}{" "}
+																{
+																	usersById[match.subjectiveScouter.toString()]
+																		.name
+																}{" "}
 																<div
 																	className="tooltip before:w-[10rem] "
 																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
@@ -290,7 +301,7 @@ export default function MatchScheduleCard(props: {
 												)}
 											</div>
 											<a
-												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`}
+												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter.toString()]?.slackId && "-translate-y-1"}`}
 												href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}
 											>
 												Add Subjective Report (

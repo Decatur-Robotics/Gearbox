@@ -20,7 +20,7 @@ export default function EditMatchModal(props: {
 
 	const teams = props.match.blueAlliance.concat(props.match.redAlliance);
 
-	const reports = props.match.reports.map((reportId) => reportsById[reportId]);
+	const reports = props.match.reports.map((reportId) => reportsById[reportId.toString()]);
 	if (!reports) return <></>;
 
 	function changeScouter(e: ChangeEvent<HTMLSelectElement>, report: Report) {
@@ -30,7 +30,7 @@ export default function EditMatchModal(props: {
 		if (!userId || !report || !report._id) return;
 
 		console.log(`Changing scouter for report ${report._id} to ${userId}`);
-		api.changeScouterForReport(report._id, userId).then(loadReports);
+		api.changeScouterForReport(report._id.toString(), userId).then(loadReports);
 	}
 
 	function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
@@ -43,7 +43,7 @@ export default function EditMatchModal(props: {
 			`Changing subjective scouter for match ${props.match?._id} to ${userId}`,
 		);
 		api
-			.setSubjectiveScouterForMatch(props.match?._id, userId)
+			.setSubjectiveScouterForMatch(props.match?._id.toString(), userId)
 			.then(loadMatches);
 	}
 
@@ -54,7 +54,7 @@ export default function EditMatchModal(props: {
 		if (!teamNumber || !props.match?._id) return;
 
 		const reportId = props.match?.reports[index];
-		if (!props.reportsById[reportId]._id) return;
+		if (!props.reportsById[reportId.toString()]._id) return;
 
 		console.log(
 			`Changing team ${index} for match ${props.match?._id} to ${teamNumber}`,
@@ -63,7 +63,7 @@ export default function EditMatchModal(props: {
 		api
 			.changeTeamNumberForReport(
 				match._id!.toString(),
-				props.reportsById[reportId]._id,
+				props.reportsById[reportId.toString()]._id.toString(),
 				teamNumber,
 			)
 			.then(() => {
@@ -110,16 +110,16 @@ export default function EditMatchModal(props: {
 								<td>
 									<select onChange={(e) => changeScouter(e, reports[index])}>
 										{reports[index]?.user &&
-										usersById[reports[index].user ?? ""] ? (
-											<option value={reports[index].user}>
-												{usersById[reports[index].user ?? ""]?.name}
+										usersById[reports[index].user.toString()] ? (
+											<option value={reports[index].user.toString()}>
+												{usersById[reports[index].user.toString()]?.name}
 											</option>
 										) : (
 											<></>
 										)}
 										<option value={undefined}>None</option>
 										{Object.keys(usersById)
-											.filter((id) => id !== reports[index]?.user)
+											.filter((id) => id !== reports[index]?.user?.toString())
 											.map((userId) => (
 												<option
 													key={userId}
@@ -138,16 +138,16 @@ export default function EditMatchModal(props: {
 					<label>Subjective Scouter:</label>
 					<select onChange={changeSubjectiveScouter}>
 						{props.match?.subjectiveScouter &&
-						usersById[props.match.subjectiveScouter] ? (
-							<option value={props.match.subjectiveScouter}>
-								{usersById[props.match.subjectiveScouter].name}
+						usersById[props.match.subjectiveScouter.toString()] ? (
+							<option value={props.match.subjectiveScouter.toString()}>
+								{usersById[props.match.subjectiveScouter.toString()].name}
 							</option>
 						) : (
 							<></>
 						)}
 						<option value={undefined}>None</option>
 						{Object.keys(usersById)
-							.filter((id) => id !== props.match?.subjectiveScouter)
+							.filter((id) => id !== props.match?.subjectiveScouter?.toString())
 							.map((userId) => (
 								<option
 									key={userId}
