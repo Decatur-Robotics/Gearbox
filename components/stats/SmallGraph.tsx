@@ -108,7 +108,7 @@ export default function SmallGraph(props: {
 		setDataPoints([]);
 		setCurrentTeam(props.team);
 		for (const report of props.selectedReports) {
-			api.findMatchById(report.match).then((match) => {
+			api.findMatchById(report.match.toString()).then((match) => {
 				if (!match) return;
 
 				setDataPoints((prev) =>

@@ -74,7 +74,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.users.includes(user._id?.toString()!),
+			authorized: team.users.includes(user._id),
 			authData: team,
 		};
 	}
@@ -98,7 +98,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.owners.includes(user._id?.toString()!),
+			authorized: team.owners.includes(user._id),
 			authData: team,
 		};
 	}
@@ -127,7 +127,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.owners.includes(user._id?.toString()!),
+			authorized: team.owners.includes(user._id),
 			authData: { team, comp },
 		};
 	}
@@ -156,7 +156,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.owners.includes(user._id?.toString()!),
+			authorized: team.owners.includes(user._id),
 			authData: { team, season },
 		};
 	}
@@ -190,7 +190,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.owners.includes(user._id?.toString()!),
+			authorized: team.owners.includes(user._id),
 			authData: { team, comp, match },
 		};
 	}
@@ -219,7 +219,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.owners.includes(user._id?.toString()!),
+			authorized: team.owners.includes(user._id),
 			authData: { team, report },
 		};
 	}
@@ -248,7 +248,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.users.includes(user._id?.toString()!),
+			authorized: team.users.includes(user._id),
 			authData: { team, comp },
 		};
 	}
@@ -282,7 +282,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.users.includes(user._id?.toString()!),
+			authorized: team.users.includes(user._id),
 			authData: { team, comp, match },
 		};
 	}
@@ -316,7 +316,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team?.users.includes(user._id?.toString()!),
+			authorized: team?.users.includes(user._id),
 			authData: { team, comp, pitReport },
 		};
 	}
@@ -345,7 +345,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.users.includes(user._id?.toString()!),
+			authorized: team.users.includes(user._id),
 			authData: { team, report },
 		};
 	}
@@ -374,7 +374,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.users.includes(user._id?.toString()!),
+			authorized: team.users.includes(user._id),
 			authData: { team, report },
 		};
 	}
@@ -403,7 +403,7 @@ namespace AccessLevels {
 		}
 
 		return {
-			authorized: team.users.includes(user._id?.toString()!),
+			authorized: team.users.includes(user._id),
 			authData: { team, picklist },
 		};
 	}

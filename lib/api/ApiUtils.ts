@@ -21,7 +21,7 @@ export function onTeam(team?: Team | null, user?: User) {
 		team &&
 		user &&
 		user._id &&
-		team.users.find((owner) => owner === user._id?.toString()) !== undefined
+		team.users.find((owner) => owner === user._id) !== undefined
 	);
 }
 
@@ -30,7 +30,7 @@ export function ownsTeam(team?: Team | null, user?: User) {
 		team &&
 		user &&
 		user._id &&
-		team.owners.find((owner) => owner === user._id?.toString()) !== undefined
+		team.owners.find((owner) => owner === user._id) !== undefined
 	);
 }
 
