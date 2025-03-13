@@ -188,7 +188,7 @@ export default function MatchScheduleCard(props: {
 															<a
 																href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
 																key={reportId}
-																className={`${color} ${mine && !submitted ? "border-6  border-purple-500" : "border-2 border-white"} 
+																className={`${color} ${mine && !submitted ? "border-4  border-purple-500" : "border-2 border-white"} 
                                   ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
                                   rounded-lg w-12 h-12 flex items-center justify-center text-white`}
 															>
