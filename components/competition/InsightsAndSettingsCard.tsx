@@ -49,10 +49,10 @@ export default function InsightsAndSettingsCard(props: {
 	const [newCompName, setNewCompName] = useState(comp?.name);
 	const [newCompTbaId, setNewCompTbaId] = useState(comp?.tbaId);
 	const [exportPending, setExportPending] = useState(false);
-	const [teamToAdd, setTeamToAdd] = useState<number>(0);
+	const [teamToAdd, setTeamToAdd] = useState<number>();
 	const [blueAlliance, setBlueAlliance] = useState<number[]>([]);
 	const [redAlliance, setRedAlliance] = useState<number[]>([]);
-	const [matchNumber, setMatchNumber] = useState<number | undefined>(undefined);
+	const [matchNumber, setMatchNumber] = useState<number>();
 
 	const exportAsCsv = async () => {
 		setExportPending(true);

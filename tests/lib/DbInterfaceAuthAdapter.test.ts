@@ -129,13 +129,12 @@ describe(prototype.getUser!.name, () => {
 		expect(foundUser).toBeNull();
 	});
 
-	test("Warns and returns null if the user doesn't exist", async () => {
+	test("Returns null if the user doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
 		const user = await adapter.getUser!(new ObjectId().toString());
 
 		expect(user).toBeNull();
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -176,13 +175,12 @@ describe(prototype.getUserByEmail!.name, () => {
 		expect(foundUser).toMatchObject(userWithoutId);
 	});
 
-	test("Warns and returns null if the user doesn't exist", async () => {
+	test("Returns null if the user doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
 		const user = await adapter.getUserByEmail!("test@gmail.com");
 
 		expect(user).toBeNull();
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -214,7 +212,7 @@ describe(prototype.getUserByAccount!.name, () => {
 		expect(foundUser).toMatchObject(addedUser);
 	});
 
-	test("Warns and returns null if the account doesn't exist", async () => {
+	test("Returns null if the account doesn't exist", async () => {
 		const { adapter, rollbar } = await getDeps();
 
 		const account: Account = {
@@ -227,10 +225,9 @@ describe(prototype.getUserByAccount!.name, () => {
 		const user = await adapter.getUserByAccount!(account);
 
 		expect(user).toBeNull();
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
-	test("Warns and returns null if the user doesn't exist", async () => {
+	test("Returns null if the user doesn't exist", async () => {
 		const { adapter, db, rollbar } = await getDeps();
 
 		const account: Account = {
@@ -245,7 +242,6 @@ describe(prototype.getUserByAccount!.name, () => {
 		const user = await adapter.getUserByAccount!(account);
 
 		expect(user).toBeNull();
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
@@ -563,6 +559,21 @@ describe(prototype.unlinkAccount!.name, () => {
 		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
+	test("Returns null if the account doesn't exist", async () => {
+		const { adapter } = await getDeps();
+
+		const account: Account = {
+			provider: "test",
+			type: "oauth",
+			providerAccountId: "1234567890",
+			userId: new ObjectId() as any,
+		};
+
+		const returnedAccount = await adapter.unlinkAccount!(account);
+
+		expect(returnedAccount).toBeNull();
+	});
+
 	test("Does not delete the user", async () => {
 		const { db, adapter } = await getDeps();
 
@@ -626,14 +637,14 @@ describe(prototype.getSessionAndUser!.name, () => {
 	});
 
 	test("Returns null if the session doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
+		const { adapter } = await getDeps();
 
 		const session = await adapter.getSessionAndUser!("1234567890");
 
 		expect(session).toBeNull();
 	});
 
-	test("Warns and returns null if the user doesn't exist", async () => {
+	test("Returns null if the user doesn't exist", async () => {
 		const { adapter, db, rollbar } = await getDeps();
 
 		const session: AdapterSession = {
@@ -649,7 +660,6 @@ describe(prototype.getSessionAndUser!.name, () => {
 		);
 
 		expect(sessionAndUser).toBeNull();
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
 
