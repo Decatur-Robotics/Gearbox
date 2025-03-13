@@ -1,7 +1,12 @@
 import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
+import DbInterface from "@/lib/client/dbinterfaces/DbInterface";
 import { GameId } from "@/lib/client/GameId";
-import { getTestApiParams, getTestApiUtils } from "@/lib/testutils/TestUtils";
+import {
+	getTestApiParams,
+	getTestApiUtils,
+	getTestAuthParams,
+} from "@/lib/testutils/TestUtils";
 import {
 	AllianceColor,
 	Competition,
@@ -1105,5 +1110,238 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 			CollectionId.Matches,
 			new ObjectId(match._id!),
 		);
+	});
+});
+
+describe(`${ClientApi.name}.${api.findCompSeasonAndTeamByCompSlug.name}`, () => {
+	async function createDocuments(
+		db: DbInterface,
+		user: User,
+		addUserToTeam: boolean,
+	) {
+		const comp = await db.addObject(
+			CollectionId.Competitions,
+			new Competition(
+				"Test Competition",
+				"test-competition",
+				"test-tbaId",
+				0,
+				0,
+				[],
+				[],
+				"",
+				false,
+			),
+		);
+
+		const season = await db.addObject(
+			CollectionId.Seasons,
+			new Season("Test Season", "test-season", 2022, GameId.IntoTheDeep, [
+				comp._id!.toString(),
+			]),
+		);
+
+		const team = await db.addObject(
+			CollectionId.Teams,
+			new Team(
+				"Test Team",
+				"test-team",
+				"tbaId",
+				1234,
+				League.FRC,
+				false,
+				[],
+				addUserToTeam ? [user._id!.toString()] : [],
+				[],
+				[],
+				[],
+				[season._id!.toString()],
+			),
+		);
+
+		return { comp, season, team };
+	}
+
+	test("Returns comp, team, and season", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, season, team } = await createDocuments(db, user, true);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authData } = await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+			params[0],
+			params[1],
+			params[2],
+			params[4],
+		);
+
+		expect(authData).toEqual({
+			comp,
+			season,
+			team,
+		});
+	});
+
+	test("Returns undefined for authData if user is not on the team", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, season, team } = await createDocuments(db, user, false);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authData } = await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+			params[0],
+			params[1],
+			params[2],
+			params[4],
+		);
+
+		expect(authData).toBeUndefined();
+	});
+
+	test("Returns undefined for authData if comp not found", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await createDocuments(db, user, true);
+
+		const params = await getTestApiParams(res, { db, user }, ["not-found"]);
+		const { authData } = await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+			params[0],
+			params[1],
+			params[2],
+			params[4],
+		);
+
+		expect(authData).toBeUndefined();
+	});
+
+	test("Returns undefined for authData if team not found", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, team } = await createDocuments(db, user, true);
+
+		await db.deleteObjectById(CollectionId.Teams, team._id!);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authData } = await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+			params[0],
+			params[1],
+			params[2],
+			params[4],
+		);
+
+		expect(authData).toBeUndefined();
+	});
+
+	test("Returns undefined for authData if season not found", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, season } = await createDocuments(db, user, true);
+
+		await db.deleteObjectById(
+			CollectionId.Seasons,
+			season._id! as unknown as ObjectId,
+		);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authData } = await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+			params[0],
+			params[1],
+			params[2],
+			params[4],
+		);
+
+		expect(authData).toBeUndefined();
+	});
+
+	test("Denies access if user is not logged in", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, season, team } = await createDocuments(db, user, true);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authorized } =
+			await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+				params[0],
+				params[1],
+				params[2],
+				[""],
+			);
+
+		expect(authorized).toBe(false);
+	});
+
+	test("Denies access if user is not on team", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, season, team } = await createDocuments(db, user, false);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authorized } =
+			await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+				params[0],
+				params[1],
+				params[2],
+				params[4],
+			);
+
+		expect(authorized).toBe(false);
+	});
+
+	test("Denies access if comp not found", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		await createDocuments(db, user, true);
+
+		const params = await getTestApiParams(res, { db, user }, ["not-found"]);
+		const { authorized } =
+			await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+				params[0],
+				params[1],
+				params[2],
+				params[4],
+			);
+
+		expect(authorized).toBe(false);
+	});
+
+	test("Denies access if team not found", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, team } = await createDocuments(db, user, true);
+
+		await db.deleteObjectById(CollectionId.Teams, team._id!);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authorized } =
+			await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+				params[0],
+				params[1],
+				params[2],
+				params[4],
+			);
+
+		expect(authorized).toBe(false);
+	});
+
+	test("Denies access if season not found", async () => {
+		const { db, res, user } = await getTestApiUtils();
+
+		const { comp, season } = await createDocuments(db, user, true);
+
+		await db.deleteObjectById(
+			CollectionId.Seasons,
+			season._id! as unknown as ObjectId,
+		);
+
+		const params = await getTestApiParams(res, { db, user }, [comp.slug]);
+		const { authorized } =
+			await api.findCompSeasonAndTeamByCompSlug.isAuthorized(
+				params[0],
+				params[1],
+				params[2],
+				params[4],
+			);
+
+		expect(authorized).toBe(false);
 	});
 });

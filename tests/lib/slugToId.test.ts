@@ -1,5 +1,5 @@
 import InMemoryDbInterface from "@/lib/client/dbinterfaces/InMemoryDbInterface";
-import slugToId, { findObjectBySlugLookUp } from "@/lib/slugToId";
+import findObjectBySlugLookUp, { slugToId } from "@/lib/slugToId";
 import { ObjectId } from "bson";
 
 beforeEach(() => {

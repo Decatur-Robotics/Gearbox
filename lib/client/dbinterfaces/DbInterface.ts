@@ -4,7 +4,6 @@ import CollectionId, {
 	SluggedCollectionId,
 } from "../CollectionId";
 import { default as BaseDbInterface } from "mongo-anywhere/DbInterface";
-import slugToId from "@/lib/slugToId";
 
 export type WithStringOrObjectIdId<Type> = Omit<Type, "_id"> & {
 	_id?: ObjectId | string;

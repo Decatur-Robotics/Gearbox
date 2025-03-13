@@ -25,6 +25,8 @@ import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
 	addXp,
 	generatePitReports,
+	getSeasonFromComp,
+	getTeamFromComp,
 	getTeamFromMatch,
 	getTeamFromReport,
 	onTeam,
@@ -48,8 +50,8 @@ import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
 import Logger from "../client/Logger";
-import getRollbar, { RollbarInterface } from "../client/RollbarUtils";
 import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
+import findObjectBySlugLookUp, { slugToId } from "../slugToId";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -2603,6 +2605,47 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				name,
 			});
 			return res.status(200).send({ result: "success" });
+		},
+	});
+
+	findCompSeasonAndTeamByCompSlug = createNextRoute<
+		[string],
+		{ comp: Competition; season: Season; team: Team } | undefined,
+		ApiDependencies,
+		{ team: Team; season: Season; comp: Competition }
+	>({
+		isAuthorized: async (req, res, { db, userPromise }, [compSlug]) => {
+			const user = await userPromise;
+			if (!user) return { authorized: false, authData: undefined };
+
+			const comp = await findObjectBySlugLookUp(
+				await db,
+				CollectionId.Competitions,
+				compSlug,
+			);
+
+			if (!comp) return { authorized: false, authData: undefined };
+
+			const team = await getTeamFromComp(await db, comp);
+
+			if (!team || !team.users.includes(user._id!.toString()))
+				return { authorized: false, authData: undefined };
+
+			const season = await getSeasonFromComp(await db, comp);
+
+			if (!season) return { authorized: false, authData: undefined };
+
+			return {
+				authorized: true,
+				authData: {
+					comp,
+					season,
+					team,
+				},
+			};
+		},
+		handler: async (req, res, deps, authData, args) => {
+			return res.status(200).send(authData);
 		},
 	});
 }

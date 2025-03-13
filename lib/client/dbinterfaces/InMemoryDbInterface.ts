@@ -7,7 +7,7 @@ import DbInterface, {
 	WithStringOrObjectIdId,
 } from "@/lib/client/dbinterfaces/DbInterface";
 import { default as BaseInMemoryDbInterface } from "mongo-anywhere/InMemoryDbInterface";
-import slugToId, { findObjectBySlugLookUp } from "@/lib/slugToId";
+import findObjectBySlugLookUp from "@/lib/slugToId";
 
 export default class InMemoryDbInterface
 	extends BaseInMemoryDbInterface<

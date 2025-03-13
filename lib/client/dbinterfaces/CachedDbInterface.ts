@@ -9,7 +9,7 @@ import DbInterface, {
 import { default as BaseCachedDbInterface } from "mongo-anywhere/CachedDbInterface";
 import NodeCache from "node-cache";
 import { CacheOperation } from "mongo-anywhere/CachedDbInterface";
-import { findObjectBySlugLookUp } from "@/lib/slugToId";
+import findObjectBySlugLookUp from "@/lib/slugToId";
 
 export const cacheOptions: NodeCache.Options = {
 	stdTTL: 1 * 60,

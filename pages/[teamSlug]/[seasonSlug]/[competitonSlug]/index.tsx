@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import ClientApi from "@/lib/api/ClientApi";
 import {
@@ -10,39 +10,27 @@ import {
 	User,
 	Team,
 	Competition,
-	CompPicklistGroup,
 	Season,
 } from "@/lib/Types";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import useInterval from "@/lib/client/useInterval";
-import {
-	NotLinkedToTba,
-	download,
-	getIdsInProgressFromTimestamps,
-	makeObjSerializeable,
-} from "@/lib/client/ClientUtils";
-import { games } from "@/lib/games";
-import { defaultGameId } from "@/lib/client/GameId";
-import { GetServerSideProps } from "next";
-import UrlResolver from "@/lib/UrlResolver";
 import Container from "@/components/Container";
 import CompHeaderCard from "@/components/competition/CompHeaderCard";
 import EditMatchModal from "@/components/competition/EditMatchModal";
 import InsightsAndSettingsCard from "@/components/competition/InsightsAndSettingsCard";
 import MatchScheduleCard from "@/components/competition/MatchScheduleCard";
 import PitScoutingCard from "@/components/competition/PitScoutingCard";
+import { useRouter } from "next/router";
 
 const api = new ClientApi();
 
-export default function CompetitionIndex({
-	team,
-	competition: comp,
-	season,
-}: {
-	team: Team | undefined;
-	competition: Competition | undefined;
-	season: Season | undefined;
-}) {
+export default function CompetitionIndex() {
+	const router = useRouter();
+
+	const [team, setTeam] = useState<Team>();
+	const [season, setSeason] = useState<Season>();
+	const [comp, setComp] = useState<Competition>();
+
 	const { session, status } = useCurrentSession();
 	const isManager =
 		(session?.user?._id !== undefined &&
@@ -76,7 +64,6 @@ export default function CompetitionIndex({
 	const [loadingScoutStats, setLoadingScoutStats] = useState(false);
 	const [loadingUsers, setLoadingUsers] = useState(false);
 
-	const [submissionRate, setSubmissionRate] = useState(0);
 	const [submittedReports, setSubmittedReports] = useState<number | undefined>(
 		undefined,
 	);
@@ -99,6 +86,26 @@ export default function CompetitionIndex({
 	const [matchBeingEdited, setMatchBeingEdited] = useState<
 		string | undefined
 	>();
+
+	// Load team, season, and competition
+	useEffect(() => {
+		const compSlug = router.query?.competitonSlug as string | undefined;
+
+		if (!compSlug) return;
+
+		api.findCompSeasonAndTeamByCompSlug(compSlug).then((res) => {
+			if (!res) {
+				alert("Competition not found");
+				return;
+			}
+
+			const { team, season, comp } = res;
+
+			setTeam(team);
+			setSeason(season);
+			setComp(comp);
+		});
+	}, [router.query.competitonSlug]);
 
 	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
@@ -132,6 +139,8 @@ export default function CompetitionIndex({
 
 	const loadMatches = useCallback(
 		async (silent: boolean = false) => {
+			if (!comp) return;
+
 			if (!silent) setLoadingMatches(true);
 
 			window.location.hash = "";
@@ -471,20 +480,3 @@ export default function CompetitionIndex({
 		</Container>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-	const resolved = await UrlResolver(context, 3);
-	if ("redirect" in resolved) {
-		return resolved;
-	}
-
-	return {
-		props: {
-			competition: resolved.competition
-				? makeObjSerializeable(resolved.competition)
-				: null,
-			team: resolved.team ? makeObjSerializeable(resolved.team) : null,
-			season: resolved.season ? makeObjSerializeable(resolved.season) : null,
-		},
-	};
-};

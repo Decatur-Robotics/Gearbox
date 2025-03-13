@@ -19,11 +19,18 @@ function getSlugLookup() {
 	return global.slugLookup;
 }
 
-async function slugToId(
+/**
+ * You are probably looking for findObjectBySlugLookUp!
+ * Don't use this function except in this file or for tests.
+ */
+export async function slugToId<TId extends SluggedCollectionId>(
 	db: DbInterface | Promise<DbInterface>,
-	collection: SluggedCollectionId,
+	collection: TId,
 	slug: string,
-): Promise<{ id: ObjectId | undefined; object: object | undefined }> {
+): Promise<{
+	id: ObjectId | undefined;
+	object: CollectionIdToType<TId> | undefined;
+}> {
 	if (db instanceof Promise) {
 		db = await db;
 	}
@@ -48,7 +55,7 @@ async function slugToId(
 	return { id: collectionSlugs.get(slug), object: undefined };
 }
 
-export async function findObjectBySlugLookUp<
+export default async function findObjectBySlugLookUp<
 	TId extends SluggedCollectionId,
 	TObj extends CollectionIdToType<TId>,
 >(db: DbInterface, collection: TId, slug: string): Promise<TObj | undefined> {
@@ -63,5 +70,3 @@ export async function findObjectBySlugLookUp<
 
 	return await db.findObjectById(collection, id);
 }
-
-export default slugToId;
