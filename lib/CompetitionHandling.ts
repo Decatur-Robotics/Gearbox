@@ -17,13 +17,13 @@ import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
 
 type ScheduleMatch = {
-	subjectiveScouter?: string;
-	assignedScouters: string[];
+	subjectiveScouter?: ObjectId;
+	assignedScouters: ObjectId[];
 };
 
 export function generateSchedule(
-	scouters: string[],
-	subjectiveScouters: string[],
+	scouters: ObjectId[],
+	subjectiveScouters: ObjectId[],
 	matchCount: number,
 	robotsPerMatch: number,
 ) {
@@ -89,7 +89,7 @@ export async function assignScoutersToCompetitionMatches(
 	for (let i = 0; i < comp.matches.length; i++) {
 		// Filter out the subjective scouter that will be assigned to this match
 		promises.push(
-			assignScoutersToMatch(db, comp.matches[i], comp.gameId, schedule[i]),
+			assignScoutersToMatch(db, comp.matches[i].toString(), comp.gameId, schedule[i]),
 		);
 	}
 
@@ -112,7 +112,7 @@ async function assignScoutersToMatch(
 		throw new Error(`Match not found: ${matchId}`);
 	}
 
-	match.subjectiveScouter = schedule.subjectiveScouter;
+	match.subjectiveScouter = new ObjectId(schedule.subjectiveScouter);
 
 	const existingReportPromises = match.reports.map((r) =>
 		db.findObjectById(CollectionId.Reports, new ObjectId(r)),
@@ -135,7 +135,7 @@ async function assignScoutersToMatch(
 		if (!oldReport) continue;
 
 		// Update existing report
-		oldReport.user = scouter;
+		oldReport.user = new ObjectId(scouter);
 
 		await db.updateObjectById(
 			CollectionId.Reports,
@@ -192,12 +192,12 @@ export async function generateReportsForMatch(
 			games[gameId].createQuantitativeFormData(),
 			teamNumber,
 			color,
-			String(match._id),
+			match._id,
 			0,
 		);
 
 		reports.push(
-			String((await db.addObject(CollectionId.Reports, newReport))._id),
+			((await db.addObject(CollectionId.Reports, newReport))._id),
 		);
 	}
 

@@ -139,13 +139,13 @@ export async function generatePitReports(
 	db: DbInterface,
 	tbaId: string,
 	gameId: GameId,
-): Promise<string[]> {
+): Promise<ObjectId[]> {
 	var pitreports = await tba.getCompetitionPitreports(tbaId, gameId);
 	pitreports.map(
 		async (report) => (await db.addObject(CollectionId.PitReports, report))._id,
 	);
 
-	return pitreports.map((pit) => String(pit._id));
+	return pitreports.map((pit) => (pit._id));
 }
 
 export async function addXp(db: DbInterface, userId: string, xp: number) {

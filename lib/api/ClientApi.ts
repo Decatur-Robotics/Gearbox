@@ -109,7 +109,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			}
 
 			const user = await userPromise;
-			if (team.users.includes(user!._id!.toString())) {
+			if (team.users.includes(user!._id!)) {
 				return res.status(200).send({ result: "Already on team" });
 			}
 
@@ -181,7 +181,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.error(404, "User not found");
 			}
 
-			team.requests.splice(team.requests.indexOf(userId), 1);
+			team.requests.splice(team.requests.indexOf(new ObjectId(userId)), 1);
 
 			if (accept) {
 				team.users = removeDuplicates(...team.users, userId);
@@ -289,9 +289,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				number,
 				league,
 				alliance,
-				[user._id!.toString()],
-				[user._id!.toString()],
-				[user._id!.toString()],
+				[user._id!],
+				[user._id!],
+				[user._id!],
 			);
 			const team = await db.addObject(CollectionId.Teams, newTeamObj);
 
@@ -355,7 +355,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			const { _id, ...updatedTeam } = team;
-			updatedTeam.seasons = [...team.seasons, String(season._id)];
+			updatedTeam.seasons = [...team.seasons, new ObjectId(season._id)];
 
 			await db.updateObjectById(
 				CollectionId.Teams,
@@ -398,7 +398,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				async (match) => (await db.addObject(CollectionId.Matches, match))._id,
 			);
 
-			comp.matches = matches.map((match) => String(match._id));
+			comp.matches = matches.map((match) => match._id);
 			await db.updateObjectById(
 				CollectionId.Competitions,
 				new ObjectId(compId),
@@ -458,8 +458,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 					start,
 					end,
 					pitReports,
-					matches.map((match) => String(match._id)),
-					picklist._id.toString(),
+					matches.map((match) => match._id),
+					picklist._id,
 					publicData,
 					season?.gameId,
 				),
@@ -514,7 +514,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 					redAlliance,
 				),
 			);
-			comp.matches.push(match._id ? String(match._id) : "");
+			comp.matches.push(match._id);
 
 			const reportPromise = generateReportsForMatch(db, match, comp.gameId);
 
@@ -605,7 +605,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			report.data = formData;
 			report.submitted = true;
-			report.submitter = user._id.toString();
+			report.submitter = user._id;
 
 			await db.updateObjectById(
 				CollectionId.Reports,
@@ -838,7 +838,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			if (
 				!targetUser ||
-				team.users.indexOf(targetUser._id?.toString() ?? "") === -1
+				team.users.indexOf(targetUser._id) === -1
 			) {
 				rollbar.warn("User not found (API: remindSlack)", {
 					teamId,
@@ -893,7 +893,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				const webhook = await (
 					await db
 				).addObject(CollectionId.Webhooks, { url: webhookUrl });
-				team.slackWebhook = webhook._id.toString();
+				team.slackWebhook = webhook._id;
 				(await db).updateObjectById(
 					CollectionId.Teams,
 					new ObjectId(teamId),
@@ -1204,7 +1204,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			await db.updateObjectById(CollectionId.Reports, new ObjectId(reportId), {
-				user: scouterId,
+				user: new ObjectId(scouterId),
 			});
 
 			return res.status(200).send({ result: "success" });
@@ -1425,7 +1425,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklist]) =>
-			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklist._id),
+			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklist._id.toString()),
 		handler: async (
 			req,
 			res,
@@ -1532,13 +1532,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const newReport: SubjectiveReport = {
 				...report,
-				_id: new ObjectId().toString(),
-				submitter: user!._id!.toString(),
+				_id: new ObjectId(),
+				submitter: user!._id!,
 				submitted:
-					match.subjectiveScouter === user!._id!.toString()
+					match.subjectiveScouter === user!._id!
 						? SubjectiveReportSubmissionType.ByAssignedScouter
 						: team!.subjectiveScouters.find(
-									(id) => id === user!._id!.toString(),
+									(id) => id === user!._id!,
 							  )
 							? SubjectiveReportSubmissionType.BySubjectiveScouter
 							: SubjectiveReportSubmissionType.ByNonSubjectiveScouter,
@@ -1547,11 +1547,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const update: Partial<Match> = {
 				subjectiveReports: [
 					...(match.subjectiveReports ?? []),
-					newReport._id!.toString(),
+					newReport._id!,
 				],
 			};
 
-			if (match.subjectiveScouter === user!._id!.toString())
+			if (match.subjectiveScouter === user!._id)
 				update.assignedSubjectiveScouterHasSubmitted = true;
 
 			const insertReportPromise = db.addObject(
@@ -1567,7 +1567,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			addXp(
 				db,
 				user!._id!.toString(),
-				match.subjectiveScouter === user!._id!.toString() ? 10 : 5,
+				match.subjectiveScouter === user!._id ? 10 : 5,
 			);
 
 			await Promise.all([insertReportPromise, updateMatchPromise]);
@@ -1648,7 +1648,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			const scouter = team?.users.find((id) => id === scouterId);
+			const scouter = team?.users.find((id) => id === new ObjectId(scouterId));
 
 			if (!scouter)
 				return res.status(400).send({ error: "Scouter not on team" });
@@ -1662,7 +1662,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 	regeneratePitReports = createNextRoute<
 		[string],
-		{ result: string; pitReports: string[] },
+		{ result: string; pitReports: ObjectId[] },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
 	>({
@@ -1727,7 +1727,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(500).send({ error: "Failed to create pit report" });
 			}
 
-			comp.pitReports.push(pitReportId);
+			comp.pitReports.push(new ObjectId(pitReportId));
 
 			await db.updateObjectById(
 				CollectionId.Competitions,
@@ -1809,7 +1809,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			for (const match of matches) {
-				if (!comp.matches.find((id) => id === match._id?.toString())) {
+				if (!comp.matches.find((id) => id === match._id)) {
 					rollbar.error(
 						"Match not in competition (API: getSubjectiveReports)",
 						{
@@ -1854,11 +1854,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const { _id, ...newTeam } = {
 				...team,
-				users: team.users.filter((id) => id != userId),
-				owners: team.owners.filter((id) => id != userId),
-				scouters: team.scouters.filter((id) => id != userId),
+				users: team.users.filter((id) => id != new ObjectId(userId)),
+				owners: team.owners.filter((id) => id != new ObjectId(userId)),
+				scouters: team.scouters.filter((id) => id != new ObjectId(userId)),
 				subjectiveScouters: team.subjectiveScouters.filter(
-					(id) => id != userId,
+					(id) => id != new ObjectId(userId),
 				),
 			};
 

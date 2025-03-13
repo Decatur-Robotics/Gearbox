@@ -13,6 +13,7 @@ import { NotLinkedToTba } from "./client/ClientUtils";
 import { GameId, defaultGameId } from "./client/GameId";
 import { games } from "./games";
 import DbInterface from "./client/dbinterfaces/DbInterface";
+import { ObjectId } from "bson";
 
 export namespace TheBlueAlliance {
 	export interface SimpleTeam {
@@ -239,6 +240,9 @@ export namespace TheBlueAlliance {
 				competitonData.key,
 				ConvertDate(competitonData.start_date),
 				ConvertDate(competitonData.end_date),
+				undefined,
+				undefined,
+				new ObjectId
 			);
 
 			// maybe give automatic matches later, once scouting is more stabilized
