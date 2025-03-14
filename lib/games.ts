@@ -1200,11 +1200,13 @@ namespace Reefscape {
 		CanRemoveAlgae: boolean = false;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNet: boolean = false;
+		CanScoreCoral1: boolean = false;
+		CanScoreCoral2: boolean = false;
+		CanScoreCoral3: boolean = false;
+		CanScoreCoral4: boolean = false;
 		AlgaeScoredAuto: number = 0;
 		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
-		HighestCoralLevel: ReefscapeEnums.CoralLevel =
-			ReefscapeEnums.CoralLevel.None;
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1220,7 +1222,10 @@ namespace Reefscape {
 			},
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
-			{ key: "HighestCoralLevel", label: "Highest Coral Level" },
+			{ key: "CanScoreCoral1", label: "Can Score Coral at L1?" },
+			{ key: "CanScoreCoral2", label: "Can Score Coral at L2?" },
+			{ key: "CanScoreCoral3", label: "Can Score Coral at L3?" },
+			{ key: "CanScoreCoral4", label: "Can Score Coral at L4?" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
@@ -1582,23 +1587,23 @@ namespace Reefscape {
 		if (pitReport?.data?.CanDriveUnderShallowCage)
 			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
 
-		switch (pitReport?.data?.HighestCoralLevel) {
-			case ReefscapeEnums.CoralLevel.None:
-				badges.push({ text: "No Coral", color: "warning" });
-				break;
-			case ReefscapeEnums.CoralLevel.L1:
-				badges.push({ text: "L1 Coral", color: "info" });
-				break;
-			case ReefscapeEnums.CoralLevel.L2:
-				badges.push({ text: "L2 Coral", color: "secondary" });
-				break;
-			case ReefscapeEnums.CoralLevel.L3:
-				badges.push({ text: "L3 Coral", color: "primary" });
-				break;
-			case ReefscapeEnums.CoralLevel.L4:
-				badges.push({ text: "L4 Coral", color: "accent" });
-				break;
-		}
+		if (pitReport?.data?.CanScoreCoral1)
+			badges.push({ text: "L1 Coral", color: "info" });
+		if (pitReport?.data?.CanScoreCoral2)
+			badges.push({ text: "L2 Coral", color: "secondary" });
+		if (pitReport?.data?.CanScoreCoral3)
+			badges.push({ text: "L3 Coral", color: "primary" });
+		if (pitReport?.data?.CanScoreCoral4)
+			badges.push({ text: "L4 Coral", color: "accent" });
+		if (
+			!(
+				pitReport?.data?.CanScoreCoral1 ||
+				pitReport?.data?.CanScoreCoral2 ||
+				pitReport?.data?.CanScoreCoral3 ||
+				pitReport?.data?.CanScoreCoral4
+			)
+		)
+			badges.push({ text: "No Coral", color: "warning" });
 
 		return badges;
 	}
