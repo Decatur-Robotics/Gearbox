@@ -45,21 +45,15 @@ import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
-import toast from "react-hot-toast";
-import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
 import Logger from "../client/Logger";
 import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
 import findObjectBySlugLookUp, { slugToId } from "../slugToId";
+import GearboxRequestHelper from "./GearboxRequestHelper";
+import LocalApiDependencies from "./LocalApiDependencies";
 
-const requestHelper = new RequestHelper(
-	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
-	(url) =>
-		toast.error(
-			`Failed API request: ${url}. If this is an error, please contact the developers.`,
-		),
-);
+const requestHelper = new GearboxRequestHelper();
 
 const logger = new Logger(["API"]);
 
@@ -632,7 +626,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		[string, boolean, boolean],
 		Report[],
 		ApiDependencies,
-		{ team: Team; comp: Competition }
+		{ team: Team; comp: Competition },
+		LocalApiDependencies
 	>({
 		isAuthorized: (req, res, deps, [compId]) =>
 			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
@@ -670,24 +665,19 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				);
 			return res.status(200).send(reports);
 		},
-		fallback: async (compId, submitted, usePublicData) => {
-			console.log("Running fallback for competitionReports...");
+		fallback: async ({ dbPromise }, [compId, submitted, usePublicData]) => {
+			const db = await dbPromise;
 
-			const localDb = new LocalStorageDbInterface();
-			await localDb.init();
-
-			const comp = await localDb.findObjectById(
+			const comp = await db.findObjectById(
 				CollectionId.Competitions,
 				new ObjectId(compId),
 			);
-
-			console.log("comp", comp);
 
 			if (!comp) return [];
 
 			const usedComps =
 				usePublicData && comp.tbaId !== NotLinkedToTba
-					? await localDb.findObjects(CollectionId.Competitions, {
+					? await db.findObjects(CollectionId.Competitions, {
 							publicData: true,
 							tbaId: comp.tbaId,
 							gameId: comp.gameId,
@@ -699,7 +689,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			console.log("usedComps", usedComps);
 
 			const reports = (
-				await localDb.findObjects(CollectionId.Reports, {
+				await db.findObjects(CollectionId.Reports, {
 					match: { $in: usedComps.flatMap((m) => m.matches) },
 					submitted: submitted ? true : { $exists: true },
 				})
@@ -714,29 +704,28 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			console.log("reports", reports);
 			return reports;
 		},
-		afterResponse: async (res, ranFallback) => {
+		afterResponse: async ({ dbPromise }, res, ranFallback) => {
 			if (ranFallback || !res) return;
 
-			const localDb = new LocalStorageDbInterface();
-			await localDb.init();
+			const db = await dbPromise;
 
 			await Promise.all(
 				res.map(async (report) => {
 					if (!report._id) return;
 
 					if (
-						await localDb.findObjectById(
+						await db.findObjectById(
 							CollectionId.Reports,
 							new ObjectId(report._id),
 						)
 					) {
-						return localDb.updateObjectById(
+						return db.updateObjectById(
 							CollectionId.Reports,
 							new ObjectId(report._id),
 							report,
 						);
 					}
-					return localDb.addObject(CollectionId.Reports, report);
+					return db.addObject(CollectionId.Reports, report);
 				}),
 			);
 		},
@@ -2612,7 +2601,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		[string],
 		{ comp: Competition; season: Season; team: Team } | undefined,
 		ApiDependencies,
-		{ team: Team; season: Season; comp: Competition }
+		{ team: Team; season: Season; comp: Competition },
+		LocalApiDependencies
 	>({
 		isAuthorized: async (req, res, { db, userPromise }, [compSlug]) => {
 			const user = await userPromise;
@@ -2646,6 +2636,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 		handler: async (req, res, deps, authData, args) => {
 			return res.status(200).send(authData);
+		},
+		afterResponse: async ({ dbPromise }, res, ranFallback) => {
+			if (ranFallback || !res) return Promise.resolve();
+
+			const db = await dbPromise;
+
+			const { comp, season, team } = res;
 		},
 	});
 }

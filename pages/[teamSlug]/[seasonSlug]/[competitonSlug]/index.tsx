@@ -180,6 +180,8 @@ export default function CompetitionIndex() {
 
 	const loadReports = useCallback(
 		async (silent: boolean = false) => {
+			if (!comp) return;
+
 			const scoutingStats = (reps: Report[]) => {
 				if (!silent) setLoadingScoutStats(true);
 				let submittedCount = 0;
