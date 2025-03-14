@@ -35,7 +35,7 @@
 		"jose": "^5.9.6",
 		"levenary": "^1.1.1",
 		"minimongo": "^6.19.0",
-		"mongo-anywhere": "^1.1.12",
+		"mongo-anywhere": "^1.1.14",
 		"mongodb": "^5.0.0",
 		"next": "^15.1.6",
 		"next-auth": "^4.24.11",

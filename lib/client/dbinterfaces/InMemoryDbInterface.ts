@@ -65,4 +65,11 @@ export default class InMemoryDbInterface
 	>(collection: TId, slug: string): Promise<TObj | undefined> {
 		return findObjectBySlugLookUp(this, collection, slug);
 	}
+
+	addOrUpdateObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, object: TObj): Promise<TObj> {
+		return super.addOrUpdateObject(collection, object);
+	}
 }

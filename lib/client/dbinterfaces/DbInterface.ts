@@ -62,4 +62,12 @@ export default interface DbInterface
 		collection: CollectionId,
 		query: object,
 	): Promise<number | undefined>;
+
+	addOrUpdateObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(
+		collection: TId,
+		object: TObj,
+	): Promise<TObj>;
 }
