@@ -271,7 +271,16 @@ export default function DbInterfaceAuthAdapter(
 					account,
 				});
 
-				return format.from<AdapterAccount>(account);
+				let formattedAccount: AdapterAccount;
+
+				// Sometimes gives an error about not finding toHexString.
+				try {
+					formattedAccount = format.from<AdapterAccount>(existingAccount);
+				} catch (e) {
+					account.userId = new ObjectId(account.userId) as any;
+					formattedAccount = format.from<AdapterAccount>(account);
+				}
+				return formattedAccount;
 			}
 
 			await db.addObject(CollectionId.Accounts, account);
