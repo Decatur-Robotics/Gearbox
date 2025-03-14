@@ -686,8 +686,6 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			usedComps.push(comp);
 
-			console.log("usedComps", usedComps);
-
 			const reports = (
 				await db.findObjects(CollectionId.Reports, {
 					match: { $in: usedComps.flatMap((m) => m.matches) },
@@ -701,7 +699,6 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 						: { ...report, data: { ...report.data, comments: "" } },
 				);
 
-			console.log("reports", reports);
 			return reports;
 		},
 		afterResponse: async ({ dbPromise }, res, ranFallback) => {
@@ -713,19 +710,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				res.map(async (report) => {
 					if (!report._id) return;
 
-					if (
-						await db.findObjectById(
-							CollectionId.Reports,
-							new ObjectId(report._id),
-						)
-					) {
-						return db.updateObjectById(
-							CollectionId.Reports,
-							new ObjectId(report._id),
-							report,
-						);
-					}
-					return db.addObject(CollectionId.Reports, report);
+					return db.addOrUpdateObject(CollectionId.Reports, report);
 				}),
 			);
 		},
@@ -2637,12 +2622,43 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, deps, authData, args) => {
 			return res.status(200).send(authData);
 		},
+		fallback: async ({ dbPromise }, [compSlug]) => {
+			const db = await dbPromise;
+
+			const comp = await findObjectBySlugLookUp(
+				await db,
+				CollectionId.Competitions,
+				compSlug,
+			);
+
+			if (!comp) return undefined;
+
+			const team = await getTeamFromComp(await db, comp);
+
+			if (!team) return undefined;
+
+			const season = await getSeasonFromComp(await db, comp);
+
+			if (!season) return undefined;
+
+			return {
+				comp,
+				season,
+				team,
+			};
+		},
 		afterResponse: async ({ dbPromise }, res, ranFallback) => {
 			if (ranFallback || !res) return Promise.resolve();
 
 			const db = await dbPromise;
 
 			const { comp, season, team } = res;
+
+			await Promise.all([
+				db.addOrUpdateObject(CollectionId.Competitions, comp),
+				db.addOrUpdateObject(CollectionId.Seasons, season),
+				db.addOrUpdateObject(CollectionId.Teams, team),
+			]);
 		},
 	});
 }
