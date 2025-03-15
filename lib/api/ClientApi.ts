@@ -24,7 +24,10 @@ import {
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
 	addXp,
+	deleteComp,
+	deleteSeason,
 	generatePitReports,
+	getSeasonFromComp,
 	getTeamFromMatch,
 	getTeamFromReport,
 	onTeam,
@@ -2531,6 +2534,36 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			await db.updateObjectById(CollectionId.Users, new ObjectId(user?._id!), {
 				name,
 			});
+			return res.status(200).send({ result: "success" });
+		},
+	});
+
+	deleteComp = createNextRoute<
+		[string],
+		{ result: string },
+		ApiDependencies,
+		{ team: Team; comp: Competition }
+	>({
+		isAuthorized: (req, res, deps, [compId]) =>
+			AccessLevels.IfCompOwner(req, res, deps, compId),
+		handler: async (req, res, { db }, { team, comp }, [compId]) => {
+			await deleteComp(await db, comp);
+
+			return res.status(200).send({ result: "success" });
+		},
+	});
+
+	deleteSeason = createNextRoute<
+		[string],
+		{ result: string },
+		ApiDependencies,
+		{ team: Team; season: Season }
+	>({
+		isAuthorized: (req, res, deps, [seasonId]) =>
+			AccessLevels.IfSeasonOwner(req, res, deps, seasonId),
+		handler: async (req, res, { db }, { team, season }, [seasonId]) => {
+			await deleteSeason(await db, season);
+
 			return res.status(200).send({ result: "success" });
 		},
 	});

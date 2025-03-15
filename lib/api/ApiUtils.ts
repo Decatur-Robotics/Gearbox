@@ -164,3 +164,115 @@ export async function addXp(db: DbInterface, userId: string, xp: number) {
 		level: newLevel,
 	});
 }
+
+export async function deleteReport(
+	db: DbInterface,
+	reportId: string,
+	match: Match,
+) {
+	await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
+		reports: match.reports.filter((id) => id !== reportId),
+	});
+	await db.deleteObjectById(CollectionId.Reports, new ObjectId(reportId));
+}
+
+export async function deleteSubjectiveReport(
+	db: DbInterface,
+	reportId: string,
+	match: Match,
+) {
+	await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
+		subjectiveReports: match.subjectiveReports.filter((id) => id !== reportId),
+	});
+	await db.deleteObjectById(
+		CollectionId.SubjectiveReports,
+		new ObjectId(reportId),
+	);
+}
+
+export async function deleteMatch(
+	db: DbInterface,
+	matchId: string,
+	comp: Competition,
+) {
+	const match = await db.findObjectById(
+		CollectionId.Matches,
+		new ObjectId(matchId),
+	);
+
+	if (!match) return;
+
+	if (comp) {
+		db.updateObjectById(CollectionId.Competitions, new ObjectId(comp._id), {
+			matches: comp.matches.filter((id) => id !== match._id?.toString()),
+		});
+	}
+
+	await Promise.all([
+		...match.reports.map(async (reportId) => deleteReport(db, reportId, match)),
+		...match.subjectiveReports.map(async (reportId) =>
+			deleteSubjectiveReport(db, reportId, match),
+		),
+	]);
+
+	await db.deleteObjectById(CollectionId.Matches, new ObjectId(match._id));
+}
+
+export async function deletePitReport(
+	db: DbInterface,
+	reportId: string,
+	comp: Competition,
+) {
+	if (comp) {
+		db.updateObjectById(CollectionId.Competitions, new ObjectId(comp._id), {
+			pitReports: comp.pitReports.filter((id) => id !== reportId.toString()),
+		});
+	}
+
+	await db.deleteObjectById(CollectionId.PitReports, new ObjectId(reportId));
+}
+
+export async function deleteComp(db: DbInterface, comp: Competition) {
+	const season = await getSeasonFromComp(db, comp);
+
+	if (season) {
+		db.updateObjectById(CollectionId.Seasons, new ObjectId(season._id), {
+			competitions: season.competitions.filter(
+				(id) => id !== comp._id?.toString(),
+			),
+		});
+	}
+
+	await Promise.all([
+		...comp.matches.map(async (matchId) => deleteMatch(db, matchId, comp)),
+		...comp.pitReports.map(async (reportId) =>
+			deletePitReport(db, reportId, comp),
+		),
+	]);
+
+	await db.deleteObjectById(CollectionId.Competitions, new ObjectId(comp._id));
+}
+
+export async function deleteSeason(db: DbInterface, season: Season) {
+	const team = await getTeamFromSeason(db, season);
+
+	if (team) {
+		db.updateObjectById(CollectionId.Teams, new ObjectId(team._id), {
+			seasons: team.seasons.filter((id) => id !== season._id?.toString()),
+		});
+	}
+
+	await Promise.all([
+		...season.competitions.map(async (compId) => {
+			const comp = await db.findObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+			);
+			if (comp) {
+				await deleteComp(db, comp);
+			}
+		}),
+	]);
+
+	await db.deleteObjectById(CollectionId.Seasons, new ObjectId(season._id));
+}
