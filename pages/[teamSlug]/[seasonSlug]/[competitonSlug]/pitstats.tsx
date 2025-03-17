@@ -191,7 +191,7 @@ function TeamSlide(props: {
 				</div>
 			</div>
 			<div className="w-1/2 flex flex-col items-center">
-				{pit.submitted ? (
+				{pit ?  (pit.submitted ? (
 					<img
 						src={pit.data?.image}
 						className="rounded-xl w-1/3 h-auto"
@@ -199,7 +199,7 @@ function TeamSlide(props: {
 					></img>
 				) : (
 					<></>
-				)}
+				)) : <></>}
 				<Graph />
 			</div>
 		</div>
