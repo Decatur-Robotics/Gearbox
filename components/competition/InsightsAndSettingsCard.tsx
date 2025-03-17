@@ -6,9 +6,16 @@ import { Competition, MatchType, Pitreport, Report, Team } from "@/lib/Types";
 import Link from "next/link";
 import { ChangeEvent, useState } from "react";
 import { BsGearFill, BsClipboard2Check } from "react-icons/bs";
-import { FaSync, FaBinoculars, FaUserCheck, FaDatabase } from "react-icons/fa";
+import {
+	FaSync,
+	FaBinoculars,
+	FaUserCheck,
+	FaDatabase,
+	FaTrash,
+} from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import ClientApi from "@/lib/api/ClientApi";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -130,6 +137,28 @@ export default function InsightsAndSettingsCard(props: {
 			.createPitReportForTeam(teamToAdd, comp?._id)
 			// We can't just pass location.reload, it will throw "illegal invocation." I don't know why. -Renato
 			.finally(() => location.reload());
+	}
+
+	function deleteComp() {
+		if (!comp?._id) return;
+
+		const confirmKey = `delete-comp-${comp.slug}`;
+		if (
+			prompt(
+				`If you are sure you want to IRREVOCABLY delete this competition and all data associated with it, type "${confirmKey}"`,
+			) === confirmKey
+		) {
+			toast.promise(
+				api.deleteComp(comp._id).finally(() => {
+					window.location.href = `/${team?.slug}/${seasonSlug}`;
+				}),
+				{
+					loading: "Deleting competition...",
+					success: "Competition deleted successfully!",
+					error: "Error deleting competition.",
+				},
+			);
+		} else toast.error("Competition not deleted.");
 	}
 
 	return (
@@ -391,12 +420,19 @@ export default function InsightsAndSettingsCard(props: {
 							</>
 						)}
 
-						<div className="divider"></div>
+						<div className="divider" />
 						<Link href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/scouters`}>
 							<button className="btn btn-lg btn-primary w-full">
 								<FaBinoculars /> Manage Scouters
 							</button>
 						</Link>
+						<div className="divider" />
+						<button
+							className="btn btn-lg btn-error w-full"
+							onClick={deleteComp}
+						>
+							<FaTrash /> Delete Competition
+						</button>
 					</div>
 				) : (
 					<div className="w-full">
