@@ -27,7 +27,7 @@ import { games } from "@/lib/games";
 import { PitStatsLayout, Badge } from "@/lib/Layout";
 import CollectionId from "@/lib/client/CollectionId";
 import { matchesMiddleware } from "next/dist/shared/lib/router/router";
-import { Round } from '../../../../lib/client/StatsMath';
+import { Round } from "../../../../lib/client/StatsMath";
 
 const api = new ClientApi();
 
@@ -132,7 +132,8 @@ function TeamSlide(props: {
 			return (
 				<div key={index}>
 					<p className="text-lg">
-						{stat.label}: <span className="text-accent">{Math.round(stat.value)}</span>{" "}
+						{stat.label}:{" "}
+						<span className="text-accent">{Round(stat.value)}</span>{" "}
 						<span className="text-primary">
 							(Ranked #{stat.rank}/{stat.maxRanking})
 						</span>
