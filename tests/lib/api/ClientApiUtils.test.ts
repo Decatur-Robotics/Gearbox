@@ -83,6 +83,33 @@ describe(saveObjectAfterResponse.name, () => {
 		expect(await db.countObjects(CollectionId.Reports, {})).toEqual(0);
 	});
 
+	test("Does not add or update object when given an undefined object", async () => {
+		const { db } = await getTestApiUtils();
+
+		const obj = {
+			_id: new ObjectId(),
+		} as any as Report;
+
+		await db.addObject(CollectionId.Reports, obj);
+
+		await saveObjectAfterResponse(
+			{
+				dbPromise: Promise.resolve(db),
+			},
+			CollectionId.Reports,
+			undefined,
+			false,
+		);
+
+		const foundObj = await db.findObjectById(
+			CollectionId.Reports,
+			obj._id as any as ObjectId,
+		);
+
+		expect(foundObj).toEqual(obj);
+		expect(await db.countObjects(CollectionId.Reports, {})).toEqual(1);
+	});
+
 	test("Adds multiple objects to the database when ranFallback is false, and an array of objects is passed", async () => {
 		const { db } = await getTestApiUtils();
 
