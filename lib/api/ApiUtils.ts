@@ -171,22 +171,30 @@ export async function addXp(db: DbInterface, userId: string, xp: number) {
 export async function deleteReport(
 	db: DbInterface,
 	reportId: string,
-	match: Match,
+	match?: Match,
 ) {
-	await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
-		reports: match.reports.filter((id) => id !== reportId),
-	});
+	if (match) {
+		await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
+			reports: match.reports.filter((id) => id !== reportId),
+		});
+	}
+
 	await db.deleteObjectById(CollectionId.Reports, new ObjectId(reportId));
 }
 
 export async function deleteSubjectiveReport(
 	db: DbInterface,
 	reportId: string,
-	match: Match,
+	match?: Match,
 ) {
-	await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
-		subjectiveReports: match.subjectiveReports.filter((id) => id !== reportId),
-	});
+	if (match) {
+		await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
+			subjectiveReports: match.subjectiveReports.filter(
+				(id) => id !== reportId,
+			),
+		});
+	}
+
 	await db.deleteObjectById(
 		CollectionId.SubjectiveReports,
 		new ObjectId(reportId),
@@ -196,7 +204,7 @@ export async function deleteSubjectiveReport(
 export async function deleteMatch(
 	db: DbInterface,
 	matchId: string,
-	comp: Competition,
+	comp?: Competition,
 ) {
 	const match = await db.findObjectById(
 		CollectionId.Matches,
@@ -224,7 +232,7 @@ export async function deleteMatch(
 export async function deletePitReport(
 	db: DbInterface,
 	reportId: string,
-	comp: Competition,
+	comp?: Competition,
 ) {
 	if (comp) {
 		db.updateObjectById(CollectionId.Competitions, new ObjectId(comp._id), {
