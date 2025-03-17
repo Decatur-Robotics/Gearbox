@@ -30,7 +30,7 @@
 		"dependencies": "^0.0.1",
 		"dotenv": "^16.4.7",
 		"eslint": "9.18.0",
-		"eslint-config-next": "15.1.6",
+		"eslint-config-next": "15.2.2",
 		"formidable": "^3.5.2",
 		"jose": "^6.0.8",
 		"levenary": "^1.1.1",
