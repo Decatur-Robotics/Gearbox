@@ -481,7 +481,7 @@ export default function Pitstats(props: { competition: Competition }) {
 					<h1>Loading...</h1>
 				) : Object.keys(reports).length === 0 ? (
 					<h1>
-						No data (try creating pit reports for your event's teams then try
+						No data (try creating pit reports for your event&apos;s teams then try
 						again).
 					</h1>
 				) : (
