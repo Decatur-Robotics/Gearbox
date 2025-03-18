@@ -1189,6 +1189,7 @@ namespace Reefscape {
 
 		EndgameClimbStatus: ReefscapeEnums.EndgameClimbStatus =
 			ReefscapeEnums.EndgameClimbStatus.None;
+		EndGameDefenseStatus: Defense = Defense.None;
 	}
 
 	export class PitData extends PitReportData {
@@ -1314,7 +1315,7 @@ namespace Reefscape {
 				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net (Teleop)" }],
 			],
 		],
-		"Post Match": ["EndgameClimbStatus"],
+		"Post Match": ["EndgameClimbStatus", "Defense"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
