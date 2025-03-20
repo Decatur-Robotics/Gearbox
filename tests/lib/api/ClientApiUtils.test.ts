@@ -1,10 +1,11 @@
 import {
 	findObjectByIdFallback,
+	findObjectBySlugFallback,
 	saveObjectAfterResponse,
 } from "@/lib/api/ClientApiUtils";
 import CollectionId from "@/lib/client/CollectionId";
 import { getTestApiUtils } from "@/lib/testutils/TestUtils";
-import { Report } from "@/lib/Types";
+import { Report, Team } from "@/lib/Types";
 import { ObjectId } from "bson";
 
 describe(saveObjectAfterResponse.name, () => {
@@ -326,6 +327,83 @@ describe(findObjectByIdFallback.name, () => {
 			{ dbPromise: Promise.resolve(db) },
 			CollectionId.Reports,
 			[obj1._id!.toString(), new ObjectId().toString()],
+		);
+
+		expect(foundObjs).toEqual([obj1]);
+	});
+});
+
+describe(findObjectBySlugFallback.name, () => {
+	test("Finds a single object by slug when passed a single slug", async () => {
+		const { db } = await getTestApiUtils();
+
+		const obj = {
+			_id: new ObjectId(),
+			slug: "test-slug",
+		} as any as Team;
+
+		await db.addObject(CollectionId.Teams, obj);
+
+		const foundObj = await findObjectBySlugFallback(
+			{ dbPromise: Promise.resolve(db) },
+			CollectionId.Teams,
+			obj.slug!,
+		);
+
+		expect(foundObj).toEqual(obj);
+	});
+
+	test("Finds multiple objects by slug when passed an array of slugs", async () => {
+		const { db } = await getTestApiUtils();
+
+		const obj1 = {
+			_id: new ObjectId(),
+			slug: "test-slug-1",
+		} as any as Team;
+
+		const obj2 = {
+			_id: new ObjectId(),
+			slug: "test-slug-2",
+		} as any as Team;
+
+		await db.addObject(CollectionId.Teams, obj1);
+		await db.addObject(CollectionId.Teams, obj2);
+
+		const foundObjs = await findObjectBySlugFallback(
+			{ dbPromise: Promise.resolve(db) },
+			CollectionId.Teams,
+			[obj1.slug!, obj2.slug!],
+		);
+
+		expect(foundObjs).toEqual([obj1, obj2]);
+	});
+
+	test("Returns undefined when no object is found for a single slug", async () => {
+		const { db } = await getTestApiUtils();
+
+		const foundObj = await findObjectBySlugFallback(
+			{ dbPromise: Promise.resolve(db) },
+			CollectionId.Teams,
+			"non-existent-slug",
+		);
+
+		expect(foundObj).toBeUndefined();
+	});
+
+	test("Returns only the existing objects when some slugs do not exist", async () => {
+		const { db } = await getTestApiUtils();
+
+		const obj1 = {
+			_id: new ObjectId(),
+			slug: "test-slug-1",
+		} as any as Team;
+
+		await db.addObject(CollectionId.Teams, obj1);
+
+		const foundObjs = await findObjectBySlugFallback(
+			{ dbPromise: Promise.resolve(db) },
+			CollectionId.Teams,
+			[obj1.slug!, "non-existent-slug"],
 		);
 
 		expect(foundObjs).toEqual([obj1]);

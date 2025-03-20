@@ -2,8 +2,12 @@
  * @tested_by tests/lib/api/ClientApiUtils.test.ts
  */
 import { ObjectId } from "bson";
-import CollectionId, { CollectionIdToType } from "../client/CollectionId";
+import CollectionId, {
+	CollectionIdToType,
+	SluggedCollectionId,
+} from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
+import { slugToId } from "../slugToId";
 
 export async function saveObjectAfterResponse<
 	TId extends CollectionId,
@@ -50,4 +54,25 @@ export async function findObjectByIdFallback<
 		}) as Promise<TObj>;
 	}
 	return db.findObjectById(collectionId, new ObjectId(id)) as Promise<TObj>;
+}
+
+export async function findObjectBySlugFallback<
+	TCollectionId extends SluggedCollectionId,
+	TSlugArg extends string | string[],
+	TObj extends AllowUndefinedIfNotArray<
+		TSlugArg,
+		CollectionIdToType<TCollectionId>
+	>,
+>(
+	{ dbPromise }: { dbPromise: Promise<DbInterface> },
+	collectionId: TCollectionId,
+	slug: TSlugArg,
+): Promise<TObj> {
+	const db = await dbPromise;
+	if (Array.isArray(slug)) {
+		return Promise.all(
+			slug.map((s) => db.findObjectBySlug(collectionId, s)),
+		) as Promise<TObj>;
+	}
+	return db.findObjectBySlug(collectionId, slug) as Promise<TObj>;
 }

@@ -21,7 +21,6 @@ function getSlugLookup() {
 
 /**
  * You are probably looking for findObjectBySlugLookUp!
- * Don't use this function except in this file or for tests.
  */
 export async function slugToId<TId extends SluggedCollectionId>(
 	db: DbInterface | Promise<DbInterface>,

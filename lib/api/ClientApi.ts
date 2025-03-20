@@ -54,6 +54,7 @@ import GearboxRequestHelper from "./GearboxRequestHelper";
 import LocalApiDependencies from "./LocalApiDependencies";
 import {
 	findObjectByIdFallback,
+	findObjectBySlugFallback,
 	saveObjectAfterResponse,
 } from "./ClientApiUtils";
 
@@ -2035,6 +2036,25 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			saveObjectAfterResponse(deps, CollectionId.Teams, team, ranFallback),
 		fallback: async (deps, [id]) =>
 			findObjectByIdFallback(deps, CollectionId.Teams, id),
+	});
+
+	findTeamBySlug = createNextRoute<
+		[string],
+		Team | undefined,
+		ApiDependencies,
+		void,
+		LocalApiDependencies
+	>({
+		isAuthorized: AccessLevels.AlwaysAuthorized,
+		handler: async (req, res, { db: dbPromise }, authData, [slug]) => {
+			const db = await dbPromise;
+
+			return db.findObjectBySlug(CollectionId.Teams, slug);
+		},
+		afterResponse: async (deps, res, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Teams, res, ranFallback),
+		fallback: async (deps, [slug]) =>
+			findObjectBySlugFallback(deps, CollectionId.Teams, slug),
 	});
 
 	findTeamByNumberAndLeague = createNextRoute<
