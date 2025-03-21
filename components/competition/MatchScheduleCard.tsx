@@ -272,7 +272,7 @@ export default function MatchScheduleCard(props: {
 																	className="tooltip before:w-[10rem] "
 																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
 																>
-																	<FaInfoCircle></FaInfoCircle>
+																	<FaInfoCircle/>
 																</div>
 															</div>
 														)}
@@ -284,7 +284,7 @@ export default function MatchScheduleCard(props: {
 															className="tooltip before:w-[10rem] "
 															data-tip="Subjective Scouters watch the entire match and comment on what's going on"
 														>
-															<FaInfoCircle></FaInfoCircle>
+															<FaInfoCircle/>
 														</div>
 													</div>
 												)}
