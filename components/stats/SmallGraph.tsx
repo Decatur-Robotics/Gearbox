@@ -13,6 +13,7 @@ import {
 } from "chart.js";
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import { removeDuplicates } from "../../lib/client/ClientUtils";
 
 ChartJS.register(
 	CategoryScale,
@@ -93,7 +94,9 @@ export default function SmallGraph(props: {
 	const datasetArr = Array.from(dataset);
 
 	const data = {
-		labels: datasetArr.map((point) => point.matchNumber) ?? [],
+		labels: removeDuplicates(
+			datasetArr.map((point) => point.matchNumber) ?? [],
+		),
 		datasets: [
 			{
 				label: key,
