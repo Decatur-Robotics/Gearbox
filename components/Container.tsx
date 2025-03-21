@@ -22,6 +22,7 @@ import Banner, { DiscordBanner } from "./Banner";
 import { stat } from "fs";
 import { forceOfflineMode } from "@/lib/client/ClientUtils";
 import Head from "next/head";
+import SignInMenu from "./SignInMenu";
 
 const api = new ClientApi();
 
@@ -253,23 +254,7 @@ export default function Container(props: ContainerProps) {
 					</div>
 
 					{showAuthBlock ? (
-						<div className="w-full h-full flex flex-col items-center justify-center">
-							<div className="card w-3/4 lg:w-1/4 bg-base-200 text-primary-content">
-								<div className="card-body flex items-center text-white">
-									<BsGearFill
-										size={70}
-										className="animate-spin-slow"
-									></BsGearFill>
-									<h2 className="card-title">Wait a minute...</h2>
-									<p>You need to sign in first!</p>
-									<div className="card-actions justify-end">
-										<Link href={"/signin"}>
-											<button className="btn btn-primary">Sign In</button>
-										</Link>
-									</div>
-								</div>
-							</div>
-						</div>
+						<SignInMenu />
 					) : (
 						<>
 							{props.notForMobile && !accepted && onMobile ? (
