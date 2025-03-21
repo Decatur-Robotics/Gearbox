@@ -1,4 +1,4 @@
-import { Defense } from "@/lib/Enums";
+import { Defense, ReefscapeEnums } from "@/lib/Enums";
 import { Report } from "@/lib/Types";
 import ClientApi from "@/lib/api/ClientApi";
 
@@ -78,13 +78,23 @@ export default function SmallGraph(props: {
 
 	function dataToNumber(key: string, data: any): number {
 		if (key === "Defense") {
-			let n = 0;
 			switch (data) {
 				case Defense.None:
 					return 0;
 				case Defense.Partial:
 					return 0.5;
 				case Defense.Full:
+					return 1;
+			}
+		} else if (key === "EndgameClimbStatus") {
+			switch (data) {
+				case ReefscapeEnums.EndgameClimbStatus.None:
+					return 0;
+				case ReefscapeEnums.EndgameClimbStatus.Park:
+					return 0.33;
+				case ReefscapeEnums.EndgameClimbStatus.High:
+					return 0.66;
+				case ReefscapeEnums.EndgameClimbStatus.Low:
 					return 1;
 			}
 		}
