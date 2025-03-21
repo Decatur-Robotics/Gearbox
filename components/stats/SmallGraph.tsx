@@ -66,12 +66,13 @@ export default function SmallGraph(props: {
 		),
 	);
 
-	interface Datapoint {
-		x: number;
-		y: number;
-	}
+	const [dataset, setDataset] = useState<
+		{
+			matchNumber: number;
+			data: Record<string, number>;
+		}[]
+	>();
 
-	const [datapoints, setDataPoints] = useState<Datapoint[] | null>(null);
 	const [currentTeam, setCurrentTeam] = useState<number>(0);
 
 	function dataToNumber(key: string, data: any): number {
@@ -90,13 +91,11 @@ export default function SmallGraph(props: {
 	}
 
 	const data = {
-		labels: datapoints?.map((point) => point.x) ?? [],
+		labels: dataset?.map((point) => point.matchNumber) ?? [],
 		datasets: [
 			{
 				label: key,
-				data: props.selectedReports?.map((report) =>
-					dataToNumber(key, report.data[key]),
-				),
+				data: dataset?.map((report) => dataToNumber(key, report.data[key])),
 				backgroundColor: "rgba(255, 99, 132, 0.5)",
 			},
 		],
@@ -105,23 +104,23 @@ export default function SmallGraph(props: {
 	useEffect(() => {
 		if (!props.selectedReports) return;
 
-		setDataPoints([]);
 		setCurrentTeam(props.team);
-		for (const report of props.selectedReports) {
-			api.findMatchById(report.match).then((match) => {
+
+		const newDataset: typeof dataset = [] as typeof dataset;
+
+		Promise.all(
+			props.selectedReports.map(async (report) => {
+				const match = await api.findMatchById(report.match);
 				if (!match) return;
 
-				setDataPoints((prev) =>
-					[
-						...(prev ?? []),
-						{
-							x: match.number,
-							y: dataToNumber(key, report.data[key]),
-						},
-					].sort((a, b) => a.x - b.x),
-				);
-			});
-		}
+				newDataset?.push({
+					matchNumber: match.number,
+					data: report.data,
+				});
+			}),
+		).then(() =>
+			setDataset(newDataset?.sort((a, b) => a.matchNumber - b.matchNumber)),
+		);
 	}, [key, currentTeam, props.selectedReports, props.team]);
 
 	if (!props.selectedReports) {
@@ -151,10 +150,7 @@ export default function SmallGraph(props: {
 			</select>
 			<Bar
 				options={options}
-				data={{
-					...data,
-					labels: datapoints?.map((point) => point.x) ?? [],
-				}}
+				data={data}
 			/>
 		</div>
 	);
