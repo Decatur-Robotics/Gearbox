@@ -67,11 +67,11 @@ export default function SmallGraph(props: {
 	);
 
 	const [dataset, setDataset] = useState<
-		{
+		Set<{
 			matchNumber: number;
 			data: Record<string, number>;
-		}[]
-	>();
+		}>
+	>(new Set());
 
 	const [currentTeam, setCurrentTeam] = useState<number>(0);
 
@@ -90,12 +90,14 @@ export default function SmallGraph(props: {
 		return data;
 	}
 
+	const datasetArr = Array.from(dataset);
+
 	const data = {
-		labels: dataset?.map((point) => point.matchNumber) ?? [],
+		labels: datasetArr.map((point) => point.matchNumber) ?? [],
 		datasets: [
 			{
 				label: key,
-				data: dataset?.map((report) => dataToNumber(key, report.data[key])),
+				data: datasetArr.map((report) => dataToNumber(key, report.data[key])),
 				backgroundColor: "rgba(255, 99, 132, 0.5)",
 			},
 		],
@@ -106,20 +108,24 @@ export default function SmallGraph(props: {
 
 		setCurrentTeam(props.team);
 
-		const newDataset: typeof dataset = [] as typeof dataset;
+		const newDataset: typeof dataset = new Set();
 
 		Promise.all(
 			props.selectedReports.map(async (report) => {
 				const match = await api.findMatchById(report.match);
 				if (!match) return;
 
-				newDataset?.push({
+				newDataset.add({
 					matchNumber: match.number,
 					data: report.data,
 				});
 			}),
 		).then(() =>
-			setDataset(newDataset?.sort((a, b) => a.matchNumber - b.matchNumber)),
+			setDataset(
+				new Set(
+					Array.from(newDataset).sort((a, b) => a.matchNumber - b.matchNumber),
+				),
+			),
 		);
 	}, [key, currentTeam, props.selectedReports, props.team]);
 
