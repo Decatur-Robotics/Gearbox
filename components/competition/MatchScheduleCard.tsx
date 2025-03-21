@@ -284,7 +284,15 @@ export default function MatchScheduleCard(props: {
 												</div>
 											</div>
 											<a
-												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"} ${session && match.subjectiveScouter === session.user?._id && "animate-borderFlash border-4"}`}
+												className={`btn btn-primary btn-sm 
+													${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"} 
+													${
+														session &&
+														!match.assignedSubjectiveScouterHasSubmitted &&
+														match.subjectiveScouter === session.user?._id &&
+														"animate-borderFlash border-4"
+													}
+												`}
 												href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}
 											>
 												Add Subjective Report (
