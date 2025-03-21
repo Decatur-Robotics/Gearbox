@@ -227,7 +227,7 @@ export default function MatchScheduleCard(props: {
 													})}
 												</div>
 											</div>
-											<div>
+											<div className="flex items-center gap-1">
 												{match.subjectiveScouter &&
 												usersById[match.subjectiveScouter] ? (
 													<div className="flex flex-row items-center space-x-1">
@@ -267,30 +267,24 @@ export default function MatchScheduleCard(props: {
 														) : (
 															<div>
 																Subjective Scouter:{" "}
-																{usersById[match.subjectiveScouter ?? ""].name}{" "}
-																<div
-																	className="tooltip before:w-[10rem] "
-																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
-																>
-																	<FaInfoCircle/>
-																</div>
+																{
+																	usersById[match.subjectiveScouter ?? ""].name
+																}{" "}
 															</div>
 														)}
 													</div>
 												) : (
-													<div>
-														No subjective scouter assigned{" "}
-														<div
-															className="tooltip before:w-[10rem] "
-															data-tip="Subjective Scouters watch the entire match and comment on what's going on"
-														>
-															<FaInfoCircle/>
-														</div>
-													</div>
+													<div>No subjective scouter assigned </div>
 												)}
+												<div
+													className="tooltip before:w-[10rem] "
+													data-tip="Subjective Scouters watch the entire match and comment on what's going on"
+												>
+													<FaInfoCircle />
+												</div>
 											</div>
 											<a
-												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"}`}
+												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"} ${session && match.subjectiveScouter === session.user?._id && "animate-borderFlash border-4"}`}
 												href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}
 											>
 												Add Subjective Report (

@@ -96,13 +96,7 @@ export async function assignScoutersToCompetitionMatches(
 	const promises: Promise<any>[] = [];
 	for (let i = 0; i < matches.length; i++) {
 		// Filter out the subjective scouter that will be assigned to this match
-		promises.push(
-			assignScoutersToMatch(
-				db,
-				matches[i],
-				schedule[i],
-			),
-		);
+		promises.push(assignScoutersToMatch(db, matches[i], schedule[i]));
 	}
 
 	await Promise.all(promises);
