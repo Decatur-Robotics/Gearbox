@@ -86,6 +86,16 @@ export default function Stats(props: {
 		Object.keys(r.robotComments).forEach((c) => teams.add(+c)),
 	); //+str converts to number
 
+	let internalReportCount = 0,
+		externalReportCount = 0;
+	reports.forEach((r) => {
+		if (props.competition.matches.includes(r.match)) {
+			internalReportCount++;
+		} else {
+			externalReportCount++;
+		}
+	});
+
 	return (
 		<Container
 			requireAuthentication={false}
@@ -99,9 +109,14 @@ export default function Stats(props: {
 						onClick={() => setUsePublicData(!usePublicData)}
 					>
 						{usePublicData ? (
-							<div className="text-secondary">Using public data</div>
+							<div className="text-secondary">
+								Using public data ({internalReportCount} internal reports +{" "}
+								{externalReportCount} external reports)
+							</div>
 						) : (
-							<div>Not using public data</div>
+							<div>
+								Not using public data ({internalReportCount} internal reports)
+							</div>
 						)}
 						<div className=" animate-pulse">(Click to toggle)</div>
 					</button>
