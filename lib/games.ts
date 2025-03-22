@@ -1605,6 +1605,10 @@ namespace Reefscape {
 			)
 		)
 			badges.push({ text: "No Coral", color: "warning" });
+		if (pitReport?.data?.Climbing === ReefscapeEnums.Climbing.Deep)
+			badges.push({ text: "Deep Climb", color: "secondary" });
+		else if (pitReport?.data?.Climbing === ReefscapeEnums.Climbing.Shallow)
+			badges.push({ text: "Shallow Climb", color: "primary" });
 
 		return badges;
 	}
