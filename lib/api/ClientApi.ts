@@ -712,7 +712,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				new ObjectId(compId),
 			);
 
-			if (!comp) return [];
+			if (!comp)
+				return {
+					quantReports: [],
+					pitReports: {},
+				};
 
 			const usedComps =
 				usePublicData && comp.tbaId !== NotLinkedToTba
@@ -725,23 +729,66 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			usedComps.push(comp);
 
-			const reports = (
-				await db.findObjects(CollectionId.Reports, {
-					match: { $in: usedComps.flatMap((m) => m.matches) },
-					submitted: submitted ? true : { $exists: true },
-				})
-			)
-				// Filter out comments from other competitions
-				.map((report) =>
-					comp.matches.includes(report.match)
-						? report
-						: { ...report, data: { ...report.data, comments: "" } },
-				);
+			const [reports, pitReports] = await Promise.all([
+				(
+					await db.findObjects(CollectionId.Reports, {
+						match: { $in: usedComps.flatMap((m) => m.matches) },
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					// Filter out comments from other competitions
+					.map((report) =>
+						comp.matches.includes(report.match)
+							? report
+							: { ...report, data: { ...report.data, comments: "" } },
+					),
+				(
+					await db.findObjects(CollectionId.PitReports, {
+						_id: {
+							$in: usedComps
+								.flatMap((m) => m.pitReports)
+								.map((id) => new ObjectId(id)),
+						},
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					.map((pitReport) =>
+						comp.pitReports.includes(pitReport._id!.toString())
+							? pitReport
+							: ({
+									...pitReport,
+									data: { ...pitReport.data, comments: "" },
+								} as Pitreport),
+					)
+					.reduce(
+						(dict, pitReport) => {
+							dict[pitReport.teamNumber] ??= [];
+							dict[pitReport.teamNumber].push(pitReport);
+							return dict;
+						},
+						{} as { [team: number]: Pitreport[] },
+					),
+			]);
 
-			return reports;
+			return {
+				quantReports: reports,
+				pitReports: pitReports,
+			};
 		},
-		afterResponse: async (deps, res, ranFallback) =>
-			saveObjectAfterResponse(deps, CollectionId.Reports, res, ranFallback),
+		afterResponse: async (deps, res, ranFallback) => {
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.Reports,
+				res.quantReports,
+				ranFallback,
+			),
+				saveObjectAfterResponse(
+					deps,
+					CollectionId.PitReports,
+					Object.values(res.pitReports).flat(),
+					ranFallback,
+				);
+		},
 	});
 
 	allCompetitionMatches = createNextRoute<
@@ -2790,7 +2837,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
-  findCompSeasonAndTeamByCompSlug = createNextRoute<
+	findCompSeasonAndTeamByCompSlug = createNextRoute<
 		[string],
 		{ comp: Competition; season: Season; team: Team } | undefined,
 		ApiDependencies,
