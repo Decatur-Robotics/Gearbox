@@ -276,7 +276,7 @@ export default function MatchScheduleCard(props: {
 															<div>
 																Subjective Scouter:{" "}
 																{
-																	usersById[match.subjectiveScouter ?? ""].name
+																	usersById[match.subjectiveScouter.toString() ?? ""].name
 																}{" "}
 															</div>
 														)}
@@ -293,7 +293,7 @@ export default function MatchScheduleCard(props: {
 											</div>
 											<a
 												className={`btn btn-primary btn-sm 
-													${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"} 
+													${match.subjectiveScouter && usersById[match.subjectiveScouter.toString()]?.slackId && "-translate-y-1"} 
 													${
 														session &&
 														!match.assignedSubjectiveScouterHasSubmitted &&

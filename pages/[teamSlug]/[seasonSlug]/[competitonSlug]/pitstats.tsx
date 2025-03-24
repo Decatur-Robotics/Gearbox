@@ -232,7 +232,7 @@ export default function Pitstats(props: { competition: Competition }) {
 
 	const loadReports = useCallback(async () => {
 		const newReports = (await api.competitionReports(
-			comp._id!,
+			comp._id!.toString(),
 			true,
 			usePublicData,
 		)) as Report[];
@@ -253,7 +253,7 @@ export default function Pitstats(props: { competition: Competition }) {
 
 		const newPits: PitReportPair = {};
 		for (const id of comp?.pitReports) {
-			const pitReport = await api.findPitreportById(id);
+			const pitReport = await api.findPitreportById(id.toString());
 			if (!pitReport) continue;
 
 			newPits[pitReport.teamNumber] = pitReport;

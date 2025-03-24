@@ -620,7 +620,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Users,
-				new ObjectId(user._id.toString()),
+				user._id,
 				user,
 			);
 

@@ -149,7 +149,7 @@ export default function InsightsAndSettingsCard(props: {
 			) === confirmKey
 		) {
 			toast.promise(
-				api.deleteComp(comp._id).finally(() => {
+				api.deleteComp(comp._id.toString()).finally(() => {
 					window.location.href = `/${team?.slug}/${seasonSlug}`;
 				}),
 				{

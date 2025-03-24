@@ -12,6 +12,7 @@ import { serializeDatabaseObject } from "@/lib/UrlResolver";
 import ClientApi from "@/lib/api/ClientApi";
 import CollectionId from "@/lib/client/CollectionId";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
+import { ObjectId } from "bson";
 import { GetServerSideProps } from "next";
 import { useEffect, useState } from "react";
 
@@ -26,14 +27,14 @@ export default function Scouters(props: {
 
 	const { session } = useCurrentSession();
 	const isManager = session?.user?._id
-		? team?.owners.includes(session.user?._id.toString())
+		? team?.owners.includes(session.user?._id)
 		: false;
 
 	type Scouter = User & {
-		missedReports: string[];
-		reports: string[];
-		coveredReports: string[];
-		missedSubjectiveReports: string[];
+		missedReports: ObjectId[];
+		reports: ObjectId[];
+		coveredReports: ObjectId[];
+		missedSubjectiveReports: ObjectId[];
 	};
 	type Comment = {
 		text: string;
@@ -41,7 +42,7 @@ export default function Scouters(props: {
 		robot: number;
 		formType: string;
 		matchNumber: number;
-		dbId: string;
+		dbId: ObjectId;
 		flag: "None" | "Minor" | "Major";
 		remove: () => void;
 	};
@@ -69,7 +70,7 @@ export default function Scouters(props: {
 		setLoading(true);
 
 		console.log("Loading scouter data...");
-		api.findScouterManagementData(comp?._id!).then((data) => {
+		api.findScouterManagementData(comp?._id!.toString()!).then((data) => {
 			console.log("Loaded scouter data");
 
 			// Load scouters
@@ -89,7 +90,7 @@ export default function Scouters(props: {
 			// Load matches
 			const matchDict: { [id: string]: Match } = {};
 			for (const m of data.matches) {
-				matchDict[m._id ?? ""] = m;
+				matchDict[m._id.toString() ?? ""] = m;
 			}
 			setMatches(matchDict);
 
@@ -105,7 +106,7 @@ export default function Scouters(props: {
 			}
 
 			async function removeComment(
-				commentId: string | undefined,
+				commentId: ObjectId | undefined,
 				func: (c: Comment) => Promise<any>,
 			): Promise<void> {
 				// Hacky way of getting the latest state when the function is being called from lambdas
@@ -141,10 +142,10 @@ export default function Scouters(props: {
 				setReports((reports) => {
 					if (!reports) return reports;
 
-					const { _id, ...old } = reports[comment.dbId];
+					const { _id, ...old } = reports[comment.dbId.toString()];
 					promise = api.updateReport(
 						{ data: { ...old.data, comments: "" } },
-						comment.dbId,
+						comment.dbId.toString(),
 					);
 
 					return reports;
@@ -157,7 +158,7 @@ export default function Scouters(props: {
 				const { _id, ...old } = data.pitReports.find(
 					(r) => r._id === comment.dbId,
 				)!;
-				return api.updatePitreport(comment.dbId, {
+				return api.updatePitreport(comment.dbId.toString(), {
 					data: { ...old.data, comments: "" },
 				});
 			}
@@ -178,24 +179,24 @@ export default function Scouters(props: {
 				if (r.submitted) {
 					comments.push({
 						text: r.data.comments,
-						user: r.submitter ?? r.user,
+						user: r.submitter?.toString() ?? r.user?.toString(),
 						robot: r.robotNumber,
 						formType: "Quantitative Report",
-						matchNumber: matchDict[r.match]?.number ?? 0,
+						matchNumber: matchDict[r.match.toString()]?.number ?? 0,
 						dbId: r._id ?? "",
 						flag: getCommentFlag(r.data.comments),
 						remove: () => removeComment(r._id, removeQuantitativeComment),
 					});
 				}
 
-				reportDict[r._id ?? ""] = r;
+				reportDict[r._id.toString() ?? ""] = r;
 			}
 			setReports(reportDict);
 
 			for (const report of data.pitReports) {
 				comments.push({
 					text: report.data?.comments ?? "",
-					user: report.submitter,
+					user: report.submitter?.toString(),
 					robot: report.teamNumber,
 					formType: "Pit Report",
 					matchNumber: 0,
@@ -219,10 +220,10 @@ export default function Scouters(props: {
 
 				comments.push({
 					text: text,
-					user: report.submitter,
+					user: report.submitter?.toString(),
 					robot: 0,
 					formType: "Subjective Report",
-					matchNumber: matchDict[report.match]?.number ?? 0,
+					matchNumber: matchDict[report.match.toString()]?.number ?? 0,
 					dbId: report._id ?? "",
 					flag: getCommentFlag(text),
 					remove: () =>
@@ -244,7 +245,7 @@ export default function Scouters(props: {
 			const newScouters = Object.values(scouters).map((scouter) => {
 				const scouterReports = Object.values(reports).filter((report) => {
 					return (
-						matches[report.match].number <= lastCountedMatch &&
+						matches[report.match.toString()].number <= lastCountedMatch &&
 						report.user === scouter._id
 					);
 				});
@@ -252,7 +253,7 @@ export default function Scouters(props: {
 				const missedReports = scouterReports.filter((report) => {
 					return (
 						!report.submitted ||
-						(report.submitter && report.submitter !== scouter._id?.toString())
+						(report.submitter && report.submitter !== scouter._id)
 					);
 				});
 
@@ -261,7 +262,7 @@ export default function Scouters(props: {
 						report.submitted &&
 						report.submitter &&
 						report.user !== scouter._id &&
-						report.submitter === scouter._id?.toString()
+						report.submitter === scouter._id
 					);
 				});
 
@@ -282,7 +283,7 @@ export default function Scouters(props: {
 
 			const scouterDict: { [id: string]: Scouter } = {};
 			for (const scouter of newScouters) {
-				scouterDict[scouter._id?.toString()!] = scouter;
+				scouterDict[scouter._id.toString()] = scouter;
 			}
 
 			setScouters(scouterDict);
@@ -373,7 +374,7 @@ export default function Scouters(props: {
 														Missed Reports: {scouter.missedReports.length} (
 														{reports &&
 															scouter.missedReports
-																.map((report) => reports[report])
+																.map((report) => reports[report.toString()])
 																.filter((report) => !report.submitter)
 																.length}{" "}
 														not covered)
@@ -382,10 +383,10 @@ export default function Scouters(props: {
 															scouter.missedReports.length > 0 && (
 																<ul className="ml-2">
 																	{scouter.missedReports
-																		.map((report) => reports[report])
+																		.map((report) => reports[report.toString()])
 																		.map((report) => ({
 																			report: report,
-																			match: matches[report.match],
+																			match: matches[report.match.toString()],
 																		}))
 																		.sort(
 																			(a, b) => a.match.number - b.match.number,
@@ -398,7 +399,7 @@ export default function Scouters(props: {
 																					{entry.report.submitter && (
 																						<>
 																							(Covered by{" "}
-																							{scouters[entry.report.submitter]
+																							{scouters[entry.report.submitter.toString()]
 																								?.name ?? "Unknown"}
 																							)
 																						</>
@@ -416,7 +417,7 @@ export default function Scouters(props: {
 																{[
 																	...new Set(
 																		scouter.missedSubjectiveReports
-																			.map((id) => matches[id].number)
+																			.map((id) => matches[id.toString()].number)
 																			.sort((a, b) => a - b),
 																	),
 																].join(", ")}
