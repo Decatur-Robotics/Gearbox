@@ -103,7 +103,7 @@ export default function CompetitionIndex({
 	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
 		const { pitReports: pitReportIds } = await api.regeneratePitReports(
-			comp?._id!.toString()!,
+			comp?._id.toString()!,
 		);
 
 		setAttemptedRegeneratingPitReports(true);

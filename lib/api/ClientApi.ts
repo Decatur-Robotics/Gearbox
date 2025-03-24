@@ -1914,7 +1914,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findBulkUsersById = createNextRoute<
-		[string[]],
+		[ObjectId[]],
 		User[],
 		ApiDependencies,
 		void
@@ -2058,7 +2058,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findBulkPitReportsById = createNextRoute<
-		[string[]],
+		[ObjectId[]],
 		Pitreport[],
 		ApiDependencies,
 		{ team: Team; comp: Competition; pitReport: Pitreport }[]
@@ -2066,7 +2066,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: async (req, res, deps, [ids]) => {
 			const reports = await Promise.all(
 				ids.map((id) =>
-					AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
+					AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id.toString()),
 				),
 			);
 
