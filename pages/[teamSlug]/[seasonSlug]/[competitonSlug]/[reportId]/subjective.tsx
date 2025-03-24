@@ -14,6 +14,7 @@ import { makeObjSerializeable } from "@/lib/client/ClientUtils";
 import UrlResolver from "@/lib/UrlResolver";
 import { GetServerSideProps } from "next";
 import Container from "@/components/Container";
+import { ObjectId } from "bson";
 
 const api = new ClientApi();
 
@@ -48,8 +49,8 @@ export default function SubjectiveReportForm(props: {
 
 	function getReportFromForm(): SubjectiveReport {
 		return {
-			_id: undefined,
-			match: match?._id as string,
+			_id: new ObjectId(undefined),
+			match: match!._id,
 			matchNumber: match?.number ?? 0,
 			wholeMatchComment:
 				(document.getElementById("comment-WholeMatch") as HTMLTextAreaElement)

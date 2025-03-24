@@ -1,13 +1,14 @@
 import { useState } from "react";
 import Modal, { hideModal, showModal } from "./Modal";
 import ClientApi from "@/lib/api/ClientApi";
+import { ObjectId } from "bson";
 
 const SLACK_WEBHOOK_INSTALL_URL =
 	"https://my.slack.com/services/new/incoming-webhook/";
 
 const api = new ClientApi();
 
-function AddToSlackModal({ teamId }: { teamId: string }) {
+function AddToSlackModal({ teamId }: { teamId: ObjectId }) {
 	const [webhookUrl, setWebhookUrl] = useState<string>();
 	const [errorMsg, setErrorMsg] = useState<string>("");
 
@@ -74,7 +75,7 @@ export default function AddToSlack({
 	teamId,
 }: {
 	edit: boolean;
-	teamId: string;
+	teamId: ObjectId;
 }) {
 	return (
 		<>

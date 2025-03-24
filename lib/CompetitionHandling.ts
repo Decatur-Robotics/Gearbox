@@ -19,13 +19,13 @@ import { _id } from "@next-auth/mongodb-adapter";
 import { match } from "assert";
 
 type ScheduleMatch = {
-	subjectiveScouter?: string;
-	assignedScouters: string[];
+	subjectiveScouter?: ObjectId;
+	assignedScouters: ObjectId[];
 };
 
 export function generateSchedule(
-	scouters: string[],
-	subjectiveScouters: string[],
+	scouters: ObjectId[],
+	subjectiveScouters: ObjectId[],
 	matchCount: number,
 	robotsPerMatch: number,
 ) {
@@ -131,7 +131,7 @@ async function assignScoutersToMatch(
 		if (!oldReport) continue;
 
 		// Update existing report
-		oldReport.user = scouter;
+		oldReport.user = new ObjectId(scouter);
 
 		await db.updateObjectById(
 			CollectionId.Reports,
@@ -188,12 +188,12 @@ export async function generateReportsForMatch(
 			games[gameId].createQuantitativeFormData(),
 			teamNumber,
 			color,
-			String(match._id),
+			match._id,
 			0,
 		);
 
 		reports.push(
-			String((await db.addObject(CollectionId.Reports, newReport))._id),
+			((await db.addObject(CollectionId.Reports, newReport))._id),
 		);
 	}
 

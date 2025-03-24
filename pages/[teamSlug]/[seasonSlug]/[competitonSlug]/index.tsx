@@ -103,7 +103,7 @@ export default function CompetitionIndex({
 	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
 		const { pitReports: pitReportIds } = await api.regeneratePitReports(
-			comp?._id!,
+			comp?._id.toString()!,
 		);
 
 		setAttemptedRegeneratingPitReports(true);
@@ -135,7 +135,7 @@ export default function CompetitionIndex({
 			if (!silent) setLoadingMatches(true);
 
 			window.location.hash = "";
-			let matches: Match[] = await api.allCompetitionMatches(comp?._id!);
+			let matches: Match[] = await api.allCompetitionMatches(comp?._id!.toString()!);
 
 			if (!matches || matches.length === 0) {
 				setNoMatches(true);
@@ -150,7 +150,7 @@ export default function CompetitionIndex({
 			setMatches(matches);
 
 			api
-				.getSubjectiveReportsFromMatches(comp?._id ?? "", matches)
+				.getSubjectiveReportsFromMatches(comp?._id.toString()!, matches)
 				.then((reports) => {
 					setSubjectiveReports(reports);
 
@@ -159,7 +159,7 @@ export default function CompetitionIndex({
 						if (!report._id) {
 							return;
 						}
-						newReportIds[report._id] = report;
+						newReportIds[report._id.toString()] = report;
 					});
 					setSubjectiveReportsById(newReportIds);
 				});
@@ -187,7 +187,7 @@ export default function CompetitionIndex({
 			if (!silent) setLoadingReports(true);
 
 			let newReports: Report[] = await api.competitionReports(
-				comp?._id!,
+				comp?._id!.toString()!,
 				false,
 				false,
 			);
@@ -199,7 +199,7 @@ export default function CompetitionIndex({
 				if (!report._id) {
 					return;
 				}
-				newReportsById[report._id] = report;
+				newReportsById[report._id.toString()] = report;
 			});
 
 			setReportsById(newReportsById);
@@ -291,7 +291,7 @@ export default function CompetitionIndex({
 			if (!comp?.matches.every((m) => matches.some((m2) => m2._id === m)))
 				loadMatches(matches !== undefined);
 
-			if (!matches.every((m) => m.reports.every((r) => reportsById[r])))
+			if (!matches.every((m) => m.reports.every((r) => reportsById[r.toString()])))
 				loadReports(reports !== undefined);
 		}
 	}, [
@@ -307,7 +307,7 @@ export default function CompetitionIndex({
 
 	const assignScouters = async () => {
 		setAssigningMatches(true);
-		const res = await api.assignScouters(comp?._id!, true);
+		const res = await api.assignScouters(comp?._id!.toString()!, true);
 
 		if ((res.result as string).toLowerCase() !== "success") {
 			alert(res.result);
@@ -331,7 +331,7 @@ export default function CompetitionIndex({
 		alert("Reloading competition...");
 
 		setUpdatingComp("Checking for Updates...");
-		const res = await api.reloadCompetition(comp?._id!);
+		const res = await api.reloadCompetition(comp?._id!.toString()!);
 		if (res.result === "success") {
 			window.location.reload();
 		} else {
@@ -384,7 +384,7 @@ export default function CompetitionIndex({
 				| undefined
 		)?.showModal();
 
-		setMatchBeingEdited(match._id);
+		setMatchBeingEdited(match._id.toString());
 	}
 
 	const loadMatchesInterval = useCallback(
@@ -395,7 +395,7 @@ export default function CompetitionIndex({
 
 	function remindUserOnSlack(userId: string) {
 		if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))
-			api.remindSlack(team._id.toString(), userId);
+			api.remindSlack(team._id, userId);
 	}
 
 	return (
@@ -459,7 +459,7 @@ export default function CompetitionIndex({
 				{isManager && (
 					<EditMatchModal
 						close={() => setMatchBeingEdited(undefined)}
-						match={matches.find((m) => m._id === matchBeingEdited!)}
+						match={matches.find((m) => m._id.toString() === matchBeingEdited!)}
 						reportsById={reportsById}
 						usersById={usersById}
 						comp={comp}

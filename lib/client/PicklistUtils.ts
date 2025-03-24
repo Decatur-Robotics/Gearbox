@@ -137,7 +137,7 @@ export function savePicklistGroup(
 			return acc;
 		},
 		{
-			_id: id,
+			_id: new ObjectId(id),
 			picklists: {},
 			strikethroughs,
 		},

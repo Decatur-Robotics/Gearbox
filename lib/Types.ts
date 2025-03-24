@@ -37,14 +37,14 @@ export interface Session extends NextAuthSession {
 
 export class User implements NextAuthUser {
 	id: string = "";
-	_id: string | undefined;
+	_id!: ObjectId;
 	name: string | undefined;
 	email: string | undefined;
 	image: string;
 	admin: boolean;
 	slug: string | undefined;
-	teams: string[];
-	owner: string[];
+	teams: ObjectId[];
+	owner: ObjectId[];
 	slackId: string = "";
 	xp: number = 10;
 	level: number = 1;
@@ -58,8 +58,8 @@ export class User implements NextAuthUser {
 		image: string = process.env.DEFAULT_IMAGE,
 		admin: boolean = false,
 		slug: string | undefined,
-		teams: string[] = [],
-		owner: string[] = [],
+		teams: ObjectId[] = [],
+		owner: ObjectId[] = [],
 		slackId: string = "",
 		xp: number = 10,
 		level: number = 1,
@@ -93,19 +93,19 @@ export class Team {
 	league: League = League.FRC;
 	alliance: boolean;
 
-	owners: string[];
-	users: string[];
-	scouters: string[];
-	subjectiveScouters: string[];
-	requests: string[];
+	owners: ObjectId[];
+	users: ObjectId[];
+	scouters: ObjectId[];
+	subjectiveScouters: ObjectId[];
+	requests: ObjectId[];
 
-	seasons: string[];
+	seasons: ObjectId[];
 
 	/**
 	 * ID of the WebhookHolder object
 	 * @see WebhookHolder
 	 */
-	slackWebhook: string | undefined;
+	slackWebhook: ObjectId | undefined;
 
 	constructor(
 		name: string,
@@ -114,12 +114,12 @@ export class Team {
 		number: number,
 		league: League = League.FRC,
 		alliance: boolean = false,
-		owners: string[] = [],
-		users: string[] = [],
-		scouters: string[] = [],
-		subjectiveScouters: string[] = [],
-		requests: string[] = [],
-		seasons: string[] = [],
+		owners: ObjectId[] = [],
+		users: ObjectId[] = [],
+		scouters: ObjectId[] = [],
+		subjectiveScouters: ObjectId[] = [],
+		requests: ObjectId[] = [],
+		seasons: ObjectId[] = [],
 	) {
 		this._id = new ObjectId();
 		this.name = name;
@@ -386,12 +386,12 @@ export abstract class PitReportData {
 }
 
 export class Pitreport<TFormData extends PitReportData = PitReportData> {
-	_id: string | undefined;
+	_id!: ObjectId;
 
 	teamNumber: number;
 
 	submitted: boolean = false;
-	submitter: string | undefined;
+	submitter: ObjectId | undefined;
 
 	data: TFormData | undefined;
 
@@ -402,7 +402,7 @@ export class Pitreport<TFormData extends PitReportData = PitReportData> {
 }
 
 export class Competition {
-	_id: string | undefined;
+	_id!: ObjectId;
 	name: string;
 	slug: string | undefined;
 	tbaId: string | undefined;
@@ -414,10 +414,10 @@ export class Competition {
 	start: number;
 	end: number;
 
-	pitReports: string[];
-	matches: string[];
+	pitReports: ObjectId[];
+	matches: ObjectId[];
 
-	picklist: string;
+	picklist: ObjectId;
 
 	constructor(
 		name: string,
@@ -425,9 +425,9 @@ export class Competition {
 		tbaId: string | undefined,
 		start: number,
 		end: number,
-		pitReports: string[] = [],
-		matches: string[] = [],
-		picklist: string = "",
+		pitReports: ObjectId[] = [],
+		matches: ObjectId[] = [],
+		picklist: ObjectId,
 		publicData = false,
 		gameId: GameId | undefined = undefined,
 	) {
@@ -459,7 +459,7 @@ export enum MatchType {
 
 // add more fields
 export class Match {
-	_id: string | undefined;
+	_id!: ObjectId;
 	slug: string | undefined;
 	tbaId: string | undefined;
 
@@ -470,10 +470,10 @@ export class Match {
 	redAlliance: Alliance;
 
 	time: number; // time the match begins
-	reports: string[];
+	reports: ObjectId[];
 
-	subjectiveScouter: string | undefined;
-	subjectiveReports: string[] = [];
+	subjectiveScouter: ObjectId | undefined;
+	subjectiveReports: ObjectId[] = [];
 	subjectiveReportsCheckInTimestamps: { [userId: string]: string } = {};
 	assignedSubjectiveScouterHasSubmitted: boolean = false;
 
@@ -485,7 +485,7 @@ export class Match {
 		type: MatchType,
 		blueAlliance: Alliance,
 		redAlliance: Alliance,
-		reports: string[] = [],
+		reports: ObjectId[] = [],
 	) {
 		this.number = number;
 		this.tbaId = tbaId;
@@ -499,15 +499,15 @@ export class Match {
 }
 
 export class Report<TFormData extends QuantData = QuantData> {
-	_id: string | undefined;
+	_id!: ObjectId;
 
 	timestamp: number | undefined; // time it was initially submitted
-	user: string | undefined; // id of user assigned to report
-	submitter: string | undefined; // id of user who submitted the report
+	user: ObjectId | undefined; // id of user assigned to report
+	submitter: ObjectId | undefined; // id of user who submitted the report
 
 	color: AllianceColor;
 	robotNumber: number; // number of robot to be reported
-	match: string; // id of match
+	match: ObjectId; // id of match
 
 	submitted: boolean = false;
 	data: TFormData;
@@ -515,11 +515,11 @@ export class Report<TFormData extends QuantData = QuantData> {
 	checkInTimestamp: string | undefined;
 
 	constructor(
-		user: string | undefined,
+		user: ObjectId | undefined,
 		data: TFormData,
 		robotNumber: number,
 		color: AllianceColor,
-		match: string,
+		match: ObjectId,
 		timestamp: number = 0,
 		checkInTimestamp: string | undefined = undefined,
 	) {
@@ -541,18 +541,18 @@ export enum SubjectiveReportSubmissionType {
 }
 
 export class SubjectiveReport {
-	_id: string | undefined;
-	submitter: string | undefined;
+	_id!: ObjectId;
+	submitter: ObjectId | undefined;
 	submitted: SubjectiveReportSubmissionType =
 		SubjectiveReportSubmissionType.NotSubmitted;
 
-	match: string; // id of match
+	match: ObjectId; // id of match
 	matchNumber: number;
 
 	wholeMatchComment: string = "";
 	robotComments: { [key: number]: string } = {};
 
-	constructor(match: string, matchNumber: number) {
+	constructor(match: ObjectId, matchNumber: number) {
 		this.match = match;
 		this.matchNumber = matchNumber;
 	}
@@ -570,7 +570,7 @@ export interface EventData {
 }
 
 export type CompPicklistGroup = {
-	_id: string;
+	_id: ObjectId;
 	picklists: {
 		[name: string]: number[];
 	};
@@ -711,7 +711,7 @@ export class WebhookHolder {
 }
 
 export type LeaderboardUser = {
-	_id: string;
+	_id: ObjectId;
 	name: string;
 	image: string;
 	xp: number;
@@ -720,7 +720,7 @@ export type LeaderboardUser = {
 };
 
 export type LeaderboardTeam = {
-	_id: string;
+	_id: ObjectId;
 	name: string;
 	number: number;
 	league: League;

@@ -323,7 +323,7 @@ export default function PicklistScreen(props: {
 	// Save picklists
 	useEffect(() => {
 		if (loadingPicklists !== LoadState.Loaded) return;
-		savePicklistGroup(props.picklist._id, picklists, strikethroughs, api);
+		savePicklistGroup(props.picklist._id.toString(), picklists, strikethroughs, api);
 	}, [
 		props.picklist._id,
 		picklists,
@@ -389,7 +389,7 @@ export default function PicklistScreen(props: {
 		if (loadingPicklists !== LoadState.NotLoaded) return;
 
 		setLoadingPicklists(LoadState.Loading);
-		api.getPicklistGroup(props.picklist?._id).then((picklist) => {
+		api.getPicklistGroup(props.picklist?._id.toString()).then((picklist) => {
 			if (picklist) {
 				loadPicklistGroupMemo(picklist);
 			}

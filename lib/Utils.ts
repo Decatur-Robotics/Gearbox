@@ -115,7 +115,7 @@ export async function populateMissingUserFields(
 		lastSignInDateTime: user.lastSignInDateTime ?? undefined,
 	};
 
-	if (user._id) (filled as User)._id = user._id as unknown as string;
+	if (user._id) (filled as User)._id = user._id;
 
 	return filled as User;
 }
@@ -165,7 +165,7 @@ export async function repairUser(
 		);
 	}
 
-	user._id = id as unknown as string;
+	user._id = id;
 
 	return user as User;
 }

@@ -10,6 +10,7 @@ import { defaultGameId, GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import { Analytics } from "@/lib/client/Analytics";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { ObjectId } from "bson";
 
 const api = new ClientApi();
 
@@ -22,7 +23,7 @@ export default function Onboarding() {
 		number | undefined
 	>();
 	const [team, setTeam] = useState<{
-		_id?: string;
+		_id?: ObjectId;
 		name: string;
 		number: number;
 		slug?: string;
@@ -58,7 +59,7 @@ export default function Onboarding() {
 		async (redirect: string = "/profile") => {
 			if (!session?.user?._id) return;
 
-			api.setOnboardingCompleted(session?.user?._id);
+			api.setOnboardingCompleted(session?.user?._id.toString());
 			router.push(redirect);
 
 			Analytics.onboardingCompleted(
@@ -99,7 +100,7 @@ export default function Onboarding() {
 		});
 		setJoinRequestStatus(
 			"requests" in team &&
-				(team.requests?.includes(session?.user?._id ?? "") ?? false)
+				(team.requests?.includes(session?.user?._id?.toString()!) ?? false)
 				? JoinRequestStatus.Requested
 				: JoinRequestStatus.NotRequested,
 		);
@@ -109,7 +110,7 @@ export default function Onboarding() {
 		if (!session?.user?._id || !teamNumber) return;
 
 		setJoinRequestStatus(JoinRequestStatus.Requested);
-		await api.requestToJoinTeam(team?._id!);
+		await api.requestToJoinTeam(team?._id!.toString()!);
 	}
 
 	const updateTeamRequestStatus = useCallback(async () => {
@@ -135,10 +136,10 @@ export default function Onboarding() {
 		console.log(team, session.user);
 
 		const requestPending =
-			team.requests?.includes(session?.user?._id ?? "") ?? false;
+			team.requests?.includes(session?.user?._id.toString()) ?? false;
 		if (
 			joinRequestStatus === JoinRequestStatus.Requested &&
-			(team?.users?.includes(session?.user?._id ?? "") ?? false)
+			(team?.users?.includes(session?.user?._id.toString()) ?? false)
 		)
 			completeOnboarding();
 

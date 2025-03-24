@@ -13,7 +13,7 @@ async function fixTeamMembership() {
 
 	console.log(`Found ${teams.length} teams.`);
 
-	const users: { [id: string]: { teams: string[]; owner: string[] } } = {};
+	const users: { [id: string]: { teams: ObjectId[]; owner: string[] } } = {};
 
 	for (const team of teams) {
 		console.log(
@@ -25,7 +25,7 @@ async function fixTeamMembership() {
 				users[user] = { teams: [], owner: [] };
 			}
 
-			users[user].teams.push(team._id.toString());
+			users[user].teams.push(team._id);
 		}
 
 		for (const user of team.owners) {

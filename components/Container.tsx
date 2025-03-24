@@ -111,7 +111,7 @@ export default function Container(props: ContainerProps) {
 
 			for (const season of selectedTeam?.seasons) {
 				const seasonObj = await api
-					.findSeasonById(season)
+					.findSeasonById(season.toString())
 					.catch(() => undefined);
 				if (seasonObj) newSeasons.push(seasonObj);
 			}
