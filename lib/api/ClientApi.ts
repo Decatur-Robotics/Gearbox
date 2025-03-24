@@ -630,7 +630,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 	competitionReports = createNextRoute<
 		[string, boolean, boolean],
-		Report[],
+		{ quantReports: Report[]; pitReports: { [team: number]: Pitreport[] } },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
 	>({
@@ -656,19 +656,51 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			if (usePublicData && !comp.publicData) usedComps.push(comp);
 
-			const reports = (
-				await db.findObjects(CollectionId.Reports, {
-					match: { $in: usedComps.flatMap((m) => m.matches) },
-					submitted: submitted ? true : { $exists: true },
-				})
-			)
-				// Filter out comments from other competitions
-				.map((report) =>
-					comp.matches.includes(report.match)
-						? report
-						: { ...report, data: { ...report.data, comments: "" } },
-				);
-			return res.status(200).send(reports);
+			const [reports, pitReports] = await Promise.all([
+				(
+					await db.findObjects(CollectionId.Reports, {
+						match: { $in: usedComps.flatMap((m) => m.matches) },
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					// Filter out comments from other competitions
+					.map((report) =>
+						comp.matches.includes(report.match)
+							? report
+							: { ...report, data: { ...report.data, comments: "" } },
+					),
+				(
+					await db.findObjects(CollectionId.PitReports, {
+						_id: {
+							$in: usedComps
+								.flatMap((m) => m.pitReports)
+								.map((id) => new ObjectId(id)),
+						},
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					.map((pitReport) =>
+						comp.pitReports.includes(pitReport._id!.toString())
+							? pitReport
+							: ({
+									...pitReport,
+									data: { ...pitReport.data, comments: "" },
+								} as Pitreport),
+					)
+					.reduce(
+						(dict, pitReport) => {
+							dict[pitReport.teamNumber] ??= [];
+							dict[pitReport.teamNumber].push(pitReport);
+							return dict;
+						},
+						{} as { [team: number]: Pitreport[] },
+					),
+			]);
+
+			return res.status(200).send({
+				quantReports: reports,
+				pitReports: pitReports,
+			});
 		},
 	});
 
@@ -693,6 +725,28 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
 			return res.status(200).send(matches);
+		},
+	});
+
+	getTeamsAtComp = createNextRoute<
+		[string],
+		number[],
+		ApiDependencies,
+		{ team: Team; comp: Competition }
+	>({
+		isAuthorized: (req, res, deps, [compId]) =>
+			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
+		handler: async (req, res, { db: dbPromise }, { team, comp }, [compId]) => {
+			const db = await dbPromise;
+
+			const pitReports = await db.findObjects(CollectionId.PitReports, {
+				_id: {
+					$in: comp.pitReports.map((pitReportId) => new ObjectId(pitReportId)),
+				},
+			});
+			return res
+				.status(200)
+				.send(pitReports.map((pitReport) => pitReport.teamNumber));
 		},
 	});
 

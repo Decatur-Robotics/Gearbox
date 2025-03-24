@@ -231,11 +231,11 @@ export default function Pitstats(props: { competition: Competition }) {
 	const layout = games[comp.gameId].pitStatsLayout;
 
 	const loadReports = useCallback(async () => {
-		const newReports = (await api.competitionReports(
+		const { quantReports: newReports } = await api.competitionReports(
 			comp._id!,
 			true,
 			usePublicData,
-		)) as Report[];
+		);
 
 		const rankings = await api.compRankings(comp.tbaId!);
 

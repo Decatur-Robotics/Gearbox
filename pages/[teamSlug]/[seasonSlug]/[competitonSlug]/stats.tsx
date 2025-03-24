@@ -1,5 +1,5 @@
 import ClientApi from "@/lib/api/ClientApi";
-import { NotLinkedToTba } from "@/lib/client/ClientUtils";
+import { mergePitReports, NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { defaultGameId } from "@/lib/client/GameId";
 import {
 	Competition,
@@ -41,6 +41,9 @@ export default function Stats(props: {
 	>(props.subjectiveReports);
 	const [page, setPage] = useState(0);
 	const [usePublicData, setUsePublicData] = useState(true);
+	const [fetchedTeamNumbers, setFetchedTeamNumbers] = useState<number[]>([]);
+	const [externalPitReportCount, setExternalPitReportCount] = useState(0);
+	const [internalPitReportCount, setInternalPitReportCount] = useState(0);
 
 	useEffect(() => {
 		const i = setInterval(() => {
@@ -58,15 +61,32 @@ export default function Stats(props: {
 		const promises = [
 			api
 				.competitionReports(props.competition._id!, true, usePublicData)
-				.then((data) => setReports(data)),
-			pitReports.length === 0 &&
-				props.competition._id &&
-				api.getPitReports(props.competition._id).then((data) => {
-					setPitReports(data);
+				.then((data) => {
+					setReports(data.quantReports);
+
+					const newPitReports: Pitreport[] = [];
+					let internalPitReportCount = 0,
+						externalPitReportCount = 0;
+					for (const teamPitReports of Object.values(data.pitReports)) {
+						newPitReports.push(mergePitReports(teamPitReports));
+
+						teamPitReports.forEach((r) => {
+							if (props.competition.pitReports.includes(r._id!.toString())) {
+								internalPitReportCount++;
+							} else {
+								externalPitReportCount++;
+							}
+						});
+					}
+
+					setPitReports(newPitReports);
+					setInternalPitReportCount(internalPitReportCount);
+					setExternalPitReportCount(externalPitReportCount);
 				}),
 			api
 				.getSubjectiveReportsForComp(props.competition._id!)
 				.then(setSubjectiveReports),
+			api.getTeamsAtComp(props.competition._id!).then(setFetchedTeamNumbers),
 		].flat();
 
 		await Promise.all(promises);
@@ -85,14 +105,15 @@ export default function Stats(props: {
 	subjectiveReports.forEach((r) =>
 		Object.keys(r.robotComments).forEach((c) => teams.add(+c)),
 	); //+str converts to number
+	fetchedTeamNumbers.forEach((t) => teams.add(t));
 
-	let internalReportCount = 0,
-		externalReportCount = 0;
+	let internalQuantReportCount = 0,
+		externalQuantReportCount = 0;
 	reports.forEach((r) => {
 		if (props.competition.matches.includes(r.match)) {
-			internalReportCount++;
+			internalQuantReportCount++;
 		} else {
-			externalReportCount++;
+			externalQuantReportCount++;
 		}
 	});
 
@@ -110,12 +131,17 @@ export default function Stats(props: {
 					>
 						{usePublicData ? (
 							<div className="text-secondary">
-								Using public data ({internalReportCount} internal reports +{" "}
-								{externalReportCount} external reports)
+								Using public data ({internalQuantReportCount} internal quant
+								reports + {externalQuantReportCount} external quant reports,{" "}
+								{internalPitReportCount} internal pit reports +{" "}
+								{externalPitReportCount} external pit reports, and{" "}
+								{subjectiveReports.length} subjective reports)
 							</div>
 						) : (
 							<div>
-								Not using public data ({internalReportCount} internal reports)
+								Not using public data ({internalQuantReportCount} internal
+								reports, {internalPitReportCount} internal pit reports,{" "}
+								{subjectiveReports.length} subjective reports)
 							</div>
 						)}
 						<div className=" animate-pulse">(Click to toggle)</div>
@@ -170,6 +196,7 @@ export default function Stats(props: {
 
 			{page === 0 && (
 				<TeamPage
+					teams={teams}
 					reports={reports}
 					pitReports={pitReports}
 					subjectiveReports={subjectiveReports}
