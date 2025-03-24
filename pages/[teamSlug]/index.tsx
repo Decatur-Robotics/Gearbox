@@ -37,6 +37,7 @@ import AddToSlack from "@/components/AddToSlack";
 import { Analytics } from "@/lib/client/Analytics";
 import { redirect } from "next/dist/server/api-utils";
 import { makeObjSerializeable } from "../../lib/client/ClientUtils";
+import { useRouter } from "next/router";
 
 const api = new ClientApi();
 
@@ -455,9 +456,11 @@ function Settings(props: TeamPageProps) {
 	);
 }
 
-export default function TeamIndex(props: TeamPageProps) {
+export default function TeamIndex() {
 	const { session, status } = useCurrentSession();
-	const team = props.team;
+	const router = useRouter();
+
+	const [team, setTeam] = useState<Team>();
 
 	const isFrc = team?.tbaId || team?.league === League.FRC;
 
@@ -465,17 +468,21 @@ export default function TeamIndex(props: TeamPageProps) {
 
 	const isManager = team?.owners.includes(session?.user?._id as string);
 
+	useEffect(() => {
+		if (!router.query.teamSlug) return;
+
+		api.findTeamBySlug(router.query.teamSlug as string).then((team) => {
+			if (!team) return;
+
+			setTeam(team);
+		});
+	}, [router.query]);
+
 	return (
 		<Container
 			requireAuthentication={true}
 			hideMenu={false}
-			title={
-				team
-					? `${team.number} - ${team.name}`
-					: props.team?.alliance
-						? "Alliance Loading ..."
-						: "Team Loading..."
-			}
+			title={team ? `${team.number} - ${team.name}` : "Team Loading..."}
 		>
 			<Flex
 				mode={"col"}
@@ -494,7 +501,7 @@ export default function TeamIndex(props: TeamPageProps) {
 								size={30}
 								className="inline-block mr-2"
 							></FaRobot>
-							{props.team?.alliance ? "Alliance" : "Team"}{" "}
+							{team?.alliance ? "Alliance" : "Team"}{" "}
 							<span className="text-accent">{team?.number}</span>
 						</h1>
 						<div className="divider divider-horizontal max-sm:divider-vertical"></div>
@@ -516,7 +523,7 @@ export default function TeamIndex(props: TeamPageProps) {
 						<div className="badge badge-secondary md:badge-lg">
 							{isFrc ? "FRC" : "FTC"}
 						</div>
-						{props.team?.alliance ? (
+						{team?.alliance ? (
 							<></>
 						) : (
 							<Link
@@ -605,50 +612,50 @@ export default function TeamIndex(props: TeamPageProps) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-	const db = await getDatabase();
-	const resolved = await UrlResolver(context, 1);
-	if ("redirect" in resolved) {
-		return resolved;
-	}
+// export const getServerSideProps: GetServerSideProps = async (context) => {
+// 	const db = await getDatabase();
+// 	const resolved = await UrlResolver(context, 1);
+// 	if ("redirect" in resolved) {
+// 		return resolved;
+// 	}
 
-	const seasonIds = resolved.team?.seasons.map(
-		(seasonId) => new ObjectId(seasonId),
-	);
-	const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
-	const seasons = await db.findObjects(CollectionId.Seasons, {
-		_id: { $in: seasonIds },
-	});
+// 	const seasonIds = resolved.team?.seasons.map(
+// 		(seasonId) => new ObjectId(seasonId),
+// 	);
+// 	const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
+// 	const seasons = await db.findObjects(CollectionId.Seasons, {
+// 		_id: { $in: seasonIds },
+// 	});
 
-	var users = await db.findObjects(CollectionId.Users, {
-		_id: { $in: userIds },
-	});
+// 	var users = await db.findObjects(CollectionId.Users, {
+// 		_id: { $in: userIds },
+// 	});
 
-	users = users.map((user) => {
-		var c = structuredClone(user);
-		c._id = user?._id?.toString();
-		c.teams = user.teams.map((id) => String(id));
-		return c;
-	});
+// 	users = users.map((user) => {
+// 		var c = structuredClone(user);
+// 		c._id = user?._id?.toString();
+// 		c.teams = user.teams.map((id) => String(id));
+// 		return c;
+// 	});
 
-	const currentSeason = seasons[seasons.length - 1];
-	var comp = undefined;
-	if (currentSeason) {
-		comp = await db.findObjectById(
-			CollectionId.Competitions,
-			new ObjectId(
-				currentSeason.competitions[currentSeason.competitions.length - 1],
-			),
-		);
-	}
+// 	const currentSeason = seasons[seasons.length - 1];
+// 	var comp = undefined;
+// 	if (currentSeason) {
+// 		comp = await db.findObjectById(
+// 			CollectionId.Competitions,
+// 			new ObjectId(
+// 				currentSeason.competitions[currentSeason.competitions.length - 1],
+// 			),
+// 		);
+// 	}
 
-	return {
-		props: {
-			team: resolved.team,
-			users: makeObjSerializeable(users),
-			currentCompetition: serializeDatabaseObject(comp),
-			currentSeason: serializeDatabaseObject(currentSeason),
-			pastSeasons: serializeDatabaseObjects(seasons),
-		},
-	};
-};
+// 	return {
+// 		props: {
+// 			team: resolved.team,
+// 			users: makeObjSerializeable(users),
+// 			currentCompetition: serializeDatabaseObject(comp),
+// 			currentSeason: serializeDatabaseObject(currentSeason),
+// 			pastSeasons: serializeDatabaseObjects(seasons),
+// 		},
+// 	};
+// };

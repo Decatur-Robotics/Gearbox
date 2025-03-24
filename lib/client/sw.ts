@@ -1,6 +1,6 @@
-import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
+import { defaultCache } from "@serwist/next/worker";
 
 declare global {
 	interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -25,5 +25,12 @@ const serwist = new Serwist({
 		],
 	},
 });
+
+// self.addEventListener("fetch", async (event) => {
+// 	console.log(event.request);
+// 	event.respondWith(
+// 		await serwist.handleRequest({ request: event.request, event: event })!,
+// 	);
+// });
 
 serwist.addEventListeners();

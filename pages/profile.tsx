@@ -1,6 +1,5 @@
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { useEffect, useState } from "react";
-
 import ClientApi from "@/lib/api/ClientApi";
 import { Team } from "@/lib/Types";
 import Container from "@/components/Container";
@@ -25,10 +24,9 @@ import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
-export default function Profile(props: { teamList: Team[] }) {
-	const { session, status } = useCurrentSession();
+export default function Profile() {
+	const { session } = useCurrentSession();
 	const user = session?.user;
-	const teamList = props.teamList;
 
 	const owner = user?.owner ? user?.owner?.length > 0 : false;
 	const member = user?.teams ? user.teams?.length > 0 : false;
@@ -225,7 +223,7 @@ export default function Profile(props: { teamList: Team[] }) {
 												) : loadingRequest ? (
 													<Loading></Loading>
 												) : (
-													teamList.map((team) => (
+													teams.map((team) => (
 														<div
 															className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
 															onClick={() => {
@@ -271,13 +269,3 @@ export default function Profile(props: { teamList: Team[] }) {
 		</Container>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-	const db = await getDatabase();
-	const teams = await db.findObjects(CollectionId.Teams, {});
-	const serializedTeams = teams.map((team) => serializeDatabaseObject(team));
-
-	return {
-		props: { teamList: serializedTeams },
-	};
-};

@@ -136,13 +136,9 @@ export const AuthenticationOptions: AuthOptions = {
 					(typedUser as User).lastSignInDateTime?.toDateString() !==
 					today.toDateString()
 				) {
-					db.updateObjectById(
-						CollectionId.Users,
-						new ObjectId(typedUser._id?.toString()),
-						{
-							lastSignInDateTime: today,
-						},
-					);
+					db.updateObjectById(CollectionId.Users, new ObjectId(typedUser._id), {
+						lastSignInDateTime: today,
+					});
 				}
 
 				new ResendUtils().createContact(typedUser as User);

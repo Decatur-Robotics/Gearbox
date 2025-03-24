@@ -28,6 +28,7 @@ import {
 	deleteSeason,
 	generatePitReports,
 	getSeasonFromComp,
+	getTeamFromComp,
 	getTeamFromMatch,
 	getTeamFromReport,
 	onTeam,
@@ -46,20 +47,20 @@ import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
-import toast from "react-hot-toast";
-import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
 import Logger from "../client/Logger";
-import getRollbar, { RollbarInterface } from "../client/RollbarUtils";
+import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
+import findObjectBySlugLookUp, { slugToId } from "../slugToId";
+import GearboxRequestHelper from "./GearboxRequestHelper";
+import LocalApiDependencies from "./LocalApiDependencies";
+import {
+	findObjectByIdFallback,
+	findObjectBySlugFallback,
+	saveObjectAfterResponse,
+} from "./ClientApiUtils";
 
-const requestHelper = new RequestHelper(
-	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
-	(url) =>
-		toast.error(
-			`Failed API request: ${url}. If this is an error, please contact the developers.`,
-		),
-);
+const requestHelper = new GearboxRequestHelper();
 
 const logger = new Logger(["API"]);
 
@@ -632,7 +633,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		[string, boolean, boolean],
 		{ quantReports: Report[]; pitReports: { [team: number]: Pitreport[] } },
 		ApiDependencies,
-		{ team: Team; comp: Competition }
+		{ team: Team; comp: Competition },
+		LocalApiDependencies
 	>({
 		isAuthorized: (req, res, deps, [compId]) =>
 			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
@@ -702,13 +704,52 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				pitReports: pitReports,
 			});
 		},
+		fallback: async ({ dbPromise }, [compId, submitted, usePublicData]) => {
+			const db = await dbPromise;
+
+			const comp = await db.findObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+			);
+
+			if (!comp) return [];
+
+			const usedComps =
+				usePublicData && comp.tbaId !== NotLinkedToTba
+					? await db.findObjects(CollectionId.Competitions, {
+							publicData: true,
+							tbaId: comp.tbaId,
+							gameId: comp.gameId,
+						})
+					: [];
+
+			usedComps.push(comp);
+
+			const reports = (
+				await db.findObjects(CollectionId.Reports, {
+					match: { $in: usedComps.flatMap((m) => m.matches) },
+					submitted: submitted ? true : { $exists: true },
+				})
+			)
+				// Filter out comments from other competitions
+				.map((report) =>
+					comp.matches.includes(report.match)
+						? report
+						: { ...report, data: { ...report.data, comments: "" } },
+				);
+
+			return reports;
+		},
+		afterResponse: async (deps, res, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Reports, res, ranFallback),
 	});
 
 	allCompetitionMatches = createNextRoute<
 		[string],
 		Match[],
 		ApiDependencies,
-		{ team: Team; comp: Competition }
+		{ team: Team; comp: Competition },
+		LocalApiDependencies
 	>({
 		isAuthorized: (req, res, deps, [compId]) =>
 			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
@@ -725,6 +766,24 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
 			return res.status(200).send(matches);
+		},
+		afterResponse: async (deps, res, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Matches, res, ranFallback),
+		fallback: async ({ dbPromise }, [compId]) => {
+			const db = await dbPromise;
+
+			const comp = await db.findObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+			);
+
+			if (!comp) return [];
+
+			const matches = await db.findObjects(CollectionId.Matches, {
+				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
+			});
+
+			return matches;
 		},
 	});
 
@@ -1215,6 +1274,9 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 						?.rank ?? "?",
 				max: rankings?.length,
 			});
+		},
+		fallback: () => {
+			return Promise.resolve({ place: "?", max: "?" });
 		},
 	});
 
@@ -1852,7 +1914,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		[string, Match[]],
 		SubjectiveReport[],
 		ApiDependencies,
-		{ team: Team; comp: Competition }
+		{ team: Team; comp: Competition },
+		LocalApiDependencies
 	>({
 		isAuthorized: (req, res, deps, [compId]) =>
 			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
@@ -1884,6 +1947,21 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			});
 
 			return res.status(200).send(reports);
+		},
+		afterResponse: async (deps, reports, ranFallback) =>
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.SubjectiveReports,
+				reports,
+				ranFallback,
+			),
+		fallback: async ({ dbPromise }, [compId, matches]) => {
+			const db = await dbPromise;
+
+			const matchIds = matches.map((match) => match._id?.toString());
+			return db.findObjects(CollectionId.SubjectiveReports, {
+				match: { $in: matchIds },
+			});
 		},
 	});
 
@@ -1957,7 +2035,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		[string],
 		User | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
@@ -1968,13 +2047,16 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			return res.status(200).send(user);
 		},
+		afterResponse: async (deps, user, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Users, user, ranFallback),
 	});
 
 	findBulkUsersById = createNextRoute<
 		[string[]],
 		User[],
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [ids]) => {
@@ -1984,13 +2066,18 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			});
 			return res.status(200).send(users);
 		},
+		afterResponse: async (deps, users, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Users, users, ranFallback),
+		fallback: async (deps, [ids]) =>
+			findObjectByIdFallback(deps, CollectionId.Users, ids),
 	});
 
 	findTeamById = createNextRoute<
 		[string],
 		Team | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
@@ -2001,13 +2088,37 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			return res.status(200).send(team);
 		},
+		afterResponse: async (deps, team, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Teams, team, ranFallback),
+		fallback: async (deps, [id]) =>
+			findObjectByIdFallback(deps, CollectionId.Teams, id),
+	});
+
+	findTeamBySlug = createNextRoute<
+		[string],
+		Team | undefined,
+		ApiDependencies,
+		void,
+		LocalApiDependencies
+	>({
+		isAuthorized: AccessLevels.AlwaysAuthorized,
+		handler: async (req, res, { db: dbPromise }, authData, [slug]) => {
+			const db = await dbPromise;
+
+			return db.findObjectBySlug(CollectionId.Teams, slug);
+		},
+		afterResponse: async (deps, res, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Teams, res, ranFallback),
+		fallback: async (deps, [slug]) =>
+			findObjectBySlugFallback(deps, CollectionId.Teams, slug),
 	});
 
 	findTeamByNumberAndLeague = createNextRoute<
 		[number, League],
 		Team | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (
@@ -2031,13 +2142,31 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			return res.status(200).send(team);
 		},
+		afterResponse: async (deps, team, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Teams, team, ranFallback),
+		fallback: async ({ dbPromise }, [number, league]) => {
+			const db = await dbPromise;
+
+			const query =
+				league === League.FRC
+					? {
+							number: number,
+							$or: [{ league: league }, { tbaId: { $exists: true } }],
+						}
+					: { number: number, league: league };
+
+			const team = await db.findObject(CollectionId.Teams, query);
+
+			return team;
+		},
 	});
 
 	findSeasonById = createNextRoute<
 		[string],
 		Season | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
@@ -2048,13 +2177,18 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			return res.status(200).send(season);
 		},
+		afterResponse: async (deps, season, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Seasons, season, ranFallback),
+		fallback: async (deps, [id]) =>
+			findObjectByIdFallback(deps, CollectionId.Seasons, id),
 	});
 
 	findCompetitionById = createNextRoute<
 		[string],
 		Competition | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
@@ -2065,13 +2199,23 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			return res.status(200).send(competition);
 		},
+		afterResponse: async (deps, competition, ranFallback) =>
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.Competitions,
+				competition,
+				ranFallback,
+			),
+		fallback: async (deps, [id]) =>
+			findObjectByIdFallback(deps, CollectionId.Competitions, id),
 	});
 
 	findMatchById = createNextRoute<
 		[string],
 		Match | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
@@ -2082,13 +2226,18 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			return res.status(200).send(match);
 		},
+		afterResponse: async (deps, match, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Matches, match, ranFallback),
+		fallback: async (deps, [id]) =>
+			findObjectByIdFallback(deps, CollectionId.Matches, id),
 	});
 
 	findReportById = createNextRoute<
 		[string],
 		Report | undefined,
 		ApiDependencies,
-		void
+		void,
+		LocalApiDependencies
 	>({
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [id]) => {
@@ -2099,26 +2248,41 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			return res.status(200).send(report);
 		},
+		afterResponse: async (deps, report, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.Reports, report, ranFallback),
+		fallback: async (deps, [id]) =>
+			findObjectByIdFallback(deps, CollectionId.Reports, id),
 	});
 
 	findPitreportById = createNextRoute<
 		[string],
 		Pitreport | undefined,
 		ApiDependencies,
-		{ team: Team; comp: Competition; pitReport: Pitreport }
+		{ team: Team; comp: Competition; pitReport: Pitreport },
+		LocalApiDependencies
 	>({
 		isAuthorized: (req, res, deps, [id]) =>
 			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
 		handler: async (req, res, deps, { pitReport }, args) => {
 			return res.status(200).send(pitReport);
 		},
+		afterResponse: async (deps, pitReport, ranFallback) =>
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.PitReports,
+				pitReport,
+				ranFallback,
+			),
+		fallback: async (deps, [id]) =>
+			findObjectByIdFallback(deps, CollectionId.PitReports, id),
 	});
 
 	findBulkPitReportsById = createNextRoute<
 		[string[]],
 		Pitreport[],
 		ApiDependencies,
-		{ team: Team; comp: Competition; pitReport: Pitreport }[]
+		{ team: Team; comp: Competition; pitReport: Pitreport }[],
+		LocalApiDependencies
 	>({
 		isAuthorized: async (req, res, deps, [ids]) => {
 			const reports = await Promise.all(
@@ -2135,6 +2299,10 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, deps, authData, args) => {
 			return res.status(200).send(authData.map((report) => report.pitReport));
 		},
+		afterResponse: async (deps, res, ranFallback) =>
+			saveObjectAfterResponse(deps, CollectionId.PitReports, res, ranFallback),
+		fallback: async (deps, [pitReportIds]) =>
+			findObjectByIdFallback(deps, CollectionId.PitReports, pitReportIds),
 	});
 
 	updateUser = createNextRoute<
@@ -2619,6 +2787,86 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			await deleteSeason(await db, season);
 
 			return res.status(200).send({ result: "success" });
+		},
+	});
+
+  findCompSeasonAndTeamByCompSlug = createNextRoute<
+		[string],
+		{ comp: Competition; season: Season; team: Team } | undefined,
+		ApiDependencies,
+		{ team: Team; season: Season; comp: Competition },
+		LocalApiDependencies
+	>({
+		isAuthorized: async (req, res, { db, userPromise }, [compSlug]) => {
+			const user = await userPromise;
+			if (!user) return { authorized: false, authData: undefined };
+
+			const comp = await findObjectBySlugLookUp(
+				await db,
+				CollectionId.Competitions,
+				compSlug,
+			);
+
+			if (!comp) return { authorized: false, authData: undefined };
+
+			const team = await getTeamFromComp(await db, comp);
+
+			if (!team || !team.users.includes(user._id!.toString()))
+				return { authorized: false, authData: undefined };
+
+			const season = await getSeasonFromComp(await db, comp);
+
+			if (!season) return { authorized: false, authData: undefined };
+
+			return {
+				authorized: true,
+				authData: {
+					comp,
+					season,
+					team,
+				},
+			};
+		},
+		handler: async (req, res, deps, authData, args) => {
+			return res.status(200).send(authData);
+		},
+		fallback: async ({ dbPromise }, [compSlug]) => {
+			const db = await dbPromise;
+
+			const comp = await findObjectBySlugLookUp(
+				db,
+				CollectionId.Competitions,
+				compSlug,
+			);
+
+			if (!comp) return undefined;
+
+			const team = await getTeamFromComp(db, comp);
+
+			if (!team) return undefined;
+
+			const season = await getSeasonFromComp(db, comp);
+
+			if (!season) return undefined;
+
+			return {
+				comp,
+				season,
+				team,
+			};
+		},
+		afterResponse: async ({ dbPromise }, res, ranFallback) => {
+			if (ranFallback || !res) return Promise.resolve();
+
+			const db = await dbPromise;
+
+			const { comp, season, team } = res;
+
+			await Promise.all([
+				db.addOrUpdateObject(CollectionId.Competitions, comp),
+				db.addOrUpdateObject(CollectionId.Seasons, season),
+				db.addOrUpdateObject(CollectionId.Teams, team),
+			]);
 		},
 	});
 }
