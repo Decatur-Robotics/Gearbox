@@ -1194,6 +1194,7 @@ namespace Reefscape {
 
 	export class PitData extends PitReportData {
 		CanDriveUnderShallowCage: boolean = false;
+		GroundIntake: boolean = false;
 		DriveThroughDeepCage: ReefscapeEnums.DriveThroughDeepCage =
 			ReefscapeEnums.DriveThroughDeepCage.No;
 		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
@@ -1216,6 +1217,7 @@ namespace Reefscape {
 				key: "CanDriveUnderShallowCage",
 				label: "Can Drive Under Shallow Cage?",
 			},
+			{ key: "GroundIntake", label: "Has Ground Intake?" },
 			{ key: "CanRemoveAlgae", label: "Can Remove Algae?" },
 			{
 				key: "CanScoreAlgaeInProcessor",
@@ -1370,6 +1372,7 @@ namespace Reefscape {
 				},
 			],
 			Teleop: [
+				{ key: "GroundIntake", label: "Has Ground Intake?" },
 				{
 					key: "TeleopCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Teleop",
@@ -1581,6 +1584,8 @@ namespace Reefscape {
 
 		if (pitReport?.data?.CanRemoveAlgae)
 			badges.push({ text: "Can Remove Algae", color: "primary" });
+		if (pitReport?.data?.GroundIntake)
+			badges.push({ text: "Ground Intake", color: "primary" });
 		if (pitReport?.data?.CanScoreAlgaeInNet)
 			badges.push({ text: "Can Score Algae Net", color: "secondary" });
 		if (pitReport?.data?.CanScoreAlgaeInProcessor)
