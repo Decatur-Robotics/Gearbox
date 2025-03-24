@@ -10,7 +10,7 @@ type Selector<T extends QuantData> = ((r: T) => number) | (keyof T & string);
 
 function getSelection<T extends QuantData>(
 	selector: Selector<T>,
-	report: Report<T>,
+	report: Record<string, any>,
 ) {
 	return typeof selector === "string"
 		? report.data[selector]
@@ -53,13 +53,13 @@ export function NumericalTotal<T extends QuantData>(
  */
 export function MostCommonValue<T extends QuantData>(
 	selector: Selector<T>,
-	reports: Report<T>[],
+	objects: Record<string, any>[],
 ) {
 	// Get a list of all values of the specified field
 	let values: string[] = [];
-	reports?.forEach((report) => {
+	objects?.forEach((report) => {
 		const val = getSelection(selector, report);
-		values.push((val as any).toString?.() ?? JSON.stringify(val));
+		values.push((val as any)?.toString?.() ?? JSON.stringify(val));
 	});
 
 	// Count the occurrences of each value

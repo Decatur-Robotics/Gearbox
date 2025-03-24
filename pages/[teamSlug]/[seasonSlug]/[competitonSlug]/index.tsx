@@ -186,7 +186,7 @@ export default function CompetitionIndex({
 
 			if (!silent) setLoadingReports(true);
 
-			let newReports: Report[] = await api.competitionReports(
+			let { quantReports: newReports } = await api.competitionReports(
 				comp?._id!,
 				false,
 				false,

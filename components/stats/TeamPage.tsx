@@ -122,6 +122,7 @@ function TeamCard(props: {
 }
 
 export default function TeamPage(props: {
+	teams: Set<number>;
 	reports: Report[];
 	pitReports: Pitreport[];
 	subjectiveReports: SubjectiveReport[];
@@ -138,13 +139,12 @@ export default function TeamPage(props: {
 		[key: number]: SubjectiveReport[];
 	}>({});
 
-	const teamNumbers = Array.from(
-		new Set([
-			...Object.keys(teamReports),
-			...Object.keys(pitReports),
-			...Object.keys(teamSubjectiveReports),
-		]),
-	);
+	const teamNumbers = props.teams;
+	[
+		...Object.keys(teamReports),
+		...Object.keys(pitReports),
+		...Object.keys(teamSubjectiveReports),
+	].forEach((team) => teamNumbers.add(Number(team)));
 
 	const [selectedTeam, setSelectedTeam] = useState<number>();
 	const selectedReports = teamReports[selectedTeam ? selectedTeam : 0];
@@ -212,9 +212,9 @@ export default function TeamPage(props: {
 	});
 
 	// Find teams not in team ranking
-	const missingTeams = teamNumbers.filter(
-		(team) => !teamRanking.includes(team),
-	);
+	const missingTeams = Array.from(teamNumbers)
+		.filter((team) => !teamRanking.includes(team.toString()))
+		.map((team) => team.toString());
 
 	return (
 		<div className="w-full h-min flex flex-col sm:flex-row space-x-4">

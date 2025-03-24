@@ -7,6 +7,7 @@
 		"mongodb.mongodb-vscode",
 		"pmneo.tsimporter",
 		"austenc.tailwind-docs",
-		"bradlc.vscode-tailwindcss"
+		"bradlc.vscode-tailwindcss",
+		"Orta.vscode-jest"
 	]
 }
