@@ -93,12 +93,7 @@ export default function Stats(props: {
 
 		setUpdate(Date.now());
 		setUpdating(false);
-	}, [
-		pitReports.length,
-		props.competition._id,
-		props.competition.pitReports,
-		usePublicData,
-	]);
+	}, [props.competition._id, props.competition.pitReports, usePublicData]);
 
 	useEffect(() => {
 		resync();
