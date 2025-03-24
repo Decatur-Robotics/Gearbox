@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@config '../tailwind.config.js';
+/* @config '../tailwind.config.js'; */
 @plugin "daisyui";
 
 /*
@@ -56,9 +56,9 @@
 
 */
 
-@layer utilities {
+/* @layer utilities {
 	@plugin "daisyui";
-}
+} */
 
 @layer utilities {
 	@keyframes float {
