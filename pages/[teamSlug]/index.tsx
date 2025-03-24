@@ -461,26 +461,51 @@ export default function TeamIndex() {
 	const router = useRouter();
 
 	const [team, setTeam] = useState<Team>();
+	const [seasons, setSeasons] = useState<Season[]>();
+	const [mostRecentComp, setMostRecentComp] = useState<Competition>();
+	const [users, setUsers] = useState<User[]>();
 
 	const isFrc = team?.tbaId || team?.league === League.FRC;
 
 	const [page, setPage] = useState(0);
 
-	const isManager = team?.owners.includes(session?.user?._id as string);
+	const isManager =
+		team?.owners.includes(session?.user?._id as string) ?? false;
 
 	useEffect(() => {
 		if (!router.query.teamSlug) return;
 
-		api.findTeamBySlug(router.query.teamSlug as string).then((team) => {
+		api.findTeamBySlug(router.query.teamSlug as string).then(async (team) => {
 			if (!team) return;
 
 			setTeam(team);
+
+			api.findBulkUsersById(team.users).then(setUsers);
+
+			const seasons = (
+				await Promise.all(
+					team.seasons.map((seasonId) => api.findSeasonById(seasonId)),
+				)
+			).filter((season) => season != undefined) as Season[];
+
+			setSeasons(seasons);
+
+			const mostRecentComp = await api.findCompetitionById(
+				seasons[seasons.length - 1].competitions[
+					seasons[seasons.length - 1].competitions.length - 1
+				],
+			);
+			setMostRecentComp(mostRecentComp);
 		});
 	}, [router.query]);
 
 	const tabProps: TeamPageProps = {
 		team,
-		currentSeason: team?.seasons[team.seasons.length - 1],
+		currentSeason: seasons?.[seasons.length - 1],
+		currentCompetition: mostRecentComp,
+		pastSeasons: seasons,
+		users,
+		isManager,
 	};
 
 	return (
