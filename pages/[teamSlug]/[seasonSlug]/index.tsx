@@ -11,8 +11,9 @@ import { getDatabase } from "@/lib/MongoDB";
 import CollectionId from "@/lib/client/CollectionId";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { ObjectId } from "bson";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -28,6 +29,28 @@ export default function Home(props: SeasonPageProps) {
 	const season = props.season;
 	const comps = props.competitions;
 	const owner = team?.owners.includes(session?.user?._id?.toString()!);
+
+	function deleteSeason() {
+		if (!season?._id) return;
+
+		const confirmKey = `delete-season-${season.slug}`;
+		if (
+			prompt(
+				`If you are sure you want to IRREVOCABLY delete this season and all data associated with it, including competitions, type "${confirmKey}"`,
+			) === confirmKey
+		) {
+			toast.promise(
+				api.deleteSeason(season._id).finally(() => {
+					window.location.href = `/${team?.slug}`;
+				}),
+				{
+					loading: "Deleting season...",
+					success: "Season deleted successfully!",
+					error: "Error deleting season.",
+				},
+			);
+		} else toast.error("Season not deleted.");
+	}
 
 	return (
 		<Container
@@ -46,7 +69,16 @@ export default function Home(props: SeasonPageProps) {
 					<h1 className="font-semibold text-lg">
 						The <span className="text-accent">{season.year}</span> Season
 					</h1>
-					<div className="divider"></div>
+					{owner && (
+						<button
+							onClick={deleteSeason}
+							className="w-1/6 btn btn-sm btn-error flex items-center"
+						>
+							<FaTrash />
+							Delete Season
+						</button>
+					)}
+					<div className="divider" />
 				</Card>
 
 				<Card title={"Season Overview"}>

@@ -188,7 +188,7 @@ export default function MatchScheduleCard(props: {
 															<a
 																href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${reportId}`}
 																key={reportId}
-																className={`${color} ${mine && !submitted ? "border-6  border-purple-500" : "border-2 border-white"} 
+																className={`${color} ${mine && !submitted ? "border-4  border-green-400 animate-bounce" : "border-2 border-white"} 
                                   ${timeSinceCheckIn && timeSinceCheckIn < 10 && "avatar online"} 
                                   rounded-lg w-12 h-12 flex items-center justify-center text-white`}
 															>
@@ -229,7 +229,7 @@ export default function MatchScheduleCard(props: {
 													})}
 												</div>
 											</div>
-											<div>
+											<div className="flex items-center gap-1">
 												{match.subjectiveScouter &&
 												usersById[match.subjectiveScouter.toString()] ? (
 													<div className="flex flex-row items-center space-x-1">
@@ -276,32 +276,31 @@ export default function MatchScheduleCard(props: {
 															<div>
 																Subjective Scouter:{" "}
 																{
-																	usersById[match.subjectiveScouter.toString()]
-																		.name
+																	usersById[match.subjectiveScouter ?? ""].name
 																}{" "}
-																<div
-																	className="tooltip before:w-[10rem] "
-																	data-tip="Subjective Scouters watch the entire match and comment on what's going on"
-																>
-																	<FaInfoCircle></FaInfoCircle>
-																</div>
 															</div>
 														)}
 													</div>
 												) : (
-													<div>
-														No subjective scouter assigned{" "}
-														<div
-															className="tooltip before:w-[10rem] "
-															data-tip="Subjective Scouters watch the entire match and comment on what's going on"
-														>
-															<FaInfoCircle></FaInfoCircle>
-														</div>
-													</div>
+													<div>No subjective scouter assigned </div>
 												)}
+												<div
+													className="tooltip before:w-[10rem] "
+													data-tip="Subjective Scouters watch the entire match and comment on what's going on"
+												>
+													<FaInfoCircle />
+												</div>
 											</div>
 											<a
-												className={`btn btn-primary btn-sm ${match.subjectiveScouter && usersById[match.subjectiveScouter.toString()]?.slackId && "-translate-y-1"}`}
+												className={`btn btn-primary btn-sm 
+													${match.subjectiveScouter && usersById[match.subjectiveScouter]?.slackId && "-translate-y-1"} 
+													${
+														session &&
+														!match.assignedSubjectiveScouterHasSubmitted &&
+														match.subjectiveScouter === session.user?._id &&
+														"animate-borderFlash border-4"
+													}
+												`}
 												href={`/${team?.slug}/${seasonSlug}/${comp?.slug}/${match._id}/subjective`}
 											>
 												Add Subjective Report (

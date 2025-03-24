@@ -254,7 +254,7 @@ export class Game<
 		league: League,
 	) {
 		const finalLayout: typeof layout = {
-			Image: [{ key: "image", type: "image" }],
+			// Image: [{ key: "image", type: "image" }],
 			Drivetrain: ["drivetrain"],
 		};
 

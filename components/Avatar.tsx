@@ -8,6 +8,7 @@ export default function Avatar(props: {
 	imgHeightOverride?: string | undefined;
 	showLevel?: boolean | undefined;
 	borderThickness?: number | undefined;
+	animation?: string | undefined;
 	onClick?: () => void | undefined;
 	className?: string | undefined;
 	online?: boolean;
@@ -21,7 +22,7 @@ export default function Avatar(props: {
 
 	return (
 		<div
-			className={`avatar ${props.online && "online"} ${props.scale} ${props.className}`}
+			className={`avatar ${props.online && "online"} ${props.scale} ${props.className} ${props.animation}`}
 		>
 			{(props.showLevel ?? true) && (
 				<div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">

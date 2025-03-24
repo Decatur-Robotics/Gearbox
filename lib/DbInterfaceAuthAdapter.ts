@@ -270,7 +270,17 @@ export default function DbInterfaceAuthAdapter(
 				rollbar.warn("Account already exists when linking account", {
 					account,
 				});
-				return format.from<AdapterAccount>(existingAccount);
+
+				let formattedAccount: AdapterAccount;
+
+				// Sometimes gives an error about not finding toHexString.
+				try {
+					formattedAccount = format.from<AdapterAccount>(existingAccount);
+				} catch (e) {
+					account.userId = new ObjectId(account.userId) as any;
+					formattedAccount = format.from<AdapterAccount>(account);
+				}
+				return formattedAccount;
 			}
 
 			await db.addObject(CollectionId.Accounts, account);

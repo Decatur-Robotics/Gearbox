@@ -2,7 +2,7 @@ import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { Competition, Pitreport } from "@/lib/Types";
 import Link from "next/link";
 import { BsGearFill } from "react-icons/bs";
-import { FaRobot } from "react-icons/fa";
+import { FaCheck, FaRobot } from "react-icons/fa";
 
 export default function PitScoutingCard(props: {
 	pitreports: Pitreport[];
@@ -49,13 +49,14 @@ export default function PitScoutingCard(props: {
 										</div>
 										<div className="absolute rounded z-10 translate-y-4 flex justify-center items-center">
 											{report.submitted ? (
-												<img
-													alt={`Team ${report.teamNumber}'s robot`}
-													src={report.data?.image}
-													loading="lazy"
-													style={{ imageResolution: "72dpi" }}
-													className="w-2/3 h-auto rounded-lg"
-												></img>
+												// <img
+												// 	alt={`Team ${report.teamNumber}'s robot`}
+												// 	src={report.data?.image}
+												// 	loading="lazy"
+												// 	style={{ imageResolution: "72dpi" }}
+												// 	className="w-2/3 h-auto rounded-lg"
+												// ></img>
+												<FaCheck size={64} />
 											) : (
 												<FaRobot size={64} />
 											)}
