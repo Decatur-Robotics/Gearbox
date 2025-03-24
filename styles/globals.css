@@ -1,28 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+@plugin "daisyui";
 
 @layer components {
-    .background-grid {
-        background-size: 50px 50px;
-        background-image:
-            linear-gradient(to right, white 1px, transparent 1px),
-            linear-gradient(to bottom, white 1px, transparent 1px);
-    }
+	.background-grid {
+		background-size: 50px 50px;
+		background-image:
+			linear-gradient(to right, white 1px, transparent 1px),
+			linear-gradient(to bottom, white 1px, transparent 1px);
+	}
 }
 
 @keyframes float {
 	0% {
-		box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6);
+		box-shadow: 0 5px 15px 0px rgba(0, 0, 0, 0.6);
 		transform: translatey(0px);
 	}
 	50% {
-		box-shadow: 0 25px 15px 0px rgba(0,0,0,0.2);
+		box-shadow: 0 25px 15px 0px rgba(0, 0, 0, 0.2);
 		transform: translatey(-20px);
 	}
 	100% {
-		box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6);
+		box-shadow: 0 5px 15px 0px rgba(0, 0, 0, 0.6);
 		transform: translatey(0px);
 	}
 }
