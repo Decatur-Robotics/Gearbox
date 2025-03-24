@@ -72,7 +72,7 @@ export async function findObjectBySlugFallback<
 	if (Array.isArray(slug)) {
 		return Promise.all(
 			slug.map((s) => db.findObjectBySlug(collectionId, s)),
-		) as Promise<TObj>;
+		).then((objs) => objs.filter((obj) => obj != undefined)) as Promise<TObj>;
 	}
 	return db.findObjectBySlug(collectionId, slug) as Promise<TObj>;
 }

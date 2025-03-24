@@ -478,6 +478,11 @@ export default function TeamIndex() {
 		});
 	}, [router.query]);
 
+	const tabProps: TeamPageProps = {
+		team,
+		currentSeason: team?.seasons[team.seasons.length - 1],
+	};
+
 	return (
 		<Container
 			requireAuthentication={true}
@@ -599,14 +604,14 @@ export default function TeamIndex() {
 
 				{page === 0 ? (
 					<Overview
-						{...props}
+						{...tabProps}
 						isManager={isManager ?? false}
 					></Overview>
 				) : (
 					<></>
 				)}
-				{page === 1 ? <Roster {...props}></Roster> : <></>}
-				{page === 2 ? <Settings {...props}></Settings> : <></>}
+				{page === 1 ? <Roster {...tabProps}></Roster> : <></>}
+				{page === 2 ? <Settings {...tabProps}></Settings> : <></>}
 			</Flex>
 		</Container>
 	);

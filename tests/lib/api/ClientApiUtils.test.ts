@@ -4,6 +4,7 @@ import {
 	saveObjectAfterResponse,
 } from "@/lib/api/ClientApiUtils";
 import CollectionId from "@/lib/client/CollectionId";
+import { slugToId } from "@/lib/slugToId";
 import { getTestApiUtils } from "@/lib/testutils/TestUtils";
 import { Report, Team } from "@/lib/Types";
 import { ObjectId } from "bson";
@@ -395,7 +396,7 @@ describe(findObjectBySlugFallback.name, () => {
 
 		const obj1 = {
 			_id: new ObjectId(),
-			slug: "test-slug-1",
+			slug: "test-slug-3", // Don't overlap with other test slugs
 		} as any as Team;
 
 		await db.addObject(CollectionId.Teams, obj1);
