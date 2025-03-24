@@ -34,7 +34,7 @@
 		"formidable": "^3.5.2",
 		"jose": "^6.0.8",
 		"levenary": "^1.1.1",
-		"minimongo": "^6.19.0",
+		"minimongo": "^7.0.0",
 		"mongo-anywhere": "^1.1.11",
 		"mongodb": "^5.0.0",
 		"next": "^15.2.3",
