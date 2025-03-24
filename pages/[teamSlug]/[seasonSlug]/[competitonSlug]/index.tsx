@@ -403,8 +403,8 @@ export default function CompetitionIndex({
 			requireAuthentication
 			title={comp?.name ?? "Competition Loading"}
 		>
-			<div className="min-h-screen w-full flex flex-col sm:flex-row flex-grow justify-center sm:space-x-6 my-4">
-				<div className="w-full sm:w-2/5 flex flex-col items-center flex-grow justify-center space-y-4 h-full">
+			<div className="min-h-screen w-full flex flex-col sm:flex-row grow justify-center sm:space-x-6 my-4">
+				<div className="w-full sm:w-2/5 flex flex-col items-center grow justify-center space-y-4 h-full">
 					<CompHeaderCard comp={comp} />
 					<InsightsAndSettingsCard
 						isManager={isManager}
@@ -425,7 +425,7 @@ export default function CompetitionIndex({
 					/>
 				</div>
 
-				<div className="w-full sm:w-1/2 flex flex-col flex-grow h-screen space-y-4">
+				<div className="w-full sm:w-1/2 flex flex-col grow h-screen space-y-4">
 					<MatchScheduleCard
 						matches={matches}
 						usersById={usersById}

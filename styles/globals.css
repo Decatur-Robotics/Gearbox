@@ -1,42 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@config '../tailwind.config.js';
 @plugin "daisyui";
 
-@layer components {
-	.background-grid {
-		background-size: 50px 50px;
-		background-image:
-			linear-gradient(to right, white 1px, transparent 1px),
-			linear-gradient(to bottom, white 1px, transparent 1px);
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
 	}
 }
 
-@keyframes float {
-	0% {
-		box-shadow: 0 5px 15px 0px rgba(0, 0, 0, 0.6);
-		transform: translatey(0px);
-	}
-	50% {
-		box-shadow: 0 25px 15px 0px rgba(0, 0, 0, 0.2);
-		transform: translatey(-20px);
-	}
-	100% {
-		box-shadow: 0 5px 15px 0px rgba(0, 0, 0, 0.6);
-		transform: translatey(0px);
-	}
+@utility background-grid {
+	background-size: 50px 50px;
+	background-image:
+		linear-gradient(to right, white 1px, transparent 1px),
+		linear-gradient(to bottom, white 1px, transparent 1px);
 }
 
-@layer utilities {
+@utility no-scrollbar {
 	/* Chrome, Safari and Opera */
-	.no-scrollbar::-webkit-scrollbar {
+	&::-webkit-scrollbar {
 		display: none;
 	}
-
-	.no-scrollbar {
-		-ms-overflow-style: none; /* IE and Edge */
-		scrollbar-width: none; /* Firefox */
-	}
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
 }
 
 /*
@@ -57,3 +55,24 @@
 }
 
 */
+
+@layer utilities {
+	@plugin "daisyui";
+}
+
+@layer utilities {
+	@keyframes float {
+		0% {
+			box-shadow: 0 5px 15px 0px rgba(0, 0, 0, 0.6);
+			transform: translatey(0px);
+		}
+		50% {
+			box-shadow: 0 25px 15px 0px rgba(0, 0, 0, 0.2);
+			transform: translatey(-20px);
+		}
+		100% {
+			box-shadow: 0 5px 15px 0px rgba(0, 0, 0, 0.6);
+			transform: translatey(0px);
+		}
+	}
+}

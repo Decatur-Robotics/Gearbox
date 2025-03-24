@@ -47,7 +47,7 @@ export default function PitScoutingCard(props: {
 										<div className="relative rounded-t-lg h-6 z-20 w-16 -translate-y-2 font-bold text-center">
 											{report.teamNumber}
 										</div>
-										<div className="absolute rounded z-10 translate-y-4 flex justify-center items-center">
+										<div className="absolute rounded-sm z-10 translate-y-4 flex justify-center items-center">
 											{report.submitted ? (
 												// <img
 												// 	alt={`Team ${report.teamNumber}'s robot`}
