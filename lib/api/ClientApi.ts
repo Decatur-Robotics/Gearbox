@@ -24,6 +24,8 @@ import {
 import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
 import {
 	addXp,
+	deleteComp,
+	deleteSeason,
 	generatePitReports,
 	getSeasonFromComp,
 	getTeamFromComp,
@@ -629,7 +631,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 	competitionReports = createNextRoute<
 		[string, boolean, boolean],
-		Report[],
+		{ quantReports: Report[]; pitReports: { [team: number]: Pitreport[] } },
 		ApiDependencies,
 		{ team: Team; comp: Competition },
 		LocalApiDependencies
@@ -656,19 +658,51 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			if (usePublicData && !comp.publicData) usedComps.push(comp);
 
-			const reports = (
-				await db.findObjects(CollectionId.Reports, {
-					match: { $in: usedComps.flatMap((m) => m.matches) },
-					submitted: submitted ? true : { $exists: true },
-				})
-			)
-				// Filter out comments from other competitions
-				.map((report) =>
-					comp.matches.includes(report.match)
-						? report
-						: { ...report, data: { ...report.data, comments: "" } },
-				);
-			return res.status(200).send(reports);
+			const [reports, pitReports] = await Promise.all([
+				(
+					await db.findObjects(CollectionId.Reports, {
+						match: { $in: usedComps.flatMap((m) => m.matches) },
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					// Filter out comments from other competitions
+					.map((report) =>
+						comp.matches.includes(report.match)
+							? report
+							: { ...report, data: { ...report.data, comments: "" } },
+					),
+				(
+					await db.findObjects(CollectionId.PitReports, {
+						_id: {
+							$in: usedComps
+								.flatMap((m) => m.pitReports)
+								.map((id) => new ObjectId(id)),
+						},
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					.map((pitReport) =>
+						comp.pitReports.includes(pitReport._id!.toString())
+							? pitReport
+							: ({
+									...pitReport,
+									data: { ...pitReport.data, comments: "" },
+								} as Pitreport),
+					)
+					.reduce(
+						(dict, pitReport) => {
+							dict[pitReport.teamNumber] ??= [];
+							dict[pitReport.teamNumber].push(pitReport);
+							return dict;
+						},
+						{} as { [team: number]: Pitreport[] },
+					),
+			]);
+
+			return res.status(200).send({
+				quantReports: reports,
+				pitReports: pitReports,
+			});
 		},
 		fallback: async ({ dbPromise }, [compId, submitted, usePublicData]) => {
 			const db = await dbPromise;
@@ -678,7 +712,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				new ObjectId(compId),
 			);
 
-			if (!comp) return [];
+			if (!comp)
+				return {
+					quantReports: [],
+					pitReports: {},
+				};
 
 			const usedComps =
 				usePublicData && comp.tbaId !== NotLinkedToTba
@@ -691,23 +729,66 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			usedComps.push(comp);
 
-			const reports = (
-				await db.findObjects(CollectionId.Reports, {
-					match: { $in: usedComps.flatMap((m) => m.matches) },
-					submitted: submitted ? true : { $exists: true },
-				})
-			)
-				// Filter out comments from other competitions
-				.map((report) =>
-					comp.matches.includes(report.match)
-						? report
-						: { ...report, data: { ...report.data, comments: "" } },
-				);
+			const [reports, pitReports] = await Promise.all([
+				(
+					await db.findObjects(CollectionId.Reports, {
+						match: { $in: usedComps.flatMap((m) => m.matches) },
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					// Filter out comments from other competitions
+					.map((report) =>
+						comp.matches.includes(report.match)
+							? report
+							: { ...report, data: { ...report.data, comments: "" } },
+					),
+				(
+					await db.findObjects(CollectionId.PitReports, {
+						_id: {
+							$in: usedComps
+								.flatMap((m) => m.pitReports)
+								.map((id) => new ObjectId(id)),
+						},
+						submitted: submitted ? true : { $exists: true },
+					})
+				)
+					.map((pitReport) =>
+						comp.pitReports.includes(pitReport._id!.toString())
+							? pitReport
+							: ({
+									...pitReport,
+									data: { ...pitReport.data, comments: "" },
+								} as Pitreport),
+					)
+					.reduce(
+						(dict, pitReport) => {
+							dict[pitReport.teamNumber] ??= [];
+							dict[pitReport.teamNumber].push(pitReport);
+							return dict;
+						},
+						{} as { [team: number]: Pitreport[] },
+					),
+			]);
 
-			return reports;
+			return {
+				quantReports: reports,
+				pitReports: pitReports,
+			};
 		},
-		afterResponse: async (deps, res, ranFallback) =>
-			saveObjectAfterResponse(deps, CollectionId.Reports, res, ranFallback),
+		afterResponse: async (deps, res, ranFallback) => {
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.Reports,
+				res.quantReports,
+				ranFallback,
+			),
+				saveObjectAfterResponse(
+					deps,
+					CollectionId.PitReports,
+					Object.values(res.pitReports).flat(),
+					ranFallback,
+				);
+		},
 	});
 
 	allCompetitionMatches = createNextRoute<
@@ -750,6 +831,28 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			});
 
 			return matches;
+		},
+	});
+
+	getTeamsAtComp = createNextRoute<
+		[string],
+		number[],
+		ApiDependencies,
+		{ team: Team; comp: Competition }
+	>({
+		isAuthorized: (req, res, deps, [compId]) =>
+			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
+		handler: async (req, res, { db: dbPromise }, { team, comp }, [compId]) => {
+			const db = await dbPromise;
+
+			const pitReports = await db.findObjects(CollectionId.PitReports, {
+				_id: {
+					$in: comp.pitReports.map((pitReportId) => new ObjectId(pitReportId)),
+				},
+			});
+			return res
+				.status(200)
+				.send(pitReports.map((pitReport) => pitReport.teamNumber));
 		},
 	});
 
@@ -2700,6 +2803,36 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			await db.updateObjectById(CollectionId.Users, new ObjectId(user?._id!), {
 				name,
 			});
+			return res.status(200).send({ result: "success" });
+		},
+	});
+
+	deleteComp = createNextRoute<
+		[string],
+		{ result: string },
+		ApiDependencies,
+		{ team: Team; comp: Competition }
+	>({
+		isAuthorized: (req, res, deps, [compId]) =>
+			AccessLevels.IfCompOwner(req, res, deps, compId),
+		handler: async (req, res, { db }, { team, comp }, [compId]) => {
+			await deleteComp(await db, comp);
+
+			return res.status(200).send({ result: "success" });
+		},
+	});
+
+	deleteSeason = createNextRoute<
+		[string],
+		{ result: string },
+		ApiDependencies,
+		{ team: Team; season: Season }
+	>({
+		isAuthorized: (req, res, deps, [seasonId]) =>
+			AccessLevels.IfSeasonOwner(req, res, deps, seasonId),
+		handler: async (req, res, { db }, { team, season }, [seasonId]) => {
+			await deleteSeason(await db, season);
+
 			return res.status(200).send({ result: "success" });
 		},
 	});

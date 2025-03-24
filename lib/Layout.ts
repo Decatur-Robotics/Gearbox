@@ -230,7 +230,6 @@ export function keyToType(
 	if (key == "Climbing") return ReefscapeEnums.Climbing;
 	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
 	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
-	if (key == "HighestCoralLevel") return ReefscapeEnums.CoralLevel;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;

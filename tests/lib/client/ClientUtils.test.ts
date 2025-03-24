@@ -1,5 +1,6 @@
 import {
 	camelCaseToTitleCase,
+	mergePitReports,
 	promisify,
 	removeDuplicates,
 	removeWhitespaceAndMakeLowerCase,
@@ -7,6 +8,8 @@ import {
 	toDict,
 	wait,
 } from "@/lib/client/ClientUtils";
+import { Motors } from "@/lib/Enums";
+import { Pitreport } from "@/lib/Types";
 
 test(camelCaseToTitleCase.name, () => {
 	expect(camelCaseToTitleCase("notLinkedToTba")).toBe("Not Linked To Tba");
@@ -111,5 +114,71 @@ describe(wait.name, () => {
 		for (const result of results) {
 			expect(result).toBeLessThanOrEqual(150);
 		}
+	});
+});
+
+describe(mergePitReports.name, () => {
+	test("Takes the most common value for each key in data", () => {
+		const reports: Pitreport[] = [
+			{
+				teamNumber: 1,
+				data: {
+					motorType: Motors.CIMs,
+				},
+			} as any,
+			{
+				teamNumber: 1,
+				data: {
+					motorType: Motors.CIMs,
+				},
+			} as any,
+			{
+				teamNumber: 1,
+				data: {
+					motorType: Motors.Falcons,
+				},
+			} as any,
+		];
+
+		const merged = mergePitReports(reports);
+
+		expect(merged).toEqual({
+			teamNumber: 1,
+			data: {
+				motorType: Motors.CIMs,
+			},
+		});
+	});
+
+	test("Merges comments when only one report has a comment", () => {
+		const reports: Pitreport[] = [
+			{
+				teamNumber: 1,
+				data: {
+					comments: "",
+				},
+			} as any,
+			{
+				teamNumber: 1,
+				data: {
+					comments: "",
+				},
+			} as any,
+			{
+				teamNumber: 1,
+				data: {
+					comments: "comment 3",
+				},
+			} as any,
+		];
+
+		const merged = mergePitReports(reports);
+
+		expect(merged).toEqual({
+			teamNumber: 1,
+			data: {
+				comments: "comment 3",
+			},
+		});
 	});
 });

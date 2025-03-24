@@ -1,6 +1,14 @@
 import { NextApiResponse } from "next";
 import { ObjectId } from "bson";
-import { User } from "../Types";
+import {
+	Competition,
+	Match,
+	Pitreport,
+	Season,
+	SubjectiveReport,
+	User,
+	Report,
+} from "../Types";
 import ApiDependencies from "../api/ApiDependencies";
 import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
@@ -122,4 +130,47 @@ export function getTestRollbar(): RollbarInterface {
 		info: jest.fn(),
 		debug: jest.fn(),
 	};
+}
+
+/**
+ * Creates a set of test documents for the database.
+ * This includes a report, subjective report, match, pit report, competition, season, and team.
+ */
+export async function createTestDocuments(db: DbInterface) {
+	const matchId = new ObjectId();
+
+	const report = await db.addObject(CollectionId.Reports, {
+		match: matchId.toString(),
+	} as any as Report);
+
+	const subjectiveReport = await db.addObject(
+		CollectionId.SubjectiveReports,
+		{} as any as SubjectiveReport,
+	);
+
+	const match = await db.addObject(CollectionId.Matches, {
+		_id: matchId,
+		reports: [report._id!.toString()],
+		subjectiveReports: [subjectiveReport._id!.toString()],
+	} as any as Match);
+
+	const pitReport = await db.addObject(
+		CollectionId.PitReports,
+		{} as any as Pitreport,
+	);
+
+	const comp = await db.addObject(CollectionId.Competitions, {
+		matches: [match._id!.toString()],
+		pitReports: [pitReport._id!.toString()],
+	} as any as Competition);
+
+	const season = await db.addObject(CollectionId.Seasons, {
+		competitions: [comp._id!.toString()],
+	} as any as Season);
+
+	const team = await db.addObject(CollectionId.Teams, {
+		seasons: [season._id!.toString()],
+	} as any as any);
+
+	return { report, subjectiveReport, match, pitReport, comp, season, team };
 }

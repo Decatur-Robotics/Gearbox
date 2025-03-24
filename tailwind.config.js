@@ -10,6 +10,12 @@ module.exports = {
 	],
 	theme: {
 		extend: {
+			keyframes: {
+				borderFlash: {
+					"0%, 100%": { borderColor: "transparent" },
+					"50%": { borderColor: "red" },
+				},
+			},
 			dropShadow: {
 				glowWeak: ["0 0px 20px oklch(65.69% 0.196 275.75 / .6)"],
 				glowStrong: [
@@ -22,6 +28,7 @@ module.exports = {
 				"spin-slow": "spin 3s linear infinite",
 				float: "float 4s ease-in-out infinite",
 				"float-offset": "float 2s ease-in-out infinite",
+				borderFlash: "borderFlash 2s linear infinite",
 			},
 		},
 		blur: {

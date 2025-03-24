@@ -1,3 +1,6 @@
+import { Pitreport } from "../Types";
+import { MostCommonValue } from "./StatsMath";
+
 export function getIdsInProgressFromTimestamps(timestamps: {
 	[id: string]: string;
 }) {
@@ -150,4 +153,38 @@ export function promisify<TReturn>(
  */
 export async function wait(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function mergePitReports(reports: Pitreport[]) {
+	if (reports.length === 0) {
+		throw new Error("Cannot merge 0 pit reports");
+	}
+
+	if (reports.length === 1) {
+		return reports[0];
+	}
+
+	const dataKeys = removeDuplicates(
+		reports.reduce(
+			(acc, report) => [...acc, ...Object.keys(report.data!)],
+			[] as string[],
+		),
+	);
+
+	const newReport = {
+		teamNumber: reports[0].teamNumber,
+		data: dataKeys.reduce(
+			(acc, key) => {
+				acc[key] = MostCommonValue(key, reports);
+				return acc;
+			},
+			{} as Record<string, any>,
+		),
+	} as Pitreport;
+
+	for (const report of reports) {
+		if (report.data?.comments) newReport.data!.comments = report.data.comments;
+	}
+
+	return newReport;
 }

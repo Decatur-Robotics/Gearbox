@@ -15,6 +15,8 @@ import { games } from "./games";
 import { GameId } from "./client/GameId";
 import CollectionId from "./client/CollectionId";
 import DbInterface from "./client/dbinterfaces/DbInterface";
+import { _id } from "@next-auth/mongodb-adapter";
+import { match } from "assert";
 
 type ScheduleMatch = {
 	subjectiveScouter?: string;
@@ -85,12 +87,16 @@ export async function assignScoutersToCompetitionMatches(
 		games[comp.gameId].league == League.FRC ? 6 : 4,
 	);
 
+	const matches = await db.findObjects(CollectionId.Matches, {
+		_id: { $in: comp.matches.map((m) => new ObjectId(m)) },
+	});
+
+	matches.sort((a, b) => a.number - b.number);
+
 	const promises: Promise<any>[] = [];
-	for (let i = 0; i < comp.matches.length; i++) {
+	for (let i = 0; i < matches.length; i++) {
 		// Filter out the subjective scouter that will be assigned to this match
-		promises.push(
-			assignScoutersToMatch(db, comp.matches[i], comp.gameId, schedule[i]),
-		);
+		promises.push(assignScoutersToMatch(db, matches[i], schedule[i]));
 	}
 
 	await Promise.all(promises);
@@ -99,19 +105,9 @@ export async function assignScoutersToCompetitionMatches(
 
 async function assignScoutersToMatch(
 	db: DbInterface,
-	matchId: string,
-	gameId: GameId,
+	match: Match,
 	schedule: ScheduleMatch,
 ) {
-	const match = await db.findObjectById(
-		CollectionId.Matches,
-		new ObjectId(matchId),
-	);
-
-	if (!match) {
-		throw new Error(`Match not found: ${matchId}`);
-	}
-
 	match.subjectiveScouter = schedule.subjectiveScouter;
 
 	const existingReportPromises = match.reports.map((r) =>

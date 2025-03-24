@@ -1189,10 +1189,12 @@ namespace Reefscape {
 
 		EndgameClimbStatus: ReefscapeEnums.EndgameClimbStatus =
 			ReefscapeEnums.EndgameClimbStatus.None;
+		EndGameDefenseStatus: Defense = Defense.None;
 	}
 
 	export class PitData extends PitReportData {
 		CanDriveUnderShallowCage: boolean = false;
+		GroundIntake: boolean = false;
 		DriveThroughDeepCage: ReefscapeEnums.DriveThroughDeepCage =
 			ReefscapeEnums.DriveThroughDeepCage.No;
 		AutoCapabilities: ReefscapeEnums.AutoCapabilities =
@@ -1200,11 +1202,13 @@ namespace Reefscape {
 		CanRemoveAlgae: boolean = false;
 		CanScoreAlgaeInProcessor: boolean = false;
 		CanScoreAlgaeInNet: boolean = false;
+		CanScoreCoral1: boolean = false;
+		CanScoreCoral2: boolean = false;
+		CanScoreCoral3: boolean = false;
+		CanScoreCoral4: boolean = false;
 		AlgaeScoredAuto: number = 0;
 		CoralScoredAuto: number = 0;
 		Climbing: ReefscapeEnums.Climbing = ReefscapeEnums.Climbing.No;
-		HighestCoralLevel: ReefscapeEnums.CoralLevel =
-			ReefscapeEnums.CoralLevel.None;
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1213,6 +1217,7 @@ namespace Reefscape {
 				key: "CanDriveUnderShallowCage",
 				label: "Can Drive Under Shallow Cage?",
 			},
+			{ key: "GroundIntake", label: "Has Ground Intake?" },
 			{ key: "CanRemoveAlgae", label: "Can Remove Algae?" },
 			{
 				key: "CanScoreAlgaeInProcessor",
@@ -1220,7 +1225,10 @@ namespace Reefscape {
 			},
 			{ key: "CanScoreAlgaeInNet", label: "Can Score Algae in Net?" },
 			{ key: "Climbing", label: "Climbing?" },
-			{ key: "HighestCoralLevel", label: "Highest Coral Level" },
+			{ key: "CanScoreCoral1", label: "Can Score Coral at L1?" },
+			{ key: "CanScoreCoral2", label: "Can Score Coral at L2?" },
+			{ key: "CanScoreCoral3", label: "Can Score Coral at L3?" },
+			{ key: "CanScoreCoral4", label: "Can Score Coral at L4?" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
@@ -1309,7 +1317,7 @@ namespace Reefscape {
 				[{ key: "TeleopAlgaeScoredNet", label: "Algae Scored Net (Teleop)" }],
 			],
 		],
-		"Post Match": ["EndgameClimbStatus"],
+		"Post Match": ["EndgameClimbStatus", "Defense"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
@@ -1364,6 +1372,7 @@ namespace Reefscape {
 				},
 			],
 			Teleop: [
+				{ key: "GroundIntake", label: "Has Ground Intake?" },
 				{
 					key: "TeleopCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Teleop",
@@ -1575,6 +1584,8 @@ namespace Reefscape {
 
 		if (pitReport?.data?.CanRemoveAlgae)
 			badges.push({ text: "Can Remove Algae", color: "primary" });
+		if (pitReport?.data?.GroundIntake)
+			badges.push({ text: "Ground Intake", color: "primary" });
 		if (pitReport?.data?.CanScoreAlgaeInNet)
 			badges.push({ text: "Can Score Algae Net", color: "secondary" });
 		if (pitReport?.data?.CanScoreAlgaeInProcessor)
@@ -1582,23 +1593,27 @@ namespace Reefscape {
 		if (pitReport?.data?.CanDriveUnderShallowCage)
 			badges.push({ text: "Can Drive Under Shallow Cage", color: "info" });
 
-		switch (pitReport?.data?.HighestCoralLevel) {
-			case ReefscapeEnums.CoralLevel.None:
-				badges.push({ text: "No Coral", color: "warning" });
-				break;
-			case ReefscapeEnums.CoralLevel.L1:
-				badges.push({ text: "L1 Coral", color: "info" });
-				break;
-			case ReefscapeEnums.CoralLevel.L2:
-				badges.push({ text: "L2 Coral", color: "secondary" });
-				break;
-			case ReefscapeEnums.CoralLevel.L3:
-				badges.push({ text: "L3 Coral", color: "primary" });
-				break;
-			case ReefscapeEnums.CoralLevel.L4:
-				badges.push({ text: "L4 Coral", color: "accent" });
-				break;
-		}
+		if (pitReport?.data?.CanScoreCoral1)
+			badges.push({ text: "L1 Coral", color: "info" });
+		if (pitReport?.data?.CanScoreCoral2)
+			badges.push({ text: "L2 Coral", color: "secondary" });
+		if (pitReport?.data?.CanScoreCoral3)
+			badges.push({ text: "L3 Coral", color: "primary" });
+		if (pitReport?.data?.CanScoreCoral4)
+			badges.push({ text: "L4 Coral", color: "accent" });
+		if (
+			!(
+				pitReport?.data?.CanScoreCoral1 ||
+				pitReport?.data?.CanScoreCoral2 ||
+				pitReport?.data?.CanScoreCoral3 ||
+				pitReport?.data?.CanScoreCoral4
+			)
+		)
+			badges.push({ text: "No Coral", color: "warning" });
+		if (pitReport?.data?.Climbing === ReefscapeEnums.Climbing.Deep)
+			badges.push({ text: "Deep Climb", color: "secondary" });
+		else if (pitReport?.data?.Climbing === ReefscapeEnums.Climbing.Shallow)
+			badges.push({ text: "Shallow Climb", color: "primary" });
 
 		return badges;
 	}
