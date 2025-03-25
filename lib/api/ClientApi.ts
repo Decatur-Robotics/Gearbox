@@ -31,6 +31,7 @@ import {
 	getTeamFromComp,
 	getTeamFromMatch,
 	getTeamFromReport,
+	getTeamFromSeason,
 	onTeam,
 	ownsTeam,
 } from "./ApiUtils";
@@ -2914,6 +2915,76 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				db.addOrUpdateObject(CollectionId.Seasons, season),
 				db.addOrUpdateObject(CollectionId.Teams, team),
 			]);
+		},
+	});
+
+	getSeasonPageData = createNextRoute<
+		[string],
+		{ team?: Team; season?: Season; comps?: Competition[] },
+		ApiDependencies,
+		{ team: Team; season: Season },
+		LocalApiDependencies
+	>({
+		isAuthorized: (req, res, deps, [seasonSlug]) =>
+			AccessLevels.IfSeasonOwnerBySlug(req, res, deps, seasonSlug),
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise },
+			{ team, season },
+			[seasonId],
+		) => {
+			const db = await dbPromise;
+
+			const comps = await db.findObjects(CollectionId.Competitions, {
+				_id: { $in: season.competitions.map((id) => new ObjectId(id)) },
+			});
+
+			return res.status(200).send({ team, season, comps });
+		},
+		afterResponse: async (deps, res, ranFallback) => {
+			if (!res || !ranFallback) return;
+
+			const { team, season, comps } = res;
+
+			saveObjectAfterResponse(deps, CollectionId.Teams, team, ranFallback);
+			saveObjectAfterResponse(deps, CollectionId.Seasons, season, ranFallback);
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.Competitions,
+				comps,
+				ranFallback,
+			);
+		},
+		fallback: async ({ dbPromise }, [seasonSlug]) => {
+			const db = await dbPromise;
+
+			const season = await db.findObjectBySlug(
+				CollectionId.Seasons,
+				seasonSlug,
+			);
+
+			if (!season)
+				return {
+					team: undefined,
+					season: undefined,
+					comps: undefined,
+				};
+
+			const comps = await db.findObjects(CollectionId.Competitions, {
+				_id: { $in: season.competitions.map((id) => new ObjectId(id)) },
+			});
+
+			const team = await getTeamFromSeason(db, season);
+
+			if (!team)
+				return {
+					team: undefined,
+					season: undefined,
+					comps: undefined,
+				};
+
+			return { team, season, comps };
 		},
 	});
 }
