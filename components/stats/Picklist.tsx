@@ -304,7 +304,7 @@ export default function PicklistScreen(props: {
 	reports: Report[];
 	expectedTeamCount: number;
 	picklist: CompPicklistGroup;
-	compId: string;
+	compId: ObjectId;
 }) {
 	const [picklists, setPicklists] = useState<Picklist[]>([]);
 

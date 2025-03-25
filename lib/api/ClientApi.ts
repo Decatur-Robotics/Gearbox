@@ -629,7 +629,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	competitionReports = createNextRoute<
-		[string, boolean, boolean],
+		[ObjectId, boolean, boolean],
 		Report[],
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -673,7 +673,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	allCompetitionMatches = createNextRoute<
-		[string],
+		[ObjectId],
 		Match[],
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1165,7 +1165,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	getPitReports = createNextRoute<
-		[string],
+		[ObjectId],
 		Pitreport[],
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1278,7 +1278,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	getCompReports = createNextRoute<
-		[string],
+		[ObjectId],
 		Report[],
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1387,7 +1387,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	getPicklistFromComp = createNextRoute<
-		[string],
+		[ObjectId],
 		CompPicklistGroup | undefined,
 		ApiDependencies,
 		{ comp: Competition }
@@ -1579,7 +1579,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	getSubjectiveReportsForComp = createNextRoute<
-		[string],
+		[ObjectId],
 		SubjectiveReport[],
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1795,7 +1795,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	getSubjectiveReportsFromMatches = createNextRoute<
-		[string, Match[]],
+		[ObjectId, Match[]],
 		SubjectiveReport[],
 		ApiDependencies,
 		{ team: Team; comp: Competition }

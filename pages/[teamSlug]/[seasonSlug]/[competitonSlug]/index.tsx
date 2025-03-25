@@ -135,7 +135,7 @@ export default function CompetitionIndex({
 			if (!silent) setLoadingMatches(true);
 
 			window.location.hash = "";
-			let matches: Match[] = await api.allCompetitionMatches(comp?._id!.toString()!);
+			let matches: Match[] = await api.allCompetitionMatches(comp?._id!);
 
 			if (!matches || matches.length === 0) {
 				setNoMatches(true);
@@ -150,7 +150,7 @@ export default function CompetitionIndex({
 			setMatches(matches);
 
 			api
-				.getSubjectiveReportsFromMatches(comp?._id.toString()!, matches)
+				.getSubjectiveReportsFromMatches(comp?._id!, matches)
 				.then((reports) => {
 					setSubjectiveReports(reports);
 
@@ -187,7 +187,7 @@ export default function CompetitionIndex({
 			if (!silent) setLoadingReports(true);
 
 			let newReports: Report[] = await api.competitionReports(
-				comp?._id!.toString()!,
+				comp?._id!,
 				false,
 				false,
 			);
