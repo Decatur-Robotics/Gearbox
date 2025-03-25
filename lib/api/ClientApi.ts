@@ -2461,7 +2461,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		[string, object],
 		{ result: string },
 		ApiDependencies,
-		{ team: Team; comp: Competition }
+		{ team: Team; comp: Competition },
+		LocalApiDependencies
 	>({
 		isAuthorized: (req, res, deps, [pitreportId]) =>
 			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitreportId),
@@ -2480,6 +2481,20 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				newValues,
 			);
 			return res.status(200).send({ result: "success" });
+		},
+		beforeCall: async ({ dbPromise }, [pitreportId, newReport]) => {
+			if (typeof pitreportId != "string")
+				throw new Error("Pit report ID is not a string");
+
+			// Await the promise to ensure we don't leave the page before updating the report
+			await (
+				await dbPromise
+			).addOrUpdateObject(CollectionId.PitReports, {
+				_id: new ObjectId(pitreportId) as any as string,
+				...newReport,
+			} as Pitreport);
+
+			return Promise.resolve([pitreportId, newReport]);
 		},
 	});
 
@@ -2985,6 +3000,80 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				};
 
 			return { team, season, comps };
+		},
+	});
+
+	getPitReportPageData = createNextRoute<
+		[string],
+		{
+			pitReport?: Pitreport;
+			compName?: string;
+			gameId?: GameId;
+			teamNumber?: number;
+		},
+		ApiDependencies,
+		{ team: Team; comp: Competition; pitReport: Pitreport },
+		LocalApiDependencies
+	>({
+		isAuthorized: (req, res, deps, [pitReportId]) =>
+			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitReportId),
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise },
+			{ team, comp, pitReport },
+			[pitReportId],
+		) => {
+			const db = await dbPromise;
+
+			const season = await getSeasonFromComp(db, comp);
+			console.log("Season", season);
+
+			if (!season) return res.status(404).send({ error: "Season not found" });
+
+			return res.status(200).send({
+				pitReport,
+				compName: comp.name,
+				gameId: season.gameId,
+				teamNumber: team.number,
+			});
+		},
+		afterResponse: async (deps, res, ranFallback) => {
+			if (!res || ranFallback) return;
+
+			const { pitReport, compName, gameId, teamNumber } = res;
+			if (!pitReport) return;
+
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.PitReports,
+				pitReport,
+				ranFallback,
+			);
+
+			deps.localStorage.set(`${pitReport._id!.toString()}.compName`, compName);
+			deps.localStorage.set(`${pitReport._id!.toString()}.gameId`, gameId);
+			deps.localStorage.set(
+				`${pitReport._id!.toString()}.teamNumber`,
+				teamNumber,
+			);
+		},
+		fallback: async ({ dbPromise, localStorage }, [pitReportId]) => {
+			const db = await dbPromise;
+
+			const pitReport = await db.findObjectById(
+				CollectionId.PitReports,
+				new ObjectId(pitReportId),
+			);
+			if (!pitReport) return {};
+
+			const [compName, gameId, teamNumber] = await Promise.all([
+				localStorage.get<string>(`${pitReport._id!.toString()}.compName`),
+				localStorage.get<GameId>(`${pitReport._id!.toString()}.gameId`),
+				localStorage.get<number>(`${pitReport._id!.toString()}.teamNumber`),
+			]);
+
+			return { pitReport, compName, gameId, teamNumber };
 		},
 	});
 }

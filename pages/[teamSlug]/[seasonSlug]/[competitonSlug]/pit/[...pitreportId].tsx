@@ -8,45 +8,53 @@ import {
 	Pitreport,
 	PitReportData,
 } from "@/lib/Types";
-import { useState, useCallback, Fragment } from "react";
+import { useState, useCallback, Fragment, useEffect } from "react";
 import { FaRobot } from "react-icons/fa";
 import { Analytics } from "@/lib/client/Analytics";
-import {
-	camelCaseToTitleCase,
-	makeObjSerializeable,
-} from "@/lib/client/ClientUtils";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
 import { GameId } from "@/lib/client/GameId";
-import CollectionId from "@/lib/client/CollectionId";
 import { games } from "@/lib/games";
-import { getDatabase } from "@/lib/MongoDB";
-import UrlResolver, { serializeDatabaseObject } from "@/lib/UrlResolver";
-import { ObjectId } from "bson";
-import { GetServerSideProps } from "next";
 import Flex from "@/components/Flex";
 import Checkbox from "@/components/forms/Checkboxes";
 import FieldPositionSelector from "@/components/forms/FieldPositionSelector";
 import ImageUpload from "@/components/forms/ImageUpload";
 import Card from "@/components/Card";
 import Container from "@/components/Container";
+import { useRouter } from "next/router";
+import Loading from "@/components/Loading";
 
 const api = new ClientApi();
 
-export default function PitReportForm(props: {
-	pitReport: Pitreport;
-	layout: FormLayout<PitReportData>;
-	compId?: string;
-	usersteamNumber?: number;
-	compName?: string;
-	username?: string;
-	game: Game;
-}) {
+export default function PitReportForm() {
 	const { session } = useCurrentSession();
+	const router = useRouter();
 
-	const [pitreport, setPitreport] = useState(props.pitReport);
+	const [pitReport, setPitReport] = useState<Pitreport>();
+	const [compName, setCompName] = useState<string>();
+	const [teamNumber, setTeamNumber] = useState<number>();
+	const [game, setGame] = useState<Game>();
+
+	const username = session?.user?.name;
+
+	useEffect(() => {
+		// Fetch page data
+
+		const pitReportId = (router.query.pitreportId as string[0])?.[0];
+		if (!pitReportId) return;
+
+		api.getPitReportPageData(pitReportId as string).then((data) => {
+			if (!data) return;
+
+			setPitReport(data.pitReport);
+			setCompName(data.compName);
+			setTeamNumber(data.teamNumber);
+			setGame(games[data.gameId as GameId]);
+		});
+	}, [router.query.pitreportId]);
 
 	const setCallback = useCallback(
 		(key: any, value: boolean | string | number | object) => {
-			setPitreport((old) => {
+			setPitReport((old) => {
 				let copy = structuredClone(old);
 				//@ts-expect-error
 				copy.data[key] = value;
@@ -57,22 +65,23 @@ export default function PitReportForm(props: {
 	);
 
 	async function submit() {
-		// Remove _id from object
-		const { _id, ...report } = pitreport;
+		if (!pitReport) return;
 
-		console.log("Submitting pitreport", report);
+		// Remove _id from object
+		const { _id, ...report } = pitReport;
+
 		api
-			.updatePitreport(props.pitReport?._id!, {
+			.updatePitreport(pitReport?._id!, {
 				...report,
 				submitted: true,
 				submitter: session?.user?._id,
 			})
 			.then(() => {
 				Analytics.pitReportSubmitted(
-					pitreport.teamNumber,
-					props.usersteamNumber ?? -1,
-					props.compName ?? "Unknown",
-					props.username ?? "Unknown",
+					pitReport.teamNumber,
+					teamNumber ?? -1,
+					compName ?? "Unknown",
+					username ?? "Unknown",
 				);
 			})
 			.finally(() => {
@@ -94,7 +103,7 @@ export default function PitReportForm(props: {
 			return (
 				<ImageUpload
 					key={index}
-					report={pitreport}
+					report={pitReport!}
 					callback={setCallback}
 				/>
 			);
@@ -105,7 +114,7 @@ export default function PitReportForm(props: {
 					key={index}
 					label={element.label ?? (element.key as string)}
 					dataKey={key}
-					data={pitreport}
+					data={pitReport!}
 					callback={setCallback}
 					divider={!isLastInHeader}
 				/>
@@ -123,7 +132,7 @@ export default function PitReportForm(props: {
 					</h1>
 					<input
 						key={key + "i"}
-						value={pitreport.data?.[key]}
+						value={pitReport!.data?.[key]}
 						onChange={(e) => setCallback(key, e.target.value)}
 						type="number"
 						className="input input-bordered"
@@ -136,7 +145,7 @@ export default function PitReportForm(props: {
 			return (
 				<textarea
 					key={key}
-					value={pitreport.data?.comments}
+					value={pitReport!.data?.comments}
 					className="textarea textarea-primary w-[90%]"
 					placeholder={element.label}
 					onChange={(e) => {
@@ -157,8 +166,8 @@ export default function PitReportForm(props: {
 					<div className="w-full h-full flex justify-center">
 						<FieldPositionSelector
 							alliance={AllianceColor.Blue}
-							fieldImagePrefix={props.game.fieldImagePrefix}
-							initialPos={pitreport.data?.[key] as FieldPos}
+							fieldImagePrefix={game!.fieldImagePrefix}
+							initialPos={pitReport!.data?.[key] as FieldPos}
 							callback={(_, v) => setCallback(key, v)}
 						/>
 					</div>
@@ -190,7 +199,7 @@ export default function PitReportForm(props: {
 						key={key + "s"}
 						className="select select-bordered"
 						onChange={(e) => setCallback(key, e.target.value)}
-						value={pitreport.data?.[key]}
+						value={pitReport!.data?.[key]}
 					>
 						{options}
 					</select>
@@ -211,7 +220,7 @@ export default function PitReportForm(props: {
 						onChange={() =>
 							setCallback(key, entry[1] as boolean | string | number)
 						}
-						checked={pitreport.data?.[element.key as string] === entry[1]}
+						checked={pitReport!.data?.[element.key as string] === entry[1]}
 					/>
 				</Fragment>
 			);
@@ -235,45 +244,61 @@ export default function PitReportForm(props: {
 		);
 	}
 
-	const components = Object.entries(props.layout).map(([header, elements]) => {
-		const inputs = elements.map((element, index) => {
-			if (!Array.isArray(element))
-				return getComponent(
-					element as FormElement<PitReportData>,
-					index === elements.length - 1,
-					index,
+	const components = Object.entries(game?.pitReportLayout ?? []).map(
+		([header, elements]) => {
+			const inputs = elements.map((element, index) => {
+				if (!Array.isArray(element))
+					return getComponent(
+						element as FormElement<PitReportData>,
+						index === elements.length - 1,
+						index,
+					);
+
+				const block = element as BlockElement<PitReportData>;
+				return block?.map((row) =>
+					row.map((element, elementIndex) =>
+						getComponent(element, elementIndex === row.length - 1, index),
+					),
 				);
+			});
 
-			const block = element as BlockElement<PitReportData>;
-			return block?.map((row) =>
-				row.map((element, elementIndex) =>
-					getComponent(element, elementIndex === row.length - 1, index),
-				),
-			);
-		});
-
-		return (
-			<div key={header}>
-				<h1
-					key={header + "h"}
-					className="font-semibold text-lg"
-				>
-					{header}
-				</h1>
-				<div
-					key={header + "d"}
-					className="translate-x-10"
-				>
-					{inputs}
+			return (
+				<div key={header}>
+					<h1
+						key={header + "h"}
+						className="font-semibold text-lg"
+					>
+						{header}
+					</h1>
+					<div
+						key={header + "d"}
+						className="translate-x-10"
+					>
+						{inputs}
+					</div>
 				</div>
-			</div>
+			);
+		},
+	);
+
+	if (!pitReport || !game)
+		return (
+			<Container
+				requireAuthentication={true}
+				title="Loading pit report..."
+			>
+				<div className="flex flex-col items-center justify-center w-screen h-[80%]">
+					<Card title="Loading pit report...">
+						<Loading />
+					</Card>
+				</div>
+			</Container>
 		);
-	});
 
 	return (
 		<Container
 			requireAuthentication={true}
-			title={`${props.pitReport.teamNumber} | Pit Scouting`}
+			title={`${pitReport!.teamNumber} | Pit Scouting`}
 		>
 			<Flex
 				mode="col"
@@ -294,7 +319,7 @@ export default function PitReportForm(props: {
 								className="inline mr-2"
 								size={30}
 							></FaRobot>
-							Team <span className="text-accent">{pitreport.teamNumber}</span>
+							Team <span className="text-accent">{pitReport!.teamNumber}</span>
 						</h1>
 					</Flex>
 				</Card>
@@ -311,30 +336,3 @@ export default function PitReportForm(props: {
 		</Container>
 	);
 }
-
-async function getPitreport(id: string) {
-	const db = await getDatabase();
-	return await db.findObjectById(CollectionId.PitReports, new ObjectId(id));
-}
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-	const id = context.resolvedUrl.split("/pit/")[1];
-	const pitreport = await getPitreport(id);
-
-	const resolved = await UrlResolver(context, 4);
-	if ("redirect" in resolved) {
-		return resolved;
-	}
-
-	const game = games[resolved.season?.gameId ?? GameId.Crescendo];
-
-	return {
-		props: {
-			pitReport: makeObjSerializeable(serializeDatabaseObject(pitreport)),
-			layout: makeObjSerializeable(game.pitReportLayout),
-			teamNumber: resolved.team?.number,
-			compName: resolved.competition?.name,
-			game: makeObjSerializeable(game),
-		},
-	};
-};
