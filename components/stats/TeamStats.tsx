@@ -135,7 +135,7 @@ export default function TeamStats(props: {
 
 		const promises = commentList.map((report) =>
 			api
-				.findMatchById(report.match.toString())
+				.findMatchById(report.match)
 				.then(
 					(match) =>
 						match &&

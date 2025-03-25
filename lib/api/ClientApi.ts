@@ -1409,7 +1409,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	getPicklistGroup = createNextRoute<
-		[string],
+		[ObjectId],
 		CompPicklistGroup | undefined,
 		ApiDependencies,
 		{ picklist: CompPicklistGroup }
@@ -2014,7 +2014,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findMatchById = createNextRoute<
-		[string],
+		[ObjectId],
 		Match | undefined,
 		ApiDependencies,
 		void

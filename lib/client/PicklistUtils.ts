@@ -121,7 +121,7 @@ export function setTailOfPicklist(picklist: Picklist, entry: PicklistEntry) {
 }
 
 export function savePicklistGroup(
-	id: string,
+	id: ObjectId,
 	picklists: Picklist[],
 	strikethroughs: number[],
 	api: ClientApi,

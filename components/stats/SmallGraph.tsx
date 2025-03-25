@@ -125,7 +125,7 @@ export default function SmallGraph(props: {
 
 		Promise.all(
 			props.selectedReports.map(async (report) => {
-				const match = await api.findMatchById(report.match.toString());
+				const match = await api.findMatchById(report.match);
 				if (!match) return;
 
 				newDataset.add({
