@@ -111,7 +111,7 @@ export default function Container(props: ContainerProps) {
 
 			for (const season of selectedTeam?.seasons) {
 				const seasonObj = await api
-					.findSeasonById(season.toString())
+					.findSeasonById(season)
 					.catch(() => undefined);
 				if (seasonObj) newSeasons.push(seasonObj);
 			}
@@ -317,7 +317,7 @@ export default function Container(props: ContainerProps) {
 												"w-16 h-16 btn btn-ghost " +
 												(selected ? "border-2 border-accent" : "border-2")
 											}
-											key={team._id.toString()}
+											key={team._id}
 											onClick={() => {
 												setSelectedTeamIndex(index);
 											}}

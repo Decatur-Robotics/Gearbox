@@ -30,7 +30,7 @@ export default function EditMatchModal(props: {
 		if (!userId || !report || !report._id) return;
 
 		console.log(`Changing scouter for report ${report._id} to ${userId}`);
-		api.changeScouterForReport(report._id.toString(), userId).then(loadReports);
+		api.changeScouterForReport(report._id, userId).then(loadReports);
 	}
 
 	function changeSubjectiveScouter(e: ChangeEvent<HTMLSelectElement>) {
@@ -43,7 +43,7 @@ export default function EditMatchModal(props: {
 			`Changing subjective scouter for match ${props.match?._id} to ${userId}`,
 		);
 		api
-			.setSubjectiveScouterForMatch(props.match?._id.toString(), userId)
+			.setSubjectiveScouterForMatch(props.match?._id, userId)
 			.then(loadMatches);
 	}
 
@@ -62,8 +62,8 @@ export default function EditMatchModal(props: {
 
 		api
 			.changeTeamNumberForReport(
-				match._id!.toString(),
-				props.reportsById[reportId.toString()]._id.toString(),
+				match._id!,
+				props.reportsById[reportId.toString()]._id,
 				teamNumber,
 			)
 			.then(() => {

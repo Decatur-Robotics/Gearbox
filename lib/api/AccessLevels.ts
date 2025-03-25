@@ -165,7 +165,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		matchId: string,
+		matchId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -199,7 +199,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		reportId: string,
+		reportId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -291,7 +291,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		pitReportId: string,
+		pitReportId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -354,7 +354,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		reportId: string,
+		reportId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -383,7 +383,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		picklistId: string,
+		picklistId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {

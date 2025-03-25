@@ -160,15 +160,15 @@ function Roster(props: TeamPageProps) {
 		loadRequests();
 	}, [team?.requests]);
 
-	const handleTeamRequest = async (userId: string, accept: boolean) => {
+	const handleTeamRequest = async (userId: ObjectId, accept: boolean) => {
 		await api.handleTeamJoinRequest(
 			accept,
-			team?._id.toString() ?? "",
-			userId as string,
+			team?._id!,
+			userId,
 		);
 
 		const reqClone = structuredClone(requests);
-		const userIndex = reqClone.findIndex((user) => userId === user._id?.toString());
+		const userIndex = reqClone.findIndex((user) => userId === user._id);
 		const user = structuredClone(requests[userIndex]);
 		reqClone.splice(userIndex, 1);
 		setRequests(reqClone);
@@ -231,7 +231,7 @@ function Roster(props: TeamPageProps) {
 		setTeam(teamClone);
 	};
 
-	const removeUser = async (userId: string) => {
+	const removeUser = async (userId: ObjectId) => {
 		if (!confirm("Are you sure you want to remove this user?")) {
 			return;
 		}
@@ -241,7 +241,7 @@ function Roster(props: TeamPageProps) {
 			userId,
 		);
 		setTeam(newTeam);
-		setUsers(users.filter((user) => user._id?.toString() !== userId));
+		setUsers(users.filter((user) => user._id !== userId));
 	};
 
 	return (
@@ -297,7 +297,7 @@ function Roster(props: TeamPageProps) {
 												<button
 													className="btn btn-success btn-outline"
 													onClick={() => {
-														handleTeamRequest(String(user._id), true);
+														handleTeamRequest(user._id, true);
 													}}
 												>
 													Accept <FaUserPlus></FaUserPlus>
@@ -305,7 +305,7 @@ function Roster(props: TeamPageProps) {
 												<button
 													className="btn btn-error btn-outline"
 													onClick={() => {
-														handleTeamRequest(String(user._id), false);
+														handleTeamRequest(user._id, false);
 													}}
 												>
 													Decline <FaUserTimes></FaUserTimes>
@@ -391,7 +391,7 @@ function Roster(props: TeamPageProps) {
 										className="btn btn-outline btn-error"
 										disabled={!owner}
 										onClick={() => {
-											removeUser(user._id?.toString()!);
+											removeUser(user._id!);
 										}}
 									>
 										<MdOutlinePersonRemove size={20}></MdOutlinePersonRemove>

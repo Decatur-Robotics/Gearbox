@@ -89,7 +89,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	requestToJoinTeam = createNextRoute<
-		[string],
+		[ObjectId],
 		{ result: string },
 		ApiDependencies,
 		void
@@ -121,7 +121,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			).updateObjectById(CollectionId.Teams, new ObjectId(teamId), {
 				requests: removeDuplicates([
 					...team.requests,
-					(await userPromise)?._id?.toString(),
+					(await userPromise)?._id,
 				]),
 			});
 
@@ -130,7 +130,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	handleTeamJoinRequest = createNextRoute<
-		[boolean, string, string],
+		[boolean, ObjectId, ObjectId],
 		Team,
 		ApiDependencies,
 		void
@@ -147,12 +147,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const teamPromise = db.findObjectById(
 				CollectionId.Teams,
-				new ObjectId(teamId.toString()),
+				new ObjectId(teamId),
 			);
 
 			const joineePromise = db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(userId.toString()),
+				new ObjectId(userId),
 			);
 
 			const userOnTeam = await userPromise;
@@ -298,12 +298,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			const team = await db.addObject(CollectionId.Teams, newTeamObj);
 
-			user.teams = removeDuplicates(...user.teams, team._id!.toString());
-			user.owner = removeDuplicates(...user.owner, team._id!.toString());
+			user.teams = removeDuplicates(...user.teams, team._id!);
+			user.owner = removeDuplicates(...user.owner, team._id!);
 
 			await db.updateObjectById(
 				CollectionId.Users,
-				new ObjectId(user._id?.toString()),
+				new ObjectId(user._id),
 				user,
 			);
 
@@ -616,7 +616,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				report,
 			);
 
-			addXp(db, user._id.toString(), 10);
+			addXp(db, user._id, 10);
 
 			await db.updateObjectById(
 				CollectionId.Users,
@@ -795,7 +795,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const user = await userPromise;
 
 			const update: { [key: string]: any } = {};
-			update[`subjectiveReportsCheckInTimestamps.${user?._id?.toString()}`] =
+			update[`subjectiveReportsCheckInTimestamps.${user?._id}`] =
 				new Date().toISOString();
 			await db.updateObjectById(
 				CollectionId.Matches,
@@ -1090,7 +1090,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
 			});
 			const allReports = await db.findObjects(CollectionId.Reports, {
-				match: { $in: matches.map((match) => match?._id?.toString()) },
+				match: { $in: matches.map((match) => match?._id) },
 			});
 			const reports = allReports.filter((report) => report.submitted);
 
@@ -1190,7 +1190,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	changeScouterForReport = createNextRoute<
-		[string, string],
+		[ObjectId, string],
 		{ result: string },
 		ApiDependencies,
 		any
@@ -1215,7 +1215,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	changeTeamNumberForReport = createNextRoute<
-		[string, string, number],
+		[ObjectId, ObjectId, number],
 		{ result: string },
 		ApiDependencies,
 		any
@@ -1415,7 +1415,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklistId]) =>
-			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklistId),
+			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, new ObjectId(picklistId)),
 		handler: async (req, res, deps, { picklist }, [picklistId]) => {
 			return res.status(200).send(picklist);
 		},
@@ -1428,7 +1428,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklist]) =>
-			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklist._id.toString()),
+			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklist._id),
 		handler: async (
 			req,
 			res,
@@ -1475,7 +1475,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	setOnboardingCompleted = createNextRoute<
-		[string],
+		[ObjectId],
 		{ result: string },
 		ApiDependencies,
 		void
@@ -1569,7 +1569,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			addXp(
 				db,
-				user!._id!.toString(),
+				user!._id!,
 				match.subjectiveScouter === user!._id ? 10 : 5,
 			);
 
@@ -1614,7 +1614,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				req,
 				res,
 				deps,
-				report._id?.toString() ?? "",
+				report._id,
 			),
 		handler: async (
 			req,
@@ -1635,7 +1635,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	setSubjectiveScouterForMatch = createNextRoute<
-		[string, string],
+		[ObjectId, string],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; match: Match }
@@ -1670,7 +1670,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; comp: Competition }
 	>({
 		isAuthorized: (req, res, deps, [compId]) =>
-			AccessLevels.IfCompOwner(req, res, deps, compId.toString()),
+			AccessLevels.IfCompOwner(req, res, deps, compId),
 		handler: async (
 			req,
 			res,
@@ -1723,7 +1723,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			const pitReportId = (
 				await db.addObject(CollectionId.PitReports, pitReport)
-			)._id?.toString();
+			)._id;
 
 			if (!pitReportId) {
 				rollbar.error("Failed to create pit report", { pitReport, comp, team });
@@ -1824,7 +1824,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				}
 			}
 
-			const matchIds = matches.map((match) => match._id?.toString());
+			const matchIds = matches.map((match) => match._id);
 			const reports = await db.findObjects(CollectionId.SubjectiveReports, {
 				match: { $in: matchIds },
 			});
@@ -1834,7 +1834,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	removeUserFromTeam = createNextRoute<
-		[ObjectId, string],
+		[ObjectId, ObjectId],
 		{ result: string; team: Team },
 		ApiDependencies,
 		Team
@@ -1980,7 +1980,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findSeasonById = createNextRoute<
-		[string],
+		[ObjectId],
 		Season | undefined,
 		ApiDependencies,
 		void
@@ -2054,7 +2054,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; comp: Competition; pitReport: Pitreport }
 	>({
 		isAuthorized: (req, res, deps, [id]) =>
-			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
+			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, new ObjectId(id)),
 		handler: async (req, res, deps, { pitReport }, args) => {
 			return res.status(200).send(pitReport);
 		},
@@ -2069,7 +2069,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: async (req, res, deps, [ids]) => {
 			const reports = await Promise.all(
 				ids.map((id) =>
-					AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id.toString()),
+					AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
 				),
 			);
 
@@ -2102,7 +2102,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Users,
-				new ObjectId(user?._id?.toString()),
+				user?._id!,
 				newValues,
 			);
 			return res.status(200).send({ result: "success" });
@@ -2194,7 +2194,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; comp: Competition }
 	>({
 		isAuthorized: (req, res, deps, [pitreportId]) =>
-			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitreportId),
+			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, new ObjectId(pitreportId)),
 		handler: async (
 			req,
 			res,
@@ -2445,13 +2445,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				{};
 			for (const obj of [...teams, "All"]) {
 				// Convert ObjectIds to strings
-				const id = typeof obj === "object" ? obj._id!.toString() : obj;
+				const id = typeof obj === "object" ? obj._id! : obj;
 				// Pull relevant data from the team to create a label
 				const label =
 					typeof obj === "object" ? `${obj.league} ${obj.number}` : obj;
 
 				// Convert date strings to Date objects
-				responseObj[label] = signInDatesByTeam[id].map((node) => ({
+				responseObj[label] = signInDatesByTeam[id.toString()].map((node) => ({
 					date: new Date(node.date),
 					count: node.count,
 				}));

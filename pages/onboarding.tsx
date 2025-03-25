@@ -59,7 +59,7 @@ export default function Onboarding() {
 		async (redirect: string = "/profile") => {
 			if (!session?.user?._id) return;
 
-			api.setOnboardingCompleted(session?.user?._id.toString());
+			api.setOnboardingCompleted(session?.user?._id);
 			router.push(redirect);
 
 			Analytics.onboardingCompleted(
@@ -96,7 +96,7 @@ export default function Onboarding() {
 
 		setTeam({
 			...team,
-			_id: (team as any)._id?.toString(),
+			_id: (team as any)._id,
 		});
 		setJoinRequestStatus(
 			"requests" in team &&
@@ -110,7 +110,7 @@ export default function Onboarding() {
 		if (!session?.user?._id || !teamNumber) return;
 
 		setJoinRequestStatus(JoinRequestStatus.Requested);
-		await api.requestToJoinTeam(team?._id!.toString()!);
+		await api.requestToJoinTeam(team?._id!);
 	}
 
 	const updateTeamRequestStatus = useCallback(async () => {
@@ -192,7 +192,7 @@ export default function Onboarding() {
 
 		setTeam({
 			...newTeam,
-			_id: (newTeam as any)._id?.toString(),
+			_id: (newTeam as any)._id,
 		});
 		setJoinRequestStatus(JoinRequestStatus.CreatedTeam);
 	}
@@ -249,7 +249,7 @@ export default function Onboarding() {
 									<div className="text-xl">What {league} team are you on?</div>
 									<input
 										type="number"
-										defaultValue={teamNumber?.toString()}
+										defaultValue={teamNumber}
 										className="input input-bordered mt-2 w-full"
 										placeholder="Team Number"
 										onChange={teamNumberChanged}

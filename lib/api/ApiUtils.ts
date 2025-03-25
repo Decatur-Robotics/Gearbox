@@ -151,10 +151,10 @@ export async function generatePitReports(
 	return pitreports.map((pit) => (pit._id));
 }
 
-export async function addXp(db: DbInterface, userId: string, xp: number) {
+export async function addXp(db: DbInterface, userId: ObjectId, xp: number) {
 	const user = await db.findObjectById(
 		CollectionId.Users,
-		new ObjectId(userId),
+		userId,
 	);
 
 	if (!user) return;

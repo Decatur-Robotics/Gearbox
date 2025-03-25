@@ -22,6 +22,7 @@ import { signOut } from "next-auth/react";
 import XpProgressBar from "@/components/XpProgressBar";
 import { HiPencilAlt } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { ObjectId } from "bson";
 
 const api = new ClientApi();
 
@@ -60,7 +61,7 @@ export default function Profile(props: { teamList: Team[] }) {
 		}
 	}, [session?.user, user?.teams]);
 
-	const requestTeam = async (teamId: string, teamNumber: number) => {
+	const requestTeam = async (teamId: ObjectId, teamNumber: number) => {
 		setLoadingRequest(true);
 		await api.requestToJoinTeam(teamId);
 		setLoadingRequest(false);
@@ -182,7 +183,7 @@ export default function Profile(props: { teamList: Team[] }) {
 									<Link
 										href={"/" + team.slug}
 										className="w-full"
-										key={team._id.toString()}
+										key={team._id}
 									>
 										<TeamCard team={team} />
 									</Link>
@@ -229,9 +230,9 @@ export default function Profile(props: { teamList: Team[] }) {
 														<div
 															className="bg-base-300 w-11/12 rounded-xl p-4 mt-2 border-2 border-base-300 transition ease-in hover:border-primary"
 															onClick={() => {
-																requestTeam(String(team._id), team.number);
+																requestTeam(team._id, team.number);
 															}}
-															key={team._id.toString()}
+															key={team._id}
 														>
 															<h1 className="max-sm:text-sm h-10">
 																{team.tbaId ? "FRC" : "FTC"}{" "}

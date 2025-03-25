@@ -64,7 +64,7 @@ export default function InsightsAndSettingsCard(props: {
 	const exportAsCsv = async () => {
 		setExportPending(true);
 
-		const res = await api.exportCompAsCsv(comp?._id!.toString()!).catch((e) => {
+		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
 			console.error(e);
 			return { csv: undefined };
 		});
