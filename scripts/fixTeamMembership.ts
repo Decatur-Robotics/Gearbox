@@ -13,7 +13,7 @@ async function fixTeamMembership() {
 
 	console.log(`Found ${teams.length} teams.`);
 
-	const users: { [id: string]: { teams: ObjectId[]; owner: string[] } } = {};
+	const users: { [id: string]: { teams: ObjectId[]; owner: ObjectId[] } } = {};
 
 	for (const team of teams) {
 		console.log(
@@ -21,19 +21,19 @@ async function fixTeamMembership() {
 		);
 
 		for (const user of team.users) {
-			if (!users[user]) {
-				users[user] = { teams: [], owner: [] };
+			if (!users[user.toString()]) {
+				users[user.toString()] = { teams: [], owner: [] };
 			}
 
-			users[user].teams.push(team._id);
+			users[user.toString()].teams.push(team._id);
 		}
 
 		for (const user of team.owners) {
-			if (!users[user]) {
-				users[user] = { teams: [], owner: [] };
+			if (!users[user.toString()]) {
+				users[user.toString()] = { teams: [], owner: [] };
 			}
 
-			users[user].owner.push(team._id.toString());
+			users[user.toString()].owner.push(team._id);
 		}
 	}
 

@@ -28,8 +28,8 @@ export default function Onboarding() {
 		number: number;
 		slug?: string;
 		tbaId?: string;
-		users?: string[];
-		requests?: string[];
+		users?: ObjectId[];
+		requests?: ObjectId[];
 	}>();
 	const [teamConfirmed, setTeamConfirmed] = useState<boolean>(false);
 
@@ -100,7 +100,7 @@ export default function Onboarding() {
 		});
 		setJoinRequestStatus(
 			"requests" in team &&
-				(team.requests?.includes(session?.user?._id?.toString()!) ?? false)
+				(team.requests?.includes(session?.user?._id!) ?? false)
 				? JoinRequestStatus.Requested
 				: JoinRequestStatus.NotRequested,
 		);
@@ -136,10 +136,10 @@ export default function Onboarding() {
 		console.log(team, session.user);
 
 		const requestPending =
-			team.requests?.includes(session?.user?._id.toString()) ?? false;
+			team.requests?.includes(session?.user?._id) ?? false;
 		if (
 			joinRequestStatus === JoinRequestStatus.Requested &&
-			(team?.users?.includes(session?.user?._id.toString()) ?? false)
+			(team?.users?.includes(session?.user?._id) ?? false)
 		)
 			completeOnboarding();
 

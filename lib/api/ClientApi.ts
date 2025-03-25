@@ -1900,7 +1900,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findUserById = createNextRoute<
-		[string],
+		[ObjectId],
 		User | undefined,
 		ApiDependencies,
 		void
