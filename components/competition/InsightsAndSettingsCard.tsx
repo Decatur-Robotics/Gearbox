@@ -85,7 +85,7 @@ export default function InsightsAndSettingsCard(props: {
 	const createMatch = async () => {
 		try {
 			await api.createMatch(
-				comp?._id!.toString()!,
+				comp?._id!,
 				Number(matchNumber),
 				0,
 				MatchType.Qualifying,
@@ -117,7 +117,7 @@ export default function InsightsAndSettingsCard(props: {
 			return;
 
 		await api.updateCompNameAndTbaId(
-			comp?._id.toString(),
+			comp?._id,
 			newCompName ?? "Unnamed",
 			tbaId ?? NotLinkedToTba,
 		);
@@ -126,7 +126,7 @@ export default function InsightsAndSettingsCard(props: {
 
 	function togglePublicData(e: ChangeEvent<HTMLInputElement>) {
 		if (!comp?._id) return;
-		api.setCompPublicData(comp?._id.toString(), e.target.checked);
+		api.setCompPublicData(comp?._id, e.target.checked);
 	}
 
 	function addTeam() {
@@ -134,7 +134,7 @@ export default function InsightsAndSettingsCard(props: {
 		if (!teamToAdd || teamToAdd < 1 || !comp?._id) return;
 
 		api
-			.createPitReportForTeam(teamToAdd, comp?._id.toString())
+			.createPitReportForTeam(teamToAdd, comp?._id)
 			// We can't just pass location.reload, it will throw "illegal invocation." I don't know why. -Renato
 			.finally(() => location.reload());
 	}
@@ -149,7 +149,7 @@ export default function InsightsAndSettingsCard(props: {
 			) === confirmKey
 		) {
 			toast.promise(
-				api.deleteComp(comp._id.toString()).finally(() => {
+				api.deleteComp(comp._id).finally(() => {
 					window.location.href = `/${team?.slug}/${seasonSlug}`;
 				}),
 				{

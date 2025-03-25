@@ -15,6 +15,7 @@ import Avatar from "../Avatar";
 import Loading from "../Loading";
 import { AdvancedSession } from "@/lib/client/useCurrentSession";
 import { useEffect } from "react";
+import { ObjectId } from "bson";
 
 export default function MatchScheduleCard(props: {
 	team: Team | undefined;
@@ -29,7 +30,7 @@ export default function MatchScheduleCard(props: {
 	assigningMatches: boolean;
 	assignScouters: () => void;
 	openEditMatchModal: (match: Match) => void;
-	remindUserOnSlack: (userId: string) => void;
+	remindUserOnSlack: (userId: ObjectId) => void;
 	reloadCompetition: () => void;
 	comp: Competition | undefined;
 	seasonSlug: string | undefined;
@@ -217,7 +218,7 @@ export default function MatchScheduleCard(props: {
 																		showLevel={false}
 																		borderThickness={2}
 																		onClick={() =>
-																			remindUserOnSlack(user._id!.toString())
+																			remindUserOnSlack(user._id!)
 																		}
 																		gearSize={25}
 																	/>
@@ -262,7 +263,7 @@ export default function MatchScheduleCard(props: {
 																	remindUserOnSlack(
 																		usersById[
 																			match.subjectiveScouter!.toString()
-																		]?._id!.toString(),
+																		]?._id!,
 																	)
 																}
 															>

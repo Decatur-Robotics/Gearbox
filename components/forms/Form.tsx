@@ -46,7 +46,7 @@ export default function Form(props: FormProps) {
 		setSubmitting(true);
 
 		api
-			.submitForm(props.report?._id!.toString(), formData)
+			.submitForm(props.report?._id, formData)
 			.then(() => {
 				console.log("Submitted form successfully!");
 
@@ -81,7 +81,7 @@ export default function Form(props: FormProps) {
 				if (currentNumber !== newChangeNumber) return;
 
 				setSyncing(true);
-				await api.updateReport({ data: formData }, props.report?._id!.toString());
+				await api.updateReport({ data: formData }, props.report?._id);
 				setSyncing(false);
 			});
 		}, 500);

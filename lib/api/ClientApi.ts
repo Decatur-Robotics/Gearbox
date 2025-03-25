@@ -371,7 +371,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	reloadCompetition = createNextRoute<
-		[string],
+		[ObjectId],
 		{ result: string },
 		ApiDependencies,
 		{ comp: Competition; team: Team }
@@ -489,7 +489,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	createMatch = createNextRoute<
-		[string, number, number, MatchType, Alliance, Alliance],
+		[ObjectId, number, number, MatchType, Alliance, Alliance],
 		Match,
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -547,7 +547,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	assignScouters = createNextRoute<
-		[string, boolean],
+		[ObjectId, boolean],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -579,7 +579,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	submitForm = createNextRoute<
-		[string, QuantData],
+		[ObjectId, QuantData],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; report: Report }
@@ -751,7 +751,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	checkInForReport = createNextRoute<
-		[string],
+		[ObjectId],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; report: Report }
@@ -1070,7 +1070,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	exportCompAsCsv = createNextRoute<
-		[string],
+		[ObjectId],
 		{ csv: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1303,7 +1303,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findScouterManagementData = createNextRoute<
-		[string],
+		[ObjectId],
 		{
 			scouters: User[];
 			matches: Match[];
@@ -1449,7 +1449,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	setCompPublicData = createNextRoute<
-		[string, boolean],
+		[ObjectId, boolean],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1664,7 +1664,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	regeneratePitReports = createNextRoute<
-		[string],
+		[ObjectId],
 		{ result: string; pitReports: ObjectId[] },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1701,7 +1701,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	createPitReportForTeam = createNextRoute<
-		[number, string],
+		[number, ObjectId],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -1745,7 +1745,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	updateCompNameAndTbaId = createNextRoute<
-		[string, string, string],
+		[ObjectId, string, string],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }
@@ -2162,7 +2162,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	updateReport = createNextRoute<
-		[Partial<Report>, string],
+		[Partial<Report>, ObjectId],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; report: Report }
@@ -2539,7 +2539,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	deleteComp = createNextRoute<
-		[string],
+		[ObjectId],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }

@@ -107,7 +107,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		compId: string,
+		compId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -325,7 +325,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		reportId: string,
+		reportId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
