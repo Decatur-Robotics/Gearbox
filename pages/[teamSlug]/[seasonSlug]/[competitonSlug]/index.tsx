@@ -31,6 +31,7 @@ import EditMatchModal from "@/components/competition/EditMatchModal";
 import InsightsAndSettingsCard from "@/components/competition/InsightsAndSettingsCard";
 import MatchScheduleCard from "@/components/competition/MatchScheduleCard";
 import PitScoutingCard from "@/components/competition/PitScoutingCard";
+import { ObjectId } from "bson";
 
 const api = new ClientApi();
 
@@ -97,13 +98,13 @@ export default function CompetitionIndex({
 	} | null>(null);
 
 	const [matchBeingEdited, setMatchBeingEdited] = useState<
-		string | undefined
+		ObjectId | undefined
 	>();
 
 	const regeneratePitReports = useCallback(async () => {
 		console.log("Regenerating pit reports...");
 		const { pitReports: pitReportIds } = await api.regeneratePitReports(
-			comp?._id.toString()!,
+			comp?._id!,
 		);
 
 		setAttemptedRegeneratingPitReports(true);
@@ -307,7 +308,7 @@ export default function CompetitionIndex({
 
 	const assignScouters = async () => {
 		setAssigningMatches(true);
-		const res = await api.assignScouters(comp?._id!.toString()!, true);
+		const res = await api.assignScouters(comp?._id!, true);
 
 		if ((res.result as string).toLowerCase() !== "success") {
 			alert(res.result);
@@ -331,7 +332,7 @@ export default function CompetitionIndex({
 		alert("Reloading competition...");
 
 		setUpdatingComp("Checking for Updates...");
-		const res = await api.reloadCompetition(comp?._id!.toString()!);
+		const res = await api.reloadCompetition(comp?._id!);
 		if (res.result === "success") {
 			window.location.reload();
 		} else {
@@ -384,7 +385,7 @@ export default function CompetitionIndex({
 				| undefined
 		)?.showModal();
 
-		setMatchBeingEdited(match._id.toString());
+		setMatchBeingEdited(match._id);
 	}
 
 	const loadMatchesInterval = useCallback(
@@ -393,7 +394,7 @@ export default function CompetitionIndex({
 	);
 	useInterval(loadMatchesInterval, 5000);
 
-	function remindUserOnSlack(userId: string) {
+	function remindUserOnSlack(userId: ObjectId) {
 		if (userId && team?._id && isManager && confirm("Remind scouter on Slack?"))
 			api.remindSlack(team._id, userId);
 	}
@@ -459,7 +460,7 @@ export default function CompetitionIndex({
 				{isManager && (
 					<EditMatchModal
 						close={() => setMatchBeingEdited(undefined)}
-						match={matches.find((m) => m._id.toString() === matchBeingEdited!)}
+						match={matches.find((m) => m._id === matchBeingEdited!)}
 						reportsById={reportsById}
 						usersById={usersById}
 						comp={comp}

@@ -126,7 +126,7 @@ export async function createTestDocuments(db: DbInterface) {
 	const matchId = new ObjectId();
 
 	const report = await db.addObject(CollectionId.Reports, {
-		match: matchId.toString(),
+		match: matchId,
 	} as any as Report);
 
 	const subjectiveReport = await db.addObject(
@@ -136,8 +136,8 @@ export async function createTestDocuments(db: DbInterface) {
 
 	const match = await db.addObject(CollectionId.Matches, {
 		_id: matchId,
-		reports: [report._id!.toString()],
-		subjectiveReports: [subjectiveReport._id!.toString()],
+		reports: [report._id],
+		subjectiveReports: [subjectiveReport._id],
 	} as any as Match);
 
 	const pitReport = await db.addObject(
@@ -146,16 +146,16 @@ export async function createTestDocuments(db: DbInterface) {
 	);
 
 	const comp = await db.addObject(CollectionId.Competitions, {
-		matches: [match._id!.toString()],
-		pitReports: [pitReport._id!.toString()],
+		matches: [match._id],
+		pitReports: [pitReport._id],
 	} as any as Competition);
 
 	const season = await db.addObject(CollectionId.Seasons, {
-		competitions: [comp._id!.toString()],
+		competitions: [comp._id],
 	} as any as Season);
 
 	const team = await db.addObject(CollectionId.Teams, {
-		seasons: [season._id!.toString()],
+		seasons: [season._id],
 	} as any as any);
 
 	return { report, subjectiveReport, match, pitReport, comp, season, team };

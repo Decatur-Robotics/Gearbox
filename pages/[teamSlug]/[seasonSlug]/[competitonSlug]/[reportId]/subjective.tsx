@@ -43,7 +43,7 @@ export default function SubjectiveReportForm(props: {
 
 	useEffect(() => {
 		if (matchId) {
-			api.findMatchById(matchId as string).then((match) => setMatch(match));
+			api.findMatchById(new ObjectId(matchId as string)).then((match) => setMatch(match));
 		}
 	}, [matchId]);
 
@@ -207,7 +207,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	return {
 		props: {
-			compId: resolved.competition?._id?.toString(),
+			compId: resolved.competition?._id,
 			compName: resolved.competition?.name,
 			teamNumber: resolved.team?.number,
 		},

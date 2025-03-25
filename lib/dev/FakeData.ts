@@ -66,12 +66,12 @@ export async function fillTeamWithFakeUsers(
 ): Promise<Team> {
 	const users: any[] = [];
 	for (let i = 0; i < n; i++) {
-		users.push((await fakeUser(db, teamId))._id!.toString());
+		users.push((await fakeUser(db, teamId))._id);
 	}
 
 	const team = await db.findObjectById(
 		CollectionId.Teams,
-		new ObjectId(teamId.toString()),
+		new ObjectId(teamId),
 	);
 
 	if (!team) {

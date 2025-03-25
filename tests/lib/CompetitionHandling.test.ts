@@ -20,8 +20,26 @@ import { GameId } from "@/lib/client/GameId";
 
 describe(generateSchedule.name, () => {
 	test("Generates a schedule with the correct number of matches", () => {
-		const scouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
-		const subjectiveScouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+		const scouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
+		const subjectiveScouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
 		const matchCount = 10;
 		const robotsPerMatch = 6;
 
@@ -37,40 +55,40 @@ describe(generateSchedule.name, () => {
 
 	test("Generates a schedule with the correct number of scouters per match", () => {
 		const scouters = [
-			"a",
-			"b",
-			"c",
-			"d",
-			"e",
-			"f",
-			"g",
-			"h",
-			"i",
-			"j",
-			"k",
-			"l",
-			"m",
-			"n",
-			"o",
-			"p",
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+			new ObjectId("i"),
+			new ObjectId("j"),
+			new ObjectId("k"),
+			new ObjectId("l"),
+			new ObjectId("m"),
+			new ObjectId("n"),
+			new ObjectId("o"),
+			new ObjectId("p"),
 		];
 		const subjectiveScouters = [
-			"a",
-			"b",
-			"c",
-			"d",
-			"e",
-			"f",
-			"g",
-			"h",
-			"i",
-			"j",
-			"k",
-			"l",
-			"m",
-			"n",
-			"o",
-			"p",
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+			new ObjectId("i"),
+			new ObjectId("j"),
+			new ObjectId("k"),
+			new ObjectId("l"),
+			new ObjectId("m"),
+			new ObjectId("n"),
+			new ObjectId("o"),
+			new ObjectId("p"),
 		];
 
 		const matchCount = 10;
@@ -91,7 +109,16 @@ describe(generateSchedule.name, () => {
 	});
 
 	test("Rotates scouters ", () => {
-		const scouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+		const scouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
 
 		const matchCount = 6;
 		const robotsPerMatch = 6;
@@ -106,8 +133,26 @@ describe(generateSchedule.name, () => {
 	});
 
 	test("Assigns and rotates subjective scouters", () => {
-		const scouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
-		const subjectiveScouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+		const scouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
+		const subjectiveScouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
 
 		const matchCount = subjectiveScouters.length;
 		const robotsPerMatch = 6;
@@ -125,8 +170,26 @@ describe(generateSchedule.name, () => {
 	});
 
 	test("Does not assign user as both a scouter and a subjective scouter", () => {
-		const scouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
-		const subjectiveScouters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+		const scouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
+		const subjectiveScouters = [
+			new ObjectId("a"),
+			new ObjectId("b"),
+			new ObjectId("c"),
+			new ObjectId("d"),
+			new ObjectId("e"),
+			new ObjectId("f"),
+			new ObjectId("g"),
+			new ObjectId("h"),
+		];
 
 		const matchCount = 10;
 		const robotsPerMatch = 6;
@@ -196,13 +259,13 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 						{} as any,
 						[0, 1, 2, 3, 4, 5][i],
 						AllianceColor.Blue,
-						match._id!.toString(),
+						match._id!,
 					),
-					_id: new ObjectId() as any as string,
+					_id: new ObjectId() as any,
 				}),
 			);
 
-			match.reports = matchReports.map((r) => r._id?.toString()!);
+			match.reports = matchReports.map((r) => r._id!);
 
 			matches.push(match);
 			reports.push(...matchReports);
@@ -214,10 +277,10 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 			...reports.map((r) => db.addObject(CollectionId.Reports, r)),
 		]);
 
-		const comp = new Competition("test", "test", undefined, 1, 1);
+		const comp = new Competition("test", "test", undefined, 1, 1, undefined, undefined, new ObjectId());
 		// The game doesn't matter, just which league it's for
 		comp.gameId = league === League.FRC ? GameId.Crescendo : GameId.CenterStage;
-		comp.matches = matches.map((m) => m._id!.toString());
+		comp.matches = matches.map((m) => m._id!);
 		await db.addObject(CollectionId.Competitions, comp);
 
 		return { db, team, comp, matches, reports };
@@ -440,11 +503,11 @@ describe(generateReportsForMatch.name, () => {
 				{} as any,
 				Array.from({ length: robotsPerAlliance * 2 }, (_, i) => i)[i],
 				AllianceColor.Blue,
-				match._id!.toString(),
+				match._id!,
 			),
-			_id: new ObjectId() as any as string,
+			_id: new ObjectId() as any,
 		}));
-		match.reports = reports.map((r) => r._id?.toString()!);
+		match.reports = reports.map((r) => r._id!);
 
 		const db = new InMemoryDbInterface();
 		await Promise.all([
@@ -494,7 +557,7 @@ describe(generateReportsForMatch.name, () => {
 
 		const [updatedReports, updatedMatch] = await Promise.all([
 			db.findObjects(CollectionId.Reports, {
-				match: match._id?.toString(),
+				match: match._id,
 			}),
 			db.findObjectById(CollectionId.Matches, new ObjectId(match._id)),
 		]);
@@ -503,8 +566,8 @@ describe(generateReportsForMatch.name, () => {
 		expect(updatedReports.length).toBe(6);
 		expect(updatedMatch?.reports.length).toBe(6);
 		for (const report of updatedReports) {
-			expect(report?.match).toBe(match._id?.toString());
-			expect(match.reports).toContain(report?._id?.toString());
+			expect(report?.match).toBe(match._id);
+			expect(match.reports).toContain(report?._id);
 		}
 	});
 
@@ -521,7 +584,7 @@ describe(generateReportsForMatch.name, () => {
 
 		const [updatedReports, updatedMatch] = await Promise.all([
 			db.findObjects(CollectionId.Reports, {
-				match: match._id?.toString(),
+				match: match._id,
 			}),
 			db.findObjectById(CollectionId.Matches, new ObjectId(match._id)),
 		]);
@@ -530,10 +593,10 @@ describe(generateReportsForMatch.name, () => {
 		expect(updatedReports.length).toBe(6);
 		expect(updatedMatch?.reports.length).toBe(6);
 		for (const report of updatedReports) {
-			expect(report?.match).toBe(match._id?.toString());
+			expect(report?.match).toBe(match._id);
 			// I couldn't get toContain to work, some issue with === vs ==
 			expect(
-				match.reports.some((r) => r == report._id?.toString()),
+				match.reports.some((r) => r == report._id),
 			).toBeTruthy();
 		}
 	});
@@ -552,7 +615,7 @@ describe(generateReportsForMatch.name, () => {
 		for (const report of updatedReports) {
 			expect(report).toBeDefined();
 			expect(report).toEqual(
-				reports.find((r) => r._id.toString() === report?._id?.toString()),
+				reports.find((r) => r._id === report?._id),
 			);
 		}
 	});

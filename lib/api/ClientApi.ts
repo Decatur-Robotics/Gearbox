@@ -808,7 +808,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	remindSlack = createNextRoute<
-		[ObjectId, string],
+		[ObjectId, ObjectId],
 		{ result: string },
 		ApiDependencies,
 		Team
@@ -2048,7 +2048,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	findPitreportById = createNextRoute<
-		[string],
+		[ObjectId],
 		Pitreport | undefined,
 		ApiDependencies,
 		{ team: Team; comp: Competition; pitReport: Pitreport }
@@ -2188,7 +2188,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 	});
 
 	updatePitreport = createNextRoute<
-		[string, object],
+		[ObjectId, object],
 		{ result: string },
 		ApiDependencies,
 		{ team: Team; comp: Competition }

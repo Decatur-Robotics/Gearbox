@@ -62,7 +62,7 @@ export default function LocalStorageDb() {
 	async function deleteObject(collection: CollectionId, _id: ObjectId) {
 		if (!db) return;
 
-		console.log("Deleting object", _id.toString(), "from", collection);
+		console.log("Deleting object", _id, "from", collection);
 
 		await db.deleteObjectById(collection, _id);
 		updateDbData(db);
@@ -71,12 +71,12 @@ export default function LocalStorageDb() {
 	async function increment(collection: CollectionId, _id: ObjectId) {
 		if (!db) return;
 
-		console.log("Incrementing object", _id.toString(), "in", collection);
+		console.log("Incrementing object", _id, "in", collection);
 
 		const object = await db.findObjectById(collection, _id);
 
 		if (!object) {
-			toast.error("Object not found:" + _id.toString());
+			toast.error("Object not found:" + _id);
 			return;
 		}
 
@@ -90,12 +90,12 @@ export default function LocalStorageDb() {
 	async function toggleFlag(collection: CollectionId, _id: ObjectId) {
 		if (!db) return;
 
-		console.log("Toggling flag on object", _id.toString(), "in", collection);
+		console.log("Toggling flag on object", _id, "in", collection);
 
 		const object = await db.findObjectById(collection, _id);
 
 		if (!object) {
-			toast.error("Object not found:" + _id.toString());
+			toast.error("Object not found:" + _id);
 			return;
 		}
 

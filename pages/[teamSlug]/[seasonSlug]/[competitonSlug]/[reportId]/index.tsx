@@ -16,7 +16,7 @@ const api = new ClientApi();
 export default function Homepage(props: FormProps) {
 	useEffect(() => {
 		if (props.report)
-			setInterval(() => api.checkInForReport(props.report._id!.toString()), 5000);
+			setInterval(() => api.checkInForReport(props.report._id), 5000);
 	}, [props.report]);
 
 	return (

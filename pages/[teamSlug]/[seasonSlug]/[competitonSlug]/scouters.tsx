@@ -38,7 +38,7 @@ export default function Scouters(props: {
 	};
 	type Comment = {
 		text: string;
-		user: string | undefined;
+		user: ObjectId | undefined;
 		robot: number;
 		formType: string;
 		matchNumber: number;
@@ -70,7 +70,7 @@ export default function Scouters(props: {
 		setLoading(true);
 
 		console.log("Loading scouter data...");
-		api.findScouterManagementData(comp?._id!.toString()!).then((data) => {
+		api.findScouterManagementData(comp?._id!).then((data) => {
 			console.log("Loaded scouter data");
 
 			// Load scouters
@@ -116,7 +116,7 @@ export default function Scouters(props: {
 
 					if (
 						!confirm(
-							`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters?.[comment.user ?? ""]?.name ?? "Unknown"}`,
+							`Are you sure you want to remove this comment?\nText: ${comment.text}\nScouter: ${scouters?.[comment.user?.toString() ?? ""]?.name ?? "Unknown"}`,
 						)
 					)
 						return comments;
@@ -145,7 +145,7 @@ export default function Scouters(props: {
 					const { _id, ...old } = reports[comment.dbId.toString()];
 					promise = api.updateReport(
 						{ data: { ...old.data, comments: "" } },
-						comment.dbId.toString(),
+						comment.dbId,
 					);
 
 					return reports;
@@ -158,7 +158,7 @@ export default function Scouters(props: {
 				const { _id, ...old } = data.pitReports.find(
 					(r) => r._id === comment.dbId,
 				)!;
-				return api.updatePitreport(comment.dbId.toString(), {
+				return api.updatePitreport(comment.dbId, {
 					data: { ...old.data, comments: "" },
 				});
 			}
@@ -179,7 +179,7 @@ export default function Scouters(props: {
 				if (r.submitted) {
 					comments.push({
 						text: r.data.comments,
-						user: r.submitter?.toString() ?? r.user?.toString(),
+						user: r.submitter! ?? r.user!,
 						robot: r.robotNumber,
 						formType: "Quantitative Report",
 						matchNumber: matchDict[r.match.toString()]?.number ?? 0,
@@ -196,7 +196,7 @@ export default function Scouters(props: {
 			for (const report of data.pitReports) {
 				comments.push({
 					text: report.data?.comments ?? "",
-					user: report.submitter?.toString(),
+					user: report.submitter,
 					robot: report.teamNumber,
 					formType: "Pit Report",
 					matchNumber: 0,
@@ -220,7 +220,7 @@ export default function Scouters(props: {
 
 				comments.push({
 					text: text,
-					user: report.submitter?.toString(),
+					user: report.submitter,
 					robot: 0,
 					formType: "Subjective Report",
 					matchNumber: matchDict[report.match.toString()]?.number ?? 0,
@@ -481,7 +481,7 @@ export default function Scouters(props: {
 													<li>
 														Submitter:{" "}
 														{comment.user
-															? (scouters[comment.user]?.name ?? "Unknown")
+															? (scouters[comment.user.toString()]?.name ?? "Unknown")
 															: "Unknown"}
 													</li>
 												</ul>

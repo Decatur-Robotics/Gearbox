@@ -62,7 +62,7 @@ export default function PitReportForm(props: {
 
 		console.log("Submitting pitreport", report);
 		api
-			.updatePitreport(props.pitReport?._id!.toString(), {
+			.updatePitreport(props.pitReport?._id, {
 				...report,
 				submitted: true,
 				submitter: session?.user?._id,

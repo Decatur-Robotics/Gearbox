@@ -253,7 +253,7 @@ export default function Pitstats(props: { competition: Competition }) {
 
 		const newPits: PitReportPair = {};
 		for (const id of comp?.pitReports) {
-			const pitReport = await api.findPitreportById(id.toString());
+			const pitReport = await api.findPitreportById(id);
 			if (!pitReport) continue;
 
 			newPits[pitReport.teamNumber] = pitReport;

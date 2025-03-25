@@ -157,7 +157,7 @@ describe(repairUser.name, () => {
 		const db = new InMemoryDbInterface();
 
 		const user = {
-			_id: new ObjectId() as unknown as string,
+			_id: new ObjectId(),
 			email: "test@gmail.com",
 		};
 
@@ -174,7 +174,7 @@ describe(repairUser.name, () => {
 		const db = new InMemoryDbInterface();
 
 		const user = {
-			_id: new ObjectId() as unknown as string,
+			_id: new ObjectId(),
 			email: "test@gmail.com",
 			name: "Test User",
 			slackId: "123",
@@ -184,7 +184,7 @@ describe(repairUser.name, () => {
 			admin: true,
 			xp: 10,
 			level: 1,
-		} as User & { [key: string]: unknown };
+		} as unknown as User & { [key: string]: unknown };
 
 		const repairedUser = (await repairUser(db, user, false)) as User & {
 			[key: string]: unknown;

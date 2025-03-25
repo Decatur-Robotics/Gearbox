@@ -202,7 +202,7 @@ describe(prototype.getUserByAccount!.name, () => {
 			provider: "test",
 			type: "oauth",
 			providerAccountId: "1234567890",
-			userId: _id,
+			userId: _id.toString(),
 		};
 
 		await db.addObject(CollectionId.Accounts, account);
