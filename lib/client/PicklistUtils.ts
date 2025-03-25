@@ -16,7 +16,7 @@ export type PicklistEntry = {
 	number: number;
 	next?: PicklistEntry;
 	picklist?: Picklist;
-	id?: string;
+	id?: ObjectId;
 };
 
 export function getPicklistLength(picklist: Picklist) {
@@ -168,7 +168,7 @@ export function loadPicklistGroup(
 
 				if (teams.length > 0) {
 					let curr: PicklistEntry = {
-						id: new ObjectId().toString(),
+						id: new ObjectId(),
 						number: teams[0],
 						next: undefined,
 						picklist: newPicklist,
@@ -180,7 +180,7 @@ export function loadPicklistGroup(
 							number: teams[i],
 							next: undefined,
 							picklist: newPicklist,
-							id: new ObjectId().toString(),
+							id: new ObjectId(),
 						};
 						curr = curr.next;
 					}

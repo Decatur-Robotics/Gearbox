@@ -39,19 +39,19 @@ export function ownsTeam(team?: Team | null, user?: User) {
 
 export function getCompFromReport(db: DbInterface, report: Report) {
 	return db.findObject(CollectionId.Competitions, {
-		matches: report.match?.toString(),
+		matches: report.match,
 	});
 }
 
 export function getCompFromMatch(db: DbInterface, match: Match) {
 	return db.findObject(CollectionId.Competitions, {
-		matches: match._id?.toString(),
+		matches: match._id,
 	});
 }
 
 export function getCompFromPitReport(db: DbInterface, report: Pitreport) {
 	return db.findObject(CollectionId.Competitions, {
-		pitReports: report._id?.toString(),
+		pitReports: report._id,
 	});
 }
 
@@ -61,7 +61,7 @@ export function getCompFromSubjectiveReport(
 ) {
 	return db
 		.findObject(CollectionId.Matches, {
-			subjectiveReports: report._id?.toString(),
+			subjectiveReports: report._id,
 		})
 		.then((match) => {
 			if (!match) return undefined;
@@ -75,19 +75,19 @@ export function getCompFromPicklist(
 	picklist: CompPicklistGroup,
 ) {
 	return db.findObject(CollectionId.Competitions, {
-		picklist: picklist._id?.toString(),
+		picklist: picklist._id,
 	});
 }
 
 export function getSeasonFromComp(db: DbInterface, comp: Competition) {
 	return db.findObject(CollectionId.Seasons, {
-		competitions: comp?._id?.toString(), // Specifying one value is effectively includes for arrays
+		competitions: comp?._id, // Specifying one value is effectively includes for arrays
 	});
 }
 
 export function getTeamFromSeason(db: DbInterface, season: Season) {
 	return db.findObject(CollectionId.Teams, {
-		seasons: season._id?.toString(),
+		seasons: season._id,
 	});
 }
 
@@ -170,7 +170,7 @@ export async function addXp(db: DbInterface, userId: ObjectId, xp: number) {
 
 export async function deleteReport(
 	db: DbInterface,
-	reportId: string,
+	reportId: ObjectId,
 	match?: Match,
 ) {
 	if (match) {
@@ -184,7 +184,7 @@ export async function deleteReport(
 
 export async function deleteSubjectiveReport(
 	db: DbInterface,
-	reportId: string,
+	reportId: ObjectId,
 	match?: Match,
 ) {
 	if (match) {
@@ -220,9 +220,9 @@ export async function deleteMatch(
 	}
 
 	await Promise.all([
-		...match.reports.map(async (reportId) => deleteReport(db, reportId.toString(), match)),
+		...match.reports.map(async (reportId) => deleteReport(db, reportId, match)),
 		...match.subjectiveReports.map(async (reportId) =>
-			deleteSubjectiveReport(db, reportId.toString(), match),
+			deleteSubjectiveReport(db, reportId, match),
 		),
 	]);
 

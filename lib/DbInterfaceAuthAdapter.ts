@@ -72,7 +72,7 @@ export default function DbInterfaceAuthAdapter(
 			user._id = new ObjectId(adapterUser._id) as any;
 
 			const dbUser = await db.addObject(CollectionId.Users, user);
-			logger.info("Created user:", dbUser._id!.toString());
+			logger.info("Created user:", dbUser._id);
 			return format.from<AdapterUser>(dbUser);
 		},
 		getUser: async (id: string) => {
@@ -91,7 +91,7 @@ export default function DbInterfaceAuthAdapter(
 				logger.warn("User not found:", id);
 				return null;
 			}
-			user.id = user._id!.toString()!;
+			user.id = user._id.toString()!;
 			return format.from<AdapterUser>(user);
 		},
 		getUserByEmail: async (email: string) => {

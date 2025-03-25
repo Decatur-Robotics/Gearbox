@@ -138,7 +138,7 @@ export const AuthenticationOptions: AuthOptions = {
 				) {
 					db.updateObjectById(
 						CollectionId.Users,
-						new ObjectId(typedUser._id?.toString()),
+						typedUser._id!,
 						{
 							lastSignInDateTime: today,
 						},
@@ -154,7 +154,7 @@ export const AuthenticationOptions: AuthOptions = {
 					"User is signed in:",
 					typedUser.name,
 					typedUser.email,
-					typedUser._id?.toString(),
+					typedUser._id,
 					"Elapsed time:",
 					elapsedTime + "ms",
 				);
