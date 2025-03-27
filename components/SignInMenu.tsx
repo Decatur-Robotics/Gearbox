@@ -59,7 +59,13 @@ function SignInCard() {
 			<div className="card-body">
 				<h1 className="card-title">Sign In</h1>
 				{error && <p className="text-error">{error}</p>}
-				<p>Choose a login provider</p>
+				<p className="italic">Choose a login provider</p>
+				<span>
+					You currently <span className="text-red-500">have</span> to sign-in
+					using either your{" "}
+					<span className="text-green-400">original sign-in method</span> or
+					your <span className="text-green-400">email.</span>
+				</span>
 				<div className="divider" />
 
 				<button
