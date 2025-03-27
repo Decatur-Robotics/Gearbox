@@ -69,7 +69,7 @@ export default function DbInterfaceAuthAdapter(
 				1,
 			);
 
-			user._id = new ObjectId(adapterUser._id) as any;
+			user._id = adapterUser._id as any;
 
 			const dbUser = await db.addObject(CollectionId.Users, user);
 			logger.info("Created user:", dbUser._id);
@@ -168,7 +168,7 @@ export default function DbInterfaceAuthAdapter(
 
 			const existing = await db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(_id),
+				_id,
 			);
 
 			if (!existing) {
@@ -184,7 +184,7 @@ export default function DbInterfaceAuthAdapter(
 
 			await db.updateObjectById(
 				CollectionId.Users,
-				new ObjectId(_id),
+				_id,
 				user as Partial<User>,
 			);
 
@@ -221,7 +221,7 @@ export default function DbInterfaceAuthAdapter(
 
 			if (account) {
 				promises.push(
-					db.deleteObjectById(CollectionId.Accounts, new ObjectId(account._id)),
+					db.deleteObjectById(CollectionId.Accounts, account._id),
 				);
 			}
 
@@ -231,7 +231,7 @@ export default function DbInterfaceAuthAdapter(
 						sessions.map((session) =>
 							db.deleteObjectById(
 								CollectionId.Sessions,
-								new ObjectId(session._id),
+								session._id,
 							),
 						),
 					),
@@ -314,7 +314,7 @@ export default function DbInterfaceAuthAdapter(
 
 			await db.deleteObjectById(
 				CollectionId.Accounts,
-				new ObjectId(account._id),
+				account._id,
 			);
 
 			return format.from<AdapterAccount>(account);
@@ -334,7 +334,7 @@ export default function DbInterfaceAuthAdapter(
 
 			const user = await db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(session.userId),
+				session.userId,
 			);
 
 			if (!user) {
@@ -431,7 +431,7 @@ export default function DbInterfaceAuthAdapter(
 
 			await db.updateObjectById(
 				CollectionId.Sessions,
-				new ObjectId(existing._id),
+				existing._id,
 				session as unknown as Partial<Session>,
 			);
 
@@ -456,7 +456,7 @@ export default function DbInterfaceAuthAdapter(
 
 			await db.deleteObjectById(
 				CollectionId.Sessions,
-				new ObjectId(session._id),
+				session._id,
 			);
 
 			return format.from<AdapterSession>(session);
@@ -494,7 +494,7 @@ export default function DbInterfaceAuthAdapter(
 
 			await db.deleteObjectById(
 				CollectionId.VerificationTokens,
-				new ObjectId(existing._id),
+				existing._id,
 			);
 
 			return format.from<VerificationToken>(existing);

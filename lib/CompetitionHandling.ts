@@ -58,12 +58,12 @@ export async function assignScoutersToCompetitionMatches(
 ) {
 	const comp = await db.findObjectById(
 		CollectionId.Competitions,
-		new ObjectId(competitionId),
+		competitionId,
 	);
 
 	const team = await db.findObjectById(
 		CollectionId.Teams,
-		new ObjectId(teamId),
+		teamId,
 	);
 
 	if (!comp) {
@@ -88,7 +88,7 @@ export async function assignScoutersToCompetitionMatches(
 	);
 
 	const matches = await db.findObjects(CollectionId.Matches, {
-		_id: { $in: comp.matches.map((m) => new ObjectId(m)) },
+		_id: { $in: comp.matches.map((m) => m) },
 	});
 
 	matches.sort((a, b) => a.number - b.number);
@@ -111,7 +111,7 @@ async function assignScoutersToMatch(
 	match.subjectiveScouter = schedule.subjectiveScouter;
 
 	const existingReportPromises = match.reports.map((r) =>
-		db.findObjectById(CollectionId.Reports, new ObjectId(r)),
+		db.findObjectById(CollectionId.Reports, r),
 	);
 	const existingReports = await Promise.all(existingReportPromises);
 
@@ -131,11 +131,11 @@ async function assignScoutersToMatch(
 		if (!oldReport) continue;
 
 		// Update existing report
-		oldReport.user = new ObjectId(scouter);
+		oldReport.user = scouter;
 
 		await db.updateObjectById(
 			CollectionId.Reports,
-			new ObjectId(oldReport._id),
+			oldReport._id,
 			oldReport,
 		);
 		reports.push(oldReport._id);
@@ -143,7 +143,7 @@ async function assignScoutersToMatch(
 
 	await db.updateObjectById(
 		CollectionId.Matches,
-		new ObjectId(match._id),
+		match._id,
 		match,
 	);
 }
@@ -159,7 +159,7 @@ export async function generateReportsForMatch(
 ) {
 	const existingReports = await Promise.all(
 		match.reports.map((r) =>
-			db.findObjectById(CollectionId.Reports, new ObjectId(r)),
+			db.findObjectById(CollectionId.Reports, r),
 		),
 	);
 
@@ -201,7 +201,7 @@ export async function generateReportsForMatch(
 
 	await db.updateObjectById(
 		CollectionId.Matches,
-		new ObjectId(match._id),
+		match._id,
 		match,
 	);
 }

@@ -53,7 +53,7 @@ export class ResendUtils implements ResendInterface {
 			return;
 		}
 
-		db.updateObjectById(CollectionId.Users, new ObjectId(id), {
+		db.updateObjectById(CollectionId.Users, id, {
 			resendContactId: res.data.id,
 		});
 	}

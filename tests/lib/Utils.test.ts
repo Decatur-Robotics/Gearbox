@@ -199,7 +199,7 @@ describe(repairUser.name, () => {
 		const db = new InMemoryDbInterface();
 
 		const user = {
-			_id: new ObjectId() as unknown as string,
+			_id: new ObjectId(),
 			email: "test@gmail.com",
 		};
 
@@ -222,7 +222,7 @@ describe(repairUser.name, () => {
 		const db = new InMemoryDbInterface();
 
 		const user = {
-			_id: new ObjectId() as unknown as string,
+			_id: new ObjectId(),
 			email: "test@gmail.com",
 		};
 
@@ -252,7 +252,7 @@ describe(repairUser.name, () => {
 		const db = new InMemoryDbInterface();
 
 		const user = {
-			_id: new ObjectId() as unknown as string,
+			_id: new ObjectId(),
 		};
 
 		const repairedUser = await repairUser(db, user, false);

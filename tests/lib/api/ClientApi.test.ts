@@ -35,14 +35,14 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
 				1234,
 				League.FRC,
 				false,
-				[user._id!.toString()],
-				[user._id!.toString()],
+				[user._id!],
+				[user._id!],
 			),
 			_id: teamId,
 		});
 
 		await api.requestToJoinTeam.handler(
-			...(await getTestApiParams(res, { db, user }, [teamId.toString()])),
+			...(await getTestApiParams(res, { db, user }, [teamId])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -63,14 +63,14 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
 		});
 
 		await api.requestToJoinTeam.handler(
-			...(await getTestApiParams(res, { db, user }, [teamId.toString()])),
+			...(await getTestApiParams(res, { db, user }, [teamId])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.send).toHaveBeenCalledWith({ result: "Success" });
 
 		const team = await db.findObjectById(CollectionId.Teams, teamId);
-		expect(team?.requests).toEqual([user._id!.toString()]);
+		expect(team?.requests).toEqual([user._id!]);
 	});
 
 	test(`${ClientApi.name}.${api.requestToJoinTeam.name}: Returns 404 if team not found`, async () => {
@@ -79,7 +79,7 @@ describe(`${ClientApi.name}.${api.requestToJoinTeam.name}`, () => {
 		const teamId = new ObjectId();
 
 		await api.requestToJoinTeam.handler(
-			...(await getTestApiParams(res, { db, user }, [teamId.toString()])),
+			...(await getTestApiParams(res, { db, user }, [teamId])),
 		);
 
 		expect(res.error).toHaveBeenCalledWith(404, "Team not found");
@@ -94,11 +94,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 		const userId = new ObjectId();
 
 		await api.handleTeamJoinRequest.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				true,
-				teamId.toString(),
-				userId.toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [true, teamId, userId])),
 		);
 
 		expect(res.error).toHaveBeenCalledWith(404, "Team not found");
@@ -116,11 +112,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 		});
 
 		await api.handleTeamJoinRequest.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				true,
-				teamId.toString(),
-				userId.toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [true, teamId, userId])),
 		);
 
 		expect(res.error).toHaveBeenCalledWith(403, "You do not own this team");
@@ -133,7 +125,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 
 		await db.addObject(CollectionId.Teams, {
 			...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, false, [
-				user._id!.toString(),
+				user._id!,
 			]),
 			_id: teamId,
 		});
@@ -141,21 +133,17 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 		await db.addObject(CollectionId.Users, user);
 
 		await api.handleTeamJoinRequest.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				true,
-				teamId.toString(),
-				user._id!.toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [true, teamId, user._id!])),
 		);
 
 		const team = await db.findObjectById(CollectionId.Teams, teamId);
-		expect(team?.users).toEqual([user._id!.toString()]);
+		expect(team?.users).toEqual([user._id!]);
 
 		const foundUser = await db.findObjectById(
 			CollectionId.Users,
 			user._id! as any as ObjectId,
 		);
-		expect(foundUser?.teams).toEqual([teamId.toString()]);
+		expect(foundUser?.teams).toEqual([teamId]);
 	});
 
 	test(`${ClientApi.name}.${api.handleTeamJoinRequest.name}: Rejects user from team`, async () => {
@@ -165,7 +153,7 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 
 		await db.addObject(CollectionId.Teams, {
 			...new Team("Test Team", "test-team", "tbaId", 1234, League.FRC, false, [
-				user._id!.toString(),
+				user._id!,
 			]),
 			_id: teamId,
 		});
@@ -173,8 +161,8 @@ describe(`${ClientApi.name}.${api.handleTeamJoinRequest.name}`, () => {
 		await api.handleTeamJoinRequest.handler(
 			...(await getTestApiParams(res, { db, user }, [
 				false,
-				teamId.toString(),
-				new ObjectId().toString(),
+				teamId,
+				new ObjectId(),
 			])),
 		);
 
@@ -247,12 +235,8 @@ describe(`${ClientApi.name}.${api.createTeam.name}`, () => {
 			CollectionId.Users,
 			new ObjectId(user._id!),
 		);
-		expect(foundUser?.teams).toEqual(
-			expect.arrayContaining([team._id!.toString()]),
-		);
-		expect(foundUser?.owner).toEqual(
-			expect.arrayContaining([team._id!.toString()]),
-		);
+		expect(foundUser?.teams).toEqual(expect.arrayContaining([team._id!]));
+		expect(foundUser?.owner).toEqual(expect.arrayContaining([team._id!]));
 	});
 
 	test(`${ClientApi.name}.${api.createTeam.name}: Notifies developers`, async () => {
@@ -273,7 +257,7 @@ describe(`${ClientApi.name}.${api.findUserById.name}`, () => {
 		await db.addObject(CollectionId.Users, user);
 
 		await api.findUserById.handler(
-			...(await getTestApiParams(res, { db, user }, [user._id!.toString()])),
+			...(await getTestApiParams(res, { db, user }, [user._id!])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -284,9 +268,7 @@ describe(`${ClientApi.name}.${api.findUserById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findUserById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -304,7 +286,7 @@ describe(`${ClientApi.name}.${api.findTeamById.name}`, () => {
 		);
 
 		await api.findTeamById.handler(
-			...(await getTestApiParams(res, { db, user }, [team._id!.toString()])),
+			...(await getTestApiParams(res, { db, user }, [team._id!])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -315,9 +297,7 @@ describe(`${ClientApi.name}.${api.findTeamById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findTeamById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -370,7 +350,7 @@ describe(`${ClientApi.name}.${api.findSeasonById.name}`, () => {
 		await db.addObject(CollectionId.Seasons, season);
 
 		await api.findSeasonById.handler(
-			...(await getTestApiParams(res, { db, user }, [season._id!.toString()])),
+			...(await getTestApiParams(res, { db, user }, [season._id!])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -381,9 +361,7 @@ describe(`${ClientApi.name}.${api.findSeasonById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findSeasonById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -404,7 +382,7 @@ describe(`${ClientApi.name}.${api.findCompetitionById.name}`, () => {
 				0,
 				[],
 				[],
-				"",
+				new ObjectId(),
 				false,
 			),
 			_id: new ObjectId(),
@@ -412,9 +390,7 @@ describe(`${ClientApi.name}.${api.findCompetitionById.name}`, () => {
 		await db.addObject(CollectionId.Competitions, competition);
 
 		await api.findCompetitionById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				competition._id!.toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [competition._id!])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -425,9 +401,7 @@ describe(`${ClientApi.name}.${api.findCompetitionById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findCompetitionById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -455,7 +429,7 @@ describe(`${ClientApi.name}.${api.findMatchById.name}`, () => {
 		await db.addObject(CollectionId.Matches, match);
 
 		await api.findMatchById.handler(
-			...(await getTestApiParams(res, { db, user }, [match._id!.toString()])),
+			...(await getTestApiParams(res, { db, user }, [match._id!])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -466,9 +440,7 @@ describe(`${ClientApi.name}.${api.findMatchById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findMatchById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -481,13 +453,21 @@ describe(`${ClientApi.name}.${api.findReportById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		const report = {
-			...new Report("", {} as QuantData, 0, AllianceColor.Blue, "", 1, ""),
+			...new Report(
+				new ObjectId(),
+				{} as QuantData,
+				0,
+				AllianceColor.Blue,
+				new ObjectId,
+				1,
+				"",
+			),
 			_id: new ObjectId(),
 		};
 		await db.addObject(CollectionId.Reports, report);
 
 		await api.findReportById.handler(
-			...(await getTestApiParams(res, { db, user }, [report._id!.toString()])),
+			...(await getTestApiParams(res, { db, user }, [report._id!])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -498,9 +478,7 @@ describe(`${ClientApi.name}.${api.findReportById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findReportById.handler(
-			...(await getTestApiParams(res, { db, user }, [
-				new ObjectId().toString(),
-			])),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()])),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -519,16 +497,11 @@ describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
 		await db.addObject(CollectionId.PitReports, pitReport);
 
 		await api.findPitreportById.handler(
-			...(await getTestApiParams(
-				res,
-				{ db, user },
-				[pitReport._id!.toString()],
-				{
-					pitReport: pitReport as any,
-					team: undefined as any,
-					comp: undefined as any,
-				},
-			)),
+			...(await getTestApiParams(res, { db, user }, [pitReport._id!], {
+				pitReport: pitReport as any,
+				team: undefined as any,
+				comp: undefined as any,
+			})),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -539,16 +512,11 @@ describe(`${ClientApi.name}.${api.findPitreportById.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		await api.findPitreportById.handler(
-			...(await getTestApiParams(
-				res,
-				{ db, user },
-				[new ObjectId().toString()],
-				{
-					pitReport: undefined as any,
-					team: undefined as any,
-					comp: undefined as any,
-				},
-			)),
+			...(await getTestApiParams(res, { db, user }, [new ObjectId()], {
+				pitReport: undefined as any,
+				team: undefined as any,
+				comp: undefined as any,
+			})),
 		);
 
 		expect(res.status).toHaveBeenCalledWith(200);
@@ -586,7 +554,7 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
 			1234,
 			League.FRC,
 			false,
-			[user._id!.toString()],
+			[user._id!],
 		);
 		await db.addObject(CollectionId.Teams, team);
 
@@ -595,7 +563,7 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
 			...(await getTestApiParams(
 				res,
 				{ db, user },
-				[newValues, team._id!.toString()],
+				[newValues, team._id!],
 				team,
 			)),
 		);
@@ -616,7 +584,7 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
 		const newValues = { name: "Updated Team" };
 		const args = await getTestApiParams(res, { db, user }, [
 			newValues,
-			team._id!.toString(),
+			team._id!,
 		]);
 
 		expect(
@@ -637,7 +605,7 @@ describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
 			1234,
 			League.FRC,
 			false,
-			[user._id!.toString()],
+			[user._id!],
 		);
 		await db.addObject(CollectionId.Teams, team);
 
@@ -652,12 +620,10 @@ describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
 
 		const newValues = { name: "Updated Season" };
 		await api.updateSeason.handler(
-			...(await getTestApiParams(
-				res,
-				{ db, user },
-				[newValues, season._id!.toString()],
-				{ team, season },
-			)),
+			...(await getTestApiParams(res, { db, user }, [newValues, season._id!], {
+				team,
+				season,
+			})),
 		);
 
 		const updatedSeason = await db.findObjectById(
@@ -682,7 +648,7 @@ describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
 		const newValues = { name: "Updated Season" };
 		const args = await getTestApiParams(res, { db, user }, [
 			newValues,
-			season._id!.toString(),
+			season._id!,
 		]);
 
 		expect(
@@ -703,7 +669,7 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 			1234,
 			League.FRC,
 			false,
-			[user._id!.toString()],
+			[user._id!],
 		);
 		await db.addObject(CollectionId.Teams, team);
 
@@ -720,11 +686,11 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 		await db.addObject(CollectionId.Matches, match);
 
 		const report = new Report(
-			new ObjectId().toString(),
+			new ObjectId(),
 			{} as QuantData,
 			0,
 			AllianceColor.Blue,
-			"",
+			new ObjectId(),
 			1,
 			"",
 		);
@@ -732,12 +698,10 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 
 		const newValues = { data: { updated: true } };
 		await api.updateReport.handler(
-			...(await getTestApiParams(
-				res,
-				{ db, user },
-				[newValues, report._id!.toString()],
-				{ team, report },
-			)),
+			...(await getTestApiParams(res, { db, user }, [newValues, report._id!], {
+				team,
+				report,
+			})),
 		);
 
 		const updatedReport = await db.findObjectById(
@@ -751,7 +715,7 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		const report = {
-			...new Report("", {} as QuantData, 0, AllianceColor.Blue, "", 1, ""),
+			...new Report(new ObjectId, {} as QuantData, 0, AllianceColor.Blue, new ObjectId, 1, ""),
 			_id: new ObjectId(),
 		};
 		await db.addObject(CollectionId.Reports, report);
@@ -759,7 +723,7 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 		const newValues = { data: { updated: true } };
 		const args = await getTestApiParams(res, { db, user }, [
 			newValues,
-			report._id!.toString(),
+			report._id!,
 		]);
 
 		expect(
@@ -780,7 +744,7 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
 			1234,
 			League.FRC,
 			false,
-			[user._id!.toString()],
+			[user._id!],
 		);
 		await db.addObject(CollectionId.Teams, team);
 
@@ -793,7 +757,7 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
 				0,
 				[],
 				[],
-				"",
+				new ObjectId(),
 				false,
 			),
 			_id: new ObjectId(),
@@ -811,7 +775,7 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
 			...(await getTestApiParams(
 				res,
 				{ db, user },
-				[pitreport._id!.toString(), newValues],
+				[pitreport._id!, newValues],
 				{ team: team as any, comp: competition as any },
 			)),
 		);
@@ -834,7 +798,7 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
 
 		const newValues = { data: { updated: true } };
 		const args = await getTestApiParams(res, { db, user }, [
-			pitReport._id!.toString(),
+			pitReport._id!,
 			newValues,
 		]);
 
@@ -862,7 +826,7 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 			1234,
 			League.FRC,
 			false,
-			[user._id!.toString()],
+			[user._id!],
 		);
 		await db.addObject(CollectionId.Teams, team);
 
@@ -871,7 +835,7 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 		const params = await getTestApiParams(
 			res,
 			{ db, user },
-			[team._id!.toString(), webhookUrl],
+			[team._id!, webhookUrl],
 			team,
 		);
 
@@ -904,7 +868,7 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 			1234,
 			League.FRC,
 			false,
-			[user._id!.toString()],
+			[user._id!],
 		);
 		await db.addObject(CollectionId.Teams, team);
 
@@ -913,13 +877,13 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 		const webhook = new WebhookHolder(webhookUrl);
 		await db.addObject(CollectionId.Webhooks, webhook);
 
-		team.slackWebhook = webhook._id!.toString();
+		team.slackWebhook = webhook._id!;
 		await db.updateObjectById(CollectionId.Teams, team._id, team);
 
 		const params = await getTestApiParams(
 			res,
 			{ db, user },
-			[team._id!.toString(), webhookUrl],
+			[team._id!, webhookUrl],
 			team,
 		);
 
@@ -933,7 +897,7 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 			CollectionId.Teams,
 			new ObjectId(team._id!),
 		);
-		expect(updatedTeam?.slackWebhook).toEqual(webhook._id!.toString());
+		expect(updatedTeam?.slackWebhook).toEqual(webhook._id!);
 
 		const updatedWebhook = await db.findObjectById(
 			CollectionId.Webhooks,
@@ -1041,11 +1005,11 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 		await db.addObject(CollectionId.Matches, match);
 
 		const report = new Report(
-			new ObjectId().toString(),
+			new ObjectId(),
 			undefined as any,
 			0,
 			AllianceColor.Blue,
-			"",
+			new ObjectId(),
 		);
 		await db.addObject(CollectionId.Reports, report);
 
@@ -1053,8 +1017,8 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 
 		await api.changeTeamNumberForReport.handler(
 			...(await getTestApiParams(res, { db, user }, [
-				match._id!.toString(),
-				report._id!.toString(),
+				match._id!,
+				report._id!,
 				newTeam,
 			])),
 		);
@@ -1071,11 +1035,11 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 		const { db, res, user } = await getTestApiUtils();
 
 		const report = new Report(
-			new ObjectId().toString(),
+			new ObjectId(),
 			undefined as any,
 			0,
 			AllianceColor.Blue,
-			"",
+			new ObjectId(),
 		);
 		const { _id: reportId } = await db.addObject(CollectionId.Reports, report);
 
@@ -1087,7 +1051,7 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 			MatchType.Qualifying,
 			[1, 2, 3],
 			[4, 5, 6],
-			[reportId!.toString()],
+			[reportId!],
 		);
 		const { _id: matchId } = await db.addObject(CollectionId.Matches, match);
 
@@ -1095,8 +1059,8 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 
 		await api.changeTeamNumberForReport.handler(
 			...(await getTestApiParams(res, { db, user }, [
-				matchId!.toString(),
-				reportId!.toString(),
+				matchId!,
+				reportId!,
 				newTeam,
 			])),
 		);

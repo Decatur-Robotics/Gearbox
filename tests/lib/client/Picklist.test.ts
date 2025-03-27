@@ -27,17 +27,17 @@ function createPicklist(index: number, entries: number[]) {
 
 	picklist.head = {
 		number: entries[0],
-		id: new ObjectId().toString(),
+		id: new ObjectId(),
 		picklist,
 	};
 	let current = picklist.head;
 	for (let i = 1; i < entries.length; i++) {
 		current.next = {
 			number: entries[i],
-			id: new ObjectId().toString(),
+			id: new ObjectId(),
 			picklist,
 		};
-		current = current.next;
+		current = current.next!;
 	}
 
 	return picklist;
@@ -54,7 +54,7 @@ function toArray(picklist: Picklist) {
 }
 
 function toIdArray(picklist: Picklist) {
-	const result: string[] = [];
+	const result: ObjectId[] = [];
 	let current = picklist.head;
 	while (current) {
 		result.push(current.id!);
@@ -250,7 +250,7 @@ describe(savePicklistGroup.name, () => {
 			createPicklist(1, [4, 5, 6]),
 		];
 		const group: CompPicklistGroup = {
-			_id: new ObjectId().toString(),
+			_id: new ObjectId(),
 			picklists: picklists.reduce(
 				(acc, picklist) => {
 					acc[picklist.name] = toArray(picklist);
@@ -271,7 +271,7 @@ describe(savePicklistGroup.name, () => {
 
 	test("Saves an empty picklist group", () => {
 		const group: CompPicklistGroup = {
-			_id: new ObjectId().toString(),
+			_id: new ObjectId(),
 			picklists: {},
 			strikethroughs: [],
 		};
@@ -287,7 +287,7 @@ describe(savePicklistGroup.name, () => {
 	test("Saves a picklist group with empty picklists", () => {
 		const picklists = [createPicklist(0, []), createPicklist(1, [])];
 		const group: CompPicklistGroup = {
-			_id: new ObjectId().toString(),
+			_id: new ObjectId(),
 			picklists: picklists.reduce(
 				(acc, picklist) => {
 					acc[picklist.name] = toArray(picklist);
@@ -310,7 +310,7 @@ describe(savePicklistGroup.name, () => {
 describe(loadPicklistGroup.name, () => {
 	test("Loads the picklist group", () => {
 		const group: CompPicklistGroup = {
-			_id: new ObjectId().toString(),
+			_id: new ObjectId(),
 			picklists: {
 				"0": [1, 2, 3],
 				"1": [4, 5, 6],

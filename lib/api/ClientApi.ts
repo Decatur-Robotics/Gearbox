@@ -104,7 +104,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			let team = await (
 				await db
-			).findObjectById(CollectionId.Teams, new ObjectId(teamId));
+			).findObjectById(CollectionId.Teams, teamId);
 
 			if (!team) {
 				rollbar.warn("Team not found (API: requestToJoinTeam)", { teamId });
@@ -118,7 +118,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await (
 				await db
-			).updateObjectById(CollectionId.Teams, new ObjectId(teamId), {
+			).updateObjectById(CollectionId.Teams, teamId, {
 				requests: removeDuplicates([
 					...team.requests,
 					(await userPromise)?._id,
@@ -147,12 +147,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const teamPromise = db.findObjectById(
 				CollectionId.Teams,
-				new ObjectId(teamId),
+				teamId,
 			);
 
 			const joineePromise = db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(userId),
+				userId,
 			);
 
 			const userOnTeam = await userPromise;
@@ -184,7 +184,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.error(404, "User not found");
 			}
 
-			team.requests.splice(team.requests.indexOf(new ObjectId(userId)), 1);
+			team.requests.splice(team.requests.indexOf(userId), 1);
 
 			if (accept) {
 				team.users = removeDuplicates(...team.users, userId);
@@ -425,7 +425,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; season: Season }
 	>({
 		isAuthorized: (req, res, deps, [tbaId, start, end, name, seasonId]) =>
-			AccessLevels.IfSeasonOwner(req, res, deps, seasonId),
+			AccessLevels.IfSeasonOwner(req, res, deps, new ObjectId(seasonId)),
 		handler: async (
 			req,
 			res,
@@ -703,7 +703,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; match: Match }
 	>({
 		isAuthorized: (req, res, deps, [matchId]) =>
-			AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, matchId),
+			AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, new ObjectId(matchId)),
 		handler: async (
 			req,
 			res,
@@ -782,7 +782,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ match: Match }
 	>({
 		isAuthorized: (req, res, deps, [matchId]) =>
-			AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, matchId),
+			AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, new ObjectId(matchId)),
 		handler: async (
 			req,
 			res,
@@ -1511,7 +1511,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; match: Match }
 	>({
 		isAuthorized: (req, res, deps, [report, matchId]) =>
-			AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, matchId),
+			AccessLevels.IfOnTeamThatOwnsMatch(req, res, deps, new ObjectId(matchId)),
 		handler: async (
 			req,
 			res,
@@ -2142,7 +2142,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; season: Season }
 	>({
 		isAuthorized: (req, res, deps, [newValues, seasonId]) =>
-			AccessLevels.IfSeasonOwner(req, res, deps, seasonId),
+			AccessLevels.IfSeasonOwner(req, res, deps, new ObjectId(seasonId)),
 		handler: async (
 			req,
 			res,
@@ -2560,7 +2560,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; season: Season }
 	>({
 		isAuthorized: (req, res, deps, [seasonId]) =>
-			AccessLevels.IfSeasonOwner(req, res, deps, seasonId),
+			AccessLevels.IfSeasonOwner(req, res, deps, new ObjectId(seasonId)),
 		handler: async (req, res, { db }, { team, season }, [seasonId]) => {
 			await deleteSeason(await db, season);
 

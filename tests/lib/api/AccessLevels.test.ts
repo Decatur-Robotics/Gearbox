@@ -20,7 +20,7 @@ async function returnsFalseIfUserIsNotSignedIn(
 		req: any,
 		res: any,
 		deps: { userPromise: Promise<User>; db: Promise<DbInterface> },
-		id: string,
+		id: ObjectId,
 	) => Promise<{ authorized: boolean }>,
 ) {
 	const { res } = await getTestApiUtils();
@@ -30,7 +30,7 @@ async function returnsFalseIfUserIsNotSignedIn(
 				undefined as any,
 				res,
 				{ userPromise: Promise.resolve(null as any), db: undefined as any },
-				new ObjectId().toString(),
+				new ObjectId(),
 			)
 		).authorized,
 	).toBe(false);
@@ -41,7 +41,7 @@ async function returnsFalseIfDocumentDoesNotExist(
 		req: any,
 		res: any,
 		deps: { userPromise: Promise<User>; db: Promise<DbInterface> },
-		documentId: string,
+		documentId: ObjectId,
 	) => Promise<{ authorized: boolean }>,
 ) {
 	const { res, user, db } = await getTestApiUtils();
@@ -51,7 +51,7 @@ async function returnsFalseIfDocumentDoesNotExist(
 				undefined as any,
 				res,
 				{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-				new ObjectId().toString(),
+				new ObjectId(),
 			)
 		).authorized,
 	).toBe(false);
@@ -124,7 +124,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeam.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					team._id!.toString(),
+					team._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -143,7 +143,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeam.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					team._id!.toString(),
+					team._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -170,7 +170,7 @@ describe(`AccessLevels.${AccessLevels.IfTeamOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					team._id!.toString(),
+					team._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -189,7 +189,7 @@ describe(`AccessLevels.${AccessLevels.IfTeamOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					team._id!.toString(),
+					team._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -224,7 +224,7 @@ describe(`AccessLevels.${AccessLevels.IfCompOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					comp._id!.toString(),
+					comp._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -251,7 +251,7 @@ describe(`AccessLevels.${AccessLevels.IfCompOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					comp._id!.toString(),
+					comp._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -283,7 +283,7 @@ describe(`AccessLevels.${AccessLevels.IfSeasonOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					season._id!.toString(),
+					season._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -307,7 +307,7 @@ describe(`AccessLevels.${AccessLevels.IfSeasonOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					season._id!.toString(),
+					season._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -342,7 +342,7 @@ describe(`AccessLevels.${AccessLevels.IfMatchOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					match._id!.toString(),
+					match._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -369,7 +369,7 @@ describe(`AccessLevels.${AccessLevels.IfMatchOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					match._id!.toString(),
+					match._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -391,7 +391,7 @@ describe(`AccessLevels.${AccessLevels.IfReportOwner.name}`, () => {
 			{} as any as Report,
 		);
 		const match = await db.addObject(CollectionId.Matches, {
-			reports: [report._id!.toString()],
+			reports: [report._id!],
 		} as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			matches: [match._id!.toString()],
@@ -410,7 +410,7 @@ describe(`AccessLevels.${AccessLevels.IfReportOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					report._id!.toString(),
+					report._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -421,7 +421,7 @@ describe(`AccessLevels.${AccessLevels.IfReportOwner.name}`, () => {
 
 		const match = await db.addObject(CollectionId.Matches, {} as any as Match);
 		const report = await db.addObject(CollectionId.Reports, {
-			match: match._id!.toString(),
+			match: match._id!,
 		} as Report);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			matches: [match._id!.toString()],
@@ -440,7 +440,7 @@ describe(`AccessLevels.${AccessLevels.IfReportOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					report._id!.toString(),
+					report._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -475,7 +475,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsComp.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					comp._id!.toString(),
+					comp._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -502,7 +502,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsComp.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					comp._id!.toString(),
+					comp._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -537,7 +537,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsMatch.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					match._id!.toString(),
+					match._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -564,7 +564,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsMatch.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					match._id!.toString(),
+					match._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -602,7 +602,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPitReport.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					pitReport._id!.toString(),
+					pitReport._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -632,7 +632,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPitReport.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					pitReport._id!.toString(),
+					pitReport._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -654,7 +654,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsReport.name}`, () => {
 			{} as any as Report,
 		);
 		const match = await db.addObject(CollectionId.Matches, {
-			reports: [report._id!.toString()],
+			reports: [report._id!],
 		} as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			matches: [match._id!.toString()],
@@ -673,7 +673,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsReport.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					report._id!.toString(),
+					report._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -684,7 +684,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsReport.name}`, () => {
 
 		const match = await db.addObject(CollectionId.Matches, {} as any as Match);
 		const report = await db.addObject(CollectionId.Reports, {
-			match: match._id!.toString(),
+			match: match._id!,
 		} as Report);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			matches: [match._id!.toString()],
@@ -703,7 +703,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsReport.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					report._id!.toString(),
+					report._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -725,7 +725,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsSubjectiveReport.name}`, (
 			{} as any as SubjectiveReport,
 		);
 		const match = await db.addObject(CollectionId.Matches, {
-			subjectiveReports: [subjectiveReport._id!.toString()],
+			subjectiveReports: [subjectiveReport._id!],
 		} as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
 			matches: [match._id!.toString()],
@@ -744,7 +744,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsSubjectiveReport.name}`, (
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					subjectiveReport._id!.toString(),
+					subjectiveReport._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -777,7 +777,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsSubjectiveReport.name}`, (
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					subjectiveReport._id!.toString(),
+					subjectiveReport._id!,
 				)
 			).authorized,
 		).toBe(true);
@@ -819,7 +819,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPicklist.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					picklist._id!.toString(),
+					picklist._id!,
 				)
 			).authorized,
 		).toBe(false);
@@ -849,7 +849,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPicklist.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					picklist._id!.toString(),
+					picklist._id!,
 				)
 			).authorized,
 		).toBe(true);

@@ -71,7 +71,7 @@ export async function fillTeamWithFakeUsers(
 
 	const team = await db.findObjectById(
 		CollectionId.Teams,
-		new ObjectId(teamId),
+		teamId,
 	);
 
 	if (!team) {

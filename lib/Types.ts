@@ -25,11 +25,11 @@ export interface Account extends NextAuthAccount {
 	/**
 	 * ID for the Mongo database
 	 */
-	_id: string;
+	_id: ObjectId;
 }
 
 export interface Session extends NextAuthSession {
-	_id: string;
+	_id: ObjectId;
 	sessionToken: string;
 	userId: ObjectId;
 	expires: string;
@@ -350,7 +350,7 @@ export class Game<
 }
 
 export class Season {
-	_id: string | undefined;
+	_id!: ObjectId;
 	name: string;
 	slug: string | undefined;
 

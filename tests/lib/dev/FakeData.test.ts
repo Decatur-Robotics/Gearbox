@@ -24,7 +24,7 @@ describe(fakeUser.name, () => {
 		const user = await fakeUser(db, teamId);
 
 		expect(user.teams.length).toBe(1);
-		expect(user.teams).toContain(teamId.toString());
+		expect(user.teams).toContain(teamId);
 	});
 
 	test("Returns a user without a team when no team ID is passed", async () => {
@@ -41,7 +41,7 @@ describe(fakeUser.name, () => {
 		const teamId = new ObjectId();
 		const returnedUser = await fakeUser(db, teamId);
 		const dbUser = await db.findObject(CollectionId.Users, {
-			teams: [teamId.toString()],
+			teams: [teamId],
 		});
 
 		expect(returnedUser).toEqual(dbUser);
@@ -88,11 +88,11 @@ describe(fillTeamWithFakeUsers.name, () => {
 		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
 		const users = await db.findObjects(CollectionId.Users, {
-			teams: [newTeam._id.toString()],
+			teams: [newTeam._id],
 		});
 
 		expect(users.length).toBe(3);
-		expect(newTeam.users).toEqual(users.map((user) => user._id?.toString()));
+		expect(newTeam.users).toEqual(users.map((user) => user._id));
 	});
 
 	test("Adds users as scouters", async () => {
@@ -106,10 +106,10 @@ describe(fillTeamWithFakeUsers.name, () => {
 		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
 		const users = await db.findObjects(CollectionId.Users, {
-			teams: [newTeam._id.toString()],
+			teams: [newTeam._id],
 		});
 
-		expect(newTeam.scouters).toEqual(users.map((user) => user._id?.toString()));
+		expect(newTeam.scouters).toEqual(users.map((user) => user._id));
 	});
 
 	test("Throws an error if the team is not found", async () => {
@@ -131,7 +131,7 @@ describe(fillTeamWithFakeUsers.name, () => {
 		const newTeam = await fillTeamWithFakeUsers(3, originalTeam._id, db);
 
 		const users = await db.findObjects(CollectionId.Users, {
-			teams: [newTeam._id.toString()],
+			teams: [newTeam._id],
 		});
 
 		const uniqueNames = new Set(users.map((user) => user.name));

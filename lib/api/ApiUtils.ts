@@ -162,7 +162,7 @@ export async function addXp(db: DbInterface, userId: ObjectId, xp: number) {
 	const newXp = user.xp + xp;
 	const newLevel = xpToLevel(newXp);
 
-	await db.updateObjectById(CollectionId.Users, new ObjectId(userId), {
+	await db.updateObjectById(CollectionId.Users, userId, {
 		xp: newXp,
 		level: newLevel,
 	});
@@ -174,12 +174,12 @@ export async function deleteReport(
 	match?: Match,
 ) {
 	if (match) {
-		await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
-			reports: match.reports.filter((id) => id !== new ObjectId(reportId)),
+		await db.updateObjectById(CollectionId.Matches, match._id, {
+			reports: match.reports.filter((id) => id !== reportId),
 		});
 	}
 
-	await db.deleteObjectById(CollectionId.Reports, new ObjectId(reportId));
+	await db.deleteObjectById(CollectionId.Reports, reportId);
 }
 
 export async function deleteSubjectiveReport(
@@ -188,16 +188,16 @@ export async function deleteSubjectiveReport(
 	match?: Match,
 ) {
 	if (match) {
-		await db.updateObjectById(CollectionId.Matches, new ObjectId(match._id), {
+		await db.updateObjectById(CollectionId.Matches, match._id, {
 			subjectiveReports: match.subjectiveReports.filter(
-				(id) => id !== new ObjectId(reportId),
+				(id) => id !== reportId,
 			),
 		});
 	}
 
 	await db.deleteObjectById(
 		CollectionId.SubjectiveReports,
-		new ObjectId(reportId),
+		reportId,
 	);
 }
 
@@ -208,13 +208,13 @@ export async function deleteMatch(
 ) {
 	const match = await db.findObjectById(
 		CollectionId.Matches,
-		new ObjectId(matchId),
+		matchId,
 	);
 
 	if (!match) return;
 
 	if (comp) {
-		db.updateObjectById(CollectionId.Competitions, new ObjectId(comp._id), {
+		db.updateObjectById(CollectionId.Competitions, comp._id, {
 			matches: comp.matches.filter((id) => id !== match._id),
 		});
 	}
@@ -226,7 +226,7 @@ export async function deleteMatch(
 		),
 	]);
 
-	await db.deleteObjectById(CollectionId.Matches, new ObjectId(match._id));
+	await db.deleteObjectById(CollectionId.Matches, match._id);
 }
 
 export async function deletePitReport(
@@ -235,7 +235,7 @@ export async function deletePitReport(
 	comp?: Competition,
 ) {
 	if (comp) {
-		db.updateObjectById(CollectionId.Competitions, new ObjectId(comp._id), {
+		db.updateObjectById(CollectionId.Competitions, comp._id, {
 			pitReports: comp.pitReports.filter((id) => id !== reportId),
 		});
 	}
@@ -247,7 +247,7 @@ export async function deleteComp(db: DbInterface, comp: Competition) {
 	const season = await getSeasonFromComp(db, comp);
 
 	if (season) {
-		db.updateObjectById(CollectionId.Seasons, new ObjectId(season._id), {
+		db.updateObjectById(CollectionId.Seasons, season._id, {
 			competitions: season.competitions.filter(
 				(id) => id !== comp._id?.toString(),
 			),
@@ -261,15 +261,15 @@ export async function deleteComp(db: DbInterface, comp: Competition) {
 		),
 	]);
 
-	await db.deleteObjectById(CollectionId.Competitions, new ObjectId(comp._id));
+	await db.deleteObjectById(CollectionId.Competitions, comp._id);
 }
 
 export async function deleteSeason(db: DbInterface, season: Season) {
 	const team = await getTeamFromSeason(db, season);
 
 	if (team) {
-		db.updateObjectById(CollectionId.Teams, new ObjectId(team._id), {
-			seasons: team.seasons.filter((id) => id !== new ObjectId(season._id)),
+		db.updateObjectById(CollectionId.Teams, team._id, {
+			seasons: team.seasons.filter((id) => id !== season._id),
 		});
 	}
 
@@ -285,5 +285,5 @@ export async function deleteSeason(db: DbInterface, season: Season) {
 		}),
 	]);
 
-	await db.deleteObjectById(CollectionId.Seasons, new ObjectId(season._id));
+	await db.deleteObjectById(CollectionId.Seasons, season._id);
 }

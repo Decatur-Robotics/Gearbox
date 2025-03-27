@@ -81,7 +81,7 @@ function TeamCard(props: {
 						<span className="text-accent">#{entry.number}</span>
 						{SHOW_CARD_IDS && (
 							<span className="text-secondary">
-								.{entry.id?.slice(entry.id.length - 3)}
+								.{entry.id?.toString()?.slice(entry.id.toString().length - 3)}
 							</span>
 						)}
 						{SHOW_PICKLISTS_ON_TEAM_CARDS && entry.picklist && (

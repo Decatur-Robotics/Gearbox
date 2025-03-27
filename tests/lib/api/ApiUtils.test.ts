@@ -19,7 +19,7 @@ describe(deleteReport.name, () => {
 
 		const { report, match } = await createTestDocuments(db);
 
-		await deleteReport(db, report._id!.toString(), match);
+		await deleteReport(db, report._id!, match);
 
 		const found = await db.findObjectById(
 			CollectionId.Reports,
@@ -35,7 +35,7 @@ describe(deleteReport.name, () => {
 
 		const { report, match } = await createTestDocuments(db);
 
-		await deleteReport(db, report._id!.toString(), match);
+		await deleteReport(db, report._id!, match);
 
 		const updatedMatch = await db.findObjectById(
 			CollectionId.Matches,
@@ -50,7 +50,7 @@ describe(deleteReport.name, () => {
 
 		const { report } = await createTestDocuments(db);
 
-		await deleteReport(db, report._id!.toString());
+		await deleteReport(db, report._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.Reports,
@@ -66,7 +66,7 @@ describe(deleteReport.name, () => {
 
 		const { report, match } = await createTestDocuments(db);
 
-		await deleteReport(db, report._id!.toString());
+		await deleteReport(db, report._id!);
 
 		const updatedMatch = await db.findObjectById(
 			CollectionId.Matches,
@@ -83,7 +83,7 @@ describe(deleteSubjectiveReport.name, () => {
 
 		const { subjectiveReport, match } = await createTestDocuments(db);
 
-		await deleteSubjectiveReport(db, subjectiveReport._id!.toString(), match);
+		await deleteSubjectiveReport(db, subjectiveReport._id!, match);
 
 		const found = await db.findObjectById(
 			CollectionId.SubjectiveReports,
@@ -99,7 +99,7 @@ describe(deleteSubjectiveReport.name, () => {
 
 		const { subjectiveReport, match } = await createTestDocuments(db);
 
-		await deleteSubjectiveReport(db, subjectiveReport._id!.toString(), match);
+		await deleteSubjectiveReport(db, subjectiveReport._id!, match);
 
 		const updatedMatch = await db.findObjectById(
 			CollectionId.Matches,
@@ -114,7 +114,7 @@ describe(deleteSubjectiveReport.name, () => {
 
 		const { subjectiveReport } = await createTestDocuments(db);
 
-		await deleteSubjectiveReport(db, subjectiveReport._id!.toString());
+		await deleteSubjectiveReport(db, subjectiveReport._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.SubjectiveReports,
@@ -130,7 +130,7 @@ describe(deleteSubjectiveReport.name, () => {
 
 		const { subjectiveReport, match } = await createTestDocuments(db);
 
-		await deleteSubjectiveReport(db, subjectiveReport._id!.toString());
+		await deleteSubjectiveReport(db, subjectiveReport._id!);
 
 		const updatedMatch = await db.findObjectById(
 			CollectionId.Matches,
@@ -149,7 +149,7 @@ describe(deleteMatch.name, () => {
 
 		const { match } = await createTestDocuments(db);
 
-		await deleteMatch(db, match._id!.toString());
+		await deleteMatch(db, match._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.Matches,
@@ -164,7 +164,7 @@ describe(deleteMatch.name, () => {
 		const { db } = await getTestApiUtils();
 		const { match, comp } = await createTestDocuments(db);
 
-		await deleteMatch(db, match._id!.toString(), comp);
+		await deleteMatch(db, match._id!, comp);
 
 		const updatedComp = await db.findObjectById(
 			CollectionId.Competitions,
@@ -178,7 +178,7 @@ describe(deleteMatch.name, () => {
 		const { db } = await getTestApiUtils();
 		const { match } = await createTestDocuments(db);
 
-		await deleteMatch(db, match._id!.toString());
+		await deleteMatch(db, match._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.Matches,
@@ -193,7 +193,7 @@ describe(deleteMatch.name, () => {
 		const { db } = await getTestApiUtils();
 		const { match, comp } = await createTestDocuments(db);
 
-		await deleteMatch(db, match._id!.toString());
+		await deleteMatch(db, match._id!);
 
 		const updatedComp = await db.findObjectById(
 			CollectionId.Competitions,
@@ -207,7 +207,7 @@ describe(deleteMatch.name, () => {
 		const { db } = await getTestApiUtils();
 		const { match, report } = await createTestDocuments(db);
 
-		await deleteMatch(db, match._id!.toString());
+		await deleteMatch(db, match._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.Reports,
@@ -222,7 +222,7 @@ describe(deleteMatch.name, () => {
 		const { db } = await getTestApiUtils();
 		const { match, subjectiveReport } = await createTestDocuments(db);
 
-		await deleteMatch(db, match._id!.toString());
+		await deleteMatch(db, match._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.SubjectiveReports,
@@ -239,7 +239,7 @@ describe(deletePitReport.name, () => {
 		const { db } = await getTestApiUtils();
 		const { pitReport, comp } = await createTestDocuments(db);
 
-		await deletePitReport(db, pitReport._id!.toString(), comp);
+		await deletePitReport(db, pitReport._id!, comp);
 
 		const found = await db.findObjectById(
 			CollectionId.PitReports,
@@ -254,7 +254,7 @@ describe(deletePitReport.name, () => {
 		const { db } = await getTestApiUtils();
 		const { pitReport, comp } = await createTestDocuments(db);
 
-		await deletePitReport(db, pitReport._id!.toString(), comp);
+		await deletePitReport(db, pitReport._id!, comp);
 
 		const updatedComp = await db.findObjectById(
 			CollectionId.Competitions,
@@ -268,7 +268,7 @@ describe(deletePitReport.name, () => {
 		const { db } = await getTestApiUtils();
 		const { pitReport } = await createTestDocuments(db);
 
-		await deletePitReport(db, pitReport._id!.toString());
+		await deletePitReport(db, pitReport._id!);
 
 		const found = await db.findObjectById(
 			CollectionId.PitReports,
@@ -283,7 +283,7 @@ describe(deletePitReport.name, () => {
 		const { db } = await getTestApiUtils();
 		const { pitReport, comp } = await createTestDocuments(db);
 
-		await deletePitReport(db, pitReport._id!.toString());
+		await deletePitReport(db, pitReport._id!);
 
 		const updatedComp = await db.findObjectById(
 			CollectionId.Competitions,

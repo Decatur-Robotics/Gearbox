@@ -59,7 +59,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		teamId: string,
+		teamId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -68,7 +68,7 @@ namespace AccessLevels {
 
 		const team = await (
 			await db
-		).findObjectById(CollectionId.Teams, new ObjectId(teamId));
+		).findObjectById(CollectionId.Teams, teamId);
 		if (!team) {
 			return { authorized: false, authData: undefined };
 		}
@@ -92,7 +92,7 @@ namespace AccessLevels {
 
 		const team = await (
 			await db
-		).findObjectById(CollectionId.Teams, new ObjectId(teamId));
+		).findObjectById(CollectionId.Teams, teamId);
 		if (!team) {
 			return { authorized: false, authData: undefined };
 		}
@@ -116,7 +116,7 @@ namespace AccessLevels {
 
 		const comp = await (
 			await db
-		).findObjectById(CollectionId.Competitions, new ObjectId(compId));
+		).findObjectById(CollectionId.Competitions, compId);
 		if (!comp) {
 			return { authorized: false, authData: undefined };
 		}
@@ -136,7 +136,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		seasonId: string,
+		seasonId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -145,7 +145,7 @@ namespace AccessLevels {
 
 		const season = await (
 			await db
-		).findObjectById(CollectionId.Seasons, new ObjectId(seasonId));
+		).findObjectById(CollectionId.Seasons, seasonId);
 		if (!season) {
 			return { authorized: false, authData: undefined };
 		}
@@ -174,7 +174,7 @@ namespace AccessLevels {
 
 		const match = await (
 			await db
-		).findObjectById(CollectionId.Matches, new ObjectId(matchId));
+		).findObjectById(CollectionId.Matches, matchId);
 		if (!match) {
 			return { authorized: false, authData: undefined };
 		}
@@ -208,7 +208,7 @@ namespace AccessLevels {
 
 		const report = await (
 			await db
-		).findObjectById(CollectionId.Reports, new ObjectId(reportId));
+		).findObjectById(CollectionId.Reports, reportId);
 		if (!report) {
 			return { authorized: false, authData: undefined };
 		}
@@ -237,7 +237,7 @@ namespace AccessLevels {
 
 		const comp = await (
 			await db
-		).findObjectById(CollectionId.Competitions, new ObjectId(compId));
+		).findObjectById(CollectionId.Competitions, compId);
 		if (!comp) {
 			return { authorized: false, authData: undefined };
 		}
@@ -257,7 +257,7 @@ namespace AccessLevels {
 		req: NextApiRequest,
 		res: NextResponse<any>,
 		{ userPromise, db }: UserAndDb,
-		matchId: string,
+		matchId: ObjectId,
 	) {
 		const user = await userPromise;
 		if (!user) {
@@ -266,7 +266,7 @@ namespace AccessLevels {
 
 		const match = await (
 			await db
-		).findObjectById(CollectionId.Matches, new ObjectId(matchId));
+		).findObjectById(CollectionId.Matches, matchId);
 		if (!match) {
 			return { authorized: false, authData: undefined };
 		}
@@ -300,7 +300,7 @@ namespace AccessLevels {
 
 		const pitReport = await (
 			await db
-		).findObjectById(CollectionId.PitReports, new ObjectId(pitReportId));
+		).findObjectById(CollectionId.PitReports, pitReportId);
 		if (!pitReport) {
 			return { authorized: false, authData: undefined };
 		}
@@ -334,7 +334,7 @@ namespace AccessLevels {
 
 		const report = await (
 			await db
-		).findObjectById(CollectionId.Reports, new ObjectId(reportId));
+		).findObjectById(CollectionId.Reports, reportId);
 		if (!report) {
 			return { authorized: false, authData: undefined };
 		}
@@ -363,7 +363,7 @@ namespace AccessLevels {
 
 		const report = await (
 			await db
-		).findObjectById(CollectionId.SubjectiveReports, new ObjectId(reportId));
+		).findObjectById(CollectionId.SubjectiveReports, reportId);
 		if (!report) {
 			return { authorized: false, authData: undefined };
 		}
@@ -392,7 +392,7 @@ namespace AccessLevels {
 
 		const picklist = await (
 			await db
-		).findObjectById(CollectionId.Picklists, new ObjectId(picklistId));
+		).findObjectById(CollectionId.Picklists, picklistId);
 		if (!picklist) {
 			return { authorized: false, authData: undefined };
 		}
