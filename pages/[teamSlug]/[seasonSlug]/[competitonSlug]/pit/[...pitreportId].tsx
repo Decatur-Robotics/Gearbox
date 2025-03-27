@@ -25,9 +25,20 @@ import Loading from "@/components/Loading";
 
 const api = new ClientApi();
 
+enum LoadState {
+	WaitingForQuery = "Waiting for query...",
+	Fetching = "Fetching...",
+	Loaded = "Loaded",
+	Failed = "Failed",
+}
+
 export default function PitReportForm() {
 	const { session } = useCurrentSession();
 	const router = useRouter();
+
+	const [loadStatus, setLoadStatus] = useState<LoadState>(
+		LoadState.WaitingForQuery,
+	);
 
 	const [pitReport, setPitReport] = useState<Pitreport>();
 	const [compName, setCompName] = useState<string>();
@@ -38,12 +49,18 @@ export default function PitReportForm() {
 
 	useEffect(() => {
 		// Fetch page data
+		setLoadStatus(LoadState.Fetching);
 
 		const pitReportId = (router.query.pitreportId as string[0])?.[0];
 		if (!pitReportId) return;
 
 		api.getPitReportPageData(pitReportId as string).then((data) => {
-			if (!data) return;
+			if (!data) {
+				setLoadStatus(LoadState.Failed);
+				return;
+			}
+
+			setLoadStatus(LoadState.Loaded);
 
 			setPitReport(data.pitReport);
 			setCompName(data.compName);
@@ -281,14 +298,14 @@ export default function PitReportForm() {
 		},
 	);
 
-	if (!pitReport || !game)
+	if (!pitReport || !game || loadStatus !== LoadState.Loaded)
 		return (
 			<Container
 				requireAuthentication={true}
 				title="Loading pit report..."
 			>
 				<div className="flex flex-col items-center justify-center w-screen h-[80%]">
-					<Card title="Loading pit report...">
+					<Card title={`Loading pit report - ${loadStatus}`}>
 						<Loading />
 					</Card>
 				</div>

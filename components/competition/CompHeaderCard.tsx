@@ -22,11 +22,9 @@ export default function CompHeaderCard({
 		api.syncCompData(comp._id!.toString());
 
 		const url = location.href;
-		comp?.pitReports.forEach((report) => {
-			const reportUrl = `${url}/pit/${report}`;
-			console.log("Caching pit report page: ", reportUrl);
-			history.pushState({}, "", reportUrl);
-		});
+		comp?.pitReports.forEach((report) =>
+			history.pushState({}, "", `${url}/pit/${report}`),
+		);
 
 		history.pushState({}, "", url);
 		console.log("Cached all pit reports");

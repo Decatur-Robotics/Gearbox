@@ -3188,13 +3188,21 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const reportsPromise = matchesPromise.then((matches) =>
 				db.findObjects(CollectionId.Reports, {
-					_id: { $in: matches.flatMap((match) => match.reports) },
+					_id: {
+						$in: matches
+							.flatMap((match) => match.reports)
+							.map((id) => new ObjectId(id)),
+					},
 				}),
 			);
 
 			const subjectiveReportsPromise = matchesPromise.then((matches) =>
 				db.findObjects(CollectionId.SubjectiveReports, {
-					_id: { $in: matches.flatMap((match) => match.subjectiveReports) },
+					_id: {
+						$in: matches
+							.flatMap((match) => match.subjectiveReports)
+							.map((id) => new ObjectId(id)),
+					},
 				}),
 			);
 
