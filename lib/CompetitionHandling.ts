@@ -10,7 +10,7 @@ import {
 	League,
 } from "./Types";
 import { ObjectId } from "bson";
-import { rotateArray, shuffleArray } from './client/ClientUtils';
+import { rotateArray, shuffleArray } from "./client/ClientUtils";
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import CollectionId from "./client/CollectionId";
