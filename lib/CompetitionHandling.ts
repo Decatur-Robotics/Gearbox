@@ -10,7 +10,7 @@ import {
 	League,
 } from "./Types";
 import { ObjectId } from "bson";
-import { rotateArray } from "./client/ClientUtils";
+import { rotateArray, shuffleArray } from './client/ClientUtils';
 import { games } from "./games";
 import { GameId } from "./client/GameId";
 import CollectionId from "./client/CollectionId";
@@ -29,6 +29,7 @@ export function generateSchedule(
 	matchCount: number,
 	robotsPerMatch: number,
 ) {
+	scouters = shuffleArray(scouters);
 	const schedule = [];
 	for (let i = 0; i < matchCount; i++) {
 		const subjectiveScouter =
