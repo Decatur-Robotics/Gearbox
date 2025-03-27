@@ -60,6 +60,7 @@ function SignInCard() {
 				<h1 className="card-title">Sign In</h1>
 				{error && <p className="text-error">{error}</p>}
 				<p>Choose a login provider</p>
+				<p>We currently only support signing in with one login provider</p>
 				<div className="divider" />
 
 				<button
