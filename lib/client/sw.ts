@@ -14,7 +14,7 @@ const serwist = new Serwist({
 	precacheEntries: self.__SW_MANIFEST,
 	skipWaiting: true,
 	clientsClaim: true,
-	navigationPreload: true,
+	navigationPreload: false, // Not 100% sure this should be disabled, but it made stuff work
 	runtimeCaching: defaultCache,
 	fallbacks: {
 		entries: [

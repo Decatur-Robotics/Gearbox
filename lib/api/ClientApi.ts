@@ -13,7 +13,6 @@ import {
 	Pitreport,
 	QuantData,
 	Season,
-	SubjectiveReport,
 	SubjectiveReportSubmissionType,
 	Team,
 	User,
@@ -49,12 +48,13 @@ import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
 import { _id } from "@next-auth/mongodb-adapter";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
-import { Report } from "../Types";
+import { Report, SubjectiveReport } from "../Types";
 import Logger from "../client/Logger";
 import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
 import findObjectBySlugLookUp, { slugToId } from "../slugToId";
 import GearboxRequestHelper from "./GearboxRequestHelper";
 import LocalApiDependencies from "./LocalApiDependencies";
+import { match } from "assert";
 import {
 	findObjectByIdFallback,
 	findObjectBySlugFallback,
@@ -3074,6 +3074,145 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			]);
 
 			return { pitReport, compName, gameId, teamNumber };
+		},
+	});
+
+	syncCompData = createNextRoute<
+		[string],
+		{
+			comp: Competition | undefined;
+			pitReports: Pitreport[];
+			matches: Match[];
+			reports: Report[];
+			subjectiveReports: SubjectiveReport[];
+		},
+		ApiDependencies,
+		{ team: Team; comp: Competition },
+		LocalApiDependencies
+	>({
+		isAuthorized: (req, res, deps, [compId]) =>
+			AccessLevels.IfOnTeamThatOwnsComp(req, res, deps, compId),
+		handler: async (req, res, { db: dbPromise }, { team, comp }, [compId]) => {
+			const db = await dbPromise;
+
+			const pitReportPromise = db.findObjects(CollectionId.PitReports, {
+				_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+			});
+
+			const matchesPromise = db.findObjects(CollectionId.Matches, {
+				_id: { $in: comp.matches.map((id) => new ObjectId(id)) },
+			});
+
+			const reportsPromise = matchesPromise.then((matches) =>
+				db.findObjects(CollectionId.Reports, {
+					_id: { $in: matches.flatMap((match) => match.reports) },
+				}),
+			);
+
+			const subjectiveReportsPromise = matchesPromise.then((matches) =>
+				db.findObjects(CollectionId.SubjectiveReports, {
+					_id: { $in: matches.flatMap((match) => match.subjectiveReports) },
+				}),
+			);
+
+			const [pitReports, matches, reports, subjectiveReports] =
+				await Promise.all([
+					pitReportPromise,
+					matchesPromise,
+					reportsPromise,
+					subjectiveReportsPromise,
+				]);
+
+			return res.status(200).send({
+				comp,
+				pitReports,
+				matches,
+				reports,
+				subjectiveReports,
+			});
+		},
+		afterResponse: async (deps, res, ranFallback) => {
+			if (!res || ranFallback) return;
+
+			const { comp, pitReports, matches, reports, subjectiveReports } = res;
+
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.Competitions,
+				comp,
+				ranFallback,
+			);
+
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.PitReports,
+				pitReports,
+				ranFallback,
+			);
+
+			saveObjectAfterResponse(deps, CollectionId.Matches, matches, ranFallback);
+
+			saveObjectAfterResponse(deps, CollectionId.Reports, reports, ranFallback);
+
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.SubjectiveReports,
+				subjectiveReports,
+				ranFallback,
+			);
+		},
+		fallback: async ({ dbPromise }, [compId]) => {
+			const db = await dbPromise;
+
+			const comp = await db.findObjectById(
+				CollectionId.Competitions,
+				new ObjectId(compId),
+			);
+
+			if (!comp)
+				return {
+					comp: undefined,
+					pitReports: [],
+					matches: [],
+					reports: [],
+					subjectiveReports: [],
+				};
+
+			const pitReportPromise = db.findObjects(CollectionId.PitReports, {
+				_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+			});
+
+			const matchesPromise = db.findObjects(CollectionId.Matches, {
+				_id: { $in: comp.matches.map((id) => new ObjectId(id)) },
+			});
+
+			const reportsPromise = matchesPromise.then((matches) =>
+				db.findObjects(CollectionId.Reports, {
+					_id: { $in: matches.flatMap((match) => match.reports) },
+				}),
+			);
+
+			const subjectiveReportsPromise = matchesPromise.then((matches) =>
+				db.findObjects(CollectionId.SubjectiveReports, {
+					_id: { $in: matches.flatMap((match) => match.subjectiveReports) },
+				}),
+			);
+
+			const [pitReports, matches, reports, subjectiveReports] =
+				await Promise.all([
+					pitReportPromise,
+					matchesPromise,
+					reportsPromise,
+					subjectiveReportsPromise,
+				]);
+
+			return {
+				comp,
+				pitReports,
+				matches,
+				reports,
+				subjectiveReports,
+			};
 		},
 	});
 }
