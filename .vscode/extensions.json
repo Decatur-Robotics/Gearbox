@@ -8,6 +8,7 @@
 		"pmneo.tsimporter",
 		"austenc.tailwind-docs",
 		"bradlc.vscode-tailwindcss",
-		"Orta.vscode-jest"
+		"Orta.vscode-jest",
+		"ms-playwright.playwright"
 	]
 }
