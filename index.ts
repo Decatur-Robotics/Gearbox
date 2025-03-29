@@ -9,8 +9,9 @@ import {
 } from "http";
 import Logger from "./lib/client/Logger";
 import { configDotenv } from "dotenv";
-import getRollbar from "./lib/client/RollbarUtils";
-import reportDeploymentToRollbar from "./lib/reportDeploymentToRollbar";
+import getRollbar, {
+	reportDeploymentToRollbar,
+} from "./lib/client/RollbarUtils";
 
 configDotenv();
 
