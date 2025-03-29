@@ -19,12 +19,14 @@ const logger = new Logger(["STARTUP"]);
 
 logger.log("Starting server...");
 
-const dev = process.env.NODE_ENV !== "production";
+const mode = process.env.NODE_ENV;
 
 logger.debug("Constants set");
 
 const useHttps =
-	existsSync("./certs/key.pem") && existsSync("./certs/cert.pem");
+	mode !== "test" &&
+	existsSync("./certs/key.pem") &&
+	existsSync("./certs/cert.pem");
 
 const httpsOptions = useHttps
 	? {
@@ -33,10 +35,10 @@ const httpsOptions = useHttps
 		}
 	: {};
 
-const port = useHttps ? 443 : 80;
+const port = useHttps ? 443 : mode == "test" ? 3000 : 80;
 logger.debug(`Using port ${port}`);
 
-const app = next({ dev, port });
+const app = next({ dev: mode == "development", port });
 const handle = app.getRequestHandler();
 
 logger.debug("App preparing...");

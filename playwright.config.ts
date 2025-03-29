@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.BASE_URL || "https://localhost:443";
+const baseURL = process.env.BASE_URL || "http://localhost:3000";
 
 /**
  * Read environment variables from file.
@@ -74,9 +74,9 @@ export default defineConfig({
 
 	/* Run your local dev server before starting the tests */
 	webServer: {
-		command: "npm run build && npm run start",
-		url: "https://localhost:443",
+		command: "npm run e2e-start-server",
+		url: baseURL,
 		reuseExistingServer: !process.env.CI,
-		ignoreHTTPSErrors: true,
+		timeout: 5 * 60 * 1000, // 5 minutes
 	},
 });
