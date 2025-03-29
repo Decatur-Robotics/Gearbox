@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const baseURL = process.env.BASE_URL || "https://localhost:443";
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -36,37 +38,37 @@ export default defineConfig({
 	projects: [
 		{
 			name: "chromium",
-			use: { ...devices["Desktop Chrome"] },
+			use: { ...devices["Desktop Chrome"], baseURL },
 		},
 
 		{
 			name: "firefox",
-			use: { ...devices["Desktop Firefox"] },
+			use: { ...devices["Desktop Firefox"], baseURL },
 		},
 
 		{
 			name: "webkit",
-			use: { ...devices["Desktop Safari"] },
+			use: { ...devices["Desktop Safari"], baseURL },
 		},
 
 		/* Test against mobile viewports. */
 		{
 			name: "Mobile Chrome",
-			use: { ...devices["Pixel 5"] },
+			use: { ...devices["Pixel 5"], baseURL },
 		},
 		{
 			name: "Mobile Safari",
-			use: { ...devices["iPhone 12"] },
+			use: { ...devices["iPhone 12"], baseURL },
 		},
 
 		/* Test against branded browsers. */
 		{
 			name: "Microsoft Edge",
-			use: { ...devices["Desktop Edge"], channel: "msedge" },
+			use: { ...devices["Desktop Edge"], channel: "msedge", baseURL },
 		},
 		{
 			name: "Google Chrome",
-			use: { ...devices["Desktop Chrome"], channel: "chrome" },
+			use: { ...devices["Desktop Chrome"], channel: "chrome", baseURL },
 		},
 	],
 
