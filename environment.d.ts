@@ -58,6 +58,7 @@ declare global {
 
 			BASE_URL_FOR_PLAYWRIGHT: string | undefined;
 			ENABLE_TEST_SIGNIN_ROUTE: string | undefined;
+			FALLBACK_MONGODB_URI: string | undefined;
 
 			NODE_ENV: "development" | "production";
 		}

@@ -13,23 +13,29 @@ import { cacheOptions } from "./client/dbinterfaces/CachedDbInterface";
 import { findObjectBySlugLookUp } from "./slugToId";
 import InMemoryDbInterface from "./client/dbinterfaces/InMemoryDbInterface";
 
-if (!process.env.MONGODB_URI) {
+if (!process.env.MONGODB_URI && !process.env.FALLBACK_MONGODB_URI) {
 	// Necessary to allow connections from files running outside of Next
 	require("dotenv").config();
 
-	if (!process.env.MONGODB_URI)
+	if (!process.env.MONGODB_URI && !process.env.FALLBACK_MONGODB_URI)
 		console.warn(
-			'Invalid/Missing environment variable: "MONGODB_URI". Using a non-persistant InMemoryDbInterface instead.',
+			'Invalid/Missing environment variables: "MONGODB_URI", "FALLBACK_MONGODB_URI". Using default connection string.',
 		);
 }
 
-const uri = process.env.MONGODB_URI ?? "mongodb://localhost:27017";
+const uri =
+	process.env.MONGODB_URI ??
+	process.env.FALLBACK_MONGODB_URI ??
+	"mongodb://localhost:27017";
 const options: MongoClientOptions = { maxPoolSize: 3 };
 
 let client;
 let clientPromise: Promise<MongoClient>;
 
-if (process.env.MONGODB_URI && !global.clientPromise) {
+if (
+	(process.env.MONGODB_URI || process.env.FALLBACK_MONGODB_URI) &&
+	!global.clientPromise
+) {
 	client = new MongoClient(uri, options);
 	global.clientPromise = client.connect();
 }
@@ -43,9 +49,7 @@ export async function getDatabase(
 	if (!global.interface) {
 		await clientPromise;
 
-		const mongo = process.env.MONGODB_URI
-			? new MongoDBInterface(clientPromise)
-			: new InMemoryDbInterface();
+		const mongo = new MongoDBInterface(clientPromise);
 
 		const dbInterface = useCache
 			? new CachedDbInterface(mongo, cacheOptions)
