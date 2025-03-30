@@ -336,7 +336,7 @@ export namespace TheBlueAlliance {
 		async allCompetitionsToPairings(year: number) {
 			var allCompetitions = await this.req.getEvents(year);
 			var pairings: CompetitonNameIdPair[] = [];
-			allCompetitions.forEach((comp) => {
+			allCompetitions?.forEach((comp) => {
 				pairings.push({ name: comp.name, tbaId: comp.key });
 			});
 
