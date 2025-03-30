@@ -32,6 +32,9 @@ export interface Session extends NextAuthSession {
 	_id: string;
 	sessionToken: string;
 	userId: ObjectId;
+	/**
+	 * Should actually be a Date
+	 */
 	expires: string;
 }
 

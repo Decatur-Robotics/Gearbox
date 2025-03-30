@@ -17,6 +17,8 @@ import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
 import { NextResponse } from "unified-api-nextjs";
 import { RollbarInterface } from "../client/RollbarUtils";
+import { BrowserContext } from "@playwright/test";
+import ClientApi from "../api/ClientApi";
 
 export class TestRes extends NextResponse<any> {
 	status = jest.fn((code) => this);
@@ -159,4 +161,38 @@ export async function createTestDocuments(db: DbInterface) {
 	} as any as any);
 
 	return { report, subjectiveReport, match, pitReport, comp, season, team };
+}
+
+export namespace PlaywrightUtils {
+	export function getTestClientApi() {
+		const api = new ClientApi();
+
+		// Relative requests don't work in Playwright apparentl
+		api.requestHelper.baseUrl =
+			process.env.BASE_URL_FOR_PLAYWRIGHT + api.requestHelper.baseUrl;
+
+		return api;
+	}
+
+	export async function signIn(context: BrowserContext) {
+		const { sessionToken, user } = await getTestClientApi().testSignIn();
+
+		await context.addCookies([
+			{
+				name: "__Secure-next-auth.session-token",
+				value: sessionToken,
+				path: "/",
+				domain: "localhost",
+				sameSite: "Lax",
+				httpOnly: true,
+				secure: true,
+				expires: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
+			},
+		]);
+
+		return {
+			sessionToken,
+			user,
+		};
+	}
 }

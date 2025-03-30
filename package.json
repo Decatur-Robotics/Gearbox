@@ -10,7 +10,7 @@
 		"start": "cross-env NODE_ENV=production npx tsx index.ts",
 		"restart": "next build && cross-env NODE_ENV=production npx tsx index.ts",
 		"test": "jest",
-		"e2e": "playwright test",
+		"e2e": "cross-env NODE_ENV=test playwright test",
 		"e2e-start-server": "cross-env NODE_ENV=test next build && cross-env NODE_ENV=test npx tsx index.ts",
 		"docker-build": "docker build -t gearbox .",
 		"docker-start": "docker run -i -t -p 80:80 gearbox",

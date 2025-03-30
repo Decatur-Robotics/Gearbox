@@ -1,14 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
+import { loadEnvConfig } from "@next/env";
 
-const baseURL = process.env.BASE_URL || "http://localhost:3000";
+const projectDir = process.cwd();
+loadEnvConfig(projectDir);
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+const baseURL = process.env.BASE_URL_FOR_PLAYWRIGHT; // Default base URL for tests
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -25,6 +21,9 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: "html",
+
+	globalSetup: require.resolve("./lib/testutils/PlaywrightSetup"),
+
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */

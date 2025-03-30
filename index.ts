@@ -8,12 +8,13 @@ import {
 	createServer as createServerHttp,
 } from "http";
 import Logger from "./lib/client/Logger";
-import { configDotenv } from "dotenv";
+import { loadEnvConfig } from "@next/env";
 import getRollbar, {
 	reportDeploymentToRollbar,
 } from "./lib/client/RollbarUtils";
 
-configDotenv();
+const projectDir = process.cwd();
+loadEnvConfig(projectDir);
 
 const logger = new Logger(["STARTUP"]);
 
@@ -21,7 +22,7 @@ logger.log("Starting server...");
 
 const mode = process.env.NODE_ENV;
 
-logger.debug("Constants set");
+logger.info("Constants set. Using mode:", mode);
 
 const useHttps =
 	mode !== "test" &&
@@ -38,7 +39,11 @@ const httpsOptions = useHttps
 const port = useHttps ? 443 : mode == "test" ? 3000 : 80;
 logger.debug(`Using port ${port}`);
 
-const app = next({ dev: mode == "development", port });
+const app = next({
+	dev: mode == "development",
+	port,
+	turbopack: mode == "development",
+});
 const handle = app.getRequestHandler();
 
 logger.debug("App preparing...");
