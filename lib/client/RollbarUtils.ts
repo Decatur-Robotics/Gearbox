@@ -13,6 +13,14 @@ export interface RollbarInterface {
 
 export default function getRollbar(): RollbarInterface {
 	if (global.rollbar) return global.rollbar;
+	if (!process.env.ROLLBAR_TOKEN) {
+		return {
+			error: (...args: any[]) => console.error(...args),
+			warn: (...args: any[]) => console.warn(...args),
+			info: (...args: any[]) => console.info(...args),
+			debug: (...args: any[]) => console.debug(...args),
+		};
+	}
 
 	const rollbar = new Rollbar({
 		accessToken: process.env.ROLLBAR_TOKEN,

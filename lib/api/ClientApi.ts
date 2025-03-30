@@ -55,6 +55,7 @@ const requestHelper = new RequestHelper(
 		toast.error(
 			`Failed API request: ${url}. If this is an error, please contact the developers.`,
 		),
+	false,
 );
 
 const logger = new Logger(["API"]);
