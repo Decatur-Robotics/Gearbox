@@ -7,7 +7,7 @@ test("Sign in function signs in", async ({ page, context }) => {
 	const res = await context.request.get("/api/auth/session");
 	const foundUser = (await res.json()).user;
 
-	foundUser.id = user.id; // ID mismatches are normal
+	if (foundUser) foundUser.id = user.id; // ID mismatches are normal
 
 	expect(res.status()).toBe(200);
 	expect(foundUser).toMatchObject(user as any);

@@ -155,6 +155,8 @@ export namespace TheBlueAlliance {
 		}
 
 		async request(suburl: string): Promise<any> {
+			if (!this.apiKey) return;
+
 			var res = await fetch(this.baseUrl + suburl, {
 				method: "GET",
 				headers: {
