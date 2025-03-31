@@ -153,9 +153,9 @@ export function GetMinimum(
 	stat: string,
 ) {
 	if (!quantitativeReports) return 0;
-	let minimum = 0;
+	let minimum = quantitativeReports[0].data["AutoCoralScoredLevelOne"];
 	for (let repo of quantitativeReports) {
-		if (repo.data.AutoCoralScoredLevelOne > minimum) {
+		if (repo.data.AutoCoralScoredLevelOne < minimum) {
 			minimum = repo.data["AutoCoralScoredLevelOne"];
 		}
 	}
