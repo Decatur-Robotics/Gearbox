@@ -169,11 +169,11 @@ export function GetMaximum(
 	stat: string,
 ) {
 	if (!quantitativeReports) return 0;
-	let minimum = 0;
+	let maximum = 0;
 	for (let repo of quantitativeReports) {
-		if (repo.data.AutoCoralScoredLevelOne > minimum) {
-			minimum = repo.data["AutoCoralScoredLevelOne"];
+		if (repo.data.AutoCoralScoredLevelOne > maximum) {
+			maximum = repo.data["AutoCoralScoredLevelOne"];
 		}
 	}
-	return minimum;
+	return maximum;
 }
