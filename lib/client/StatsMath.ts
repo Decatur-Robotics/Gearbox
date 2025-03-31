@@ -1,5 +1,5 @@
 import { QuantData, Report } from "../Types";
-import {Reefscape} from "../games"
+import { Reefscape } from "../games";
 
 export const SpeakerAutoPoints = 5;
 export const SpeakerTeleopPoints = 2;
@@ -149,6 +149,20 @@ export function ComparativePercentMulti<T extends QuantData>(
 }
 
 export function GetMinimum(
+	quantitativeReports: Report<Reefscape.QuantitativeData>[],
+	stat: string,
+) {
+	if (!quantitativeReports) return 0;
+	let minimum = 0;
+	for (let repo of quantitativeReports) {
+		if (repo.data.AutoCoralScoredLevelOne > minimum) {
+			minimum = repo.data["AutoCoralScoredLevelOne"];
+		}
+	}
+	return minimum;
+}
+
+export function GetMaximum(
 	quantitativeReports: Report<Reefscape.QuantitativeData>[],
 	stat: string,
 ) {
