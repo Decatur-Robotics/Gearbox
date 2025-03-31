@@ -75,7 +75,7 @@ export default function Home(props: SeasonPageProps) {
 							className="w-1/6 sm:1/8 h-1/4 btn btn-sm btn-error flex"
 						>
 							<FaTrash />
-							<p className="sm:invisible md:visible xl:text-green-500">
+							<p className="max-md:hidden md:visible">
 								Delete Season
 							</p>
 						</button>
