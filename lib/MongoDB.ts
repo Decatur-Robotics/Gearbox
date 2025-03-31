@@ -35,9 +35,7 @@ let clientPromise: Promise<MongoClient>;
 
 if (uri && !global.clientPromise) {
 	client = new MongoClient(uri, options);
-	global.clientPromise = client
-		.connect()
-		.then(() => console.error("MongoDB connected."));
+	global.clientPromise = client.connect();
 }
 clientPromise = global.clientPromise;
 
@@ -46,21 +44,19 @@ export { clientPromise };
 export async function getDatabase(
 	useCache: boolean = true,
 ): Promise<DbInterface> {
-	if (!global.interface) {
-		await clientPromise;
+	if (global.interface) return global.interface; // Return the existing instance if already created
 
-		const mongo = new MongoDBInterface(clientPromise);
+	await clientPromise;
 
-		const dbInterface = useCache
-			? new CachedDbInterface(mongo, cacheOptions)
-			: mongo;
-		await dbInterface.init();
-		global.interface = dbInterface;
+	const mongo = new MongoDBInterface(clientPromise);
 
-		return dbInterface;
-	}
+	const dbInterface = useCache
+		? new CachedDbInterface(mongo, cacheOptions)
+		: mongo;
+	await dbInterface.init();
+	global.interface = dbInterface;
 
-	return global.interface;
+	return dbInterface;
 }
 
 export class MongoDBInterface

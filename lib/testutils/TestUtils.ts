@@ -179,7 +179,7 @@ export namespace PlaywrightUtils {
 
 		await context.addCookies([
 			{
-				name: "__Secure-next-auth.session-token",
+				name: "next-auth.session-token",
 				value: sessionToken,
 				path: "/",
 				domain: "localhost",
