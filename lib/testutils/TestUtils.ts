@@ -174,9 +174,18 @@ export namespace PlaywrightUtils {
 		return api;
 	}
 
-	export async function signIn(context: BrowserContext) {
+	export async function signUp(context: BrowserContext) {
 		const { sessionToken, user } = await getTestClientApi().testSignIn();
 
+		await signIn(context, sessionToken);
+
+		return {
+			sessionToken,
+			user,
+		};
+	}
+
+	export async function signIn(context: BrowserContext, sessionToken: string) {
 		await context.addCookies([
 			{
 				name: "next-auth.session-token",
@@ -189,10 +198,5 @@ export namespace PlaywrightUtils {
 				expires: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
 			},
 		]);
-
-		return {
-			sessionToken,
-			user,
-		};
 	}
 }

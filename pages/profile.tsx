@@ -91,7 +91,7 @@ export default function Profile(props: { teamList: Team[] }) {
 			hideMenu={false}
 			title="Profile"
 		>
-			<UpdateModal />
+			{/* <UpdateModal /> */}
 			<Flex
 				className="my-8 space-y-4"
 				center={true}

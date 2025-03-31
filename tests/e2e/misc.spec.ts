@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { PlaywrightUtils } from "@/lib/testutils/TestUtils";
 
-test("Sign in function signs in", async ({ page, context }) => {
-	const { user } = await PlaywrightUtils.signIn(context);
+test("Sign up function signs up", async ({ page, context }) => {
+	const { user } = await PlaywrightUtils.signUp(context);
 
 	const sessionToken = await context
 		.cookies()
