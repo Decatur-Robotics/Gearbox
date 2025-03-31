@@ -72,10 +72,10 @@ export default function Home(props: SeasonPageProps) {
 					{owner && (
 						<button
 							onClick={deleteSeason}
-							className="w-1/6 btn btn-sm btn-error flex items-center"
+							className="w-1/6 xs:h-1/4 sm:h-1/2 btn btn-sm btn-error flex"
 						>
 							<FaTrash />
-							Delete Season
+							<p className="invisible sm:visible">Delete Season</p>
 						</button>
 					)}
 					<div className="divider" />
