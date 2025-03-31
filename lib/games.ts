@@ -1329,7 +1329,7 @@ export namespace Reefscape {
 				{
 					label: "Min Auto L1 Coral",
 					get(pitData, quantitativeReports) {
-						GetMinimum(quantitativeReports, "AutoCoralScoredLevelOne")
+						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelOne");
 					},
 				},
 				{
