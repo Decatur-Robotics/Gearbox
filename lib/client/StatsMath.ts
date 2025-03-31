@@ -148,6 +148,7 @@ export function ComparativePercentMulti<T extends QuantData>(
 	return results;
 }
 
+//Takes a list of Quantitative reports and a stat and returns the minimum value recorded for said stat
 export function GetMinimum(
 	quantitativeReports: Report<Reefscape.QuantitativeData>[],
 	stat: string,
@@ -162,6 +163,7 @@ export function GetMinimum(
 	return minimum;
 }
 
+//Takes a list of Quantitative reports and a stat and returns the maximum value recorded for said stat
 export function GetMaximum(
 	quantitativeReports: Report<Reefscape.QuantitativeData>[],
 	stat: string,
