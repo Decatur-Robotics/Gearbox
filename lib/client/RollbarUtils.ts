@@ -36,7 +36,7 @@ export function reportDeploymentToRollbar() {
 	const deployId = process.env.DEPLOY_ID;
 
 	if (!deployId) {
-		getRollbar().error("Missing gitSha or deployId in environment variables");
+		getRollbar().error("Missing deployId in environment variables");
 		return;
 	}
 
