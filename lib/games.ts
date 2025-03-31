@@ -22,6 +22,7 @@ import {
 	AmpAutoPoints,
 	AmpTeleopPoints,
 	BooleanAverage,
+	GetMinimum,
 	MostCommonValue,
 	NumericalTotal,
 	Round,
@@ -29,6 +30,7 @@ import {
 	SpeakerTeleopPoints,
 	TrapPoints,
 } from "./client/StatsMath";
+import { report } from "process";
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1324,6 +1326,12 @@ namespace Reefscape {
 		sections: {
 			Auto: [
 				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
+				{
+					label: "Min Auto L1 Coral",
+					get(pitData, quantitativeReports) {
+						GetMinimum(quantitativeReports, "AutoCoralScoredLevelOne")
+					},
+				},
 				{
 					key: "AutoCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Auto",
