@@ -36,6 +36,7 @@ if (
 	(process.env.MONGODB_URI || process.env.FALLBACK_MONGODB_URI) &&
 	!global.clientPromise
 ) {
+	console.error(`Connecting to MongoDB at ${uri}`);
 	client = new MongoClient(uri, options);
 	global.clientPromise = client.connect();
 }

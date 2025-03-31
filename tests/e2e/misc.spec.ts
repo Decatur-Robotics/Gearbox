@@ -10,5 +10,5 @@ test("Sign in function signs in", async ({ page, context }) => {
 	if (foundUser) foundUser.id = user.id; // ID mismatches are normal
 
 	expect(res.status()).toBe(200);
-	expect(foundUser).toMatchObject(user as any);
+	expect(foundUser).toEqual(user as any);
 });
