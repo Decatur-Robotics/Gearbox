@@ -1622,13 +1622,13 @@ export namespace Reefscape {
 				{
 					label: "> Min Algae Scored In Net",
 					get(pitData, quantitativeReports) {
-						return GetMinimum(quantitativeReports!, "TeleopAlgaeScorednet");
+						return GetMinimum(quantitativeReports!, "TeleopAlgaeScoredNet");
 					},
 				},
 				{
 					label: "> Max Algae Scored In Net",
 					get(pitData, quantitativeReports) {
-						return GetMaximum(quantitativeReports!, "TeleopAlgaeScorednet");
+						return GetMaximum(quantitativeReports!, "TeleopAlgaeScoredNet");
 					},
 				},
 			],
