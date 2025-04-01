@@ -146,3 +146,33 @@ export function ComparativePercentMulti<T extends QuantData>(
 
 	return results;
 }
+
+//Takes a list of Quantitative reports and a stat and returns the minimum value recorded for said stat
+export function GetMinimum(
+	quantitativeReports: Report<QuantData>[],
+	stat: string,
+) {
+	if (!quantitativeReports) return 0;
+	let minimum = quantitativeReports[0].data[stat];
+	for (let repo of quantitativeReports) {
+		if (repo.data[stat] < minimum) {
+			minimum = repo.data[stat];
+		}
+	}
+	return minimum;
+}
+
+//Takes a list of Quantitative reports and a stat and returns the maximum value recorded for said stat
+export function GetMaximum(
+	quantitativeReports: Report<QuantData>[],
+	stat: string,
+) {
+	if (!quantitativeReports) return 0;
+	let maximum = 0;
+	for (let repo of quantitativeReports) {
+		if (repo.data[stat] > maximum) {
+			maximum = repo.data[stat];
+		}
+	}
+	return maximum;
+}
