@@ -11,10 +11,11 @@ export interface ResendInterface {
 }
 
 export class ResendUtils implements ResendInterface {
-	private static resend: Resend;
+	private static resend: Resend | undefined;
 
 	constructor() {
-		ResendUtils.resend ??= new Resend(process.env.SMTP_PASSWORD);
+		if (process.env.SMTP_PASSWORD)
+			ResendUtils.resend ??= new Resend(process.env.SMTP_PASSWORD);
 	}
 
 	async createContact(rawUser: NextAuthUser) {
@@ -31,7 +32,7 @@ export class ResendUtils implements ResendInterface {
 
 		const nameParts = user.name?.split(" ");
 
-		const res = await ResendUtils.resend.contacts.create({
+		const res = await ResendUtils.resend?.contacts.create({
 			email: user.email,
 			firstName: nameParts[0],
 			lastName: nameParts.length > 1 ? nameParts[1] : "",
@@ -39,7 +40,7 @@ export class ResendUtils implements ResendInterface {
 			audienceId: process.env.RESEND_AUDIENCE_ID,
 		});
 
-		if (!res.data?.id) {
+		if (!res?.data?.id) {
 			console.error("Failed to create contact for", user.email);
 			console.error(res);
 			return;
@@ -64,7 +65,7 @@ export class ResendUtils implements ResendInterface {
 			return;
 		}
 
-		ResendUtils.resend.emails.send({
+		ResendUtils.resend?.emails.send({
 			from: "Gearbox Server <server-no-reply@4026.org>",
 			to: JSON.parse(process.env.DEVELOPER_EMAILS), // Environment variables are always strings, so we need to parse it
 			subject,

@@ -27,9 +27,6 @@ import {
 	deleteComp,
 	deleteSeason,
 	generatePitReports,
-	getSeasonFromComp,
-	getTeamFromMatch,
-	getTeamFromReport,
 	onTeam,
 	ownsTeam,
 } from "./ApiUtils";
@@ -51,7 +48,6 @@ import { RequestHelper } from "unified-api";
 import { createNextRoute, NextApiTemplate } from "unified-api-nextjs";
 import { Report } from "../Types";
 import Logger from "../client/Logger";
-import getRollbar, { RollbarInterface } from "../client/RollbarUtils";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
@@ -59,6 +55,7 @@ const requestHelper = new RequestHelper(
 		toast.error(
 			`Failed API request: ${url}. If this is an error, please contact the developers.`,
 		),
+	false,
 );
 
 const logger = new Logger(["API"]);
@@ -2619,6 +2616,57 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			await deleteSeason(await db, season);
 
 			return res.status(200).send({ result: "success" });
+		},
+	});
+
+	/**
+	 * Creates a user and session, and then returns the session token. Used in E2E tests.
+	 */
+	testSignIn = createNextRoute<
+		[],
+		{
+			sessionToken: string;
+			user: User;
+		},
+		ApiDependencies,
+		void
+	>({
+		isAuthorized: () =>
+			Promise.resolve({
+				authorized: process.env.ENABLE_TEST_SIGNIN_ROUTE === "true",
+				authData: undefined,
+			}),
+		handler: async (req, res, { db: dbPromise }, authData, args) => {
+			const db = await dbPromise;
+
+			const user = await db.addObject(
+				CollectionId.Users,
+				new User(
+					"Test User",
+					"test@gmail.com",
+					process.env.DEFAULT_IMAGE,
+					false,
+					await GenerateSlug(db, CollectionId.Users, "Test User"),
+					[],
+					[],
+					undefined,
+					0,
+					0,
+				),
+			);
+
+			const session = await db.addObject(CollectionId.Sessions, {
+				sessionToken: crypto.randomUUID().toString(),
+				userId: user._id as unknown as ObjectId,
+				expires: new Date(
+					Date.now() + 7 * 24 * 60 * 60 * 1000,
+				) as unknown as string, // 1 week expiration
+			});
+
+			return res.status(200).send({
+				sessionToken: session.sessionToken,
+				user,
+			});
 		},
 	});
 }

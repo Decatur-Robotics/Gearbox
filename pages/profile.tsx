@@ -91,7 +91,7 @@ export default function Profile(props: { teamList: Team[] }) {
 			hideMenu={false}
 			title="Profile"
 		>
-			<UpdateModal />
+			{/* <UpdateModal /> */}
 			<Flex
 				className="my-8 space-y-4"
 				center={true}
@@ -103,12 +103,14 @@ export default function Profile(props: { teamList: Team[] }) {
 							<input
 								onChange={(e) => setNewName(e.target.value)}
 								defaultValue={newName}
+								placeholder="New Name"
 								className="input"
 							/>
 						) : (
 							<h1>{user?.name}</h1>
 						)}
 						<button
+							data-testid="edit-name-button"
 							onClick={toggleEditingName}
 							className="btn btn-ghost btn-sm"
 						>

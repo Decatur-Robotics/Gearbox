@@ -17,6 +17,8 @@ import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
 import { NextResponse } from "unified-api-nextjs";
 import { RollbarInterface } from "../client/RollbarUtils";
+import { BrowserContext, Page } from "@playwright/test";
+import ClientApi from "../api/ClientApi";
 
 export class TestRes extends NextResponse<any> {
 	status = jest.fn((code) => this);
@@ -159,4 +161,72 @@ export async function createTestDocuments(db: DbInterface) {
 	} as any as any);
 
 	return { report, subjectiveReport, match, pitReport, comp, season, team };
+}
+
+export namespace PlaywrightUtils {
+	export function getTestClientApi() {
+		const api = new ClientApi();
+
+		// Relative requests don't work in Playwright apparently
+		if (
+			process.env.BASE_URL_FOR_PLAYWRIGHT &&
+			!api.requestHelper.baseUrl.startsWith(process.env.BASE_URL_FOR_PLAYWRIGHT)
+		) {
+			api.requestHelper.baseUrl =
+				process.env.BASE_URL_FOR_PLAYWRIGHT + api.requestHelper.baseUrl;
+		}
+
+		return api;
+	}
+
+	/**
+	 * Will reload the page
+	 */
+	export async function signUp(page: Page) {
+		const { sessionToken, user } = await getTestClientApi().testSignIn();
+
+		if (!sessionToken || !user) {
+			throw new Error("Failed to sign in");
+		}
+
+		await signIn(page, sessionToken);
+
+		return {
+			sessionToken,
+			user,
+		};
+	}
+
+	/**
+	 * Will reload the page
+	 */
+	export async function signIn(page: Page, sessionToken: string) {
+		await page.context().addCookies([
+			{
+				name: "next-auth.session-token",
+				value: sessionToken,
+				path: "/",
+				domain: "localhost",
+				sameSite: "Lax",
+				httpOnly: true,
+				secure: true,
+				expires: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
+			},
+		]);
+
+		// It sometimes requires a reload and a fetch to get sign ins to register
+		await getUser(page);
+		await page.reload();
+	}
+
+	export async function getUser(page: Page) {
+		const res = await page.context().request.get("/api/auth/session");
+
+		if (res.ok()) {
+			const { user } = await res.json();
+			return user as User;
+		} else {
+			throw new Error("Failed to get user");
+		}
+	}
 }

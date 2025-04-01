@@ -13,8 +13,8 @@ import {
 	Match,
 	Report,
 	Team,
+	MatchType,
 } from "@/lib/Types";
-import { MatchType } from "../../lib/Types";
 import { ObjectId } from "bson";
 import { GameId } from "@/lib/client/GameId";
 
