@@ -7,6 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Make sure to require each shard in GitHub!
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
     steps:
