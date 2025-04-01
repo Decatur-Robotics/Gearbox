@@ -30,14 +30,12 @@ test.describe("Edit user name", () => {
 		await page.goto("/profile");
 
 		const editButton = page.getByTestId("edit-name-button");
-
 		await editButton.click();
 
 		const nameInput = page.getByPlaceholder(/new name/i);
 		await expect(nameInput).toBeVisible();
 
 		await nameInput.fill("New Name");
-
 		await editButton.click();
 
 		await expect(page.getByText("New Name")).toBeVisible();
