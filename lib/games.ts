@@ -1849,7 +1849,9 @@ export namespace Reefscape {
 					break;
 			}
 
-			totalPoints += report.TeleopCoralScoredLevelOne * 2;
+			totalPoints +=
+				(report.TeleopCoralScoredLevelOne + report.TeleopAlgaeScoredProcessor) *
+				2;
 			totalPoints +=
 				(report.AutoCoralScoredLevelOne + report.TeleopCoralScoredLevelTwo) * 3;
 			totalPoints +=
@@ -1860,9 +1862,7 @@ export namespace Reefscape {
 				4;
 			totalPoints += report.TeleopCoralScoredLevelFour * 5;
 			totalPoints +=
-				(report.AutoAlgaeScoredProcessor +
-					report.TeleopAlgaeScoredProcessor +
-					report.AutoCoralScoredLevelThree) *
+				(report.AutoAlgaeScoredProcessor + report.AutoCoralScoredLevelThree) *
 				6;
 			totalPoints += report.AutoCoralScoredLevelFour * 7;
 		}
