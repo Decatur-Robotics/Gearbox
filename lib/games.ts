@@ -1470,16 +1470,88 @@ export namespace Reefscape {
 					label: "Avg Amt Of Coral Scored Level One Teleop",
 				},
 				{
+					label: "> Min L1 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelOne",
+						);
+					},
+				},
+				{
+					label: "> Max L1 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelOne",
+						);
+					},
+				},
+				{
 					key: "TeleopCoralScoredLevelTwo",
 					label: "Avg Amt Of Coral Scored Level Two Teleop",
+				},
+				{
+					label: "> Min L2 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelTwo",
+						);
+					},
+				},
+				{
+					label: "> Max L2 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelTwo",
+						);
+					},
 				},
 				{
 					key: "TeleopCoralScoredLevelThree",
 					label: "Avg Amt Of Coral Scored Level Three Teleop",
 				},
 				{
+					label: "> Min L3 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelThree",
+						);
+					},
+				},
+				{
+					label: "> Max L3 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelThree",
+						);
+					},
+				},
+				{
 					key: "TeleopCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Teleop",
+				},
+				{
+					label: "> Min L4 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelFour",
+						);
+					},
+				},
+				{
+					label: "> Max L4 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelFour",
+						);
+					},
 				},
 				{
 					label: "Avg Teleop Coral",
@@ -1504,12 +1576,60 @@ export namespace Reefscape {
 					label: "Avg Amt of Algae Removed From Reef",
 				},
 				{
+					label: "> Min Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopAlgaeRemovedFromReef",
+						);
+					},
+				},
+				{
+					label: "> Max Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopAlgaeRemovedFromReef",
+						);
+					},
+				},
+				{
 					key: "TeleopAlgaeScoredProcessor",
 					label: "Avg Amt of Algae Scored Processor Teleop",
 				},
 				{
+					label: "> Min Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopAlgaeScoredProcessor",
+						);
+					},
+				},
+				{
+					label: "> Max Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopAlgaeScoredProcessor",
+						);
+					},
+				},
+				{
 					key: "TeleopAlgaeScoredNet",
 					label: "Avg Amt of Algae Scored Net Teleop",
+				},
+				{
+					label: "> Min Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopAlgaeScorednet");
+					},
+				},
+				{
+					label: "> Max Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopAlgaeScorednet");
+					},
 				},
 			],
 		},
