@@ -23,7 +23,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: npm run e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.12.0
