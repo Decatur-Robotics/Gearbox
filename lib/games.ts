@@ -1420,12 +1420,48 @@ export namespace Reefscape {
 					label: "Avg Amt of Algae Removed From Reef",
 				},
 				{
+					label: "> Min Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoAlgaeRemovedFromReef");
+					},
+				},
+				{
+					label: "> Max Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoAlgaeRemovedFromReef");
+					},
+				},
+				{
 					key: "AutoAlgaeScoredProcessor",
 					label: "Avg Amt of Algae Scored Processor Auto",
 				},
 				{
+					label: "> Min Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoAlgaeScoredProcessor");
+					},
+				},
+				{
+					label: "> Max Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoAlgaeScoredProcessor");
+					},
+				},
+				{
 					key: "AutoAlgaeScoredNet",
 					label: "Avg Amt of Algae Scored Net Auto",
+				},
+				{
+					label: "> Min Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoAlgaeScoredNet");
+					},
+				},
+				{
+					label: "> Max Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoAlgaeScoredNet");
+					},
 				},
 			],
 			Teleop: [
