@@ -1168,7 +1168,7 @@ export namespace IntoTheDeep {
 	);
 }
 
-export namespace Reefscape {
+namespace Reefscape {
 	export class QuantitativeData extends QuantData {
 		AutoMovedPastStartingline: boolean = false;
 
