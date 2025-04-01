@@ -1,5 +1,4 @@
 import { QuantData, Report } from "../Types";
-import { Reefscape } from "../games";
 
 export const SpeakerAutoPoints = 5;
 export const SpeakerTeleopPoints = 2;
