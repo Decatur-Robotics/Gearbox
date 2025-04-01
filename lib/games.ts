@@ -22,6 +22,7 @@ import {
 	AmpAutoPoints,
 	AmpTeleopPoints,
 	BooleanAverage,
+	GetMinimum,
 	MostCommonValue,
 	NumericalTotal,
 	Round,
@@ -29,6 +30,8 @@ import {
 	SpeakerTeleopPoints,
 	TrapPoints,
 } from "./client/StatsMath";
+import { report } from "process";
+import { GetMaximum } from "./client/StatsMath";
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1323,22 +1326,75 @@ namespace Reefscape {
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {
 			Auto: [
-				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
 				{
 					key: "AutoCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Auto",
+				},
+				{
+					label: "> Min Auto L1 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelOne");
+					},
+				},
+				{
+					label: "> Max Auto L1 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelOne");
+					},
 				},
 				{
 					key: "AutoCoralScoredLevelTwo",
 					label: "Avg Amt Of Coral Scored Level Two Auto",
 				},
 				{
+					label: "> Min Auto L2 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelTwo");
+					},
+				},
+				{
+					label: "> Max Auto L2 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelTwo");
+					},
+				},
+				{
 					key: "AutoCoralScoredLevelThree",
 					label: "Avg Amt Of Coral Scored Level Three Auto",
 				},
 				{
+					label: "> Min Auto L3 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"AutoCoralScoredLevelThree",
+						);
+					},
+				},
+				{
+					label: "> Max Auto L3 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"AutoCoralScoredLevelThree",
+						);
+					},
+				},
+				{
 					key: "AutoCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Auto",
+				},
+				{
+					label: "> Min Auto L4 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelFour");
+					},
+				},
+				{
+					label: "> Max Auto L4 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelFour");
+					},
 				},
 				{
 					label: "Avg Auto Coral",
@@ -1363,31 +1419,138 @@ namespace Reefscape {
 					label: "Avg Amt of Algae Removed From Reef",
 				},
 				{
+					label: "> Min Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoAlgaeRemovedFromReef");
+					},
+				},
+				{
+					label: "> Max Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoAlgaeRemovedFromReef");
+					},
+				},
+				{
 					key: "AutoAlgaeScoredProcessor",
 					label: "Avg Amt of Algae Scored Processor Auto",
+				},
+				{
+					label: "> Min Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoAlgaeScoredProcessor");
+					},
+				},
+				{
+					label: "> Max Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoAlgaeScoredProcessor");
+					},
 				},
 				{
 					key: "AutoAlgaeScoredNet",
 					label: "Avg Amt of Algae Scored Net Auto",
 				},
+				{
+					label: "> Min Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoAlgaeScoredNet");
+					},
+				},
+				{
+					label: "> Max Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoAlgaeScoredNet");
+					},
+				},
 			],
 			Teleop: [
-				{ key: "GroundIntake", label: "Has Ground Intake?" },
 				{
 					key: "TeleopCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Teleop",
+				},
+				{
+					label: "> Min L1 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelOne",
+						);
+					},
+				},
+				{
+					label: "> Max L1 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelOne",
+						);
+					},
 				},
 				{
 					key: "TeleopCoralScoredLevelTwo",
 					label: "Avg Amt Of Coral Scored Level Two Teleop",
 				},
 				{
+					label: "> Min L2 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelTwo",
+						);
+					},
+				},
+				{
+					label: "> Max L2 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelTwo",
+						);
+					},
+				},
+				{
 					key: "TeleopCoralScoredLevelThree",
 					label: "Avg Amt Of Coral Scored Level Three Teleop",
 				},
 				{
+					label: "> Min L3 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelThree",
+						);
+					},
+				},
+				{
+					label: "> Max L3 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelThree",
+						);
+					},
+				},
+				{
 					key: "TeleopCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Teleop",
+				},
+				{
+					label: "> Min L4 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelFour",
+						);
+					},
+				},
+				{
+					label: "> Max L4 Coral Scored",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopCoralScoredLevelFour",
+						);
+					},
 				},
 				{
 					label: "Avg Teleop Coral",
@@ -1412,12 +1575,60 @@ namespace Reefscape {
 					label: "Avg Amt of Algae Removed From Reef",
 				},
 				{
+					label: "> Min Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopAlgaeRemovedFromReef",
+						);
+					},
+				},
+				{
+					label: "> Max Algae Removed From Reef",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopAlgaeRemovedFromReef",
+						);
+					},
+				},
+				{
 					key: "TeleopAlgaeScoredProcessor",
 					label: "Avg Amt of Algae Scored Processor Teleop",
 				},
 				{
+					label: "> Min Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopAlgaeScoredProcessor",
+						);
+					},
+				},
+				{
+					label: "> Max Algae Scored In Processor",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopAlgaeScoredProcessor",
+						);
+					},
+				},
+				{
 					key: "TeleopAlgaeScoredNet",
 					label: "Avg Amt of Algae Scored Net Teleop",
+				},
+				{
+					label: "> Min Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopAlgaeScoredNet");
+					},
+				},
+				{
+					label: "> Max Algae Scored In Net",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopAlgaeScoredNet");
+					},
 				},
 			],
 		},
@@ -1638,7 +1849,9 @@ namespace Reefscape {
 					break;
 			}
 
-			totalPoints += report.TeleopCoralScoredLevelOne * 2;
+			totalPoints +=
+				(report.TeleopCoralScoredLevelOne + report.TeleopAlgaeScoredProcessor) *
+				2;
 			totalPoints +=
 				(report.AutoCoralScoredLevelOne + report.TeleopCoralScoredLevelTwo) * 3;
 			totalPoints +=
@@ -1649,9 +1862,7 @@ namespace Reefscape {
 				4;
 			totalPoints += report.TeleopCoralScoredLevelFour * 5;
 			totalPoints +=
-				(report.AutoAlgaeScoredProcessor +
-					report.TeleopAlgaeScoredProcessor +
-					report.AutoCoralScoredLevelThree) *
+				(report.AutoAlgaeScoredProcessor + report.AutoCoralScoredLevelThree) *
 				6;
 			totalPoints += report.AutoCoralScoredLevelFour * 7;
 		}
