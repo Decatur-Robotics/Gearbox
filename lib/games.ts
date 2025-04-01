@@ -1329,24 +1329,37 @@ export namespace Reefscape {
 				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
 				{
 					key: "AutoCoralScoredLevelOne",
-					label: "Avg Amt Of Coral Scored Level One Auto",
+					label: ">>Avg Amt Of Coral Scored Level One Auto",
 				},
 				{
-					label: "Min Auto L1 Coral",
+					label: ">>>>>Min Auto L1 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelOne");
 					},
 				},
 				{
-					label: "Max Auto L1 Coral",
+					label: ">>>>>Max Auto L1 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelOne");
 					},
 				},
 				{
 					key: "AutoCoralScoredLevelTwo",
-					label: "Avg Amt Of Coral Scored Level Two Auto",
+					label: ">>Avg Amt Of Coral Scored Level Two Auto",
 				},
+				{
+					label: ">>>>>Min Auto L2 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelTwo");
+					},
+				},
+				{
+					label: ">>>>>Max Auto L2 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelTwo");
+					},
+				},
+				{label:""},
 				{
 					key: "AutoCoralScoredLevelThree",
 					label: "Avg Amt Of Coral Scored Level Three Auto",
