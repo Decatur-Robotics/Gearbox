@@ -31,6 +31,7 @@ import {
 	TrapPoints,
 } from "./client/StatsMath";
 import { report } from "process";
+import { GetMaximum } from './client/StatsMath';
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1327,14 +1328,20 @@ export namespace Reefscape {
 			Auto: [
 				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
 				{
+					key: "AutoCoralScoredLevelOne",
+					label: "Avg Amt Of Coral Scored Level One Auto",
+				},
+				{
 					label: "Min Auto L1 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelOne");
 					},
 				},
 				{
-					key: "AutoCoralScoredLevelOne",
-					label: "Avg Amt Of Coral Scored Level One Auto",
+					label: "Max Auto L1 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelOne");
+					},
 				},
 				{
 					key: "AutoCoralScoredLevelTwo",
