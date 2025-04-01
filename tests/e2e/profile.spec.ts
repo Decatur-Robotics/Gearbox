@@ -1,4 +1,3 @@
-import { wait } from "@/lib/client/ClientUtils";
 import { PlaywrightUtils } from "@/lib/testutils/TestUtils";
 import { test, expect } from "@playwright/test";
 
@@ -25,4 +24,25 @@ test("Displays user information when signed in", async ({ page, context }) => {
 	await expect(page.getByText(user.email!)).toBeVisible();
 	await expect(page.getByText(user.slug!)).toBeVisible();
 	await expect(page.getByText(new RegExp(user.name!))).toBeVisible();
+});
+
+test.describe("Edit user name", () => {
+	test("Allows user to edit their name", async ({ page, context }) => {
+		const { user } = await PlaywrightUtils.signUp(context);
+
+		await page.goto("/profile");
+
+		const editButton = page.getByTestId("edit-name-button");
+
+		await editButton.click();
+
+		const nameInput = page.getByPlaceholder(/new name/i);
+		await expect(nameInput).toBeVisible();
+
+		await nameInput.fill("New Name");
+
+		await editButton.click();
+
+		await expect(page.getByText("New Name")).toBeVisible();
+	});
 });
