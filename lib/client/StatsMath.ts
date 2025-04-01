@@ -172,7 +172,7 @@ export function GetMaximum(
 	let maximum = 0;
 	for (let repo of quantitativeReports) {
 		if (repo.data.AutoCoralScoredLevelOne > maximum) {
-			maximum = repo.data["AutoCoralScoredLevelOne"];
+			maximum = repo.data[stat];
 		}
 	}
 	return maximum;
