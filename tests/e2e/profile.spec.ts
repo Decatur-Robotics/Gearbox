@@ -41,3 +41,16 @@ test.describe("Edit user name", () => {
 		await expect(page.getByText("New Name")).toBeVisible();
 	});
 });
+
+test("Sign out button signs out", async ({ page }) => {
+	const { user } = await PlaywrightUtils.signUp(page);
+
+	await page.goto("/profile");
+
+	const signOutButton = page.getByRole("button", { name: /sign out/i }).first();
+	await signOutButton.click();
+
+	await expect(
+		page.getByRole("heading", { name: /sign in/i }).first(),
+	).toBeVisible();
+});
