@@ -1326,7 +1326,6 @@ export namespace Reefscape {
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {
 			Auto: [
-				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
 				{
 					key: "AutoCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Auto",
