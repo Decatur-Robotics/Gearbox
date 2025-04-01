@@ -77,6 +77,7 @@ export default defineConfig({
 		command: "npm run e2e-start-server",
 		url: baseURL,
 		reuseExistingServer: !process.env.CI,
-		timeout: 5 * 60 * 1000, // 5 minutes
+		timeout: 5 * 60 * 1000, // 5 minutes,
+		stdout: "pipe",
 	},
 });

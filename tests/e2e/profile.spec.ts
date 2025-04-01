@@ -1,3 +1,4 @@
+import { wait } from "@/lib/client/ClientUtils";
 import { PlaywrightUtils } from "@/lib/testutils/TestUtils";
 import { test, expect } from "@playwright/test";
 
@@ -13,6 +14,9 @@ test("Displays user information when signed in", async ({ page, context }) => {
 	const { user } = await PlaywrightUtils.signUp(context);
 
 	await page.goto("/profile");
+
+	const foundUser = await PlaywrightUtils.getUser(context);
+	expect(foundUser._id).toEqual(user._id);
 
 	await expect(
 		page.getByRole("heading", { name: /sign in/i }).first(),

@@ -15,12 +15,8 @@ test("Sign up function signs up", async ({ page, context }) => {
 	expect(sessionToken).toBeDefined();
 	expect(sessionToken).not.toBe("");
 
-	const res = await context.request.get("/api/auth/session");
-
-	const foundUser = (await res.json()).user;
-
+	const foundUser = await PlaywrightUtils.getUser(context);
 	if (foundUser) foundUser.id = user.id; // ID mismatches are normal
 
-	expect(res.status()).toBe(200);
 	expect(foundUser).toEqual(user as any);
 });

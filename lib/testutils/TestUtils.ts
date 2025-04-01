@@ -167,15 +167,24 @@ export namespace PlaywrightUtils {
 	export function getTestClientApi() {
 		const api = new ClientApi();
 
-		// Relative requests don't work in Playwright apparentl
-		api.requestHelper.baseUrl =
-			process.env.BASE_URL_FOR_PLAYWRIGHT + api.requestHelper.baseUrl;
+		// Relative requests don't work in Playwright apparently
+		if (
+			process.env.BASE_URL_FOR_PLAYWRIGHT &&
+			!api.requestHelper.baseUrl.startsWith(process.env.BASE_URL_FOR_PLAYWRIGHT)
+		) {
+			api.requestHelper.baseUrl =
+				process.env.BASE_URL_FOR_PLAYWRIGHT + api.requestHelper.baseUrl;
+		}
 
 		return api;
 	}
 
 	export async function signUp(context: BrowserContext) {
 		const { sessionToken, user } = await getTestClientApi().testSignIn();
+
+		if (!sessionToken || !user) {
+			throw new Error("Failed to sign in");
+		}
 
 		await signIn(context, sessionToken);
 
@@ -198,5 +207,16 @@ export namespace PlaywrightUtils {
 				expires: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
 			},
 		]);
+	}
+
+	export async function getUser(context: BrowserContext) {
+		const res = await context.request.get("/api/auth/session");
+
+		if (res.ok()) {
+			const { user } = await res.json();
+			return user as User;
+		} else {
+			throw new Error("Failed to get user");
+		}
 	}
 }
