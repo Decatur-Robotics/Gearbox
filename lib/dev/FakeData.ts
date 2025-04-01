@@ -81,6 +81,6 @@ export async function fillTeamWithFakeUsers(
 	team.users = team.users.concat(users);
 	team.scouters = team.scouters.concat(users);
 
-	await db.updateObjectById(CollectionId.Teams, new ObjectId(team._id), team);
+	await db.updateObjectById(CollectionId.Teams, team._id, team);
 	return team;
 }

@@ -233,7 +233,7 @@ describe(`${ClientApi.name}.${api.createTeam.name}`, () => {
 
 		const foundUser = await db.findObjectById(
 			CollectionId.Users,
-			new ObjectId(user._id!),
+			user._id,
 		);
 		expect(foundUser?.teams).toEqual(expect.arrayContaining([team._id!]));
 		expect(foundUser?.owner).toEqual(expect.arrayContaining([team._id!]));
@@ -537,7 +537,7 @@ describe(`${ClientApi.name}.${api.updateUser.name}`, () => {
 
 		const updatedUser = await db.findObjectById(
 			CollectionId.Users,
-			new ObjectId(user._id!),
+			user._id,
 		);
 		expect(updatedUser?.name).toEqual(newValues.name);
 	});
@@ -570,7 +570,7 @@ describe(`${ClientApi.name}.${api.updateTeam.name}`, () => {
 
 		const updatedTeam = await db.findObjectById(
 			CollectionId.Teams,
-			new ObjectId(team._id!),
+			team._id,
 		);
 		expect(updatedTeam?.name).toEqual(newValues.name);
 	});
@@ -628,7 +628,7 @@ describe(`${ClientApi.name}.${api.updateSeason.name}`, () => {
 
 		const updatedSeason = await db.findObjectById(
 			CollectionId.Seasons,
-			new ObjectId(season._id!),
+			season._id,
 		);
 		expect(updatedSeason?.name).toEqual(newValues.name);
 	});
@@ -706,7 +706,7 @@ describe(`${ClientApi.name}.${api.updateReport.name}`, () => {
 
 		const updatedReport = await db.findObjectById(
 			CollectionId.Reports,
-			new ObjectId(report._id!),
+			report._id,
 		);
 		expect(updatedReport?.data).toEqual(newValues.data);
 	});
@@ -782,7 +782,7 @@ describe(`${ClientApi.name}.${api.updatePitreport.name}`, () => {
 
 		const updatedPitreport = await db.findObjectById(
 			CollectionId.PitReports,
-			new ObjectId(pitreport._id!),
+			pitreport._id,
 		);
 		expect(updatedPitreport?.data).toEqual(newValues.data);
 	});
@@ -847,13 +847,13 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 
 		const updatedTeam = await db.findObjectById(
 			CollectionId.Teams,
-			new ObjectId(team._id!),
+			team._id,
 		);
 		expect(updatedTeam?.slackWebhook).not.toBe(undefined);
 
 		const webhook = await db.findObjectById(
 			CollectionId.Webhooks,
-			new ObjectId(updatedTeam!.slackWebhook!),
+			updatedTeam?.slackWebhook!,
 		);
 		expect(webhook?.url).toEqual(webhookUrl);
 	});
@@ -895,13 +895,13 @@ describe(`${ClientApi.name}.${api.setSlackWebhook.name}`, () => {
 
 		const updatedTeam = await db.findObjectById(
 			CollectionId.Teams,
-			new ObjectId(team._id!),
+			team._id,
 		);
 		expect(updatedTeam?.slackWebhook).toEqual(webhook._id!);
 
 		const updatedWebhook = await db.findObjectById(
 			CollectionId.Webhooks,
-			new ObjectId(updatedTeam!.slackWebhook!),
+			updatedTeam?.slackWebhook!,
 		);
 		expect(updatedWebhook?.url).toEqual(webhookUrl);
 	});
@@ -918,7 +918,7 @@ describe(`${ClientApi.name}.${api.changeUserName.name}`, () => {
 
 		const updatedUser = await db.findObjectById(
 			CollectionId.Users,
-			new ObjectId(user._id!),
+			user._id,
 		);
 		expect(updatedUser?.name).toEqual(newName);
 	});
@@ -1025,7 +1025,7 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 
 		const updatedReport = await db.findObjectById(
 			CollectionId.Reports,
-			new ObjectId(report._id!),
+			report._id,
 		);
 
 		expect(updatedReport?.robotNumber).toEqual(newTeam);
@@ -1067,7 +1067,7 @@ describe(`${ClientApi.name}.${api.changeTeamNumberForReport.name}`, () => {
 
 		const updatedMatch = await db.findObjectById(
 			CollectionId.Matches,
-			new ObjectId(match._id!),
+			match._id,
 		);
 	});
 });

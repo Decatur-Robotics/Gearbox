@@ -613,9 +613,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	}
 
 	const seasonIds = resolved.team?.seasons.map(
-		(seasonId) => new ObjectId(seasonId),
+		(seasonId) => seasonId,
 	);
-	const userIds = resolved.team?.users.map((userId) => new ObjectId(userId));
+	const userIds = resolved.team?.users.map((userId) => userId);
 	const seasons = await db.findObjects(CollectionId.Seasons, {
 		_id: { $in: seasonIds },
 	});

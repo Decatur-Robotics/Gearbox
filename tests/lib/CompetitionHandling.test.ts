@@ -229,7 +229,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		if (subjectiveScouters) {
 			team = (await db.findObjectById(
 				CollectionId.Teams,
-				new ObjectId(team._id),
+				team._id,
 			))!;
 
 			team.subjectiveScouters = team.scouters.slice(0, 2);
@@ -295,12 +295,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 
@@ -319,12 +319,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 
@@ -342,12 +342,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 
@@ -375,12 +375,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 
@@ -396,12 +396,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedMatches = await Promise.all(
 			matches.map((m) =>
-				db.findObjectById(CollectionId.Matches, new ObjectId(m._id)),
+				db.findObjectById(CollectionId.Matches, m._id),
 			),
 		);
 
@@ -417,12 +417,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedMatches = await Promise.all(
 			matches.map((m) =>
-				db.findObjectById(CollectionId.Matches, new ObjectId(m._id)),
+				db.findObjectById(CollectionId.Matches, m._id),
 			),
 		);
 
@@ -437,12 +437,12 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 		await assignScoutersToCompetitionMatches(
 			db,
 			team._id,
-			new ObjectId(comp._id),
+			comp._id,
 		);
 
 		const updatedMatches = await Promise.all(
 			matches.map((m) =>
-				db.findObjectById(CollectionId.Matches, new ObjectId(m._id)),
+				db.findObjectById(CollectionId.Matches, m._id),
 			),
 		);
 
@@ -467,7 +467,7 @@ describe(assignScoutersToCompetitionMatches.name, () => {
 			assignScoutersToCompetitionMatches(
 				db,
 				new ObjectId(),
-				new ObjectId(comp._id),
+				comp._id,
 			),
 		).rejects.toThrow("Team not found");
 	});
@@ -525,7 +525,7 @@ describe(generateReportsForMatch.name, () => {
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 
@@ -550,7 +550,7 @@ describe(generateReportsForMatch.name, () => {
 		const { match, reports, db } = await createMatch();
 
 		for (const report of reports) {
-			await db.deleteObjectById(CollectionId.Reports, new ObjectId(report._id));
+			await db.deleteObjectById(CollectionId.Reports, report._id);
 		}
 
 		await generateReportsForMatch(db, match, GameId.Crescendo);
@@ -559,14 +559,14 @@ describe(generateReportsForMatch.name, () => {
 			db.findObjects(CollectionId.Reports, {
 				match: match._id,
 			}),
-			db.findObjectById(CollectionId.Matches, new ObjectId(match._id)),
+			db.findObjectById(CollectionId.Matches, match._id),
 		]);
 
 		expect(updatedReports.every((r) => r !== undefined)).toBe(true);
 		expect(updatedReports.length).toBe(6);
 		expect(updatedMatch?.reports.length).toBe(6);
 		for (const report of updatedReports) {
-			expect(report?.match).toBe(match._id);
+			expect(report?.match).toStrictEqual(match._id);
 			expect(match.reports).toContain(report?._id);
 		}
 	});
@@ -586,14 +586,14 @@ describe(generateReportsForMatch.name, () => {
 			db.findObjects(CollectionId.Reports, {
 				match: match._id,
 			}),
-			db.findObjectById(CollectionId.Matches, new ObjectId(match._id)),
+			db.findObjectById(CollectionId.Matches, match._id),
 		]);
 
 		expect(updatedReports.every((r) => r !== undefined)).toBe(true);
 		expect(updatedReports.length).toBe(6);
 		expect(updatedMatch?.reports.length).toBe(6);
 		for (const report of updatedReports) {
-			expect(report?.match).toBe(match._id);
+			expect(report?.match).toStrictEqual(match._id);
 			// I couldn't get toContain to work, some issue with === vs ==
 			expect(
 				match.reports.some((r) => r == report._id),
@@ -608,7 +608,7 @@ describe(generateReportsForMatch.name, () => {
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 

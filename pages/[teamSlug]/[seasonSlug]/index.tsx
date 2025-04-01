@@ -40,7 +40,7 @@ export default function Home(props: SeasonPageProps) {
 			) === confirmKey
 		) {
 			toast.promise(
-				api.deleteSeason(season._id).finally(() => {
+				api.deleteSeason(season._id.toString()).finally(() => {
 					window.location.href = `/${team?.slug}`;
 				}),
 				{

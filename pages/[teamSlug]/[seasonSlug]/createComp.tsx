@@ -66,7 +66,7 @@ export default function CreateComp(props: ResolvedUrlData) {
 			autofill?.start ?? now,
 			autofill?.end ?? now,
 			autofill?.name ?? name,
-			season?._id!,
+			season?._id.toString()!,
 			usePublicData,
 		);
 		var win: Window = window;

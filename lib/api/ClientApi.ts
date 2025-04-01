@@ -194,8 +194,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			}
 
 			await Promise.all([
-				db.updateObjectById(CollectionId.Users, new ObjectId(userId), joinee),
-				db.updateObjectById(CollectionId.Teams, new ObjectId(teamId), team),
+				db.updateObjectById(CollectionId.Users, userId, joinee),
+				db.updateObjectById(CollectionId.Teams, teamId, team),
 			]);
 
 			return res.status(200).send(team);
@@ -303,7 +303,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Users,
-				new ObjectId(user._id),
+				user._id,
 				user,
 			);
 
@@ -358,11 +358,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			const { _id, ...updatedTeam } = team;
-			updatedTeam.seasons = [...team.seasons, new ObjectId(season._id)];
+			updatedTeam.seasons = [...team.seasons, season._id];
 
 			await db.updateObjectById(
 				CollectionId.Teams,
-				new ObjectId(teamId),
+				teamId,
 				updatedTeam!,
 			);
 
@@ -404,7 +404,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			comp.matches = matches.map((match) => match._id);
 			await db.updateObjectById(
 				CollectionId.Competitions,
-				new ObjectId(compId),
+				compId,
 				comp,
 			);
 
@@ -474,7 +474,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Seasons,
-				new ObjectId(season._id),
+				season._id,
 				updatedSeason,
 			);
 
@@ -524,7 +524,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			await Promise.all([
 				db.updateObjectById(
 					CollectionId.Competitions,
-					new ObjectId(comp._id),
+					comp._id,
 					comp,
 				),
 				reportPromise,
@@ -571,7 +571,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const result = await assignScoutersToCompetitionMatches(
 				db,
 				team._id,
-				new ObjectId(compId),
+				compId,
 			);
 
 			return res.status(200).send({ result: result });
@@ -612,7 +612,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Reports,
-				new ObjectId(reportId),
+				reportId,
 				report,
 			);
 
@@ -690,7 +690,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			const matches = await db.findObjects(CollectionId.Matches, {
-				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
+				_id: { $in: comp.matches.map((matchId) => matchId) },
 			});
 			return res.status(200).send(matches);
 		},
@@ -714,7 +714,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			const reports = await db.findObjects(CollectionId.Reports, {
-				_id: { $in: match.reports.map((reportId) => new ObjectId(reportId)) },
+				_id: { $in: match.reports.map((reportId) => reportId) },
 			});
 			return res.status(200).send(reports);
 		},
@@ -742,7 +742,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(403).send({ error: "Unauthorized" });
 			}
 
-			await db.updateObjectById(CollectionId.Users, new ObjectId(user._id), {
+			await db.updateObjectById(CollectionId.Users, user._id, {
 				image: newImage,
 			});
 
@@ -767,7 +767,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			await db.updateObjectById(CollectionId.Reports, new ObjectId(reportId), {
+			await db.updateObjectById(CollectionId.Reports, reportId, {
 				checkInTimestamp: new Date().toISOString(),
 			});
 
@@ -825,14 +825,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 			const targetUserPromise = db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(targetUserId),
+				targetUserId,
 			);
 
 			if (!team.slackWebhook) throw new SlackNotLinkedError(res);
 
 			const webhookHolder = await db.findObjectById(
 				CollectionId.Webhooks,
-				new ObjectId(team.slackWebhook),
+				team.slackWebhook,
 			);
 			if (!webhookHolder) throw new SlackNotLinkedError(res);
 
@@ -889,7 +889,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			if (team.slackWebhook) {
 				(await db).updateObjectById(
 					CollectionId.Webhooks,
-					new ObjectId(team.slackWebhook),
+					team.slackWebhook,
 					{ url: webhookUrl },
 				);
 			} else {
@@ -899,7 +899,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				team.slackWebhook = webhook._id;
 				(await db).updateObjectById(
 					CollectionId.Teams,
-					new ObjectId(teamId),
+					teamId,
 					team,
 				);
 			}
@@ -932,7 +932,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(403).send({ error: "Unauthorized" });
 			}
 
-			await db.updateObjectById(CollectionId.Users, new ObjectId(user._id), {
+			await db.updateObjectById(CollectionId.Users, user._id, {
 				slackId: slackId,
 			});
 
@@ -1087,7 +1087,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			const matches = await db.findObjects(CollectionId.Matches, {
-				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
+				_id: { $in: comp.matches.map((matchId) => matchId) },
 			});
 			const allReports = await db.findObjects(CollectionId.Reports, {
 				match: { $in: matches.map((match) => match?._id) },
@@ -1182,7 +1182,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 
 			const pitReports = await db.findObjects(CollectionId.PitReports, {
-				_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+				_id: { $in: comp.pitReports.map((id) => id) },
 			});
 
 			return res.status(200).send(pitReports);
@@ -1206,7 +1206,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		) => {
 			const db = await dbPromise;
 
-			await db.updateObjectById(CollectionId.Reports, new ObjectId(reportId), {
+			await db.updateObjectById(CollectionId.Reports, reportId, {
 				user: new ObjectId(scouterId),
 			});
 
@@ -1233,21 +1233,21 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const oldReport = await db.findObjectById(
 				CollectionId.Reports,
-				new ObjectId(reportId),
+				reportId,
 			);
 
 			if (!oldReport) {
 				return res.status(400).send({ result: "report not found" });
 			}
 
-			await db.updateObjectById(CollectionId.Reports, new ObjectId(reportId), {
+			await db.updateObjectById(CollectionId.Reports, reportId, {
 				robotNumber: teamNumber,
 			});
 
 			// Update match
 			const match = await db.findObjectById(
 				CollectionId.Matches,
-				new ObjectId(matchId),
+				matchId,
 			);
 			if (!match) {
 				return res.status(400).send({ result: "match not found" });
@@ -1268,7 +1268,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				}
 			}
 
-			await db.updateObjectById(CollectionId.Matches, new ObjectId(matchId), {
+			await db.updateObjectById(CollectionId.Matches, matchId, {
 				blueAlliance: match.blueAlliance,
 				redAlliance: match.redAlliance,
 			});
@@ -1336,7 +1336,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			for (const scouterId of team?.scouters) {
 				promises.push(
 					db
-						.findObjectById(CollectionId.Users, new ObjectId(scouterId))
+						.findObjectById(CollectionId.Users, scouterId)
 						.then((scouter) => scouter && scouters.push(scouter)),
 				);
 			}
@@ -1344,7 +1344,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			for (const matchId of comp.matches) {
 				promises.push(
 					db
-						.findObjectById(CollectionId.Matches, new ObjectId(matchId))
+						.findObjectById(CollectionId.Matches, matchId)
 						.then((match) => match && matches.push(match)),
 				);
 			}
@@ -1360,7 +1360,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			promises.push(
 				db
 					.findObjects(CollectionId.PitReports, {
-						_id: { $in: comp.pitReports.map((id) => new ObjectId(id)) },
+						_id: { $in: comp.pitReports.map((id) => id) },
 						submitted: true,
 					})
 					.then((r) => pitReports.push(...r)),
@@ -1399,7 +1399,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const picklist = await db.findObjectById(
 				CollectionId.Picklists,
-				new ObjectId(comp.picklist),
+				comp.picklist,
 			);
 
 			if (picklist) picklist.strikethroughs ??= [];
@@ -1415,7 +1415,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ picklist: CompPicklistGroup }
 	>({
 		isAuthorized: (req, res, deps, [picklistId]) =>
-			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, new ObjectId(picklistId)),
+			AccessLevels.IfOnTeamThatOwnsPicklist(req, res, deps, picklistId),
 		handler: async (req, res, deps, { picklist }, [picklistId]) => {
 			return res.status(200).send(picklist);
 		},
@@ -1441,7 +1441,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const { _id, ...picklistData } = newPicklist;
 			await db.updateObjectById(
 				CollectionId.Picklists,
-				new ObjectId(oldPicklist._id),
+				oldPicklist._id,
 				picklistData,
 			);
 			return res.status(200).send({ result: "success" });
@@ -1467,7 +1467,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Competitions,
-				new ObjectId(compId),
+				compId,
 				{ publicData: publicData },
 			);
 			return res.status(200).send({ result: "success" });
@@ -1497,7 +1497,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(403).send({ error: "Unauthorized" });
 			}
 
-			await db.updateObjectById(CollectionId.Users, new ObjectId(user._id), {
+			await db.updateObjectById(CollectionId.Users, user._id, {
 				onboardingComplete: true,
 			});
 			return res.status(200).send({ result: "success" });
@@ -1563,7 +1563,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			const updateMatchPromise = db.updateObjectById(
 				CollectionId.Matches,
-				new ObjectId(match._id),
+				match._id,
 				update,
 			);
 
@@ -1627,7 +1627,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.SubjectiveReports,
-				new ObjectId(oldRepor._id),
+				oldRepor._id,
 				newReport,
 			);
 			return res.status(200).send({ result: "success" });
@@ -1656,7 +1656,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			if (!scouter)
 				return res.status(400).send({ error: "Scouter not on team" });
 
-			await db.updateObjectById(CollectionId.Matches, new ObjectId(matchId), {
+			await db.updateObjectById(CollectionId.Matches, matchId, {
 				subjectiveScouter: scouter,
 			});
 			return res.status(200).send({ result: "success" });
@@ -1692,7 +1692,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Competitions,
-				new ObjectId(compId),
+				compId,
 				{ pitReports: pitReports },
 			);
 
@@ -1730,11 +1730,11 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				return res.status(500).send({ error: "Failed to create pit report" });
 			}
 
-			comp.pitReports.push(new ObjectId(pitReportId));
+			comp.pitReports.push(pitReportId);
 
 			await db.updateObjectById(
 				CollectionId.Competitions,
-				new ObjectId(compId),
+				compId,
 				{
 					pitReports: comp.pitReports,
 				},
@@ -1763,7 +1763,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Competitions,
-				new ObjectId(compId),
+				compId,
 				{
 					name,
 					tbaId,
@@ -1852,22 +1852,22 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			const removedUserPromise = db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(userId),
+				userId,
 			);
 
 			const { _id, ...newTeam } = {
 				...team,
-				users: team.users.filter((id) => id != new ObjectId(userId)),
-				owners: team.owners.filter((id) => id != new ObjectId(userId)),
-				scouters: team.scouters.filter((id) => id != new ObjectId(userId)),
+				users: team.users.filter((id) => id != userId),
+				owners: team.owners.filter((id) => id != userId),
+				scouters: team.scouters.filter((id) => id != userId),
 				subjectiveScouters: team.subjectiveScouters.filter(
-					(id) => id != new ObjectId(userId),
+					(id) => id != userId,
 				),
 			};
 
 			const teamPromise = db.updateObjectById(
 				CollectionId.Teams,
-				new ObjectId(teamId),
+				teamId,
 				newTeam,
 			);
 
@@ -1883,12 +1883,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const newUserData: User = {
 				...removedUser,
 				teams: removedUser.teams.filter((id) => id !== teamId),
-				owner: removedUser.owner.filter((id) => new ObjectId(id) !== teamId),
+				owner: removedUser.owner.filter((id) => id !== teamId),
 			};
 
 			await db.updateObjectById(
 				CollectionId.Users,
-				new ObjectId(userId),
+				userId,
 				newUserData,
 			);
 			await teamPromise;
@@ -1910,7 +1910,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 			const user = await db.findObjectById(
 				CollectionId.Users,
-				new ObjectId(id),
+				id,
 			);
 			return res.status(200).send(user);
 		},
@@ -1926,7 +1926,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		handler: async (req, res, { db: dbPromise }, authData, [ids]) => {
 			const db = await dbPromise;
 			const users = await db.findObjects(CollectionId.Users, {
-				_id: { $in: ids.map((id) => new ObjectId(id)) },
+				_id: { $in: ids.map((id) => id) },
 			});
 			return res.status(200).send(users);
 		},
@@ -1943,7 +1943,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 			const team = await db.findObjectById(
 				CollectionId.Teams,
-				new ObjectId(id),
+				id,
 			);
 			return res.status(200).send(team);
 		},
@@ -1990,7 +1990,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 			const season = await db.findObjectById(
 				CollectionId.Seasons,
-				new ObjectId(id),
+				id,
 			);
 			return res.status(200).send(season);
 		},
@@ -2024,7 +2024,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			const db = await dbPromise;
 			const match = await db.findObjectById(
 				CollectionId.Matches,
-				new ObjectId(id),
+				id,
 			);
 			return res.status(200).send(match);
 		},
@@ -2054,7 +2054,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; comp: Competition; pitReport: Pitreport }
 	>({
 		isAuthorized: (req, res, deps, [id]) =>
-			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, new ObjectId(id)),
+			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, id),
 		handler: async (req, res, deps, { pitReport }, args) => {
 			return res.status(200).send(pitReport);
 		},
@@ -2128,7 +2128,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Teams,
-				new ObjectId(teamId),
+				teamId,
 				newValues,
 			);
 			return res.status(200).send({ result: "success" });
@@ -2180,7 +2180,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.Reports,
-				new ObjectId(reportId),
+				reportId,
 				newValues,
 			);
 			return res.status(200).send({ result: "success" });
@@ -2194,7 +2194,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{ team: Team; comp: Competition }
 	>({
 		isAuthorized: (req, res, deps, [pitreportId]) =>
-			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, new ObjectId(pitreportId)),
+			AccessLevels.IfOnTeamThatOwnsPitReport(req, res, deps, pitreportId),
 		handler: async (
 			req,
 			res,
@@ -2206,7 +2206,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			await db.updateObjectById(
 				CollectionId.PitReports,
-				new ObjectId(pitreportId),
+				pitreportId,
 				newValues,
 			);
 			return res.status(200).send({ result: "success" });
@@ -2306,13 +2306,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 
 			logger.log(
 				"ID Query:",
-				users.map((user) => user.teams.map((id) => new ObjectId(id))).flat(),
+				users.map((user) => user.teams.map((id) => id)).flat(),
 			);
 
 			const teams = await db.findObjects(CollectionId.Teams, {
 				_id: {
 					$in: users
-						.map((user) => user.teams.map((id) => new ObjectId(id)))
+						.map((user) => user.teams.map((id) => id))
 						.flat(),
 				},
 			});
@@ -2531,7 +2531,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				}
 			}
 
-			await db.updateObjectById(CollectionId.Users, new ObjectId(user?._id!), {
+			await db.updateObjectById(CollectionId.Users, user?._id!, {
 				name,
 			});
 			return res.status(200).send({ result: "success" });

@@ -212,7 +212,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		? []
 		: await db.findObjects(CollectionId.PitReports, {
 				_id: {
-					$in: resolved.competition.pitReports.map((id) => new ObjectId(id)),
+					$in: resolved.competition.pitReports.map((id) => id),
 				},
 			});
 
@@ -225,7 +225,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 	const picklists = await db.findObjectById(
 		CollectionId.Picklists,
-		new ObjectId(resolved.competition?.picklist),
+		resolved.competition?.picklist!,
 	);
 	console.log("Picklists", picklists);
 

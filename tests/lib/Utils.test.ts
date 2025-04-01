@@ -209,7 +209,7 @@ describe(repairUser.name, () => {
 
 		const updatedUser = await db.findObjectById(
 			CollectionId.Users,
-			new ObjectId(user._id),
+			user._id,
 		);
 
 		expect(updatedUser).toBeDefined();
@@ -230,7 +230,7 @@ describe(repairUser.name, () => {
 
 		const foundUser = await db.findObjectById(
 			CollectionId.Users,
-			new ObjectId(user._id),
+			user._id,
 		);
 		expect(foundUser).toBeUndefined();
 	});
