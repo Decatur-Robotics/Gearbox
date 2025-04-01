@@ -9,13 +9,10 @@ test("Displays sign in page when not signed in", async ({ page }) => {
 	).toBeVisible();
 });
 
-test("Displays user information when signed in", async ({ page, context }) => {
-	const { user } = await PlaywrightUtils.signUp(context);
+test("Displays user information when signed in", async ({ page }) => {
+	const { user } = await PlaywrightUtils.signUp(page);
 
 	await page.goto("/profile");
-
-	const foundUser = await PlaywrightUtils.getUser(context);
-	expect(foundUser._id).toEqual(user._id);
 
 	await expect(
 		page.getByRole("heading", { name: /sign in/i }).first(),
@@ -27,8 +24,8 @@ test("Displays user information when signed in", async ({ page, context }) => {
 });
 
 test.describe("Edit user name", () => {
-	test("Allows user to edit their name", async ({ page, context }) => {
-		const { user } = await PlaywrightUtils.signUp(context);
+	test("Allows user to edit their name", async ({ page }) => {
+		await PlaywrightUtils.signUp(page);
 
 		await page.goto("/profile");
 

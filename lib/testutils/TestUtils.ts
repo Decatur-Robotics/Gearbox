@@ -17,7 +17,7 @@ import { ResendInterface } from "../ResendUtils";
 import { SlackInterface } from "../SlackClient";
 import { NextResponse } from "unified-api-nextjs";
 import { RollbarInterface } from "../client/RollbarUtils";
-import { BrowserContext } from "@playwright/test";
+import { BrowserContext, Page } from "@playwright/test";
 import ClientApi from "../api/ClientApi";
 
 export class TestRes extends NextResponse<any> {
@@ -179,14 +179,17 @@ export namespace PlaywrightUtils {
 		return api;
 	}
 
-	export async function signUp(context: BrowserContext) {
+	/**
+	 * Will reload the page
+	 */
+	export async function signUp(page: Page) {
 		const { sessionToken, user } = await getTestClientApi().testSignIn();
 
 		if (!sessionToken || !user) {
 			throw new Error("Failed to sign in");
 		}
 
-		await signIn(context, sessionToken);
+		await signIn(page, sessionToken);
 
 		return {
 			sessionToken,
@@ -194,8 +197,11 @@ export namespace PlaywrightUtils {
 		};
 	}
 
-	export async function signIn(context: BrowserContext, sessionToken: string) {
-		await context.addCookies([
+	/**
+	 * Will reload the page
+	 */
+	export async function signIn(page: Page, sessionToken: string) {
+		await page.context().addCookies([
 			{
 				name: "next-auth.session-token",
 				value: sessionToken,
@@ -207,10 +213,14 @@ export namespace PlaywrightUtils {
 				expires: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
 			},
 		]);
+
+		// It sometimes requires a reload and a fetch to get sign ins to register
+		await getUser(page);
+		await page.reload();
 	}
 
-	export async function getUser(context: BrowserContext) {
-		const res = await context.request.get("/api/auth/session");
+	export async function getUser(page: Page) {
+		const res = await page.context().request.get("/api/auth/session");
 
 		if (res.ok()) {
 			const { user } = await res.json();
