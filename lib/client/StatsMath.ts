@@ -156,7 +156,7 @@ export function GetMinimum(
 	if (!quantitativeReports) return 0;
 	let minimum = quantitativeReports[0].data[stat];
 	for (let repo of quantitativeReports) {
-		if (repo.data.AutoCoralScoredLevelOne < minimum) {
+		if (repo.data[stat] < minimum) {
 			minimum = repo.data[stat];
 		}
 	}
@@ -171,7 +171,7 @@ export function GetMaximum(
 	if (!quantitativeReports) return 0;
 	let maximum = 0;
 	for (let repo of quantitativeReports) {
-		if (repo.data.AutoCoralScoredLevelOne > maximum) {
+		if (repo.data[stat] > maximum) {
 			maximum = repo.data[stat];
 		}
 	}
