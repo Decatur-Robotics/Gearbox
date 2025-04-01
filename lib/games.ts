@@ -1464,7 +1464,6 @@ export namespace Reefscape {
 				},
 			],
 			Teleop: [
-				{ key: "GroundIntake", label: "Has Ground Intake?" },
 				{
 					key: "TeleopCoralScoredLevelOne",
 					label: "Avg Amt Of Coral Scored Level One Teleop",
