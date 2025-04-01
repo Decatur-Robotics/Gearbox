@@ -31,7 +31,7 @@ import {
 	TrapPoints,
 } from "./client/StatsMath";
 import { report } from "process";
-import { GetMaximum } from './client/StatsMath';
+import { GetMaximum } from "./client/StatsMath";
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1329,44 +1329,73 @@ export namespace Reefscape {
 				{ key: "AutoMovedPastStaringLine", label: "Avg Auto Moves Past Start" },
 				{
 					key: "AutoCoralScoredLevelOne",
-					label: ">>Avg Amt Of Coral Scored Level One Auto",
+					label: "Avg Amt Of Coral Scored Level One Auto",
 				},
 				{
-					label: ">>>>>Min Auto L1 Coral",
+					label: "> Min Auto L1 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelOne");
 					},
 				},
 				{
-					label: ">>>>>Max Auto L1 Coral",
+					label: "> Max Auto L1 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelOne");
 					},
 				},
 				{
 					key: "AutoCoralScoredLevelTwo",
-					label: ">>Avg Amt Of Coral Scored Level Two Auto",
+					label: "Avg Amt Of Coral Scored Level Two Auto",
 				},
 				{
-					label: ">>>>>Min Auto L2 Coral",
+					label: "> Min Auto L2 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelTwo");
 					},
 				},
 				{
-					label: ">>>>>Max Auto L2 Coral",
+					label: "> Max Auto L2 Coral",
 					get(pitData, quantitativeReports) {
 						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelTwo");
 					},
 				},
-				{label:""},
 				{
 					key: "AutoCoralScoredLevelThree",
 					label: "Avg Amt Of Coral Scored Level Three Auto",
 				},
 				{
+					label: "> Min Auto L3 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"AutoCoralScoredLevelThree",
+						);
+					},
+				},
+				{
+					label: "> Max Auto L3 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"AutoCoralScoredLevelThree",
+						);
+					},
+				},
+				{
 					key: "AutoCoralScoredLevelFour",
 					label: "Avg Amt Of Coral Scored Level Four Auto",
+				},
+				{
+					label: "> Min Auto L4 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoCoralScoredLevelFour");
+					},
+				},
+				{
+					label: "> Max Auto L4 Coral",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoCoralScoredLevelFour");
+					},
 				},
 				{
 					label: "Avg Auto Coral",
