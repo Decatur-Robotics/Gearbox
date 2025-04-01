@@ -21,24 +21,24 @@ import { GameId } from "@/lib/client/GameId";
 describe(generateSchedule.name, () => {
 	test("Generates a schedule with the correct number of matches", () => {
 		const scouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 		const subjectiveScouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 		const matchCount = 10;
 		const robotsPerMatch = 6;
@@ -55,40 +55,40 @@ describe(generateSchedule.name, () => {
 
 	test("Generates a schedule with the correct number of scouters per match", () => {
 		const scouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
-			new ObjectId("i"),
-			new ObjectId("j"),
-			new ObjectId("k"),
-			new ObjectId("l"),
-			new ObjectId("m"),
-			new ObjectId("n"),
-			new ObjectId("o"),
-			new ObjectId("p"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 		const subjectiveScouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
-			new ObjectId("i"),
-			new ObjectId("j"),
-			new ObjectId("k"),
-			new ObjectId("l"),
-			new ObjectId("m"),
-			new ObjectId("n"),
-			new ObjectId("o"),
-			new ObjectId("p"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 
 		const matchCount = 10;
@@ -110,14 +110,14 @@ describe(generateSchedule.name, () => {
 
 	test("Rotates scouters ", () => {
 		const scouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 
 		const matchCount = 6;
@@ -134,24 +134,24 @@ describe(generateSchedule.name, () => {
 
 	test("Assigns and rotates subjective scouters", () => {
 		const scouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 		const subjectiveScouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 
 		const matchCount = subjectiveScouters.length;
@@ -171,24 +171,24 @@ describe(generateSchedule.name, () => {
 
 	test("Does not assign user as both a scouter and a subjective scouter", () => {
 		const scouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 		const subjectiveScouters = [
-			new ObjectId("a"),
-			new ObjectId("b"),
-			new ObjectId("c"),
-			new ObjectId("d"),
-			new ObjectId("e"),
-			new ObjectId("f"),
-			new ObjectId("g"),
-			new ObjectId("h"),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
+			new ObjectId(),
 		];
 
 		const matchCount = 10;
@@ -567,7 +567,7 @@ describe(generateReportsForMatch.name, () => {
 		expect(updatedMatch?.reports.length).toBe(6);
 		for (const report of updatedReports) {
 			expect(report?.match).toStrictEqual(match._id);
-			expect(match.reports).toContain(report?._id);
+			expect(match.reports).toContainEqual(report?._id);
 		}
 	});
 

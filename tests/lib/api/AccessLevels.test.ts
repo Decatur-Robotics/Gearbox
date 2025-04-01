@@ -134,7 +134,7 @@ describe(`AccessLevels.${AccessLevels.IfOnTeam.name}`, () => {
 		const { res, user, db } = await getTestApiUtils();
 
 		const team = await db.addObject(CollectionId.Teams, {
-			users: [user._id?.toString()],
+			users: [user._id],
 		} as any as Team);
 
 		expect(
@@ -180,7 +180,7 @@ describe(`AccessLevels.${AccessLevels.IfTeamOwner.name}`, () => {
 		const { res, user, db } = await getTestApiUtils();
 
 		const team = await db.addObject(CollectionId.Teams, {
-			owners: [user._id?.toString()],
+			owners: [user._id],
 		} as any as Team);
 
 		expect(
@@ -189,7 +189,7 @@ describe(`AccessLevels.${AccessLevels.IfTeamOwner.name}`, () => {
 					undefined as any,
 					res,
 					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
-					team._id!,
+					team._id,
 				)
 			).authorized,
 		).toBe(true);
@@ -211,10 +211,10 @@ describe(`AccessLevels.${AccessLevels.IfCompOwner.name}`, () => {
 			{} as any as Competition,
 		);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id?.toString()],
+			seasons: [season._id],
 			owners: [],
 		} as any as Team);
 
@@ -238,11 +238,11 @@ describe(`AccessLevels.${AccessLevels.IfCompOwner.name}`, () => {
 			{} as any as Competition,
 		);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			owners: [user._id!.toString()],
+			seasons: [season._id],
+			owners: [user._id],
 		} as any as Team);
 
 		expect(
@@ -273,7 +273,7 @@ describe(`AccessLevels.${AccessLevels.IfSeasonOwner.name}`, () => {
 			{} as any as Season,
 		);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			owners: [],
 		} as any as Team);
 
@@ -297,8 +297,8 @@ describe(`AccessLevels.${AccessLevels.IfSeasonOwner.name}`, () => {
 			{} as any as Season,
 		);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			owners: [user._id!.toString()],
+			seasons: [season._id],
+			owners: [user._id],
 		} as any as Team);
 
 		expect(
@@ -326,13 +326,13 @@ describe(`AccessLevels.${AccessLevels.IfMatchOwner.name}`, () => {
 
 		const match = await db.addObject(CollectionId.Matches, {} as any as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			owners: [],
 		} as any as Team);
 
@@ -353,14 +353,14 @@ describe(`AccessLevels.${AccessLevels.IfMatchOwner.name}`, () => {
 
 		const match = await db.addObject(CollectionId.Matches, {} as any as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			owners: [user._id!.toString()],
+			seasons: [season._id],
+			owners: [user._id],
 		} as any as Team);
 
 		expect(
@@ -394,13 +394,13 @@ describe(`AccessLevels.${AccessLevels.IfReportOwner.name}`, () => {
 			reports: [report._id!],
 		} as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			owners: [],
 		} as any as Team);
 
@@ -424,14 +424,14 @@ describe(`AccessLevels.${AccessLevels.IfReportOwner.name}`, () => {
 			match: match._id!,
 		} as Report);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			owners: [user._id!.toString()],
+			seasons: [season._id],
+			owners: [user._id],
 		} as any as Team);
 
 		expect(
@@ -462,10 +462,10 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsComp.name}`, () => {
 			{} as any as Competition,
 		);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			users: [],
 		} as any as Team);
 
@@ -489,11 +489,11 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsComp.name}`, () => {
 			{} as any as Competition,
 		);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			users: [user._id!.toString()],
+			seasons: [season._id],
+			users: [user._id],
 		} as any as Team);
 
 		expect(
@@ -521,13 +521,13 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsMatch.name}`, () => {
 
 		const match = await db.addObject(CollectionId.Matches, {} as any as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			users: [],
 		} as any as Team);
 
@@ -548,14 +548,14 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsMatch.name}`, () => {
 
 		const match = await db.addObject(CollectionId.Matches, {} as any as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			users: [user._id!.toString()],
+			seasons: [season._id],
+			users: [user._id],
 		} as any as Team);
 
 		expect(
@@ -586,13 +586,13 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPitReport.name}`, () => {
 			{} as any as Pitreport,
 		);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			pitReports: [pitReport._id!.toString()],
+			pitReports: [pitReport._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			users: [],
 		} as any as Team);
 
@@ -616,14 +616,14 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPitReport.name}`, () => {
 			{} as any as Pitreport,
 		);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			pitReports: [pitReport._id!.toString()],
+			pitReports: [pitReport._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			users: [user._id!.toString()],
+			seasons: [season._id],
+			users: [user._id],
 		} as any as Team);
 
 		expect(
@@ -657,13 +657,13 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsReport.name}`, () => {
 			reports: [report._id!],
 		} as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			users: [],
 		} as any as Team);
 
@@ -687,14 +687,14 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsReport.name}`, () => {
 			match: match._id!,
 		} as Report);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			users: [user._id!.toString()],
+			seasons: [season._id],
+			users: [user._id],
 		} as any as Team);
 
 		expect(
@@ -728,13 +728,13 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsSubjectiveReport.name}`, (
 			subjectiveReports: [subjectiveReport._id!],
 		} as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			users: [],
 		} as any as Team);
 
@@ -758,17 +758,17 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsSubjectiveReport.name}`, (
 			{} as any as SubjectiveReport,
 		);
 		const match = await db.addObject(CollectionId.Matches, {
-			subjectiveReports: [subjectiveReport._id!.toString()],
+			subjectiveReports: [subjectiveReport._id],
 		} as any as Match);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			matches: [match._id!.toString()],
+			matches: [match._id],
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			users: [user._id!.toString()],
+			seasons: [season._id],
+			users: [user._id],
 		} as any as Team);
 
 		expect(
@@ -803,13 +803,13 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPicklist.name}`, () => {
 			{} as any as CompPicklistGroup,
 		);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			picklist: picklist._id!.toString(),
+			picklist: picklist._id,
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
+			seasons: [season._id],
 			users: [],
 		} as any as Team);
 
@@ -833,14 +833,14 @@ describe(`AccessLevels.${AccessLevels.IfOnTeamThatOwnsPicklist.name}`, () => {
 			{} as any as CompPicklistGroup,
 		);
 		const comp = await db.addObject(CollectionId.Competitions, {
-			picklist: picklist._id!.toString(),
+			picklist: picklist._id,
 		} as any as Competition);
 		const season = await db.addObject(CollectionId.Seasons, {
-			competitions: [comp._id?.toString()],
+			competitions: [comp._id],
 		} as any as Season);
 		await db.addObject(CollectionId.Teams, {
-			seasons: [season._id!.toString()],
-			users: [user._id!.toString()],
+			seasons: [season._id],
+			users: [user._id],
 		} as any as Team);
 
 		expect(

@@ -73,7 +73,7 @@ describe(deleteReport.name, () => {
 			match._id as any,
 		);
 
-		expect(updatedMatch?.reports).toStrictEqual([report._id!.toString()]);
+		expect(updatedMatch?.reports).toStrictEqual([report._id]);
 	});
 });
 
@@ -138,7 +138,7 @@ describe(deleteSubjectiveReport.name, () => {
 		);
 
 		expect(updatedMatch?.subjectiveReports).toStrictEqual([
-			subjectiveReport._id!.toString(),
+			subjectiveReport._id,
 		]);
 	});
 });
@@ -200,7 +200,7 @@ describe(deleteMatch.name, () => {
 			comp._id as any,
 		);
 
-		expect(updatedComp?.matches).toStrictEqual([match._id!.toString()]);
+		expect(updatedComp?.matches).toStrictEqual([match._id]);
 	});
 
 	test("Deletes reports", async () => {
@@ -290,7 +290,7 @@ describe(deletePitReport.name, () => {
 			comp._id as any,
 		);
 
-		expect(updatedComp?.pitReports).toStrictEqual([pitReport._id!.toString()]);
+		expect(updatedComp?.pitReports).toStrictEqual([pitReport._id]);
 	});
 });
 

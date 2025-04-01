@@ -245,7 +245,7 @@ describe(repairUser.name, () => {
 
 		const repairedUser = await repairUser(db, user, false);
 
-		expect(repairedUser._id?.toString()).toBe(user.id);
+		expect(repairedUser.id).toBe(user.id);
 	});
 
 	test("Adds a default name when the name and email is missing", async () => {

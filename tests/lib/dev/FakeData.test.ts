@@ -24,7 +24,7 @@ describe(fakeUser.name, () => {
 		const user = await fakeUser(db, teamId);
 
 		expect(user.teams.length).toBe(1);
-		expect(user.teams).toContain(teamId);
+		expect(user.teams).toContainEqual(teamId);
 	});
 
 	test("Returns a user without a team when no team ID is passed", async () => {
