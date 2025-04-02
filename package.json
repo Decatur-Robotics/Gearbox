@@ -39,7 +39,7 @@
 		"minimongo": "^7.0.0",
 		"mongo-anywhere": "^1.1.15",
 		"mongodb": "^5.0.0",
-		"next": "^15.2.3",
+		"next": "^15.2.4",
 		"next-auth": "^4.24.11",
 		"next-seo": "^6.6.0",
 		"omit-call-signature": "^1.0.15",
