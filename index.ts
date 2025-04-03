@@ -42,7 +42,6 @@ logger.debug(`Using port ${port}`);
 const app = next({
 	dev: mode == "development",
 	port,
-	turbopack: mode == "development",
 });
 const handle = app.getRequestHandler();
 
