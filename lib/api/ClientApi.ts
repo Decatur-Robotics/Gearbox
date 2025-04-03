@@ -51,8 +51,11 @@ import Logger from "../client/Logger";
 
 const requestHelper = new RequestHelper(
 	process.env.NEXT_PUBLIC_API_URL ?? "", // Replace undefined when env is not present (ex: for testing builds)
-	(url, error) => toast.error(`Failed API request: ${url}. Details: ${error}`),
-	false,
+	(url, error) => {
+		const msg = `Failed API request: ${url}. Details: ${error}`;
+		console.error(msg);
+		toast.error(msg);
+	},
 );
 
 const logger = new Logger(["API"]);
