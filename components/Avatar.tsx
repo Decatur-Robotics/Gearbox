@@ -3,7 +3,7 @@ import { levelToClassName } from "@/lib/Xp";
 import { BsGearFill } from "react-icons/bs";
 
 export default function Avatar(props: {
-	user?: { image: string | undefined; level: number; admin?: boolean };
+	user?: { image: string | undefined; level?: number; admin?: boolean };
 	scale?: string | undefined; // Use "scale-75" for 75% scale, etc.
 	imgHeightOverride?: string | undefined;
 	showLevel?: boolean | undefined;
@@ -24,7 +24,7 @@ export default function Avatar(props: {
 		<div
 			className={`avatar ${props.online && "online"} ${props.scale} ${props.className} ${props.animation}`}
 		>
-			{(props.showLevel ?? true) && (
+			{(props.showLevel ?? props.user?.level !== undefined) && (
 				<div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
 					LVL: {user?.level}
 				</div>

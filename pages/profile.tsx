@@ -22,6 +22,8 @@ import { signOut } from "next-auth/react";
 import XpProgressBar from "@/components/XpProgressBar";
 import { HiPencilAlt } from "react-icons/hi";
 import toast from "react-hot-toast";
+import EditAvatarModal from "@/components/EditAvatarModal";
+import { close } from "fs";
 
 const api = new ClientApi();
 
@@ -42,6 +44,8 @@ export default function Profile(props: { teamList: Team[] }) {
 
 	const [editingName, setEditingName] = useState(false);
 	const [newName, setNewName] = useState<string>();
+
+	const [editingAvatar, setEditingAvatar] = useState(false);
 
 	useEffect(() => {
 		const loadTeams = async () => {
@@ -68,6 +72,10 @@ export default function Profile(props: { teamList: Team[] }) {
 
 		Analytics.requestedToJoinTeam(teamNumber, user?.name ?? "Unknown User");
 	};
+
+	async function toggleEditingAvatarModal() {
+		setEditingAvatar(!editingAvatar)
+	}
 
 	async function toggleEditingName() {
 		setEditingName(!editingName);
@@ -123,6 +131,12 @@ export default function Profile(props: { teamList: Team[] }) {
 					>
 						<div className="flex flex-col">
 							<Avatar />
+							<button
+								onClick={toggleEditingAvatarModal}
+								className="btn btn-primary mt-2"
+							>
+								Edit Avatar
+							</button>
 							<button
 								onClick={() => signOut()}
 								className="btn btn-primary mt-2"
@@ -270,6 +284,12 @@ export default function Profile(props: { teamList: Team[] }) {
 					</div>
 				</Card>
 			</Flex>
+			{editingAvatar && 
+				<EditAvatarModal
+				close={toggleEditingAvatarModal}
+				currentImg={user?.image!}
+				/>
+			}
 		</Container>
 	);
 }
