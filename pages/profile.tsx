@@ -74,7 +74,7 @@ export default function Profile(props: { teamList: Team[] }) {
 	};
 
 	async function toggleEditingAvatarModal() {
-		setEditingAvatar(!editingAvatar)
+		setEditingAvatar(!editingAvatar);
 	}
 
 	async function toggleEditingName() {
@@ -284,12 +284,12 @@ export default function Profile(props: { teamList: Team[] }) {
 					</div>
 				</Card>
 			</Flex>
-			{editingAvatar && 
+			{editingAvatar && (
 				<EditAvatarModal
-				close={toggleEditingAvatarModal}
-				currentImg={user?.image!}
+					close={toggleEditingAvatarModal}
+					currentImg={user?.image!}
 				/>
-			}
+			)}
 		</Container>
 	);
 }

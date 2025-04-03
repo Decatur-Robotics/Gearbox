@@ -16,7 +16,11 @@ export default function EditAvatarModal(props: {
 	async function updateAvatar() {
 		toast.promise(
 			api.changePFP(newAvatar).then(() => location.reload()),
-			{ loading: "Updating profile picture...", success: "Successfully updated profile picture!", error: "Failed to update profile picture!" },
+			{
+				loading: "Updating profile picture...",
+				success: "Successfully updated profile picture!",
+				error: "Failed to update profile picture!",
+			},
 		);
 	}
 
