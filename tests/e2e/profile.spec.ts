@@ -1,3 +1,4 @@
+import Card from "@/components/Card";
 import { PlaywrightUtils } from "@/lib/testutils/TestUtils";
 import { test, expect } from "@playwright/test";
 
@@ -39,5 +40,20 @@ test.describe("Edit user name", () => {
 		await editButton.click();
 
 		await expect(page.getByText("New Name")).toBeVisible();
+	});
+});
+
+test.describe('Edit Avatar', () => {
+
+	test("Edit Avatar button displays popup", async ({ page }) => {
+		await PlaywrightUtils.signUp(page);
+
+		await page.goto("/profile")
+
+		const editAvatarButton = page.getByRole("button", { name: 'Edit Avatar' })
+		await editAvatarButton.click();
+
+		const editAvatarPopup = page.getByTitle('Edit Avatar')
+		await expect(editAvatarPopup).toBeVisible();
 	});
 });
