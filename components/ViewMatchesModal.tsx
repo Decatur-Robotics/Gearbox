@@ -6,6 +6,7 @@ import { report } from "process";
 import Checkbox from "./forms/Checkboxes";
 import { CheckmarkIcon } from "react-hot-toast";
 import { useState } from "react";
+import { toDict } from "@/lib/client/ClientUtils";
 
 type MatchData = {
 	number: number;
@@ -17,7 +18,10 @@ type MatchData = {
 
 function ViewMatchCard(props: MatchData) {
 	return (
-		<Card title={"Match " + props.number}>
+		<Card
+			title={"Match " + props.number}
+			className="w-full"
+		>
 			{props.message}
 			<a
 				href={props.url}
@@ -35,16 +39,12 @@ export default function ViewMatchesModal(props: {
 	user: User;
 	matchPathway: string;
 }) {
-	const reportsById: { [id: string]: Report } = {};
+	const reportsById = toDict(props.reports);
 	const myMatches: MatchData[] = [];
 	const [showSubmittedReports, setShowSubmittedReports] = useState(false);
 
 	async function toggleShowSubmittedReports() {
 		setShowSubmittedReports(!showSubmittedReports);
-	}
-
-	for (const report of props.reports) {
-		reportsById[report._id?.toString()!] = report;
 	}
 
 	for (const match of props.matches) {

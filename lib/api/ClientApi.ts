@@ -21,7 +21,11 @@ import {
 	LeaderboardTeam,
 	LinkedList,
 } from "@/lib/Types";
-import { NotLinkedToTba, removeDuplicates } from "../client/ClientUtils";
+import {
+	NotLinkedToTba,
+	removeDuplicates,
+	toDict,
+} from "../client/ClientUtils";
 import {
 	addXp,
 	deleteComp,
@@ -1120,7 +1124,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		},
 	});
 
-	exportCompAsCsv = createNextRoute<
+	exportCompDataAsCsv = createNextRoute<
 		[string],
 		{ csv: string },
 		ApiDependencies,
@@ -1174,6 +1178,93 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				const data = headers.map((header) => row[header]);
 
 				csv += data.join(",") + "\n";
+			}
+
+			res.status(200).send({ csv });
+		},
+	});
+
+	exportCompScheduleAsCsv = createNextRoute<
+		[string],
+		{ csv: string },
+		ApiDependencies,
+		{ team: Team; comp: Competition }
+	>({
+		isAuthorized: (req, res, deps, [compId]) =>
+			AccessLevels.IfCompOwner(req, res, deps, compId),
+		handler: async (
+			req,
+			res,
+			{ db: dbPromise, userPromise },
+			{ team, comp },
+			[compId],
+		) => {
+			const db = await dbPromise;
+
+			const matches = await db.findObjects(CollectionId.Matches, {
+				_id: { $in: comp.matches.map((matchId) => new ObjectId(matchId)) },
+			});
+			const reports = await db.findObjects(CollectionId.Reports, {
+				match: { $in: matches.map((match) => match?._id?.toString()) },
+			});
+
+			if (reports.length == 0) {
+				return res
+					.status(200)
+					.send({ error: "No reports found for competition" });
+			}
+
+			const users = await db.findObjects(CollectionId.Users, {
+				_id: {
+					$in: reports
+						.map((r) => r.user)
+						.concat(matches.map((m) => m.subjectiveScouter))
+						.flat()
+						.map((id) => new ObjectId(id)),
+				},
+			});
+
+			const reportsById = toDict(reports);
+			const usersById = toDict(users);
+
+			interface Row {
+				matchNumber: string;
+				quantScouters: string[];
+				subjectiveScouter: string;
+			}
+
+			const rows: Row[] = [
+				// Headers
+				{
+					matchNumber: "Match #",
+					quantScouters: matches[0].reports.map(
+						(_, index) => `Scouter ${index + 1}`,
+					),
+					subjectiveScouter: "Subjective Scouter",
+				},
+			];
+
+			for (const match of matches) {
+				rows.push({
+					matchNumber: match.number.toString(),
+					quantScouters: match.reports.map((id) =>
+						reportsById[id].user ? usersById[reportsById[id].user].name! : "",
+					),
+					subjectiveScouter: match.subjectiveScouter
+						? usersById[match.subjectiveScouter].name!
+						: "",
+				});
+			}
+
+			const headers = Object.values(rows[0]).flat();
+
+			let csv = "";
+			for (const row of rows) {
+				csv +=
+					Object.values(row)
+						.flat()
+						.map((str) => str.replace(",", ""))
+						.join(",") + "\n";
 			}
 
 			res.status(200).send({ csv });

@@ -64,7 +64,7 @@ export default function InsightsAndSettingsCard(props: {
 	const exportAsCsv = async () => {
 		setExportPending(true);
 
-		const res = await api.exportCompAsCsv(comp?._id!).catch((e) => {
+		const res = await api.exportCompDataAsCsv(comp?._id!).catch((e) => {
 			console.error(e);
 			return { csv: undefined };
 		});
@@ -81,6 +81,31 @@ export default function InsightsAndSettingsCard(props: {
 
 		setExportPending(false);
 	};
+
+	async function exportScheduleAsCsv() {
+		setExportPending(true);
+
+		const res = await api.exportCompScheduleAsCsv(comp?._id!).catch((e) => {
+			console.error(e);
+			return { csv: undefined };
+		});
+
+		if (!res) {
+			console.error("failed to export");
+		}
+
+		if (res.csv) {
+			download(
+				`${comp?.name ?? "Competition"}Schedule.csv`,
+				res.csv,
+				"text/csv",
+			);
+		} else {
+			console.error("No CSV data returned from server");
+		}
+
+		setExportPending(false);
+	}
 
 	const createMatch = async () => {
 		try {
@@ -253,6 +278,18 @@ export default function InsightsAndSettingsCard(props: {
 									<div className="loading loading-bars loading-sm"></div>
 								) : (
 									"Export Scouting Data as CSV"
+								)}
+							</button>
+							<button
+								className={`btn ${
+									exportPending ? "btn-disabled" : "btn-primary"
+								} `}
+								onClick={exportScheduleAsCsv}
+							>
+								{exportPending ? (
+									<div className="loading loading-bars loading-sm"></div>
+								) : (
+									"Export Scouting Schedule as CSV"
 								)}
 							</button>
 							<div className="flex flex-row items-center justify-between w-full">
