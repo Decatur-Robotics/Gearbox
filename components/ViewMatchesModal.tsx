@@ -101,8 +101,11 @@ export default function ViewMatchesModal(props: {
 				<div className="overflow-y-scroll h-[650px]">
 					{myMatches
 						.filter((matchData) => showSubmittedReports || !matchData.completed)
-						.map((matchData) => (
-							<ViewMatchCard {...matchData} />
+						.map((matchData, index) => (
+							<ViewMatchCard
+								{...matchData}
+								key={index}
+							/>
 						))}
 				</div>
 			</Card>
