@@ -25,7 +25,7 @@ export default function Avatar(props: {
 		<div
 			className={`avatar ${props.online && "online"} ${props.scale} ${props.className} ${props.animation}`}
 		>
-			{(props.showLevel) && (
+			{props.showLevel && (
 				<div className="absolute bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
 					LVL: {user?.level}
 				</div>
