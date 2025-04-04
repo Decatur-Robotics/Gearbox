@@ -106,7 +106,8 @@ test.describe("Edit Avatar", () => {
 		await page.getByRole("button", { name: "Save" }).click();
 
 		//Url of user's avatar
-		await expect(page.getByAltText("Avatar").first().getAttribute("src")).toBe(
+		await expect(page.getByAltText("Avatar").first()).toHaveAttribute(
+			"src",
 			poSans,
 		);
 	});
@@ -125,7 +126,8 @@ test.describe("Edit Avatar", () => {
 		//Cancel button
 		await page.getByRole("button", { name: "Cancel" }).click();
 
-		await expect(page.getByAltText("Avatar").first().getAttribute("src")).toBe(
+		await expect(page.getByAltText("Avatar").first()).toHaveAttribute(
+			"src",
 			currentAvatar,
 		);
 	});
