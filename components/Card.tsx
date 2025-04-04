@@ -14,6 +14,7 @@ export default function Card(props: CardProps) {
 
 	return (
 		<div
+			title={title}
 			className={`card bg-base-200 shadow-xl w-2/3 max-sm:w-full ${className}`}
 		>
 			{color ? (

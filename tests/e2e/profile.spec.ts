@@ -43,17 +43,16 @@ test.describe("Edit user name", () => {
 	});
 });
 
-test.describe('Edit Avatar', () => {
-
+test.describe("Edit Avatar", () => {
 	test("Edit Avatar button displays popup", async ({ page }) => {
 		await PlaywrightUtils.signUp(page);
 
-		await page.goto("/profile")
+		await page.goto("/profile");
 
-		const editAvatarButton = page.getByRole("button", { name: 'Edit Avatar' })
+		const editAvatarButton = page.getByRole("button", { name: "Edit Avatar" });
 		await editAvatarButton.click();
 
-		const editAvatarPopup = page.getByTitle('Edit Avatar')
+		const editAvatarPopup = page.getByTitle("Edit Avatar");
 		await expect(editAvatarPopup).toBeVisible();
 	});
 });
