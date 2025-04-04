@@ -130,7 +130,7 @@ export default function Profile(props: { teamList: Team[] }) {
 						className="space-x-4 max-sm:flex-col max-sm:items-center"
 					>
 						<div className="flex flex-col">
-							<Avatar />
+							<Avatar showLevel={true} />
 							<button
 								onClick={toggleEditingAvatarModal}
 								className="btn btn-primary mt-2"

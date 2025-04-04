@@ -38,6 +38,7 @@ export default function EditAvatarModal(props: {
 						user={{ image: newAvatar }}
 						scale="scale-150"
 						altText="New Avatar"
+						showLevel={false}
 					/>
 				</div>
 

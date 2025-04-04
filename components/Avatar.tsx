@@ -25,8 +25,8 @@ export default function Avatar(props: {
 		<div
 			className={`avatar ${props.online && "online"} ${props.scale} ${props.className} ${props.animation}`}
 		>
-			{(props.showLevel ?? props.user?.level !== undefined) && (
-				<div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
+			{(props.showLevel) && (
+				<div className="absolute bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
 					LVL: {user?.level}
 				</div>
 			)}
@@ -40,7 +40,7 @@ export default function Avatar(props: {
 				></img>
 			</div>
 			{admin ? (
-				<div className="absolute z-10 -bottom-2 -left-2 text-slate-300 animate-spin-slow">
+				<div className="absolute -bottom-2 -left-2 text-slate-300 animate-spin-slow">
 					<BsGearFill size={props.gearSize ?? 36}></BsGearFill>
 				</div>
 			) : (
