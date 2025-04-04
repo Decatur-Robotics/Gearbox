@@ -37,6 +37,7 @@ export default function EditAvatarModal(props: {
 					<Avatar
 						user={{ image: newAvatar }}
 						scale="scale-150"
+						altText="New Avatar"
 					/>
 				</div>
 
@@ -44,6 +45,7 @@ export default function EditAvatarModal(props: {
 					defaultValue={props.currentImg}
 					className="input"
 					onChange={(e) => setNewAvatar(e.target.value)}
+					placeholder="Enter new avatar url"
 				/>
 				<div className="flex gap-2 justify-start w-full">
 					<button

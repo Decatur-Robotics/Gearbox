@@ -13,6 +13,7 @@ export default function Avatar(props: {
 	className?: string | undefined;
 	online?: boolean;
 	gearSize?: number;
+	altText?: string;
 }) {
 	const { session, status } = useCurrentSession();
 	const user = props.user ?? session?.user;
@@ -34,7 +35,7 @@ export default function Avatar(props: {
 			>
 				<img
 					src={image}
-					alt={"Avatar"}
+					alt={props.altText ?? "Avatar"}
 					onClick={props.onClick}
 				></img>
 			</div>
