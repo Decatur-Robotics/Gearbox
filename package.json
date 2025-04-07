@@ -56,7 +56,7 @@
 		"react-icons": "^5.5.0",
 		"react-p5": "^1.4.1",
 		"react-qr-code": "^2.0.15",
-		"resend": "^4.1.2",
+		"resend": "^4.2.0",
 		"rollbar": "^2.26.4",
 		"string-similarity-js": "^2.1.4",
 		"ts-node": "^10.9.2",
