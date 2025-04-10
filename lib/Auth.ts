@@ -57,19 +57,11 @@ export const AuthenticationOptions: AuthOptions = {
 			clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
 			clientSecret: process.env.SLACK_CLIENT_SECRET as string,
 			allowDangerousEmailAccountLinking: true,
+			/**
+			 * @returns Data used to create the user object in the DB
+			 */
 			profile: async (profile) => {
 				logger.debug("Slack profile:", profile);
-
-				const existing = await (
-					await cachedDb
-				).findObject(CollectionId.Users, { email: profile.email });
-
-				if (existing) {
-					existing.slackId = profile.sub;
-					existing.id = profile.sub;
-					console.log("Found existing user:", existing);
-					return existing;
-				}
 
 				const user = new User(
 					profile.name,
@@ -83,8 +75,6 @@ export const AuthenticationOptions: AuthOptions = {
 					10,
 					1,
 				);
-
-				user.id = profile.sub;
 
 				return user;
 			},

@@ -15,6 +15,8 @@ import Logger from "./client/Logger";
 import { RollbarInterface } from "./client/RollbarUtils";
 
 /**
+ * Should match the MongoDB adapter as closely as possible 
+ * (https://github.com/nextauthjs/next-auth/blob/main/packages/adapter-mongodb/src/index.ts).
  * @tested_by tests/lib/DbInterfaceAuthAdapter.test.ts
  */
 export default function DbInterfaceAuthAdapter(
