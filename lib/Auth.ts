@@ -76,6 +76,9 @@ export const AuthenticationOptions: AuthOptions = {
 					1,
 				);
 
+				// We need the 'id' field to avoid the error "Profile id is missing in Slack OAuth profile response"
+				user.id = new ObjectId().toString();
+
 				return user;
 			},
 		}),
