@@ -74,4 +74,33 @@ export default class CachedDbInterface
 	>(collection: TId, slug: string): Promise<TObj | undefined> {
 		return findObjectBySlugLookUp(this, collection, slug);
 	}
+
+	addOrUpdateObject<TId extends CollectionId>(
+		collection: TId,
+		object: CollectionIdToType<TId>,
+	): Promise<CollectionIdToType<TId>> {
+		return super.addOrUpdateObject(collection, object);
+	}
+
+	findObjectAndUpdate<TId extends CollectionId>(
+		collection: TId,
+		id: ObjectId,
+		newValues: Partial<CollectionIdToType<TId>>,
+	): Promise<CollectionIdToType<TId> | undefined> {
+		return super.findObjectAndUpdate(collection, id, newValues);
+	}
+
+	deleteObjects<TId extends CollectionId>(
+		collection: TId,
+		query: object,
+	): Promise<void> {
+		return super.deleteObjects(collection, query);
+	}
+
+	findObjectAndDelete<TId extends CollectionId>(
+		collection: TId,
+		query: object,
+	): Promise<CollectionIdToType<TId> | undefined> {
+		return super.findObjectAndDelete(collection, query);
+	}
 }

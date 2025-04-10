@@ -20,6 +20,28 @@ const cachedDb = getDatabase();
 const rollbar = getRollbar();
 const adapter = DbInterfaceAuthAdapter(cachedDb, rollbar, logger);
 
+async function createUser(profile: any) {
+	const user = new User(
+		profile.name,
+		profile.email,
+		profile.picture,
+		false,
+		await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
+		[],
+		[],
+		profile.sub,
+		10,
+		1,
+	);
+
+	user._id = new ObjectId() as any;
+
+	// We need the 'id' field to avoid the error "Profile id is missing in OAuth profile response"
+	user.id = user._id!.toString();
+
+	return user;
+}
+
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
 	providers: [
@@ -27,60 +49,11 @@ export const AuthenticationOptions: AuthOptions = {
 			clientId: process.env.GOOGLE_ID,
 			clientSecret: process.env.GOOGLE_SECRET,
 			allowDangerousEmailAccountLinking: true,
-			profile: async (profile) => {
-				logger.debug("Google profile:", profile);
-
-				const existingUser = await (
-					await cachedDb
-				).findObject(CollectionId.Users, { email: profile.email });
-				if (existingUser) {
-					existingUser.id = profile.sub;
-					return existingUser;
-				}
-
-				const user = new User(
-					profile.name,
-					profile.email,
-					profile.picture,
-					false,
-					await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
-					[],
-					[],
-				);
-
-				user.id = profile.sub;
-
-				return user;
-			},
 		}),
 		SlackProvider({
 			clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
 			clientSecret: process.env.SLACK_CLIENT_SECRET as string,
 			allowDangerousEmailAccountLinking: true,
-			/**
-			 * @returns Data used to create the user object in the DB
-			 */
-			profile: async (profile) => {
-				logger.debug("Slack profile:", profile);
-
-				const user = new User(
-					profile.name,
-					profile.email,
-					profile.picture,
-					false,
-					await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
-					[],
-					[],
-					profile.sub,
-					10,
-					1,
-				);
-
-				// We need the 'id' field to avoid the error "Profile id is missing in Slack OAuth profile response"
-				user.id = new ObjectId().toString();
-
-				return user;
-			},
 		}),
 		Email({
 			server: {

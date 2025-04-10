@@ -4,7 +4,6 @@ import CollectionId, {
 	SluggedCollectionId,
 } from "../CollectionId";
 import { default as BaseDbInterface } from "mongo-anywhere/DbInterface";
-import slugToId from "@/lib/slugToId";
 
 export type WithStringOrObjectIdId<Type> = Omit<Type, "_id"> & {
 	_id?: ObjectId | string;
@@ -63,4 +62,25 @@ export default interface DbInterface
 		collection: CollectionId,
 		query: object,
 	): Promise<number | undefined>;
+
+	addOrUpdateObject<TId extends CollectionId>(
+		collection: TId,
+		object: CollectionIdToType<TId>,
+	): Promise<CollectionIdToType<TId>>;
+
+	findObjectAndUpdate<TId extends CollectionId>(
+		collection: TId,
+		id: ObjectId,
+		newValues: Partial<CollectionIdToType<TId>>,
+	): Promise<CollectionIdToType<TId> | undefined>;
+
+	deleteObjects<TId extends CollectionId>(
+		collection: TId,
+		query: object,
+	): Promise<void>;
+
+	findObjectAndDelete<TId extends CollectionId>(
+		collection: TId,
+		query: object,
+	): Promise<CollectionIdToType<TId> | undefined>;
 }

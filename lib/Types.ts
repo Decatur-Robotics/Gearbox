@@ -54,6 +54,7 @@ export class User implements NextAuthUser {
 	onboardingComplete: boolean = false;
 	resendContactId: string | undefined = undefined;
 	lastSignInDateTime: Date | undefined = undefined;
+	emailVerified: Date | null = null;
 
 	constructor(
 		name: string | undefined,
