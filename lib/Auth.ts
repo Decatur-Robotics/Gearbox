@@ -20,28 +20,6 @@ const cachedDb = getDatabase();
 const rollbar = getRollbar();
 const adapter = DbInterfaceAuthAdapter(cachedDb, rollbar, logger);
 
-async function createUser(profile: any) {
-	const user = new User(
-		profile.name,
-		profile.email,
-		profile.picture,
-		false,
-		await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
-		[],
-		[],
-		profile.sub,
-		10,
-		1,
-	);
-
-	user._id = new ObjectId() as any;
-
-	// We need the 'id' field to avoid the error "Profile id is missing in OAuth profile response"
-	user.id = user._id!.toString();
-
-	return user;
-}
-
 export const AuthenticationOptions: AuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
 	providers: [

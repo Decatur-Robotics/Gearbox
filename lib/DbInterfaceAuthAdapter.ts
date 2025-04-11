@@ -15,6 +15,44 @@ import Logger from "./client/Logger";
 import { RollbarInterface } from "./client/RollbarUtils";
 import { Profile } from "next-auth";
 
+function formatTo<T extends object>(obj: T | undefined) {
+	if (!obj) return undefined;
+
+	const formatted = format.to<T>(obj);
+
+	if ("_id" in obj) {
+		formatted._id = obj._id as ObjectId;
+	}
+
+	if ("id" in obj) {
+		(formatted as any).id = obj.id;
+	}
+
+	if ("userId" in obj) {
+		(formatted as any).userId = obj.userId;
+	}
+
+	return formatted;
+}
+
+function formatFrom<T extends object>(obj: T | undefined) {
+	if (!obj) return undefined;
+
+	const formatted = format.from<T>(obj);
+	if ("_id" in obj) {
+		(formatted as any)._id = obj._id as ObjectId;
+	}
+	if ("id" in obj) {
+		(formatted as any).id = obj.id;
+	}
+
+	if ("userId" in obj) {
+		(formatted as any).userId = obj.userId;
+	}
+
+	return formatted;
+}
+
 /**
  * Should match the MongoDB adapter as closely as possible
  * (https://github.com/nextauthjs/next-auth/blob/main/packages/adapter-mongodb/src/index.ts).
@@ -34,17 +72,17 @@ export default function DbInterfaceAuthAdapter(
 		 * @param data returns from the profile callback of the auth provider
 		 */
 		createUser: async (data: Record<string, unknown>) => {
-			const profile = format.to<Profile>(data);
+			const profile = formatTo<Profile>(data)!;
 
 			const user = new User(
-				profile.name!,
+				profile.name ?? profile.email ?? "Unknown User",
 				profile.email,
 				profile.image,
 				false,
 				await GenerateSlug(
 					await dbPromise,
 					CollectionId.Users,
-					profile.name ?? profile.email!,
+					profile.name ?? profile.email ?? "Unknown User",
 				),
 				[],
 				[],
@@ -59,14 +97,14 @@ export default function DbInterfaceAuthAdapter(
 			user.id = user._id!.toString();
 
 			await (await dbPromise).addObject(CollectionId.Users, user);
-			return format.from<User>(user);
+			return formatFrom(user);
 		},
 		getUser: async (id: string) => {
 			const user = await (
 				await dbPromise
 			).findObjectById(CollectionId.Users, _id(id));
 			if (!user) return null;
-			return format.from<AdapterUser>(user);
+			return formatFrom(user) as AdapterUser;
 		},
 		getUserByEmail: async (email: string) => {
 			const user = await (
@@ -75,27 +113,28 @@ export default function DbInterfaceAuthAdapter(
 				email,
 			});
 			if (!user) return null;
-			return format.from<AdapterUser>(user);
+			return formatFrom(user) as AdapterUser;
 		},
 		getUserByAccount: async (
 			providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
 		) => {
 			const db = await dbPromise;
-			const account = await db.findObject(CollectionId.Accounts, {
+			const account = await db.findObject(
+				CollectionId.Accounts,
 				providerAccountId,
-			});
+			);
 			if (!account) return null;
 			const user = await db.findObjectById(
 				CollectionId.Users,
 				new ObjectId(account.userId),
 			);
 			if (!user) return null;
-			return format.from<AdapterUser>(user);
+			return formatFrom(user) as AdapterUser;
 		},
 		updateUser: async (
 			data: Partial<AdapterUser> & Pick<AdapterUser, "id">,
 		) => {
-			const { _id, ...user } = format.to<AdapterUser>(data);
+			const { _id, ...user } = formatTo<AdapterUser>(data as any)!;
 			const db = await dbPromise;
 
 			const result = await db.findObjectAndUpdate(
@@ -104,7 +143,7 @@ export default function DbInterfaceAuthAdapter(
 				user as unknown as Partial<User>,
 			);
 
-			return format.from<AdapterUser>(result!);
+			return formatFrom(result!) as AdapterUser;
 		},
 		deleteUser: async (id: string) => {
 			const userId = _id(id);
@@ -119,7 +158,7 @@ export default function DbInterfaceAuthAdapter(
 		 * Creates an account
 		 */
 		linkAccount: async (data: Record<string, unknown>) => {
-			const account = format.to<AdapterAccount>(data);
+			const account = formatTo<AdapterAccount>(data as any)!;
 			await (await dbPromise).addObject(CollectionId.Accounts, account);
 			return account;
 		},
@@ -132,7 +171,7 @@ export default function DbInterfaceAuthAdapter(
 			const account = await (
 				await dbPromise
 			).findObjectAndDelete(CollectionId.Accounts, providerAccountId);
-			return format.from<AdapterAccount>(account!);
+			return formatFrom(account!) ?? null;
 		},
 		getSessionAndUser: async (sessionToken: string) => {
 			const db = await dbPromise;
@@ -148,25 +187,35 @@ export default function DbInterfaceAuthAdapter(
 			if (!user) return null;
 
 			return {
-				user: format.from<AdapterUser>(user),
-				session: format.from<AdapterSession>(session),
+				user: formatFrom(user) as any as AdapterUser,
+				session: formatFrom(session) as any as AdapterSession,
 			};
 		},
 		createSession: async (data: Record<string, unknown>) => {
-			const session = format.to<AdapterSession>(data);
+			const session = formatTo<AdapterSession>(data as any)!;
 			await (await dbPromise).addObject(CollectionId.Sessions, session as any);
-			return format.from<AdapterSession>(session);
+			return formatFrom(session)!;
 		},
 		updateSession: async (
 			data: Partial<AdapterSession> & Pick<AdapterSession, "sessionToken">,
 		) => {
-			const { _id, ...session } = format.to<AdapterSession>(data);
-			const updatedSession = await (
-				await dbPromise
-			).findObjectAndUpdate(CollectionId.Sessions, _id, {
+			const { _id, ...session } = formatTo<AdapterSession>(data as any)!;
+
+			const db = await dbPromise;
+			const existing = await db.findObject(CollectionId.Sessions, {
 				sessionToken: session.sessionToken,
 			});
-			return format.from<AdapterSession>(updatedSession!);
+
+			await db.updateObjectById(
+				CollectionId.Sessions,
+				existing?._id as any,
+				session as any,
+			);
+			return formatFrom({
+				_id,
+				...existing,
+				...session,
+			}) as any as AdapterSession;
 		},
 		deleteSession: async (sessionToken: string) => {
 			const session = await (
@@ -174,7 +223,7 @@ export default function DbInterfaceAuthAdapter(
 			).findObjectAndDelete(CollectionId.Sessions, {
 				sessionToken,
 			});
-			return format.from<AdapterSession>(session!);
+			return formatFrom(session!) as any as AdapterSession;
 		},
 		createVerificationToken: async (token: VerificationToken) => {
 			await (

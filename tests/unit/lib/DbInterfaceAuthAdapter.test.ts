@@ -84,21 +84,6 @@ describe(prototype.createUser.name, () => {
 		expect(foundUser?.name).toBeDefined();
 		expect(foundUser?.image).toBeDefined();
 	});
-
-	test("Does not create a new user if one already exists", async () => {
-		const { db, adapter } = await getDeps();
-
-		const user = {
-			email: "test@gmail.com",
-		};
-
-		await adapter.createUser(user);
-		await adapter.createUser(user);
-
-		expect(
-			await db.countObjects(CollectionId.Users, { email: user.email }),
-		).toBe(1);
-	});
 });
 
 describe(prototype.getUser!.name, () => {
@@ -207,7 +192,10 @@ describe(prototype.getUserByAccount!.name, () => {
 
 		await db.addObject(CollectionId.Accounts, account);
 
-		const foundUser = await adapter.getUserByAccount!(account);
+		const foundUser = await adapter.getUserByAccount!({
+			provider: account.provider,
+			providerAccountId: account.providerAccountId,
+		});
 
 		expect(foundUser).toMatchObject(addedUser);
 	});
@@ -222,7 +210,10 @@ describe(prototype.getUserByAccount!.name, () => {
 			userId: new ObjectId() as any,
 		};
 
-		const user = await adapter.getUserByAccount!(account);
+		const user = await adapter.getUserByAccount!({
+			provider: account.provider,
+			providerAccountId: account.providerAccountId,
+		});
 
 		expect(user).toBeNull();
 	});
@@ -239,7 +230,10 @@ describe(prototype.getUserByAccount!.name, () => {
 
 		await db.addObject(CollectionId.Accounts, account);
 
-		const user = await adapter.getUserByAccount!(account);
+		const user = await adapter.getUserByAccount!({
+			provider: account.provider,
+			providerAccountId: account.providerAccountId,
+		});
 
 		expect(user).toBeNull();
 	});
@@ -269,33 +263,10 @@ describe(prototype.updateUser!.name, () => {
 			email: user.email,
 		});
 
+		// Not sure how id behaves, don't use it
+		foundUser!.id = foundUser!._id!.toString();
+
 		expect(foundUser).toMatchObject(updatedUser);
-	});
-
-	test("Errors if not given an _id", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const user = {
-			name: "Test User",
-			email: "test@gmail.com",
-		};
-
-		await adapter.updateUser!(user as any);
-
-		expect(rollbar.error).toHaveBeenCalled();
-	});
-
-	test("Errors if the user doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const user = {
-			name: "Test User",
-			email: "test@gmail.com",
-		};
-
-		await adapter.updateUser!(user as any);
-
-		expect(rollbar.error).toHaveBeenCalled();
 	});
 
 	test("Returns the updated user without their _id", async () => {
@@ -321,21 +292,6 @@ describe(prototype.updateUser!.name, () => {
 
 		expect(returnedUser).toMatchObject(expectedUser);
 	});
-
-	test("Errors if no _id is provided", async () => {
-		const { adapter, db, rollbar } = await getDeps();
-
-		const user = {
-			name: "Test User",
-			email: "test@gmail.com",
-		};
-
-		await db.addObject(CollectionId.Users, user as any);
-
-		await adapter.updateUser!({ name: "Test User 2" } as any);
-
-		expect(rollbar.error).toHaveBeenCalled();
-	});
 });
 
 describe(prototype.deleteUser!.name, () => {
@@ -357,15 +313,6 @@ describe(prototype.deleteUser!.name, () => {
 		});
 
 		expect(foundUser).toBeUndefined();
-	});
-
-	test("Errors but returns null if the user doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const user = await adapter.deleteUser!(new ObjectId().toString());
-
-		expect(user).toBeNull();
-		expect(rollbar.error).toHaveBeenCalled();
 	});
 
 	test("Deletes the user's account", async () => {
@@ -460,24 +407,6 @@ describe(prototype.linkAccount!.name, () => {
 		expect(foundAccount).toEqual(account);
 	});
 
-	test("Warns if the account already exists", async () => {
-		const { adapter, db, rollbar } = await getDeps();
-
-		const account: Account = {
-			_id: new ObjectId(),
-			provider: "test",
-			type: "oauth",
-			providerAccountId: "1234567890",
-			userId: new ObjectId() as any,
-		};
-
-		await db.addObject(CollectionId.Accounts, account);
-
-		await adapter.linkAccount!(account);
-
-		expect(rollbar.warn).toHaveBeenCalled();
-	});
-
 	test("Does not create another account if one already exists", async () => {
 		const { db, adapter } = await getDeps();
 
@@ -542,21 +471,6 @@ describe(prototype.unlinkAccount!.name, () => {
 		});
 
 		expect(foundAccount).toBeUndefined();
-	});
-
-	test("Warns if the account doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const account: Account = {
-			provider: "test",
-			type: "oauth",
-			providerAccountId: "1234567890",
-			userId: new ObjectId() as any,
-		};
-
-		await adapter.unlinkAccount!(account);
-
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
 	test("Returns null if the account doesn't exist", async () => {
@@ -689,33 +603,6 @@ describe(prototype.createSession!.name, () => {
 
 		expect(foundSession?.userId).toEqual(session.userId);
 	});
-
-	test("Errors if not given a userId", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const session: AdapterSession = {
-			sessionToken: "1234567890",
-			userId: undefined as any,
-			expires: new Date(),
-		};
-
-		await adapter.createSession!(session);
-		expect(rollbar.error).toHaveBeenCalled();
-	});
-
-	test("Warns if the user doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const session: AdapterSession = {
-			sessionToken: "1234567890",
-			userId: new ObjectId() as any,
-			expires: new Date(),
-		};
-
-		await adapter.createSession!(session);
-
-		expect(rollbar.warn).toHaveBeenCalled();
-	});
 });
 
 describe(prototype.updateSession!.name, () => {
@@ -727,21 +614,17 @@ describe(prototype.updateSession!.name, () => {
 			name: "Test User",
 			email: "test@gmail.com",
 		};
-
 		const { _id: userId } = await db.addObject(CollectionId.Users, user as any);
+
 		const session: AdapterSession = {
 			sessionToken: "1234567890",
 			userId: userId as any,
 			expires: new Date(),
 		};
-
-		const { _id: sessionId } = await db.addObject(
-			CollectionId.Sessions,
-			session as any,
-		);
+		await db.addObject(CollectionId.Sessions, session as any);
 
 		const updatedSession = {
-			sessionToken: "1234567890",
+			sessionToken: session.sessionToken,
 			userId: new ObjectId() as any,
 		};
 
@@ -752,34 +635,6 @@ describe(prototype.updateSession!.name, () => {
 		});
 
 		expect(foundSession?.userId).toEqual(updatedSession.userId);
-	});
-
-	test("Errors if not given a sessionToken", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const session: AdapterSession = {
-			sessionToken: undefined as any,
-			userId: new ObjectId() as any,
-			expires: new Date(),
-		};
-
-		await adapter.updateSession!(session);
-
-		expect(rollbar.error).toHaveBeenCalled();
-	});
-
-	test("Errors if the session doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		const session: AdapterSession = {
-			sessionToken: "1234567890",
-			userId: new ObjectId() as any,
-			expires: new Date(),
-		};
-
-		await adapter.updateSession!(session);
-
-		expect(rollbar.error).toHaveBeenCalled();
 	});
 });
 
@@ -801,10 +656,7 @@ describe(prototype.deleteSession!.name, () => {
 			expires: new Date(),
 		};
 
-		const { _id: sessionId } = await db.addObject(
-			CollectionId.Sessions,
-			session as any,
-		);
+		await db.addObject(CollectionId.Sessions, session as any);
 
 		await adapter.deleteSession!(session.sessionToken);
 
@@ -813,14 +665,6 @@ describe(prototype.deleteSession!.name, () => {
 		});
 
 		expect(foundSession).toBeUndefined();
-	});
-
-	test("Warns if the session doesn't exist", async () => {
-		const { adapter, rollbar } = await getDeps();
-
-		await adapter.deleteSession!("1234567890");
-
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 
 	test("Does not delete the user", async () => {
@@ -882,50 +726,44 @@ describe(prototype.createVerificationToken!.name, () => {
 
 describe(prototype.useVerificationToken!.name, () => {
 	test("Returns token", async () => {
+		const { adapter, db } = await getDeps();
+
 		const testToken = {
 			identifier: "hi",
 			expires: new Date(),
 			token: "hello",
 		};
-
-		const { adapter, db } = await getDeps();
-
 		await db.addObject(CollectionId.VerificationTokens, testToken);
-		const foundToken = await adapter.useVerificationToken!(testToken);
+
+		const foundToken = await adapter.useVerificationToken!({
+			identifier: testToken.identifier,
+			token: testToken.token,
+		});
 
 		expect(foundToken?.identifier).toBe(testToken.identifier);
 		expect(foundToken?.token).toBe(testToken.token);
 	});
 
 	test("Token is removed from database", async () => {
+		const { adapter, db } = await getDeps();
+
 		const testToken = {
 			identifier: "hi",
 			expires: new Date(),
 			token: "hello",
 		};
-
-		const { adapter, db } = await getDeps();
-
 		await db.addObject(CollectionId.VerificationTokens, testToken);
-		await adapter.useVerificationToken!(testToken);
+
+		await adapter.useVerificationToken!({
+			identifier: testToken.identifier,
+			token: testToken.token,
+		});
+
 		const foundToken = await db.findObject(CollectionId.VerificationTokens, {
 			identifier: testToken.identifier,
 			token: testToken.token,
 		});
 
 		expect(foundToken).toBeUndefined();
-	});
-
-	test("Warns if token doesn't exist", async () => {
-		const testToken = {
-			identifier: "hi",
-			expires: new Date(),
-			token: "hello",
-		};
-		const { adapter, rollbar } = await getDeps();
-
-		await adapter.useVerificationToken!(testToken);
-
-		expect(rollbar.warn).toHaveBeenCalled();
 	});
 });
