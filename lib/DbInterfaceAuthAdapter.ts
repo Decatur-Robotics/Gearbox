@@ -29,13 +29,14 @@ function formatTo<T extends object>(obj: T | undefined) {
 	}
 
 	if ("userId" in obj) {
-		(formatted as any).userId = obj.userId;
+		(formatted as any).userId = new ObjectId((obj.userId as any).toString());
 	}
 
 	return formatted;
 }
 
 function formatFrom<T extends object>(obj: T | undefined) {
+	console.log("formatFrom", obj);
 	if (!obj) return undefined;
 
 	const formatted = format.from<T>(obj);
