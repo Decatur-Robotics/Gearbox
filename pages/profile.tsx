@@ -21,6 +21,8 @@ import { signOut } from "next-auth/react";
 import XpProgressBar from "@/components/XpProgressBar";
 import { HiPencilAlt } from "react-icons/hi";
 import toast from "react-hot-toast";
+import EditAvatarModal from "@/components/EditAvatarModal";
+import { close } from "fs";
 
 const api = new ClientApi();
 
@@ -40,6 +42,8 @@ export default function Profile() {
 
 	const [editingName, setEditingName] = useState(false);
 	const [newName, setNewName] = useState<string>();
+
+	const [editingAvatar, setEditingAvatar] = useState(false);
 
 	useEffect(() => {
 		const loadTeams = async () => {
@@ -67,6 +71,10 @@ export default function Profile() {
 		Analytics.requestedToJoinTeam(teamNumber, user?.name ?? "Unknown User");
 	};
 
+	async function toggleEditingAvatarModal() {
+		setEditingAvatar(!editingAvatar);
+	}
+
 	async function toggleEditingName() {
 		setEditingName(!editingName);
 
@@ -89,7 +97,7 @@ export default function Profile() {
 			hideMenu={false}
 			title="Profile"
 		>
-			<UpdateModal />
+			{/* <UpdateModal /> */}
 			<Flex
 				className="my-8 space-y-4"
 				center={true}
@@ -101,12 +109,14 @@ export default function Profile() {
 							<input
 								onChange={(e) => setNewName(e.target.value)}
 								defaultValue={newName}
+								placeholder="New Name"
 								className="input"
 							/>
 						) : (
 							<h1>{user?.name}</h1>
 						)}
 						<button
+							data-testid="edit-name-button"
 							onClick={toggleEditingName}
 							className="btn btn-ghost btn-sm"
 						>
@@ -118,7 +128,13 @@ export default function Profile() {
 						className="space-x-4 max-sm:flex-col max-sm:items-center"
 					>
 						<div className="flex flex-col">
-							<Avatar />
+							<Avatar showLevel={true} />
+							<button
+								onClick={toggleEditingAvatarModal}
+								className="btn btn-primary mt-2"
+							>
+								Edit Avatar
+							</button>
 							<button
 								onClick={() => signOut()}
 								className="btn btn-primary mt-2"
@@ -266,6 +282,12 @@ export default function Profile() {
 					</div>
 				</Card>
 			</Flex>
+			{editingAvatar && (
+				<EditAvatarModal
+					close={toggleEditingAvatarModal}
+					currentImg={user?.image!}
+				/>
+			)}
 		</Container>
 	);
 }

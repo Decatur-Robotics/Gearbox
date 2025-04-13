@@ -416,7 +416,13 @@ export default function CompetitionIndex() {
 		>
 			<div className="min-h-screen w-full flex flex-col sm:flex-row flex-grow justify-center sm:space-x-6 my-4">
 				<div className="w-full sm:w-2/5 flex flex-col items-center flex-grow justify-center space-y-4 h-full">
-					<CompHeaderCard comp={comp} />
+					<CompHeaderCard
+						comp={comp}
+						reports={reports}
+						matches={matches}
+						user={session?.user}
+						matchPathway={`/${team?.slug}/${season?.slug}/${comp?.slug}`}
+					/>
 					<InsightsAndSettingsCard
 						isManager={isManager}
 						comp={comp}

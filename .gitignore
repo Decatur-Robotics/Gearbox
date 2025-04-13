@@ -42,3 +42,10 @@ next-env.d.ts
 # PWA
 public/sw.js
 public/swe-worker*
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

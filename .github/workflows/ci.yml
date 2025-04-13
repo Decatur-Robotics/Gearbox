@@ -66,3 +66,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+  e2e_test:
+    uses: ./.github/workflows/e2e_test.yml
+    permissions:
+      contents: read
+      pull-requests: write

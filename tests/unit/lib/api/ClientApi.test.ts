@@ -1345,3 +1345,58 @@ describe(`${ClientApi.name}.${api.findCompSeasonAndTeamByCompSlug.name}`, () => 
 		expect(authorized).toBe(false);
 	});
 });
+
+describe(`${ClientApi.name}.${api.testSignIn.name}`, () => {
+	test("Returns user", async () => {
+		const { db, res } = await getTestApiUtils();
+
+		await api.testSignIn.handler(...(await getTestApiParams(res, { db }, [])));
+
+		const { user } = res.send.mock.calls[0][0] as {
+			user: User;
+		};
+
+		expect(user).toBeDefined();
+		expect(user._id).toBeDefined();
+		expect(
+			await db.findObjectById(CollectionId.Users, new ObjectId(user._id!)),
+		).toEqual(user);
+	});
+
+	test("Returns valid sessionToken", async () => {
+		const { db, res } = await getTestApiUtils();
+
+		await api.testSignIn.handler(...(await getTestApiParams(res, { db }, [])));
+
+		const { sessionToken } = res.send.mock.calls[0][0] as {
+			sessionToken: string;
+		};
+
+		expect(sessionToken).toBeDefined();
+		expect(sessionToken).not.toBe("");
+
+		const session = await db.findObject(CollectionId.Sessions, {
+			sessionToken,
+		});
+		expect(session).toBeDefined();
+	});
+
+	test("Session has correct userId", async () => {
+		const { db, res } = await getTestApiUtils();
+
+		await api.testSignIn.handler(...(await getTestApiParams(res, { db }, [])));
+
+		const { user, sessionToken } = res.send.mock.calls[0][0] as {
+			user: User;
+			sessionToken: string;
+		};
+
+		expect(sessionToken).toBeDefined();
+
+		const session = await db.findObject(CollectionId.Sessions, {
+			sessionToken,
+		});
+		expect(session).toBeDefined();
+		expect(session?.userId).toEqual(user._id);
+	});
+});

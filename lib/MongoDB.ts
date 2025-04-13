@@ -11,22 +11,29 @@ import { default as BaseMongoDbInterface } from "mongo-anywhere/MongoDbInterface
 import CachedDbInterface from "./client/dbinterfaces/CachedDbInterface";
 import { cacheOptions } from "./client/dbinterfaces/CachedDbInterface";
 import findObjectBySlugLookUp from "./slugToId";
+import { loadEnvConfig } from "@next/env";
 
-if (!process.env.MONGODB_URI) {
+let uri = process.env.MONGODB_URI ?? process.env.FALLBACK_MONGODB_URI;
+
+if (!uri) {
 	// Necessary to allow connections from files running outside of Next
-	require("dotenv").config();
+	const projectDir = process.cwd();
+	loadEnvConfig(projectDir);
 
-	if (!process.env.MONGODB_URI)
-		console.error('Invalid/Missing environment variable: "MONGODB_URI"');
+	uri = process.env.MONGODB_URI ?? process.env.FALLBACK_MONGODB_URI;
+
+	if (!uri)
+		console.warn(
+			'Invalid/Missing environment variables: "MONGODB_URI", "FALLBACK_MONGODB_URI". Using default connection string.',
+		);
 }
 
-const uri = process.env.MONGODB_URI ?? "mongodb://localhost:27017";
 const options: MongoClientOptions = { maxPoolSize: 3 };
 
 let client;
 let clientPromise: Promise<MongoClient>;
 
-if (!global.clientPromise) {
+if (uri && !global.clientPromise) {
 	client = new MongoClient(uri, options);
 	global.clientPromise = client.connect();
 }
@@ -37,21 +44,19 @@ export { clientPromise };
 export async function getDatabase(
 	useCache: boolean = true,
 ): Promise<DbInterface> {
-	if (!global.interface) {
-		await clientPromise;
+	if (global.interface) return global.interface; // Return the existing instance if already created
 
-		const mongo = new MongoDBInterface(clientPromise);
+	await clientPromise;
 
-		const dbInterface = useCache
-			? new CachedDbInterface(mongo, cacheOptions)
-			: mongo;
-		await dbInterface.init();
-		global.interface = dbInterface;
+	const mongo = new MongoDBInterface(clientPromise);
 
-		return dbInterface;
-	}
+	const dbInterface = useCache
+		? new CachedDbInterface(mongo, cacheOptions)
+		: mongo;
+	await dbInterface.init();
+	global.interface = dbInterface;
 
-	return global.interface;
+	return dbInterface;
 }
 
 export class MongoDBInterface

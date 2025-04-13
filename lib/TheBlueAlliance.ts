@@ -155,6 +155,8 @@ export namespace TheBlueAlliance {
 		}
 
 		async request(suburl: string): Promise<any> {
+			if (!this.apiKey) return;
+
 			var res = await fetch(this.baseUrl + suburl, {
 				method: "GET",
 				headers: {
@@ -334,7 +336,7 @@ export namespace TheBlueAlliance {
 		async allCompetitionsToPairings(year: number) {
 			var allCompetitions = await this.req.getEvents(year);
 			var pairings: CompetitonNameIdPair[] = [];
-			allCompetitions.forEach((comp) => {
+			allCompetitions?.forEach((comp) => {
 				pairings.push({ name: comp.name, tbaId: comp.key });
 			});
 

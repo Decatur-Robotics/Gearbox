@@ -13,6 +13,14 @@ export interface RollbarInterface {
 
 export default function getRollbar(): RollbarInterface {
 	if (global.rollbar) return global.rollbar;
+	if (!process.env.ROLLBAR_TOKEN) {
+		return {
+			error: (...args: any[]) => console.error(...args),
+			warn: (...args: any[]) => console.warn(...args),
+			info: (...args: any[]) => console.info(...args),
+			debug: (...args: any[]) => console.debug(...args),
+		};
+	}
 
 	const rollbar = new Rollbar({
 		accessToken: process.env.ROLLBAR_TOKEN,
@@ -22,4 +30,35 @@ export default function getRollbar(): RollbarInterface {
 
 	global.rollbar = rollbar;
 	return rollbar;
+}
+
+export function reportDeploymentToRollbar() {
+	const deployId = process.env.DEPLOY_ID;
+
+	if (!deployId) {
+		getRollbar().error("Missing deployId in environment variables");
+		return;
+	}
+
+	if (!process.env.ROLLBAR_TOKEN) {
+		console.warn("ROLLBAR_TOKEN is not set. Cannot report deployment.");
+		return;
+	}
+
+	const url = "https://api.rollbar.com/api/1/deploy/" + deployId;
+	const options = {
+		method: "PATCH",
+		headers: {
+			accept: "application/json",
+			"content-type": "application/json",
+			"X-Rollbar-Access-Token": process.env.ROLLBAR_TOKEN,
+		},
+		body: JSON.stringify({
+			status: "succeeded",
+		}),
+	};
+
+	fetch(url, options)
+		.then(() => console.log("Deployment reported to Rollbar"))
+		.catch((err) => getRollbar().error(err));
 }

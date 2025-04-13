@@ -3,7 +3,7 @@ import { levelToClassName } from "@/lib/Xp";
 import { BsGearFill } from "react-icons/bs";
 
 export default function Avatar(props: {
-	user?: { image: string | undefined; level: number; admin?: boolean };
+	user?: { image: string | undefined; level?: number; admin?: boolean };
 	scale?: string | undefined; // Use "scale-75" for 75% scale, etc.
 	imgHeightOverride?: string | undefined;
 	showLevel?: boolean | undefined;
@@ -13,6 +13,7 @@ export default function Avatar(props: {
 	className?: string | undefined;
 	online?: boolean;
 	gearSize?: number;
+	altText?: string;
 }) {
 	const { session, status } = useCurrentSession();
 	const user = props.user ?? session?.user;
@@ -24,8 +25,8 @@ export default function Avatar(props: {
 		<div
 			className={`avatar ${props.online && "online"} ${props.scale} ${props.className} ${props.animation}`}
 		>
-			{(props.showLevel ?? true) && (
-				<div className="absolute z-10 bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
+			{props.showLevel && (
+				<div className="absolute bg-base-100 rounded-tl-xl rounded-br-xl h-6 w-14 text-center text-sm font-semibold">
 					LVL: {user?.level}
 				</div>
 			)}
@@ -34,12 +35,12 @@ export default function Avatar(props: {
 			>
 				<img
 					src={image}
-					alt={"Avatar"}
+					alt={props.altText ?? "Avatar"}
 					onClick={props.onClick}
 				></img>
 			</div>
 			{admin ? (
-				<div className="absolute z-10 -bottom-2 -left-2 text-slate-300 animate-spin-slow">
+				<div className="absolute -bottom-2 -left-2 text-slate-300 animate-spin-slow">
 					<BsGearFill size={props.gearSize ?? 36}></BsGearFill>
 				</div>
 			) : (
