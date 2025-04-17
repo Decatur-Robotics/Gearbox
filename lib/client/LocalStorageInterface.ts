@@ -1,6 +1,6 @@
 export default interface LocalStorageInterface {
 	get: <T>(key: string) => Promise<T | undefined>;
-	set: <T>(key: string, value: T) => Promise<void>;
+	set: (key: string, value: any) => Promise<void>;
 }
 
 export class MockLocalStorage implements LocalStorageInterface {
@@ -10,7 +10,7 @@ export class MockLocalStorage implements LocalStorageInterface {
 		return this.storage[key];
 	}
 
-	async set<T>(key: string, value: T): Promise<void> {
+	async set(key: string, value: any): Promise<void> {
 		this.storage[key] = value;
 	}
 }
@@ -30,7 +30,17 @@ export class LocalStorage implements LocalStorageInterface {
 		return undefined;
 	}
 
-	async set<T>(key: string, value: T): Promise<void> {
+	async set(key: string, value: any): Promise<void> {
 		this.storage.setItem(key, JSON.stringify(value));
+	}
+}
+
+export class UnavailableLocalStorage implements LocalStorageInterface {
+	async get<T>(key: string): Promise<T | undefined> {
+		throw new Error("Local storage is unavailable");
+	}
+
+	async set(key: string, value: any): Promise<void> {
+		throw new Error("Local storage is unavailable");
 	}
 }

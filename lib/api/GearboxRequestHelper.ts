@@ -2,7 +2,12 @@ import toast from "react-hot-toast";
 import { RequestHelper } from "unified-api";
 import LocalStorageDbInterface from "../client/dbinterfaces/LocalStorageDbInterface";
 import LocalApiDependencies from "./LocalApiDependencies";
-import { LocalStorage } from "../client/LocalStorageInterface";
+import {
+	LocalStorage,
+	UnavailableLocalStorage,
+} from "../client/LocalStorageInterface";
+import InMemoryDbInterface from "../client/dbinterfaces/InMemoryDbInterface";
+
 export default class GearboxRequestHelper extends RequestHelper {
 	constructor() {
 		super(
@@ -16,14 +21,20 @@ export default class GearboxRequestHelper extends RequestHelper {
 
 	async getLocalDependencies() {
 		const dbPromise = (async () => {
-			const db = new LocalStorageDbInterface();
+			const db =
+				typeof window !== "undefined"
+					? new LocalStorageDbInterface()
+					: new InMemoryDbInterface();
 			await db.init();
 			return db;
 		})();
 
 		return {
 			dbPromise,
-			localStorage: new LocalStorage(window.localStorage),
+			localStorage:
+				typeof window !== "undefined"
+					? new LocalStorage(window.localStorage)
+					: new UnavailableLocalStorage(),
 		} as LocalApiDependencies;
 	}
 }

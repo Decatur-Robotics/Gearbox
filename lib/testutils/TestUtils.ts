@@ -178,6 +178,9 @@ export async function createTestDocuments(db: DbInterface) {
 }
 
 export namespace PlaywrightUtils {
+	/**
+	 * You cannot use LocalStorage with the API returned this function!
+	 */
 	export function getTestClientApi() {
 		const api = new ClientApi();
 
