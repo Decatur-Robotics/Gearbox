@@ -13,6 +13,7 @@ import {
 } from "react-icons/md";
 import ViewMatchesModal from "../ViewMatchesModal";
 import { User } from "../../lib/Types";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -38,15 +39,33 @@ export default function CompHeaderCard({
 	function syncComp() {
 		if (!comp) return;
 
-		api.syncCompData(comp._id!.toString());
+		const toastId = toast.loading("Syncing offline data...");
 
-		const url = location.href;
-		comp?.pitReports.forEach((report) =>
-			history.pushState({}, "", `${url}/pit/${report}`),
+		new Promise(async () => {
+			api.syncCompData(comp._id!.toString());
+
+			const totalItemsToSync = comp?.pitReports.length || 0;
+			let itemsSynced = 0;
+			await Promise.all(
+				comp?.pitReports.map(async (report) => {
+					await fetch(`${location.href}/pit/${report}`);
+					itemsSynced++;
+					toast.loading(
+						`Syncing offline data... (${itemsSynced}/${totalItemsToSync})`,
+						{
+							id: toastId,
+						},
+					);
+				}),
+			);
+
+			console.log("Cached all pit reports");
+			toast.success("Synced offline data!", { id: toastId });
+		}).catch((err) =>
+			toast.error(`Error syncing offline data. Error: ${err}`, {
+				id: toastId,
+			}),
 		);
-
-		history.pushState({}, "", url);
-		console.log("Cached all pit reports");
 	}
 
 	return (
@@ -56,7 +75,8 @@ export default function CompHeaderCard({
 					<h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
 					<button
 						onClick={syncComp}
-						className="btn btn-ghost"
+						className="btn btn-ghost tooltip"
+						data-tip="Sync Offline Data"
 					>
 						<MdCloudSync />
 					</button>
