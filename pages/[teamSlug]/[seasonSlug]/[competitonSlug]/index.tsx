@@ -175,7 +175,7 @@ export default function CompetitionIndex() {
 
 			if (!silent) setLoadingMatches(false);
 		},
-		[comp?._id],
+		[comp],
 	);
 
 	const loadReports = useCallback(
@@ -219,7 +219,7 @@ export default function CompetitionIndex() {
 
 			scoutingStats(newReports);
 		},
-		[comp?._id],
+		[comp],
 	);
 
 	useEffect(() => {

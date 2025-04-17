@@ -43,7 +43,7 @@ export default function Home() {
 			setSeason(season);
 			setComps(comps);
 		});
-	}, [router.query.seasonSlug]);
+	}, [router.query]);
 
 	function deleteSeason() {
 		if (!season?._id) return;
