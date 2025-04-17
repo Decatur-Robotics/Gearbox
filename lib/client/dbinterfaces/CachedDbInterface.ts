@@ -9,7 +9,7 @@ import DbInterface, {
 import { default as BaseCachedDbInterface } from "mongo-anywhere/CachedDbInterface";
 import NodeCache from "node-cache";
 import { CacheOperation } from "mongo-anywhere/CachedDbInterface";
-import { findObjectBySlugLookUp } from "@/lib/slugToId";
+import findObjectBySlugLookUp from "@/lib/slugToId";
 
 export const cacheOptions: NodeCache.Options = {
 	stdTTL: 1 * 60,
@@ -73,5 +73,12 @@ export default class CachedDbInterface
 		TObj extends CollectionIdToType<TId>,
 	>(collection: TId, slug: string): Promise<TObj | undefined> {
 		return findObjectBySlugLookUp(this, collection, slug);
+	}
+
+	addOrUpdateObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, object: TObj): Promise<TObj> {
+		return super.addOrUpdateObject(collection, object);
 	}
 }

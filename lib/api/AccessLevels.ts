@@ -161,6 +161,35 @@ namespace AccessLevels {
 		};
 	}
 
+	export async function IfSeasonOwnerBySlug(
+		req: NextApiRequest,
+		res: NextResponse<any>,
+		{ userPromise, db }: UserAndDb,
+		seasonSlug: string,
+	) {
+		const user = await userPromise;
+		if (!user) {
+			return { authorized: false, authData: undefined };
+		}
+
+		const season = await (
+			await db
+		).findObjectBySlug(CollectionId.Seasons, seasonSlug);
+		if (!season) {
+			return { authorized: false, authData: undefined };
+		}
+
+		const team = await getTeamFromSeason(await db, season);
+		if (!team) {
+			return { authorized: false, authData: undefined };
+		}
+
+		return {
+			authorized: team.owners.includes(user._id?.toString()!),
+			authData: { team, season },
+		};
+	}
+
 	export async function IfMatchOwner(
 		req: NextApiRequest,
 		res: NextResponse<any>,

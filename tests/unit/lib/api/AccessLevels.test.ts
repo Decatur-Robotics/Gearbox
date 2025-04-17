@@ -320,6 +320,61 @@ describe(`AccessLevels.${AccessLevels.IfSeasonOwner.name}`, () => {
 		returnsFalseIfDocumentDoesNotExist(AccessLevels.IfSeasonOwner));
 });
 
+describe(`AccessLevels.${AccessLevels.IfSeasonOwnerBySlug.name}`, () => {
+	test(`AccessLevels.${AccessLevels.IfSeasonOwnerBySlug}: Returns false if user does not own season`, async () => {
+		const { res, user, db } = await getTestApiUtils();
+
+		const season = await db.addObject(
+			CollectionId.Seasons,
+			{} as any as Season,
+		);
+		await db.addObject(CollectionId.Teams, {
+			seasons: [season._id!.toString()],
+			owners: [],
+		} as any as Team);
+
+		expect(
+			(
+				await AccessLevels.IfSeasonOwnerBySlug(
+					undefined as any,
+					res,
+					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
+					season.slug!,
+				)
+			).authorized,
+		).toBe(false);
+	});
+
+	test(`AccessLevels.${AccessLevels.IfSeasonOwnerBySlug}: Returns true if user owns season`, async () => {
+		const { res, user, db } = await getTestApiUtils();
+
+		const season = await db.addObject(CollectionId.Seasons, {
+			slug: "test-slug",
+		} as any as Season);
+		await db.addObject(CollectionId.Teams, {
+			seasons: [season._id!.toString()],
+			owners: [user._id!.toString()],
+		} as any as Team);
+
+		expect(
+			(
+				await AccessLevels.IfSeasonOwnerBySlug(
+					undefined as any,
+					res,
+					{ userPromise: Promise.resolve(user), db: Promise.resolve(db) },
+					season.slug!,
+				)
+			).authorized,
+		).toBe(true);
+	});
+
+	test(`AccessLevels.${AccessLevels.IfSeasonOwnerBySlug}: Returns false if user is not signed in`, () =>
+		returnsFalseIfUserIsNotSignedIn(AccessLevels.IfSeasonOwnerBySlug));
+
+	test(`AccessLevels.${AccessLevels.IfSeasonOwnerBySlug}: Returns false if season does not exist`, () =>
+		returnsFalseIfDocumentDoesNotExist(AccessLevels.IfSeasonOwnerBySlug));
+});
+
 describe(`AccessLevels.${AccessLevels.IfMatchOwner.name}`, () => {
 	test(`AccessLevels.${AccessLevels.IfMatchOwner}: Returns false if user does not own match`, async () => {
 		const { res, user, db } = await getTestApiUtils();

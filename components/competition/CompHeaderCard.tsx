@@ -1,11 +1,21 @@
+import ClientApi from "@/lib/api/ClientApi";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { Competition, Match, Report } from "@/lib/Types";
 import { useState } from "react";
 import { BiExport } from "react-icons/bi";
+
 import { FaCalendarDay } from "react-icons/fa";
-import { MdAutoGraph, MdQueryStats, MdCoPresent } from "react-icons/md";
+import {
+	MdAutoGraph,
+	MdQueryStats,
+	MdCoPresent,
+	MdCloudSync,
+} from "react-icons/md";
 import ViewMatchesModal from "../ViewMatchesModal";
 import { User } from "../../lib/Types";
+import toast from "react-hot-toast";
+
+const api = new ClientApi();
 
 export default function CompHeaderCard({
 	comp,
@@ -26,11 +36,50 @@ export default function CompHeaderCard({
 		setViewMatches(!viewMatches);
 	}
 
+	function syncComp() {
+		if (!comp) return;
+
+		const toastId = toast.loading("Syncing offline data...");
+
+		new Promise(async () => {
+			api.syncCompData(comp._id!.toString());
+
+			const totalItemsToSync = comp?.pitReports.length || 0;
+			let itemsSynced = 0;
+			await Promise.all(
+				comp?.pitReports.map(async (report) => {
+					await fetch(`${location.href}/pit/${report}`);
+					itemsSynced++;
+					toast.loading(
+						`Syncing offline data... (${itemsSynced}/${totalItemsToSync})`,
+						{
+							id: toastId,
+						},
+					);
+				}),
+			);
+
+			console.log("Cached all pit reports");
+			toast.success("Synced offline data!", { id: toastId });
+		}).catch((err) =>
+			toast.error(`Error syncing offline data. Error: ${err}`, {
+				id: toastId,
+			}),
+		);
+	}
+
 	return (
 		<div className="w-full card bg-base-200 shadow-xl">
 			<div className="card-body">
 				<div className="flex flex-row items-center justify-between w-full">
 					<h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
+					<button
+						onClick={syncComp}
+						className="btn btn-ghost tooltip"
+						data-tip="Sync Offline Data"
+					>
+						<MdCloudSync />
+					</button>
 				</div>
 				<div className="divider"></div>
 				<div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
