@@ -2243,8 +2243,8 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		isAuthorized: AccessLevels.AlwaysAuthorized,
 		handler: async (req, res, { db: dbPromise }, authData, [slug]) => {
 			const db = await dbPromise;
-
-			return db.findObjectBySlug(CollectionId.Teams, slug);
+			const team = await db.findObjectBySlug(CollectionId.Teams, slug);
+			return res.status(200).send(team);
 		},
 		afterResponse: async (deps, res, ranFallback) =>
 			saveObjectAfterResponse(deps, CollectionId.Teams, res, ranFallback),

@@ -38,6 +38,7 @@ import { Analytics } from "@/lib/client/Analytics";
 import { redirect } from "next/dist/server/api-utils";
 import { makeObjSerializeable } from "../../lib/client/ClientUtils";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -476,7 +477,10 @@ export default function TeamIndex() {
 		if (!router.query.teamSlug) return;
 
 		api.findTeamBySlug(router.query.teamSlug as string).then(async (team) => {
-			if (!team) return;
+			if (!team) {
+				toast.error(`Team not found: ${router.query.teamSlug as string}`);
+				return;
+			}
 
 			setTeam(team);
 
