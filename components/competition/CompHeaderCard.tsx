@@ -31,6 +31,7 @@ export default function CompHeaderCard({
 	matchPathway: string;
 }) {
 	const [viewMatches, setViewMatches] = useState(false);
+	const [syncingOfflineData, setSyncingOfflineData] = useState(false);
 
 	async function toggleViewMatches() {
 		setViewMatches(!viewMatches);
@@ -40,6 +41,7 @@ export default function CompHeaderCard({
 		if (!comp) return;
 
 		const toastId = toast.loading("Syncing offline data...");
+		setSyncingOfflineData(true);
 
 		new Promise(async () => {
 			api.syncCompData(comp._id!.toString());
@@ -61,11 +63,19 @@ export default function CompHeaderCard({
 
 			console.log("Cached all pit reports");
 			toast.success("Synced offline data!", { id: toastId });
-		}).catch((err) =>
-			toast.error(`Error syncing offline data. Error: ${err}`, {
-				id: toastId,
-			}),
-		);
+
+			// Finally block doesn't run for some reason
+			setSyncingOfflineData(false);
+		})
+			.catch((err) => {
+				toast.error(`Error syncing offline data. Error: ${err}`, {
+					id: toastId,
+				});
+
+				// Finally block doesn't run for some reason
+				setSyncingOfflineData(false);
+			})
+			.finally(() => setSyncingOfflineData(false));
 	}
 
 	return (
@@ -73,13 +83,21 @@ export default function CompHeaderCard({
 			<div className="card-body">
 				<div className="flex flex-row items-center justify-between w-full">
 					<h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
-					<button
-						onClick={syncComp}
-						className="btn btn-ghost tooltip"
+					<div
+						className="tooltip"
 						data-tip="Sync Offline Data"
 					>
-						<MdCloudSync />
-					</button>
+						{syncingOfflineData ? (
+							<span className="loading loading-spinner loading-xs" />
+						) : (
+							<button
+								onClick={syncComp}
+								className="btn btn-ghost"
+							>
+								<MdCloudSync />
+							</button>
+						)}
+					</div>
 				</div>
 				<div className="divider"></div>
 				<div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">

@@ -22,6 +22,7 @@ import Card from "@/components/Card";
 import Container from "@/components/Container";
 import { useRouter } from "next/router";
 import Loading from "@/components/Loading";
+import toast from "react-hot-toast";
 
 const api = new ClientApi();
 
@@ -51,23 +52,39 @@ export default function PitReportForm() {
 		// Fetch page data
 		setLoadStatus(LoadState.Fetching);
 
-		const pitReportId = (router.query.pitreportId as string[0])?.[0];
-		if (!pitReportId) return;
+		const pitReportId = router.query.pitReportId as string;
+		if (!pitReportId) {
+			return;
+		}
 
-		api.getPitReportPageData(pitReportId as string).then((data) => {
-			if (!data) {
-				setLoadStatus(LoadState.Failed);
-				return;
-			}
+		const promise = api
+			.getPitReportPageData(pitReportId as string)
+			.then((data) => {
+				if (!data) {
+					setLoadStatus(LoadState.Failed);
+					return;
+				}
 
-			setLoadStatus(LoadState.Loaded);
+				setLoadStatus(LoadState.Loaded);
 
-			setPitReport(data.pitReport);
-			setCompName(data.compName);
-			setTeamNumber(data.teamNumber);
-			setGame(games[data.gameId as GameId]);
+				setPitReport(data.pitReport);
+				setCompName(data.compName);
+				setTeamNumber(data.teamNumber);
+				setGame(games[data.gameId as GameId]);
+
+				console.log("data:", data);
+			});
+
+		toast.promise(promise, {
+			loading: "Loading pit report...",
+			success: () => {
+				return `Loaded pit report for team ${teamNumber}`;
+			},
+			error: (err) => {
+				return `Failed to load pit report: ${err}`;
+			},
 		});
-	}, [router.query.pitreportId]);
+	}, [router.query]);
 
 	const setCallback = useCallback(
 		(key: any, value: boolean | string | number | object) => {
@@ -87,7 +104,7 @@ export default function PitReportForm() {
 		// Remove _id from object
 		const { _id, ...report } = pitReport;
 
-		api
+		const promise = api
 			.updatePitreport(pitReport?._id!, {
 				...report,
 				submitted: true,
@@ -107,6 +124,16 @@ export default function PitReportForm() {
 					location.href.lastIndexOf("/pit"),
 				);
 			});
+
+		toast.promise(promise, {
+			loading: "Submitting pit report...",
+			success: () => {
+				return `Submitted pit report for team ${teamNumber}`;
+			},
+			error: (err) => {
+				return `Failed to submit pit report: ${err}`;
+			},
+		});
 	}
 
 	function getComponent(

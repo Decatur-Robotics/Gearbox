@@ -3233,18 +3233,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				comp,
 				ranFallback,
 			);
-
 			saveObjectAfterResponse(
 				deps,
 				CollectionId.PitReports,
 				pitReports,
 				ranFallback,
 			);
-
 			saveObjectAfterResponse(deps, CollectionId.Matches, matches, ranFallback);
-
 			saveObjectAfterResponse(deps, CollectionId.Reports, reports, ranFallback);
-
 			saveObjectAfterResponse(
 				deps,
 				CollectionId.SubjectiveReports,
