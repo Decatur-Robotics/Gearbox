@@ -46,7 +46,7 @@ import {
 	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
-import { CenterStage, Crescendo, games, IntoTheDeep } from "../games";
+import { games } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";
@@ -64,6 +64,10 @@ import {
 	findObjectBySlugFallback,
 	saveObjectAfterResponse,
 } from "./ClientApiUtils";
+import CenterStage from "../games/CenterStage";
+import Crescendo from "../games/Crescendo";
+import IntoTheDeep from "../games/IntoTheDeep";
+import Reefscape from "../games/Reefscape";
 
 const requestHelper = new GearboxRequestHelper();
 
@@ -1187,11 +1191,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				Crescendo.QuantitativeData,
 				CenterStage.QuantitativeData,
 				IntoTheDeep.QuantitativeData,
+				Reefscape.QuantitativeData,
 			];
 			const pitReportTypes = [
 				Crescendo.PitData,
 				CenterStage.PitData,
 				IntoTheDeep.PitData,
+				Reefscape.PitData,
 			];
 
 			const dataPointsPerReport =

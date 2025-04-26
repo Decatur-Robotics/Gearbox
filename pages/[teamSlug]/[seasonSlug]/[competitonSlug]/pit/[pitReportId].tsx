@@ -1,6 +1,6 @@
 import ClientApi from "@/lib/api/ClientApi";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
-import { FormLayout, FormElement, BlockElement } from "@/lib/Layout";
+import { FormElement, BlockElement } from "@/lib/Layout";
 import {
 	AllianceColor,
 	FieldPos,
@@ -11,12 +11,8 @@ import {
 import { useState, useCallback, Fragment, useEffect } from "react";
 import { FaRobot } from "react-icons/fa";
 import { Analytics } from "@/lib/client/Analytics";
-import {
-	camelCaseToTitleCase,
-	detectGameIdFromPitReport,
-} from "@/lib/client/ClientUtils";
-import { GameId } from "@/lib/client/GameId";
-import { games } from "@/lib/games";
+import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
+import { games, detectGameIdFromPitReport } from "@/lib/games";
 import Flex from "@/components/Flex";
 import Checkbox from "@/components/forms/Checkboxes";
 import FieldPositionSelector from "@/components/forms/FieldPositionSelector";

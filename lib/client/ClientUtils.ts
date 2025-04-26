@@ -190,26 +190,3 @@ export function mergePitReports(reports: Pitreport[]) {
 
 	return newReport;
 }
-
-/**
- * Given a pit report, returns the game ID of the game it is for.
- */
-export function detectGameIdFromPitReport(
-	pitReport: Pitreport,
-): GameId | undefined {
-	if (!pitReport.data) return undefined;
-
-	for (const gameId in games) {
-		let match = true;
-		for (const key in new games[gameId as GameId].pitDataType()) {
-			if (!(key in pitReport.data)) {
-				match = false;
-				break;
-			}
-		}
-
-		if (match) {
-			return gameId as GameId;
-		}
-	}
-}
