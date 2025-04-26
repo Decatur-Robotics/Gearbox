@@ -11,7 +11,10 @@ import {
 import { useState, useCallback, Fragment, useEffect } from "react";
 import { FaRobot } from "react-icons/fa";
 import { Analytics } from "@/lib/client/Analytics";
-import { camelCaseToTitleCase } from "@/lib/client/ClientUtils";
+import {
+	camelCaseToTitleCase,
+	detectGameIdFromPitReport,
+} from "@/lib/client/ClientUtils";
 import { GameId } from "@/lib/client/GameId";
 import { games } from "@/lib/games";
 import Flex from "@/components/Flex";
@@ -43,7 +46,7 @@ export default function PitReportForm() {
 
 	const [pitReport, setPitReport] = useState<Pitreport>();
 	const [compName, setCompName] = useState<string>();
-	const [teamNumber, setTeamNumber] = useState<number>();
+	const [usersTeamNumber, setTeamNumber] = useState<number>();
 	const [game, setGame] = useState<Game>();
 
 	const username = session?.user?.name;
@@ -57,20 +60,35 @@ export default function PitReportForm() {
 			return;
 		}
 
+		let teamNumber: number | undefined = undefined;
+
 		const promise = api
 			.getPitReportPageData(pitReportId as string)
 			.then((data) => {
 				if (!data) {
 					setLoadStatus(LoadState.Failed);
-					return;
+					throw new Error("No data returned from API");
 				}
+
+				if (!data.pitReport) {
+					setLoadStatus(LoadState.Failed);
+					throw new Error("No pit report found");
+				}
+
+				const gameId = detectGameIdFromPitReport(data.pitReport);
+				if (!gameId) {
+					setLoadStatus(LoadState.Failed);
+					throw new Error("No game found for pit report");
+				}
+
+				teamNumber = data.pitReport?.teamNumber;
 
 				setLoadStatus(LoadState.Loaded);
 
 				setPitReport(data.pitReport);
 				setCompName(data.compName);
-				setTeamNumber(data.teamNumber);
-				setGame(games[data.gameId as GameId]);
+				setTeamNumber(data.usersTeamNumber);
+				setGame(gameId ? games[gameId] : undefined);
 
 				console.log("data:", data);
 			});
@@ -105,7 +123,7 @@ export default function PitReportForm() {
 		const { _id, ...report } = pitReport;
 
 		const promise = api
-			.updatePitreport(pitReport?._id!, {
+			.updatePitreport(router.query.pitReportId as string, {
 				...report,
 				submitted: true,
 				submitter: session?.user?._id,
@@ -113,22 +131,21 @@ export default function PitReportForm() {
 			.then(() => {
 				Analytics.pitReportSubmitted(
 					pitReport.teamNumber,
-					teamNumber ?? -1,
+					usersTeamNumber ?? -1,
 					compName ?? "Unknown",
 					username ?? "Unknown",
 				);
-			})
-			.finally(() => {
-				location.href = location.href.substring(
-					0,
-					location.href.lastIndexOf("/pit"),
-				);
+
+				// location.href = location.href.substring(
+				// 	0,
+				// 	location.href.lastIndexOf("/pit"),
+				// );
 			});
 
 		toast.promise(promise, {
 			loading: "Submitting pit report...",
 			success: () => {
-				return `Submitted pit report for team ${teamNumber}`;
+				return `Submitted pit report for team ${usersTeamNumber}`;
 			},
 			error: (err) => {
 				return `Failed to submit pit report: ${err}`;

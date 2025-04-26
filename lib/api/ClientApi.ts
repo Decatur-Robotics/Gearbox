@@ -3099,8 +3099,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 		{
 			pitReport?: Pitreport;
 			compName?: string;
-			gameId?: GameId;
-			teamNumber?: number;
+			usersTeamNumber?: number;
 		},
 		ApiDependencies,
 		{ team: Team; comp: Competition; pitReport: Pitreport },
@@ -3125,14 +3124,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			return res.status(200).send({
 				pitReport,
 				compName: comp.name,
-				gameId: season.gameId,
-				teamNumber: team.number,
+				usersTeamNumber: team.number,
 			});
 		},
 		afterResponse: async (deps, res, ranFallback) => {
 			if (!res || ranFallback) return;
 
-			const { pitReport, compName, gameId, teamNumber } = res;
+			const { pitReport, compName, usersTeamNumber: teamNumber } = res;
 			if (!pitReport) return;
 
 			saveObjectAfterResponse(
@@ -3143,7 +3141,6 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 
 			deps.localStorage.set(`${pitReport._id!.toString()}.compName`, compName);
-			deps.localStorage.set(`${pitReport._id!.toString()}.gameId`, gameId);
 			deps.localStorage.set(
 				`${pitReport._id!.toString()}.teamNumber`,
 				teamNumber,
@@ -3158,13 +3155,12 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			);
 			if (!pitReport) return {};
 
-			const [compName, gameId, teamNumber] = await Promise.all([
+			const [compName, teamNumber] = await Promise.all([
 				localStorage.get<string>(`${pitReport._id!.toString()}.compName`),
-				localStorage.get<GameId>(`${pitReport._id!.toString()}.gameId`),
 				localStorage.get<number>(`${pitReport._id!.toString()}.teamNumber`),
 			]);
 
-			return { pitReport, compName, gameId, teamNumber };
+			return { pitReport, compName, usersTeamNumber: teamNumber };
 		},
 	});
 

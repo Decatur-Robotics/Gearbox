@@ -8,9 +8,7 @@ export default function Offline() {
 	const [path, setPath] = useState<string>("loading...");
 
 	useEffect(() => {
-		const { pathname, query } = router;
-		const path = pathname + JSON.stringify(query);
-		setPath(path);
+		setPath(location.href);
 	}, [router]);
 
 	return (
