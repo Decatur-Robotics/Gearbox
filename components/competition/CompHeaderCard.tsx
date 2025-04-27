@@ -43,8 +43,7 @@ export default function CompHeaderCard({
 
 		const toastId = toast.loading("Caching offline pages...");
 		setSyncingOfflineData(true);
-
-		try {
+		new Promise(async (resolve, reject) => {
 			await syncCompData(api, comp._id!.toString());
 
 			const totalItemsToSync = comp?.pitReports.length || 0;
@@ -67,6 +66,7 @@ export default function CompHeaderCard({
 
 			// Finally block doesn't run for some reason
 			setSyncingOfflineData(false);
+			resolve(true);
 		})
 			.catch((err) => {
 				toast.error(`Error syncing offline data. Error: ${err}`, {
