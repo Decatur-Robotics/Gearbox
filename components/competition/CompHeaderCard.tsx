@@ -14,6 +14,7 @@ import {
 import ViewMatchesModal from "../ViewMatchesModal";
 import { User } from "../../lib/Types";
 import toast from "react-hot-toast";
+import { syncCompData } from "@/lib/api/ClientApiUtils";
 
 const api = new ClientApi();
 
@@ -40,11 +41,11 @@ export default function CompHeaderCard({
 	function syncComp() {
 		if (!comp) return;
 
-		const toastId = toast.loading("Syncing offline data...");
+		const toastId = toast.loading("Caching offline pages...");
 		setSyncingOfflineData(true);
 
 		new Promise(async () => {
-			api.syncCompData(comp._id!.toString());
+			syncCompData(api, comp._id!.toString());
 
 			const totalItemsToSync = comp?.pitReports.length || 0;
 			let itemsSynced = 0;
@@ -53,7 +54,7 @@ export default function CompHeaderCard({
 					await fetch(`${location.href}/pit/${report}`);
 					itemsSynced++;
 					toast.loading(
-						`Syncing offline data... (${itemsSynced}/${totalItemsToSync})`,
+						`Caching offline pages... (${itemsSynced}/${totalItemsToSync})`,
 						{
 							id: toastId,
 						},
@@ -61,8 +62,8 @@ export default function CompHeaderCard({
 				}),
 			);
 
-			console.log("Cached all pit reports");
-			toast.success("Synced offline data!", { id: toastId });
+			console.log("Cached all offline pages!");
+			toast.success("Cached all offline pages!", { id: toastId });
 
 			// Finally block doesn't run for some reason
 			setSyncingOfflineData(false);

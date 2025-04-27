@@ -63,6 +63,7 @@ import {
 	findObjectByIdFallback,
 	findObjectBySlugFallback,
 	saveObjectAfterResponse,
+	ShouldOverwrite,
 } from "./ClientApiUtils";
 import CenterStage from "../games/CenterStage";
 import Crescendo from "../games/Crescendo";
@@ -790,13 +791,14 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 				CollectionId.Reports,
 				res.quantReports,
 				ranFallback,
-			),
-				saveObjectAfterResponse(
-					deps,
-					CollectionId.PitReports,
-					Object.values(res.pitReports).flat(),
-					ranFallback,
-				);
+			);
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.PitReports,
+				Object.values(res.pitReports).flat(),
+				ranFallback,
+				ShouldOverwrite.PitReport,
+			);
 		},
 	});
 
@@ -2445,7 +2447,13 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			return res.status(200).send(authData.map((report) => report.pitReport));
 		},
 		afterResponse: async (deps, res, ranFallback) =>
-			saveObjectAfterResponse(deps, CollectionId.PitReports, res, ranFallback),
+			saveObjectAfterResponse(
+				deps,
+				CollectionId.PitReports,
+				res,
+				ranFallback,
+				ShouldOverwrite.PitReport,
+			),
 		fallback: async (deps, [pitReportIds]) =>
 			findObjectByIdFallback(deps, CollectionId.PitReports, pitReportIds),
 	});
