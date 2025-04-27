@@ -38,14 +38,14 @@ export default function CompHeaderCard({
 		setViewMatches(!viewMatches);
 	}
 
-	function syncComp() {
+	async function syncComp() {
 		if (!comp) return;
 
 		const toastId = toast.loading("Caching offline pages...");
 		setSyncingOfflineData(true);
 
-		new Promise(async () => {
-			syncCompData(api, comp._id!.toString());
+		try {
+			await syncCompData(api, comp._id!.toString());
 
 			const totalItemsToSync = comp?.pitReports.length || 0;
 			let itemsSynced = 0;
