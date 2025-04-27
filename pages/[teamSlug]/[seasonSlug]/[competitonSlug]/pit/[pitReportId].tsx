@@ -132,16 +132,17 @@ export default function PitReportForm() {
 					username ?? "Unknown",
 				);
 
-				// location.href = location.href.substring(
-				// 	0,
-				// 	location.href.lastIndexOf("/pit"),
-				// );
+				// Redirect to the comp page
+				location.href = location.href.substring(
+					0,
+					location.href.lastIndexOf("/pit"),
+				);
 			});
 
 		toast.promise(promise, {
 			loading: "Submitting pit report...",
 			success: () => {
-				return `Submitted pit report for team ${usersTeamNumber}`;
+				return `Submitted pit report for team ${pitReport.teamNumber}`;
 			},
 			error: (err) => {
 				return `Failed to submit pit report: ${err}`;
