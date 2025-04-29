@@ -32,10 +32,10 @@ Features full feature parity with SJ2, whilst remaining simpler, faster and cool
 - Node.js
 - NPM
 - A MongoDB instance
-  - We use Atlas
+  - We use Mongo Atlas
 - An SSL certificate saved as `certs/key.pem` and `certs/cert.pem`
   - Can be generated with OpenSSL
-- Secrets:
+- Secrets in a `.env` file (see [`environment.d.ts`](environment.d.ts) for a full list):
   - A Blue Alliance API key
   - An Orange Alliance API key
   - A Google OAuth client ID and secret
@@ -67,15 +67,18 @@ See the [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terrafor
 
 #### Tests
 
-1. Run `npm run test`
+Gearbox has both unit tests (via Jest) and E2E tests (via Playwright).
+
+Unit tests are run with `npm run test`.
+E2E tests are run with `npm run e2e`.
 
 #### Scripts
 
-There's a few scripts in the /scripts folder that can be run with `npx tsx scripts/<script_name>.ts`.
+There's a few scripts in the `/scripts` folder that can be run with `npx tsx scripts/<script_name>.ts`.
 
 ## Contributing
 
-You've made it past set up and are ready to contibure to the future of scouting - here's how.
+You've made it past set up and are ready to contribute to the future of scouting - here's how.
 
 We recommend you start with issues labelled `good first issue` to get a feel for the codebase. Fork the repo (unless you're part of Decatur Robotics, in which case make a new branch) and then make a pull request to the main branch. We'll review it and, if it looks good, merge it.
 
