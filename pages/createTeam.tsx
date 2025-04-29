@@ -100,7 +100,10 @@ export default function CreateTeam() {
 			>
 				<Card title={team.alliance ? "Create an Alliance" : "Create a Team"}>
 					<label className="cursor-pointer label">
-						<span className="label-text">Creating a Scouting Alliance (allows multiple teams to scout together)</span>
+						<span className="label-text">
+							Creating a Scouting Alliance (allows multiple teams to scout
+							together)
+						</span>
 						<input
 							type="checkbox"
 							className="checkbox checkbox-accent"
