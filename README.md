@@ -137,6 +137,14 @@ See the [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terrafor
 - Google OAuth (for authentication)
 - Slack OAuth (for authentication)
 
+## History
+
+Gearbox is internally known as Scout Janssen 3 (SJ3). It is the third iteration of the Scout Janssen project, which started in 2019. A brief timeline of the project is as follows:
+
+- 2019-2020: [Scout Janssen 1](https://github.com/Decatur-Robotics/Scout-Janssen), developed by team members Hayden, Keon, and Carter. Used a Django backend with a plain HTML/CSS/JS frontend.
+- 2020-2023: [Scout Janssen 2](https://github.com/Decatur-Robotics/Scout-Janssen-2), developed by Theo, Hayden, and Carter with help from Avyn and Renato. Unlike other iterations, SJ2 used GraphQL, Redis, and Socket.io.
+- 2023-present: Gearbox (SJ3), developed by Theo, Renato, Davis, and Colin.
+
 ## Contibutors
 
 <a href="https://github.com/Decatur-Robotics/Gearbox/graphs/contributors">
