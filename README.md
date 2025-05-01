@@ -1,9 +1,9 @@
 # Gearbox: Intuitive, Powerful Scouting at [4026.org](https://4026.org)
 
 The final incarnation of Scout Janssen.
-
 Rewritten fully in Typescript, written to be easy to maintain and modular.
 Features full feature parity with SJ2, whilst remaining simpler, faster and cooler.
+Used by 190+ teams worldwide to collect 380,000+ datapoints across 230+ competitions.
 
 ## Features
 
@@ -81,6 +81,69 @@ There's a few scripts in the `/scripts` folder that can be run with `npx tsx scr
 You've made it past set up and are ready to contribute to the future of scouting - here's how.
 
 We recommend you start with issues labelled `good first issue` to get a feel for the codebase. Fork the repo (unless you're part of Decatur Robotics, in which case make a new branch) and then make a pull request to the main branch. We'll review it and, if it looks good, merge it.
+
+## Other Repositories
+
+Our Terraform code is in a separate repository, [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terraform).
+
+We've also developed several packages that we use (available through NPM):
+
+- [mongo-anywhere](https://github.com/Decatur-Robotics/mongo-anywhere) - Provides dependency injection and mocks for MongoDB. Gearbox has wrappers around this package's `DbInterface` types.
+- [unified-api](https://github.com/Decatur-Robotics/unified-api) - Provides handling and structure for API routes.
+- [unified-api-nextjs](https://github.com/Decatur-Robotics/unified-api-nextjs) - Provides types and templates for Next.js API routes.
+- [omit-call-signature](https://github.com/Decatur-Robotics/omit-call-signature) - Provides a type for removing call signatures from another type and a type for removing constructor signatures from a class type. Gearbox doesn't directly use this package, but the `unified-api` package does.
+
+## Tools Used
+
+### Codebase
+
+- Typescript
+- Next.js
+- NextAuth
+- MongoDB
+
+### Testing
+
+- Jest
+- Playwright
+
+### Dev Tools
+
+- GitHub Actions
+- Prettier
+- ESLint
+
+### Hosting & Infrastructure
+
+See the [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terraform) repository for more details.
+
+- Terraform (stored in the [Gearbox-Terraform](https://github.com/Decatur-Robotics/Gearbox-Terraform) repository)
+- HashiCorp Managed Terraform (to apply the Terraform code)
+- AWS ECS
+- AWS S3 (to store secrets)
+- Cloudflare (for DNS)
+- MongoDB Atlas
+- Docker
+- GitHub Actions
+- GitHub Container Registry
+
+### External APIs
+
+- The Blue Alliance API (for match data)
+- The Orange Alliance API (for match data)
+- Rollbar (for error tracking and deployment notifications)
+- Resend (for email sending)
+- Google Analytics
+- Google OAuth (for authentication)
+- Slack OAuth (for authentication)
+
+## History
+
+Gearbox is internally known as Scout Janssen 3 (SJ3). It is the third iteration of the Scout Janssen project, which started in 2019. A brief timeline of the project is as follows:
+
+- 2019-2020: [Scout Janssen 1](https://github.com/Decatur-Robotics/Scout-Janssen), developed by team members Hayden, Keon, and Carter. Used a Django backend with a plain HTML/CSS/JS frontend.
+- 2020-2023: [Scout Janssen 2](https://github.com/Decatur-Robotics/Scout-Janssen-2), developed by Theo, Hayden, and Carter with help from Avyn and Renato. Unlike other iterations, SJ2 used GraphQL, Redis, and Socket.io.
+- 2023-present: Gearbox (SJ3), developed by Theo, Renato, Davis, and Colin.
 
 ## Contibutors
 
