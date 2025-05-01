@@ -113,6 +113,7 @@ export async function populateMissingUserFields(
 		level: user.level ?? 0,
 		resendContactId: user.resendContactId ?? undefined,
 		lastSignInDateTime: user.lastSignInDateTime ?? undefined,
+		emailVerified: user.emailVerified ?? undefined,
 	};
 
 	if (user._id) (filled as User)._id = user._id as unknown as string;
