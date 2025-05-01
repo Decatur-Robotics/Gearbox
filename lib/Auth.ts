@@ -27,11 +27,67 @@ export const AuthenticationOptions: AuthOptions = {
 			clientId: process.env.GOOGLE_ID,
 			clientSecret: process.env.GOOGLE_SECRET,
 			allowDangerousEmailAccountLinking: true,
+			profile: async (profile) => {
+				logger.debug("Google profile:", profile);
+
+				const existingUser = await (
+					await cachedDb
+				).findObject(CollectionId.Users, { email: profile.email });
+				if (existingUser) {
+					existingUser.id = profile.sub;
+					return existingUser;
+				}
+
+				const user = new User(
+					profile.name,
+					profile.email,
+					profile.picture,
+					false,
+					await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
+					[],
+					[],
+				);
+
+				user.id = profile.sub;
+
+				return user;
+			},
 		}),
 		SlackProvider({
 			clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID as string,
 			clientSecret: process.env.SLACK_CLIENT_SECRET as string,
 			allowDangerousEmailAccountLinking: true,
+			profile: async (profile) => {
+				logger.debug("Slack profile:", profile);
+
+				const existing = await (
+					await cachedDb
+				).findObject(CollectionId.Users, { email: profile.email });
+
+				if (existing) {
+					existing.slackId = profile.sub;
+					existing.id = profile.sub;
+					console.log("Found existing user:", existing);
+					return existing;
+				}
+
+				const user = new User(
+					profile.name,
+					profile.email,
+					profile.picture,
+					false,
+					await GenerateSlug(await cachedDb, CollectionId.Users, profile.name),
+					[],
+					[],
+					profile.sub,
+					10,
+					1,
+				);
+
+				user.id = profile.sub;
+
+				return user;
+			},
 		}),
 		Email({
 			server: {
