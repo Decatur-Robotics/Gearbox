@@ -2,8 +2,9 @@ import packageConfig from "./package.json";
 import withSerwistInit from "@serwist/next";
 
 const withSerwist = withSerwistInit({
-	swSrc: "lib/sw.ts",
+	swSrc: "lib/client/sw.ts",
 	swDest: "public/sw.js",
+	cacheOnNavigation: true,
 	additionalPrecacheEntries: [
 		{ url: "/offline", revision: new Date().toDateString() },
 	],

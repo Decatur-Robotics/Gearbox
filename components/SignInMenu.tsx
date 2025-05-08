@@ -1,4 +1,5 @@
 import Container from "@/components/Container";
+import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -14,6 +15,8 @@ const errorMessages: { [error: string]: string } = {
 };
 
 function SignInCard() {
+	const { status, session } = useCurrentSession();
+
 	const router = useRouter();
 	const emailRef = useRef<HTMLInputElement>(null);
 	const { executeRecaptcha } = useGoogleReCaptcha();
@@ -57,49 +60,58 @@ function SignInCard() {
 	return (
 		<div className="card bg-base-300 w-5/6 md:w-1/2">
 			<div className="card-body">
-				<h1 className="card-title">Sign In</h1>
-				{error && <p className="text-error">{error}</p>}
-				<p className="italic">Choose a login provider</p>
-				<span>
-					You currently <span className="text-red-500">have</span> to sign-in
-					using either your{" "}
-					<span className="text-green-400">original sign-in method</span> or
-					your <span className="text-green-400">email.</span>
-				</span>
-				<div className="divider" />
+				{status === "authenticated" ? (
+					<>
+						<h1 className="card-title">Welcome back, {session.user!.name}</h1>
+						<progress className="progress w-56" />
+					</>
+				) : (
+					<>
+						<h1 className="card-title">Sign In</h1>
+						{error && <p className="text-error">{error}</p>}
+						<p className="italic">Choose a login provider</p>
+						<span>
+							You currently <span className="text-red-500">have</span> to
+							sign-in using either your{" "}
+							<span className="text-green-400">original sign-in method</span> or
+							your <span className="text-green-400">email.</span>
+						</span>
+						<div className="divider" />
 
-				<button
-					onClick={() => signInWithCallbackUrl("google")}
-					className="btn btn-primary w-full font-bold text-md"
-				>
-					<FaGoogle />
-					Login with Google
-				</button>
+						<button
+							onClick={() => signInWithCallbackUrl("google")}
+							className="btn btn-primary w-full font-bold text-md"
+						>
+							<FaGoogle />
+							Login with Google
+						</button>
 
-				<button
-					onClick={() => signInWithCallbackUrl("slack")}
-					className="btn btn-secondary w-full font-bold text-md"
-				>
-					<FaSlack />
-					Login with Slack
-				</button>
+						<button
+							onClick={() => signInWithCallbackUrl("slack")}
+							className="btn btn-secondary w-full font-bold text-md"
+						>
+							<FaSlack />
+							Login with Slack
+						</button>
 
-				<div className="divider" />
-				<div className="flex flex-col gap-2">
-					<p>Email Sign In</p>
-					<input
-						ref={emailRef}
-						className="input input-bordered w-full"
-						type="email"
-						placeholder="Email"
-					/>
-					<button
-						onClick={logInWithEmail}
-						className="btn btn-accent w-full font-bold text-md"
-					>
-						Login with Email
-					</button>
-				</div>
+						<div className="divider" />
+						<div className="flex flex-col gap-2">
+							<p>Email Sign In</p>
+							<input
+								ref={emailRef}
+								className="input input-bordered w-full"
+								type="email"
+								placeholder="Email"
+							/>
+							<button
+								onClick={logInWithEmail}
+								className="btn btn-accent w-full font-bold text-md"
+							>
+								Login with Email
+							</button>
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);

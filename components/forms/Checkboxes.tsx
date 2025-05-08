@@ -1,5 +1,4 @@
 import { QuantData, Pitreport } from "@/lib/Types";
-import { Crescendo } from "@/lib/games";
 export type CheckboxProps = {
 	label: string;
 	dataKey: string;

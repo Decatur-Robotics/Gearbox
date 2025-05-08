@@ -26,7 +26,7 @@ yarn-error.log*
 /certs/production.pem
 /certs/production-key.pem
 
-
+.env.*.local
 .env.local
 .env
 

@@ -1,11 +1,22 @@
+import ClientApi from "@/lib/api/ClientApi";
 import { NotLinkedToTba } from "@/lib/client/ClientUtils";
 import { Competition, Match, Report } from "@/lib/Types";
 import { useState } from "react";
 import { BiExport } from "react-icons/bi";
+
 import { FaCalendarDay } from "react-icons/fa";
-import { MdAutoGraph, MdQueryStats, MdCoPresent } from "react-icons/md";
+import {
+	MdAutoGraph,
+	MdQueryStats,
+	MdCoPresent,
+	MdCloudSync,
+} from "react-icons/md";
 import ViewMatchesModal from "../ViewMatchesModal";
 import { User } from "../../lib/Types";
+import toast from "react-hot-toast";
+import { syncCompData } from "@/lib/api/ClientApiUtils";
+
+const api = new ClientApi();
 
 export default function CompHeaderCard({
 	comp,
@@ -21,9 +32,51 @@ export default function CompHeaderCard({
 	matchPathway: string;
 }) {
 	const [viewMatches, setViewMatches] = useState(false);
+	const [syncingOfflineData, setSyncingOfflineData] = useState(false);
 
 	async function toggleViewMatches() {
 		setViewMatches(!viewMatches);
+	}
+
+	async function syncComp() {
+		if (!comp) return;
+
+		const toastId = toast.loading("Caching offline pages...");
+		setSyncingOfflineData(true);
+		new Promise(async (resolve, reject) => {
+			await syncCompData(api, comp._id!.toString());
+
+			const totalItemsToSync = comp?.pitReports.length || 0;
+			let itemsSynced = 0;
+			await Promise.all(
+				comp?.pitReports.map(async (report) => {
+					await fetch(`${location.href}/pit/${report}`);
+					itemsSynced++;
+					toast.loading(
+						`Caching offline pages... (${itemsSynced}/${totalItemsToSync})`,
+						{
+							id: toastId,
+						},
+					);
+				}),
+			);
+
+			console.log("Cached all offline pages!");
+			toast.success("Cached all offline pages!", { id: toastId });
+
+			// Finally block doesn't run for some reason
+			setSyncingOfflineData(false);
+			resolve(true);
+		})
+			.catch((err) => {
+				toast.error(`Error syncing offline data. Error: ${err}`, {
+					id: toastId,
+				});
+
+				// Finally block doesn't run for some reason
+				setSyncingOfflineData(false);
+			})
+			.finally(() => setSyncingOfflineData(false));
 	}
 
 	return (
@@ -31,6 +84,21 @@ export default function CompHeaderCard({
 			<div className="card-body">
 				<div className="flex flex-row items-center justify-between w-full">
 					<h1 className="card-title text-3xl font-bold">{comp?.name}</h1>
+					<div
+						className="tooltip"
+						data-tip="Sync Offline Data"
+					>
+						{syncingOfflineData ? (
+							<span className="loading loading-spinner loading-xs" />
+						) : (
+							<button
+								onClick={syncComp}
+								className="btn btn-ghost"
+							>
+								<MdCloudSync />
+							</button>
+						)}
+					</div>
 				</div>
 				<div className="divider"></div>
 				<div className="w-full flex flex-col sm:flex-row items-center mt-4 max-sm:space-y-1">
