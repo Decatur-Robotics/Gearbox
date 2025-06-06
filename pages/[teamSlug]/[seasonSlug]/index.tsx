@@ -7,28 +7,43 @@ import Link from "next/link";
 import { useCurrentSession } from "@/lib/client/useCurrentSession";
 import Flex from "@/components/Flex";
 import Card from "@/components/Card";
-import { getDatabase } from "@/lib/MongoDB";
-import CollectionId from "@/lib/client/CollectionId";
 import CompetitionCard from "@/components/CompetitionCard";
 import Loading from "@/components/Loading";
 import { FaPlus, FaTrash } from "react-icons/fa";
-import { ObjectId } from "bson";
 import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 const api = new ClientApi();
 
-type SeasonPageProps = {
-	team: Team;
-	season: Season;
-	competitions: Competition[];
-};
-
-export default function Home(props: SeasonPageProps) {
+export default function Home() {
 	const { session, status } = useCurrentSession();
-	const team = props.team;
-	const season = props.season;
-	const comps = props.competitions;
+	const router = useRouter();
+
+	const [team, setTeam] = useState<Team>();
+	const [season, setSeason] = useState<Season>();
+	const [comps, setComps] = useState<Competition[]>();
+
 	const owner = team?.owners.includes(session?.user?._id as string);
+
+	useEffect(() => {
+		// Find the team, season, and competitions
+
+		const { seasonSlug } = router.query;
+		if (!seasonSlug) return;
+
+		api.getSeasonPageData(seasonSlug as string).then((data) => {
+			if (!data) {
+				toast.error("Season not found.");
+				return;
+			}
+
+			const { team, season, comps } = data;
+			setTeam(team);
+			setSeason(season);
+			setComps(comps);
+		});
+	}, [router.query]);
 
 	function deleteSeason() {
 		if (!season?._id) return;
@@ -50,6 +65,25 @@ export default function Home(props: SeasonPageProps) {
 				},
 			);
 		} else toast.error("Season not deleted.");
+	}
+
+	if (!team || !season || !comps) {
+		return (
+			<Container
+				requireAuthentication={true}
+				hideMenu={false}
+				title={`Loading ${router.query.seasonSlug}`}
+			>
+				<Flex
+					mode="col"
+					className="space-y-4 py-20 min-h-screen items-center"
+				>
+					<Card title={`Loading ${router.query.seasonSlug}...`}>
+						<Loading />
+					</Card>
+				</Flex>
+			</Container>
+		);
 	}
 
 	return (
@@ -122,26 +156,3 @@ export default function Home(props: SeasonPageProps) {
 		</Container>
 	);
 }
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-	const db = await getDatabase();
-	const resolved = await UrlResolver(context, 2);
-	if ("redirect" in resolved) {
-		return resolved;
-	}
-
-	const team = resolved.team;
-	const season = resolved.season;
-
-	const comp = await db.findObjects(CollectionId.Competitions, {
-		_id: { $in: season?.competitions.map((id) => new ObjectId(id)) },
-	});
-
-	return {
-		props: {
-			team: team,
-			season: season,
-			competitions: serializeDatabaseObjects(comp),
-		},
-	};
-};

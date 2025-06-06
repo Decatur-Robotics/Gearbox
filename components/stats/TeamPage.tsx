@@ -15,8 +15,7 @@ import Heatmap from "@/components/stats/Heatmap";
 import TeamStats from "@/components/stats/TeamStats";
 import Summary from "@/components/stats/Summary";
 import SmallGraph from "@/components/stats/SmallGraph";
-import Loading from "../Loading";
-import { Crescendo, games } from "@/lib/games";
+import { games } from "@/lib/games";
 import { GameId } from "@/lib/client/GameId";
 import { FrcDrivetrain } from "@/lib/Enums";
 

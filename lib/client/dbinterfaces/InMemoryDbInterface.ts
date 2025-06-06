@@ -7,7 +7,7 @@ import DbInterface, {
 	WithStringOrObjectIdId,
 } from "@/lib/client/dbinterfaces/DbInterface";
 import { default as BaseInMemoryDbInterface } from "mongo-anywhere/InMemoryDbInterface";
-import slugToId, { findObjectBySlugLookUp } from "@/lib/slugToId";
+import findObjectBySlugLookUp from "@/lib/slugToId";
 
 export default class InMemoryDbInterface
 	extends BaseInMemoryDbInterface<
@@ -64,5 +64,12 @@ export default class InMemoryDbInterface
 		TObj extends CollectionIdToType<TId>,
 	>(collection: TId, slug: string): Promise<TObj | undefined> {
 		return findObjectBySlugLookUp(this, collection, slug);
+	}
+
+	addOrUpdateObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(collection: TId, object: TObj): Promise<TObj> {
+		return super.addOrUpdateObject(collection, object);
 	}
 }

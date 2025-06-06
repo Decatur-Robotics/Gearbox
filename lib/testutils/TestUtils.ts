@@ -111,6 +111,20 @@ export async function getTestApiParams<
 	];
 }
 
+export async function getTestAuthParams<TArgs extends Array<any>>(
+	res: TestRes,
+	deps:
+		| Partial<ApiDependencies>
+		| Partial<{
+				db: DbInterface;
+				user: Partial<User>;
+				resend: ResendInterface;
+		  }>,
+	args: TArgs,
+) {
+	return (await getTestApiParams(res, deps, args, {})).slice(0, 4);
+}
+
 export function getTestRollbar(): RollbarInterface {
 	return {
 		error: jest.fn(),
@@ -164,6 +178,9 @@ export async function createTestDocuments(db: DbInterface) {
 }
 
 export namespace PlaywrightUtils {
+	/**
+	 * You cannot use LocalStorage with the API returned this function!
+	 */
 	export function getTestClientApi() {
 		const api = new ClientApi();
 

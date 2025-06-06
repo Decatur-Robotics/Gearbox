@@ -4,7 +4,6 @@ import CollectionId, {
 	SluggedCollectionId,
 } from "../CollectionId";
 import { default as BaseDbInterface } from "mongo-anywhere/DbInterface";
-import slugToId from "@/lib/slugToId";
 
 export type WithStringOrObjectIdId<Type> = Omit<Type, "_id"> & {
 	_id?: ObjectId | string;
@@ -63,4 +62,12 @@ export default interface DbInterface
 		collection: CollectionId,
 		query: object,
 	): Promise<number | undefined>;
+
+	addOrUpdateObject<
+		TId extends CollectionId,
+		TObj extends CollectionIdToType<TId>,
+	>(
+		collection: TId,
+		object: TObj,
+	): Promise<TObj>;
 }

@@ -10,7 +10,7 @@ import DbInterface, {
 import { default as BaseMongoDbInterface } from "mongo-anywhere/MongoDbInterface";
 import CachedDbInterface from "./client/dbinterfaces/CachedDbInterface";
 import { cacheOptions } from "./client/dbinterfaces/CachedDbInterface";
-import { findObjectBySlugLookUp } from "./slugToId";
+import findObjectBySlugLookUp from "./slugToId";
 import { loadEnvConfig } from "@next/env";
 
 let uri = process.env.MONGODB_URI ?? process.env.FALLBACK_MONGODB_URI;
