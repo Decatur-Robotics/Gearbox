@@ -72,7 +72,8 @@ namespace AccessLevels {
 		if (!team) {
 			return { authorized: false, authData: undefined };
 		}
-
+		console.log(team.users)
+		console.log(user._id)
 		return {
 			authorized: team.users.includes(user._id),
 			authData: team,
@@ -401,7 +402,8 @@ namespace AccessLevels {
 		if (!team) {
 			return { authorized: false, authData: undefined };
 		}
-
+		console.log(team.users)
+		console.log(user._id)
 		return {
 			authorized: team.users.includes(user._id),
 			authData: { team, picklist },

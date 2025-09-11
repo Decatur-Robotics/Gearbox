@@ -136,6 +136,8 @@ describe(`AccessLevels.${AccessLevels.IfOnTeam.name}`, () => {
 		const team = await db.addObject(CollectionId.Teams, {
 			users: [user._id],
 		} as any as Team);
+		
+		console.log(await db.findObjectById(CollectionId.Teams, team._id));
 
 		expect(
 			(

@@ -499,13 +499,13 @@ describe(generateReportsForMatch.name, () => {
 
 		const reports = Array.from({ length: robotsPerAlliance * 2 }, (_, i) => ({
 			...new Report(
-				undefined,
+				new ObjectId(),
 				{} as any,
 				Array.from({ length: robotsPerAlliance * 2 }, (_, i) => i)[i],
 				AllianceColor.Blue,
 				match._id!,
 			),
-			_id: new ObjectId() as any,
+			_id: new ObjectId(),
 		}));
 		match.reports = reports.map((r) => r._id!);
 
@@ -615,7 +615,7 @@ describe(generateReportsForMatch.name, () => {
 		for (const report of updatedReports) {
 			expect(report).toBeDefined();
 			expect(report).toEqual(
-				reports.find((r) => r._id === report?._id),
+				reports.find((r) => r._id === report?._id!),
 			);
 		}
 	});
@@ -627,7 +627,7 @@ describe(generateReportsForMatch.name, () => {
 
 		const updatedReports = await Promise.all(
 			reports.map((r) =>
-				db.findObjectById(CollectionId.Reports, new ObjectId(r._id)),
+				db.findObjectById(CollectionId.Reports, r._id),
 			),
 		);
 
