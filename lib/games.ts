@@ -1904,6 +1904,16 @@ namespace Decode {
 		EndgameParkStatus: DecodeEnums.EndgameParkStatus = DecodeEnums.EndgameParkStatus.No;
 		EndgameDefenseStatus: Defense = Defense.None;
 	}
+
+	export class PitData extends PitReportData {
+		CanScoreClassifier: boolean = false;
+		CanScoreDepot: boolean = false;
+		CanOpenGate: boolean = false;
+
+		PointsScoredAuto: number = 0;
+		AutoAccountsForMotif: boolean = false;
+		CanParkWithOtherBots: boolean = false
+	}
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
