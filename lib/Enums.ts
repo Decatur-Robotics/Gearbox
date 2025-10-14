@@ -109,3 +109,12 @@ export namespace ReefscapeEnums {
 		Shallow = "Shallow",
 	}
 }
+
+export namespace DecodeEnums{
+	export enum EndgameParkStatus {
+		No = "No",
+		Partial = "Partial",
+		Full = "Full",
+		TwoBotPark = "Two Bot Park"
+	}
+}

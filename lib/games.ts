@@ -1,6 +1,7 @@
 import { Dot } from "@/components/stats/Heatmap";
 import {
 	CenterStageEnums,
+	DecodeEnums,
 	Defense,
 	FrcDrivetrain,
 	IntakeTypes,
@@ -1890,13 +1891,18 @@ namespace Reefscape {
 
 namespace Decode {
 	export class QuantitativeData extends QuantData {
-		autoMovedPastStartingLine: boolean = false;
+		AutoMovedPastStartingLine: boolean = false;
 
-		autoArtifactsClassified: number = 0;
-		autoOverflowArtifacts: number = 0;
-		autoMotifArtifacts: number = 0;
+		AutoArtifactsClassified: number = 0;
+		AutoOverflowArtifacts: number = 0;
+		AutoMotifArtifacts: number = 0;
 
-		
+		TeleopArtifactsClassified: number = 0;
+		TeleopOverflowArtifacts: number = 0;
+		TeleopMotifArtifacts: number = 0;
+
+		EndgameParkStatus: DecodeEnums.EndgameParkStatus = DecodeEnums.EndgameParkStatus.No;
+		EndgameDefenseStatus: Defense = Defense.None;
 	}
 }
 
