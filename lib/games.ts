@@ -1888,6 +1888,18 @@ namespace Reefscape {
 	);
 }
 
+namespace Decode {
+	export class QuantitativeData extends QuantData {
+		autoMovedPastStartingLine: boolean = false;
+
+		autoArtifactsClassified: number = 0;
+		autoOverflowArtifacts: number = 0;
+		autoMotifArtifacts: number = 0;
+
+		
+	}
+}
+
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.Reefscape]: Reefscape.game,
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
