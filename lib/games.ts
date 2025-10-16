@@ -1944,7 +1944,17 @@ namespace Decode {
 			]
 		],
 		Teleop: [
-
+			[
+				[
+					{ key: "TeleopArtifactsClassified", label: "Artifacts Classified (Teleop)"}
+				],
+				[
+					{ key: "TeleopOverflowArtifacts", label: "Overflow Artifacts (Teleop)"}
+				],
+				[
+					{ key: "TeleopMotifArtifacts", label: "Motif Artifacts (Teleop)"}
+				]
+			]
 		],
 		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"]
 	};
