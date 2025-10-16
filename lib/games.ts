@@ -1909,11 +1909,24 @@ namespace Decode {
 		CanScoreClassifier: boolean = false;
 		CanScoreDepot: boolean = false;
 		CanOpenGate: boolean = false;
+		CanParkWithOtherBots: boolean = false;
 
 		PointsScoredAuto: number = 0;
 		AutoAccountsForMotif: boolean = false;
-		CanParkWithOtherBots: boolean = false
 	}
+
+	const pitReportLayout: FormLayoutProps<PitData> = {
+		Capabilities: [
+			{ key: "CanScoreClassifier", label: "Can Score Classifier?" },
+			{ key: "CanScoreDepot", label: "Can Score Depot?" },
+			{ key: "CanOpenGate", label: "Can Score Gate?" },
+			{ key: "CanParkWithOtherBots", label: "Can Park With Other Bots?" },
+		],
+		Auto: [
+			{ key: "PointsScoredAuto", label: "Average Auto Points" },
+			{ key: "AutoAccountsForMotif", label: "Auto Accounts For Motif?" },
+		],
+	};
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
