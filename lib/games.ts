@@ -1927,6 +1927,55 @@ namespace Decode {
 			{ key: "AutoAccountsForMotif", label: "Auto Accounts For Motif?" },
 		],
 	};
+
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+		Auto: [
+			{ key: "AutoMovedPastStart", label: "Moved Past Starting line"},
+			[
+				[
+					{ key: "AutoArtifactsClassified", label: "Artifacts Classified (Auto)"}
+				],
+				[
+					{ key: "AutoOverflowArtifacts", label: "Overflow Artifacts (Auto)"}
+				],
+				[
+					{ key: "AutoMotifArtifacts", label: "Motif Artifacts (Auto)"}
+				]
+			]
+		],
+		Teleop: [
+
+		],
+		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"]
+	};
+
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {}
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> ={}
+
+	function getBadges(
+		pitReport: Pitreport<PitData> | undefined,
+		quantitativeReports: Report<QuantitativeData>[] | undefined,
+		card: boolean,
+	) {}
+
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {}
+
+	export const game = new Game(
+		"Decode",
+		2026,
+		League.FTC,
+		QuantitativeData,
+		PitData,
+		pitReportLayout,
+		quantitativeReportLayout,
+		statsLayout,
+		pitStatsLayout,
+		"Decode",
+		"https://info.firstinspires.org/hs-fs/hubfs/2026%20Season/Season%20Assets/first_age_ftc_decode_logo_vertical_rgb_fullcolor.png?width=237&height=348&name=first_age_ftc_decode_logo_vertical_rgb_fullcolor.png",
+		"invert",
+		getBadges,
+		getAvgPoints,
 }
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
@@ -1934,4 +1983,5 @@ export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
 	[GameId.Crescendo]: Crescendo.game,
 	[GameId.CenterStage]: CenterStage.game,
+	[GameId.Decode]: Decode.game,
 });
