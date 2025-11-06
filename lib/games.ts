@@ -1959,7 +1959,122 @@ namespace Decode {
 		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"]
 	};
 
-	const statsLayout: StatsLayout<PitData, QuantitativeData> = {}
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+		sections: {
+			Auto: [
+				{
+					key: "AutoArtifactsClassified",
+					label: "Average Amt Of Artifacts Classified Auto",
+				},
+				{
+					label: "> Min Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoArtifactsClassified");
+					},
+				},
+				{
+					label: "> Max Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoArtifactsClassified");
+					},
+				},
+				{
+					key: "AutoOverflowArtifacts",
+					label: "Average Amt Of Overflow Artifacts Classified Auto",
+				},
+				{
+					label: "> Min Overflow Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoOverflowArtifacts");
+					},
+				},
+				{
+					label: "> Max Overflow Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoOverflowArtifacts");
+					},
+				},
+				{
+					key: "AutoMotifArtifacts",
+					label: "Average Amt Of Motif Artifacts Classified Auto",
+				},
+				{
+					label: "> Min Motif Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoMotifArtifacts");
+					},
+				},
+				{
+					label: "> Max Motif Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoMotifArtifacts");
+					},
+				},
+			],
+			Teleop: [
+				{
+					key: "TeleopArtifactsClassified",
+					label: "Average Amt Of Artifacts Classified Teleop",
+				},
+				{
+					label: "> Min Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopArtifactsClassified",
+						);
+					},
+				},
+				{
+					label: "> Max Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopArtifactsClassified",
+						);
+					},
+				},
+				{
+					key: "TeleopOverflowArtifacts",
+					label: "Average Amt Of Overflow Artifacts Classified Teleop",
+				},
+				{
+					label: "> Min Overflow Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopOverflowArtifacts");
+					},
+				},
+				{
+					label: "> Max Overflow Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopOverflowArtifacts");
+					},
+				},
+				{
+					key: "TeleopMotifArtifacts",
+					label: "Average Amt Of Motif Artifacts Classified Teleop",
+				},
+				{
+					label: "> Min Motif Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopMotifArtifacts");
+					},
+				},
+				{
+					label: "> Max Motif Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopMotifArtifacts");
+					},
+				},
+			],
+		},
+		getGraphDots: function (
+			quantitativeReports: Report<QuantitativeData>[],
+			pitReport?: Pitreport<PitData> | undefined,
+		): Dot[] {
+			return [];
+		},
+	};
 
 	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> ={}
 
@@ -1986,7 +2101,8 @@ namespace Decode {
 		"invert",
 		getBadges,
 		getAvgPoints,
-}
+	);
+};
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.Reefscape]: Reefscape.game,
