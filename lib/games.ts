@@ -22,10 +22,13 @@ import { GameId } from "./client/GameId";
 import {
 	AmpAutoPoints,
 	AmpTeleopPoints,
+	ArtifactPoints,
 	BooleanAverage,
 	GetMinimum,
 	MostCommonValue,
+	MotifArtifactPoints,
 	NumericalTotal,
+	OverflowArtifactPoints,
 	Round,
 	SpeakerAutoPoints,
 	SpeakerTeleopPoints,
@@ -1901,7 +1904,8 @@ namespace Decode {
 		TeleopOverflowArtifacts: number = 0;
 		TeleopMotifArtifacts: number = 0;
 
-		EndgameParkStatus: DecodeEnums.EndgameParkStatus = DecodeEnums.EndgameParkStatus.No;
+		EndgameParkStatus: DecodeEnums.EndgameParkStatus =
+			DecodeEnums.EndgameParkStatus.No;
 		EndgameDefenseStatus: Defense = Defense.None;
 	}
 
@@ -1913,11 +1917,11 @@ namespace Decode {
 
 		ArtifactsScoredAuto: number = 0;
 		AutoAccountsForMotif: boolean = false;
-		AutoCapablilities: DecodeEnums.AutoCapabilities = DecodeEnums.AutoCapabilities.NoAuto;
-		AutoStrategy: string = ""
+		AutoCapablilities: DecodeEnums.AutoCapabilities =
+			DecodeEnums.AutoCapabilities.NoAuto;
+		AutoStrategy: string = "";
 
-		ArtifactsScoredTeleop: number = 0;
-		GameStrategy: string = ""
+		GameStrategy: string = "";
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1930,44 +1934,44 @@ namespace Decode {
 		Auto: [
 			{ key: "ArtifactsScoredAuto", label: "Average Auto Artifacts" },
 			{ key: "AutoAccountsForMotif", label: "Auto Accounts For Motif?" },
-			{ key: "AutoCapablilities", label: "Other Auto Scoring Capabilities"},
-			{ key: "AutoStrategy", label: "Auto Strategy"}
+			{ key: "AutoCapablilities", label: "Other Auto Scoring Capabilities" },
+			{ key: "AutoStrategy", label: "Auto Strategy" },
 		],
-		Teleop: [
-			{ key: "ArtifactsScoredTeleop", label: "Average Teleop Artifacts"},
-			{ key: "TeleopStrategy", label: "Teleop Strategy"},
-		],
+		Teleop: [{ key: "TeleopStrategy", label: "Teleop Strategy" }],
 	};
 
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
-			{ key: "AutoMovedPastStart", label: "Moved Past Starting line"},
+			{ key: "AutoMovedPastStart", label: "Moved Past Starting line" },
 			[
 				[
-					{ key: "AutoArtifactsClassified", label: "Artifacts Classified (Auto)"}
+					{
+						key: "AutoArtifactsClassified",
+						label: "Artifacts Classified (Auto)",
+					},
 				],
-				[
-					{ key: "AutoOverflowArtifacts", label: "Overflow Artifacts (Auto)"}
-				],
-				[
-					{ key: "AutoMotifArtifacts", label: "Motif Artifacts (Auto)"}
-				]
-			]
+				[{ key: "AutoOverflowArtifacts", label: "Overflow Artifacts (Auto)" }],
+				[{ key: "AutoMotifArtifacts", label: "Motif Artifacts (Auto)" }],
+			],
 		],
 		Teleop: [
 			[
 				[
-					{ key: "TeleopArtifactsClassified", label: "Artifacts Classified (Teleop)"}
+					{
+						key: "TeleopArtifactsClassified",
+						label: "Artifacts Classified (Teleop)",
+					},
 				],
 				[
-					{ key: "TeleopOverflowArtifacts", label: "Overflow Artifacts (Teleop)"}
+					{
+						key: "TeleopOverflowArtifacts",
+						label: "Overflow Artifacts (Teleop)",
+					},
 				],
-				[
-					{ key: "TeleopMotifArtifacts", label: "Motif Artifacts (Teleop)"}
-				]
-			]
+				[{ key: "TeleopMotifArtifacts", label: "Motif Artifacts (Teleop)" }],
+			],
 		],
-		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"]
+		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
@@ -2087,21 +2091,103 @@ namespace Decode {
 		},
 	};
 
-	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> ={
-		overallSlideStats: [],
-		individualSlideStats: [],
-		robotCapabilities:[],
-		graphStat:{
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [
+			{ label: "Artifacts Scored Auto", key: "ArtifactsScoredAuto" },
+		],
+		individualSlideStats: [
+			{
+				label: "Average Auto Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) {
+						return 0;
+					}
+
+					const Artifacts =
+						NumericalTotal("AutoArtifactsClassified", quantitativeReports) *
+						ArtifactPoints;
+
+					const MotifArtifacts =
+						NumericalTotal("AutoMotifArtifacts", quantitativeReports) *
+						MotifArtifactPoints;
+
+					const OverflowArtifacts =
+						NumericalTotal("AutoOverflowArtifacts", quantitativeReports) *
+						OverflowArtifactPoints;
+
+					return (
+						(Artifacts + MotifArtifacts + OverflowArtifacts) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Average Teleop Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) {
+						return 0;
+					}
+
+					const Artifacts =
+						NumericalTotal("TeleopArtifactsClassified", quantitativeReports) *
+						ArtifactPoints;
+
+					const MotifArtifacts =
+						NumericalTotal("TeleopMotifArtifacts", quantitativeReports) *
+						MotifArtifactPoints;
+
+					const OverflowArtifacts =
+						NumericalTotal("TeleopOverflowArtifacts", quantitativeReports) *
+						OverflowArtifactPoints;
+
+					return (
+						(Artifacts + MotifArtifacts + OverflowArtifacts) /
+						quantitativeReports.length
+					);
+				},
+			},
+		],
+		robotCapabilities: [
+			{ key: "CanScoreClassifier", label: "Can Score Classifier?" },
+			{ key: "CanScoreDepot", label: "Can Score Depot?" },
+			{ key: "CanOpenGate", label: "Can Open Gate?" },
+			{ key: "CanParkWithOtherBots", label: "Can Park With Other Bots" },
+		],
+		graphStat: {
 			label: "TeleopArtifactsClassified",
-			key: "TeleopArtifactsClassified"
-		}
-	}
+			key: "TeleopArtifactsClassified",
+		},
+	};
 
 	function getBadges(
 		pitReport: Pitreport<PitData> | undefined,
 		quantitativeReports: Report<QuantitativeData>[] | undefined,
 		card: boolean,
-	) {}
+	) {
+		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+		if (pitReport?.data?.CanOpenGate)
+			badges.push({ text: "Can Open Gate", color: "info" });
+		if (pitReport?.data?.CanScoreDepot)
+			badges.push({ text: "Can Score Depot", color: "secondary" });
+		if (pitReport?.data?.CanScoreClassifier)
+			badges.push({ text: "Can Score Classifier", color: "primary" });
+		if (pitReport?.data?.CanParkWithOtherBots)
+			badges.push({ text: "Can Double Park", color: "success" });
+
+		if (
+			!(pitReport?.data?.CanScoreDepot || pitReport?.data?.CanScoreClassifier)
+		)
+			badges.push({ text: "Cannot Score", color: "warning" });
+
+		return badges;
+	}
 
 	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {}
 
@@ -2121,7 +2207,7 @@ namespace Decode {
 		getBadges,
 		getAvgPoints,
 	);
-};
+}
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.Reefscape]: Reefscape.game,

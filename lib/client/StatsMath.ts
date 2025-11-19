@@ -6,6 +6,10 @@ export const AmpAutoPoints = 2;
 export const AmpTeleopPoints = 1;
 export const TrapPoints = 5;
 
+export const ArtifactPoints = 3;
+export const MotifArtifactPoints = 5;
+export const OverflowArtifactPoints = 1;
+
 type Selector<T extends QuantData> = ((r: T) => number) | (keyof T & string);
 
 function getSelection<T extends QuantData>(
