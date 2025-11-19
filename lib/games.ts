@@ -1911,8 +1911,13 @@ namespace Decode {
 		CanOpenGate: boolean = false;
 		CanParkWithOtherBots: boolean = false;
 
-		PointsScoredAuto: number = 0;
+		ArtifactsScoredAuto: number = 0;
 		AutoAccountsForMotif: boolean = false;
+		AutoCapablilities: DecodeEnums.AutoCapabilities = DecodeEnums.AutoCapabilities.NoAuto;
+		AutoStrategy: string = ""
+
+		ArtifactsScoredTeleop: number = 0;
+		GameStrategy: string = ""
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1923,8 +1928,14 @@ namespace Decode {
 			{ key: "CanParkWithOtherBots", label: "Can Park With Other Bots?" },
 		],
 		Auto: [
-			{ key: "PointsScoredAuto", label: "Average Auto Points" },
+			{ key: "ArtifactsScoredAuto", label: "Average Auto Artifacts" },
 			{ key: "AutoAccountsForMotif", label: "Auto Accounts For Motif?" },
+			{ key: "AutoCapablilities", label: "Other Auto Scoring Capabilities"},
+			{ key: "AutoStrategy", label: "Auto Strategy"}
+		],
+		Teleop: [
+			{ key: "ArtifactsScoredTeleop", label: "Average Teleop Artifacts"},
+			{ key: "TeleopStrategy", label: "Teleop Strategy"},
 		],
 	};
 
@@ -2076,7 +2087,15 @@ namespace Decode {
 		},
 	};
 
-	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> ={}
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> ={
+		overallSlideStats: [],
+		individualSlideStats: [],
+		robotCapabilities:[],
+		graphStat:{
+			label: "TeleopArtifactsClassified",
+			key: "TeleopArtifactsClassified"
+		}
+	}
 
 	function getBadges(
 		pitReport: Pitreport<PitData> | undefined,
