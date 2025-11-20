@@ -24,6 +24,7 @@ import {
 	AmpTeleopPoints,
 	ArtifactPoints,
 	BooleanAverage,
+	DepotArtifactPoints,
 	GetMinimum,
 	MostCommonValue,
 	MotifArtifactPoints,
@@ -1903,6 +1904,7 @@ namespace Decode {
 		TeleopArtifactsClassified: number = 0;
 		TeleopOverflowArtifacts: number = 0;
 		TeleopMotifArtifacts: number = 0;
+		TeleopDepotArtifacts: number = 0;
 
 		EndgameParkStatus: DecodeEnums.EndgameParkStatus =
 			DecodeEnums.EndgameParkStatus.No;
@@ -1969,6 +1971,7 @@ namespace Decode {
 					},
 				],
 				[{ key: "TeleopMotifArtifacts", label: "Motif Artifacts (Teleop)" }],
+				[{ key: "TeleopDepotArtifacts", label: "Depot Artifacts (Teleop)" }],
 			],
 		],
 		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"],
@@ -2081,6 +2084,22 @@ namespace Decode {
 						return GetMaximum(quantitativeReports!, "TeleopMotifArtifacts");
 					},
 				},
+				{
+					key: "TeleopDepotArtifacts",
+					label: "Average Amt of Artifacts In Depot Teleop",
+				},
+				{
+					label: "> Min Depot Artifacts Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopDepotArtifacts");
+					},
+				},
+				{
+					label: "> Max Depot Artifacts Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopDepotArtifacts");
+					},
+				},
 			],
 		},
 		getGraphDots: function (
@@ -2146,8 +2165,12 @@ namespace Decode {
 						NumericalTotal("TeleopOverflowArtifacts", quantitativeReports) *
 						OverflowArtifactPoints;
 
+					const DepotArtifacts =
+						NumericalTotal("TeleopDepotArtifacts", quantitativeReports) *
+						DepotArtifactPoints;
+
 					return (
-						(Artifacts + MotifArtifacts + OverflowArtifacts) /
+						(Artifacts + MotifArtifacts + OverflowArtifacts + DepotArtifacts) /
 						quantitativeReports.length
 					);
 				},
@@ -2189,7 +2212,40 @@ namespace Decode {
 		return badges;
 	}
 
-	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {}
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+		if (!reports) return 0;
+
+		let totalPoints = 0;
+
+		for (const report of reports.map((r) => r.data)) {
+			switch (report.EndgameParkStatus) {
+				case DecodeEnums.EndgameParkStatus.No:
+					break;
+				case DecodeEnums.EndgameParkStatus.Partial:
+					totalPoints += 5;
+					break;
+				case DecodeEnums.EndgameParkStatus.Full:
+					totalPoints += 10;
+					break;
+				case DecodeEnums.EndgameParkStatus.TwoBotPark:
+					totalPoints += 20;
+					break;
+			}
+
+			totalPoints +=
+				(report.AutoArtifactsClassified + report.TeleopArtifactsClassified) *
+				ArtifactPoints;
+			totalPoints +=
+				(report.AutoMotifArtifacts + report.TeleopMotifArtifacts) *
+				MotifArtifactPoints;
+			totalPoints +=
+				(report.AutoOverflowArtifacts + report.TeleopOverflowArtifacts) *
+				OverflowArtifactPoints;
+			totalPoints += report.TeleopDepotArtifacts * DepotArtifactPoints;
+		}
+
+		return totalPoints / Math.max(reports.length, 1);
+	}
 
 	export const game = new Game(
 		"Decode",
