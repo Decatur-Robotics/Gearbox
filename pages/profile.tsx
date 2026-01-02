@@ -198,7 +198,7 @@ export default function Profile(props: { teamList: Team[] }) {
 									<Link
 										href={"/" + team.slug}
 										className="w-full"
-										key={team._id.toString()}
+										key={team._id?.toString()}
 									>
 										<TeamCard team={team} />
 									</Link>
