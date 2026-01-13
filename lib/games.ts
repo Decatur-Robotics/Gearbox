@@ -1970,10 +1970,20 @@ namespace Decode {
 						label: "Overflow Artifacts (Teleop)",
 					},
 				],
+				[
+					{
+						key: "TeleopMotifArtifacts",
+						label: "Motif Artifacts (Teleop)",
+					},
+				],
 			],
 			[
-				[{ key: "TeleopMotifArtifacts", label: "Motif Artifacts (Teleop)" }],
-				[{ key: "TeleopDepotArtifacts", label: "Depot Artifacts (Teleop)" }],
+				[
+					{
+						key: "TeleopDepotArtifacts",
+						label: "Depot Artifacts (Teleop)",
+					},
+				],
 			],
 		],
 		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"],
