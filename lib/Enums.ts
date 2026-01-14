@@ -110,7 +110,7 @@ export namespace ReefscapeEnums {
 	}
 }
 
-export namespace DecodeEnums{
+export namespace DecodeEnums {
 	export enum EndgameParkStatus {
 		No = "No",
 		Partial = "Partial",

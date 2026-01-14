@@ -1906,7 +1906,8 @@ namespace Decode {
 		TeleopMotifArtifacts: number = 0;
 		TeleopDepotArtifacts: number = 0;
 
-		EndgameParkStatusDecode: DecodeEnums.EndgameParkStatus = DecodeEnums.EndgameParkStatus.No;
+		EndgameParkStatusDecode: DecodeEnums.EndgameParkStatus =
+			DecodeEnums.EndgameParkStatus.No;
 		EndgameDefense: Defense = Defense.None;
 	}
 
@@ -1920,7 +1921,6 @@ namespace Decode {
 		AutoAccountsForMotif: boolean = false;
 		AutoAbilities: DecodeEnums.AutoCapabilities =
 			DecodeEnums.AutoCapabilities.NoAuto;
-		
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
