@@ -115,13 +115,13 @@ export namespace DecodeEnums{
 		No = "No",
 		Partial = "Partial",
 		Full = "Full",
-		TwoBotPark = "Two Bot Park"
+		TwoBotPark = "Two Bot Park",
 	}
 
 	export enum AutoCapabilities {
 		NoAuto = "No Auto",
 		MovePastStart = "Move Past Start",
 		ScoreOneArtifact = "Score One Artifact",
-		ScoreMultipleArtifacts = "Score Multiple Artifacts"
+		ScoreMultipleArtifacts = "Score Multiple Artifacts",
 	}
 }

@@ -1906,9 +1906,8 @@ namespace Decode {
 		TeleopMotifArtifacts: number = 0;
 		TeleopDepotArtifacts: number = 0;
 
-		EndgameParkStatus: DecodeEnums.EndgameParkStatus =
-			DecodeEnums.EndgameParkStatus.No;
-		EndgameDefenseStatus: Defense = Defense.None;
+		EndgameParkStatusDecode: DecodeEnums.EndgameParkStatus = DecodeEnums.EndgameParkStatus.No;
+		EndgameDefense: Defense = Defense.None;
 	}
 
 	export class PitData extends PitReportData {
@@ -1919,11 +1918,9 @@ namespace Decode {
 
 		ArtifactsScoredAuto: number = 0;
 		AutoAccountsForMotif: boolean = false;
-		AutoCapablilities: DecodeEnums.AutoCapabilities =
+		AutoAbilities: DecodeEnums.AutoCapabilities =
 			DecodeEnums.AutoCapabilities.NoAuto;
-		AutoStrategy: string = "";
-
-		GameStrategy: string = "";
+		
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
@@ -1936,10 +1933,8 @@ namespace Decode {
 		Auto: [
 			{ key: "ArtifactsScoredAuto", label: "Average Auto Artifacts" },
 			{ key: "AutoAccountsForMotif", label: "Auto Accounts For Motif?" },
-			{ key: "AutoCapablilities", label: "Other Auto Scoring Capabilities" },
-			{ key: "AutoStrategy", label: "Auto Strategy" },
+			{ key: "AutoAbilities", label: "Other Auto Scoring Capabilities" },
 		],
-		Teleop: [{ key: "TeleopStrategy", label: "Teleop Strategy" }],
 	};
 
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
@@ -1963,8 +1958,6 @@ namespace Decode {
 						key: "TeleopArtifactsClassified",
 						label: "Artifacts Classified (Teleop)",
 					},
-				],
-				[
 					{
 						key: "TeleopOverflowArtifacts",
 						label: "Overflow Artifacts (Teleop)",
@@ -1975,10 +1968,6 @@ namespace Decode {
 						key: "TeleopMotifArtifacts",
 						label: "Motif Artifacts (Teleop)",
 					},
-				],
-			],
-			[
-				[
 					{
 						key: "TeleopDepotArtifacts",
 						label: "Depot Artifacts (Teleop)",
@@ -1986,7 +1975,7 @@ namespace Decode {
 				],
 			],
 		],
-		"Post Match": ["EndgameDefenseStatus", "EndgameParkStatus"],
+		Endgame: ["Defense", "EndgameParkStatusDecode"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
