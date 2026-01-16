@@ -9,8 +9,8 @@ import { ObjectId } from "bson";
 import CollectionId from "../client/CollectionId";
 import DbInterface from "../client/dbinterfaces/DbInterface";
 
-const firstNameMaleURL = "https://www.randomlists.com/data/names-male.json";
-const firstNameFemaleURL = "https://www.randomlists.com/data/names-female.json";
+const firstNameMaleURL = "https://www.randomlists.com/male-names";
+const firstNameFemaleURL = "https://www.randomlists.com/female-names";
 
 var cachedFirstNames: string[] = [];
 var cachedLastNames: string[] = [];
@@ -43,7 +43,7 @@ export async function fakeUser(
 	db: DbInterface,
 	teamId: ObjectId | undefined,
 ): Promise<User> {
-	const name = await randomName();
+	const name = String(Math.random() * 101);
 	const user = new User(
 		name,
 		"totallyrealemail@gmail.com",
