@@ -20,7 +20,7 @@ const config = [
 		},
 	},
 	{
-        // Ignores has to go in its own config object
+		// Ignores has to go in its own config object
 		ignores: ["coverage/**/*", ".next/**/*"],
 	},
 ];

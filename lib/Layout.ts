@@ -234,8 +234,8 @@ export function keyToType(
 	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
 	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
 
-	if(key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
-	if(key == "AutoAbilities") return DecodeEnums.AutoCapabilities;
+	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
+	if (key == "AutoAbilities") return DecodeEnums.AutoCapabilities;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;
