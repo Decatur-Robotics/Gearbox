@@ -5,6 +5,7 @@ import {
 	FrcDrivetrain,
 	IntakeTypes,
 	IntoTheDeepEnums,
+	RebuiltEnums,
 	ReefscapeEnums,
 } from "./Enums";
 import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
@@ -32,6 +33,7 @@ import {
 } from "./client/StatsMath";
 import { report } from "process";
 import { GetMaximum } from "./client/StatsMath";
+import { getMaxListeners } from "events";
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1888,7 +1890,243 @@ namespace Reefscape {
 	);
 }
 
+namespace Rebuilt {
+	export class QuantitativeData extends QuantData {
+		AutoScoredOnePoint: number = 0;
+		AutoScoredFivePoint: number = 0;
+		AutoScoredTenPoint: number = 0;
+		AutoClimbedLevelOne: boolean = false;
+
+		TeleopScoredOnePoint: number = 0;
+		TeleopScoredFivePoint: number = 0;
+		TeleopScoredTenPoint: number = 0;
+		EngameDefenseStatus: Defense = Defense.None;
+		EndgameClimbStatus: RebuiltEnums.EndgameClimbStatus =
+			RebuiltEnums.EndgameClimbStatus.None;
+	}
+	export class PitData extends PitReportData {
+		GroundIntake: boolean = false;
+		CanDriveOverBump: boolean = false;
+		CanDriveUnderTrench: boolean = false;
+		CanDeClimb: boolean = false;
+		CanScoreFuel: boolean = false;
+		FuelScoredAuto: number = 0;
+		AutoCapabilities: RebuiltEnums.AutoCapabilities =
+			RebuiltEnums.AutoCapabilities.NoAuto;
+		Climing: RebuiltEnums.Climbing = RebuiltEnums.Climbing.No;
+	}
+	const pitReportLayout: FormLayoutProps<PitData> = {
+		Capabilities: [
+			{ key: "GroundIntake", label: "Has Ground Intake?" },
+			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
+			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
+			{ key: "CanDeClimb", label: "Can De-Climb?" },
+			{ key: "CanScoreFuel", label: "Can Score Fuel?" },
+			{ key: "Climing", label: "Climbing?" },
+		],
+		"Auto (Describe more in comments)": [
+			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
+			{ key: "FuelScoredAuto", label: "Average Fuel Scored In Auto" },
+		],
+	};
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+		Auto: [
+			{ key: "AutoScoredOnePoint", label: "1 Point Scored (Auto)" },
+			{ key: "AutoScoredFivePoint", label: "5 Point Scared (Auto)" },
+			{ key: "AutoScoredTenPoint", label: "10 Point Scored (Auto)" },
+			{ key: "AutoClimbedLevelOne", label: "Climbed Level One (Auto)" },
+		],
+		Teleop: [
+			{ key: "TeleopScoredOnePoint", label: "1 Point Scored (Teleop)" },
+			{ key: "TeleopScoredFivePoint", label: "5 Point Scored (Teleop)" },
+			{ key: "TeleopScoredTenPoint", label: "10 Point Scored (Teleop)" },
+		],
+		"Post Match": ["EndgameClimbStatus", "Defense"],
+	};
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+		sections: {
+			Auto: [
+				{
+					key: "AutoScoredOnePoint",
+					label: "Avg Amt Of Fuel Scored In Increments Of One Auto",
+				},
+				{
+					label: "> Min Auto One Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoScoredOnePoint");
+					},
+				},
+				{
+					label: "> Max Auto One Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoScoredOnePoint");
+					},
+				},
+				{
+					key: "AutoScoredFivePoint",
+					label: "Avg Amt Of Fuel Scored In Increments Of Five Auto",
+				},
+				{
+					label: "> Min Auto Five Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoScoredFivePoint");
+					},
+				},
+				{
+					label: "> Max Auto five Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoScoredFivePoint");
+					},
+				},
+				{
+					key: "AutoScoredTenPoint",
+					label: "Avg Amt Of Fuel Scored In Increments Of Ten Auto",
+				},
+				{
+					label: "> Min Auto Ten Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "autoScoredTenPoint");
+					},
+				},
+				{
+					label: "> Max Auto Ten Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "autoScoredTenPoint");
+					},
+				},
+				{
+					label: "Average Auto Fuel",
+					get(pitData, quantitativeReports) {
+						if (!quantitativeReports) return 0;
+
+						return (
+							quantitativeReports?.reduce(
+								(acc, report) =>
+									acc +
+									report.data.AutoScoredOnePoint +
+									report.data.AutoScoredFivePoint +
+									report.data.AutoScoredTenPoint,
+								0,
+							) / quantitativeReports?.length
+						);
+					},
+				},
+			],
+			Teleop: [
+				{
+					key: "TeleopScoredOnePoint",
+					label: "Teleop Scored One Point Fuel",
+				},
+				{
+					label: "< Min Teleop Scored One Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopScoredOnePoint");
+					},
+				},
+				{
+					label: "< Max Teleop Scored One Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopScoredOnePoint");
+					},
+				},
+				{
+					key: "TeleopScoredFivePoint",
+					label: "Teleop Scored Five Point Fuel",
+				},
+				{
+					label: "< Min Teleop Scored Five Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopScoredFivePoint");
+					},
+				},
+				{
+					label: "< Maximum Teleop Scored Five Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopScoredFivePoint");
+					},
+				},
+				{
+					key: "TeleopScoredTenPoint",
+					label: "Teleop Scored Ten Point Fuel",
+				},
+				{
+					label: "< Min Teleop Scored Ten Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopScoredTenPoint");
+					},
+				},
+				{
+					label: "< Maximum Teleop Scored Ten Point Fuel",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopScoredTenPoint");
+					},
+				},
+				{
+					label: "Average Teleop Fuel",
+					get(pitData, quantitativeReports) {
+						if (!quantitativeReports) return 0;
+
+						return (
+							quantitativeReports?.reduce(
+								(acc, report) =>
+									acc +
+									report.data.TeleopScoredOnePoint +
+									report.data.TeleopScoredFivePoint +
+									report.data.TeleopScoredTenPoint,
+								0,
+							) / quantitativeReports?.length
+						);
+					},
+				},
+			],
+		},
+		getGraphDots: function (
+			quantitativeReports: Report<QuantitativeData>[],
+			pitReport?: Pitreport<PitData> | undefined,
+		): Dot[] {
+			return [];
+		},
+	};
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [
+			{
+				key: "FuelScoredAuto",
+				label: "Amount of fuel scored in auto",
+			},
+		],
+		individualSlideStats: [
+			{
+				label: "Average Auto Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const OneFuelScored = NumericalTotal(
+						"AutoScoredOnePoint",
+						quantitativeReports,
+					);
+					const FiveFuelScored = NumericalTotal(
+						"AutoScoredFivePoint",
+						quantitativeReports,
+					);
+					const TenFuelScored = NumericalTotal(
+						"AutoScoredTenPoint",
+						quantitativeReports,
+					);
+					return (
+						(OneFuelScored + FiveFuelScored + TenFuelScored) /
+						quantitativeReports.length
+					);
+				},
+			},
+		],
+	};
+}
+
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
+	[GameId.Rebuilt]: Rebuilt.game,
 	[GameId.Reefscape]: Reefscape.game,
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
 	[GameId.Crescendo]: Crescendo.game,
