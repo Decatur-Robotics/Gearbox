@@ -112,9 +112,9 @@ export namespace ReefscapeEnums {
 export namespace RebuiltEnums {
 	export enum Climbing {
 		No = "No",
-		FirstLevel = "First Level",
-		SecondLevel = "Second Level",
-		ThirdLevel = "Third Level",
+		FirstLevel = "FirstLevel",
+		SecondLevel = "SecondLevel",
+		ThirdLevel = "ThirdLevel",
 	}
 	
 	export enum DriveOverBump{
@@ -125,9 +125,9 @@ export namespace RebuiltEnums {
 
 	export enum EndgameClimbStatus {
 		None = "None",
-		FirstLevel = "First Level",
-		SecondLevel = "Second Level",
-		ThirdLevel = "Third Level",
+		FirstLevel = "FirstLevel",
+		SecondLevel = "SecondLevel",
+		ThirdLevel = "ThirdLevel",
 	}
 
 	export enum AutoCapabilities {

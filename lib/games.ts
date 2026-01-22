@@ -1895,11 +1895,13 @@ namespace Rebuilt {
 		AutoScoredOnePoint: number = 0;
 		AutoScoredFivePoint: number = 0;
 		AutoScoredTenPoint: number = 0;
+		AutoTotalScored: number = 0;
 		AutoClimbedLevelOne: boolean = false;
 
 		TeleopScoredOnePoint: number = 0;
 		TeleopScoredFivePoint: number = 0;
 		TeleopScoredTenPoint: number = 0;
+		TeleopTotalScored: number=0
 		EngameDefenseStatus: Defense = Defense.None;
 		EndgameClimbStatus: RebuiltEnums.EndgameClimbStatus =
 			RebuiltEnums.EndgameClimbStatus.None;
@@ -1913,7 +1915,7 @@ namespace Rebuilt {
 		FuelScoredAuto: number = 0;
 		AutoCapabilities: RebuiltEnums.AutoCapabilities =
 			RebuiltEnums.AutoCapabilities.NoAuto;
-		Climing: RebuiltEnums.Climbing = RebuiltEnums.Climbing.No;
+		Climbing: RebuiltEnums.Climbing = RebuiltEnums.Climbing.No;
 	}
 	const pitReportLayout: FormLayoutProps<PitData> = {
 		Capabilities: [
@@ -1922,7 +1924,7 @@ namespace Rebuilt {
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
 			{ key: "CanScoreFuel", label: "Can Score Fuel?" },
-			{ key: "Climing", label: "Climbing?" },
+			{ key: "Climbing", label: "Climbing?" },
 		],
 		"Auto (Describe more in comments)": [
 			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
@@ -2121,9 +2123,85 @@ namespace Rebuilt {
 					);
 				},
 			},
+			{
+				label: "Average Teleop Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const TeleopOneFuelScored = NumericalTotal(
+						"TeleopScoredOnePoint",
+						quantitativeReports,
+					);
+					const TeleopFiveFuelScored = NumericalTotal(
+						"TeleopScoredFivePoint",
+						quantitativeReports,
+					);
+					const TeleopTenFuelScored = NumericalTotal(
+						"TeleopScoredTenPoint",
+						quantitativeReports,
+					);
+					return (
+						(TeleopOneFuelScored + TeleopFiveFuelScored + TeleopTenFuelScored) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Ave Endgame Stats",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const climb = NumericalTotal(
+						"EndGameClimbStatus",
+						quantitativeReports,
+					);
+					return Round(climb) / quantitativeReports.length;
+				},
+			},
 		],
+		RobotCapabilites: [
+			{ key: "GroundIntake", label: "Has Ground Intake?" },
+			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
+			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
+			{ key: "CanDeClimb", label: "Can De-Climb?" },
+			{ key: "CanScoreFuel", label: "Can Score Fuel?" },
+			{ key: "Climbing", label: "Climbing?" },
+		],
+		GraphStat: [
+		]
+	};
+	function getBadges(
+		pitReport: Pitreport<PitData> | undefined,
+		quantitativeReports: Report<QuantitativeData>[] | undefined,
+		card: boolean,
+	) {
+		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+		if (pitReport?.data?.GroundIntake)
+			badges.push({ text: "Can Use Ground Intake", color: "primary" });
+		if (pitReport?.data?.CanDriveOverBump)
+			badges.push({ text: "Can Drive Over Bump", color: "accent"});
+		if (pitReport?.data?.CanDriveUnderTrench)
+			badges.push({ text: "Can Drive Under Trench", color: "accent"});
+		if (pitReport?.data?.CanDeClimb)
+			badges.push({ text: "Can Declimb", color:"accent"});
+		if (pitReport?.data?.CanScoreFuel)
+			badges.push({ text: "Can Score Fuel", color: "accent"});
+
+		if ((pitReport?.data?.Climbing = RebuiltEnums.Climbing.FirstLevel))
+			badges.push({ text: "Can Climb First Level", color: "accent" });
+		else if ((pitReport?.data?.Climbing = RebuiltEnums.Climbing.SecondLevel))
+			badges.push({ text: "Can Climb Second Level", color: "accent" });
+		else if ((pitReport?.data?.Climbing = RebuiltEnums.Climbing.ThirdLevel))
+			badges.push({ text: "Can Climb Third Level", color: "accent" });
 	};
 }
+
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.Rebuilt]: Rebuilt.game,
