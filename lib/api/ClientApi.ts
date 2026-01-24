@@ -214,7 +214,7 @@ export default class ClientApi extends NextApiTemplate<ApiDependencies> {
 			if (number <= 0) {
 				return res.status(200).send(undefined);
 			}
-
+			console.log("Getting autofill data for team:", number, league);
 			res
 				.status(200)
 				.send(

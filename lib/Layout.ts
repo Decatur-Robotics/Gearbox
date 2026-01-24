@@ -10,6 +10,7 @@ import {
 	IntoTheDeepEnums,
 	FtcDrivetrain,
 	ReefscapeEnums,
+	DecodeEnums,
 } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report, League } from "./Types";
 
@@ -217,6 +218,8 @@ export function keyToType(
 		ReefscapeEnums.Climbing,
 		ReefscapeEnums.DriveThroughDeepCage,
 		ReefscapeEnums.EndgameClimbStatus,
+		DecodeEnums.AutoCapabilities,
+		DecodeEnums.EndgameParkStatus,
 	];
 
 	if (key === "Defense") return Defense;
@@ -230,6 +233,9 @@ export function keyToType(
 	if (key == "Climbing") return ReefscapeEnums.Climbing;
 	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
 	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
+
+	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
+	if (key == "AutoAbilities") return DecodeEnums.AutoCapabilities;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;
