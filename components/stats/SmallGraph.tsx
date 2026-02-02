@@ -1,4 +1,4 @@
-import { Defense, ReefscapeEnums } from "@/lib/Enums";
+import { Defense, RebuiltEnums } from "@/lib/Enums";
 import { Report } from "@/lib/Types";
 import ClientApi from "@/lib/api/ClientApi";
 
@@ -87,15 +87,24 @@ export default function SmallGraph(props: {
 					return 1;
 			}
 		} else if (key === "EndgameClimbStatus") {
+			///switch (data) {
+				//case ReefscapeEnums.EndgameClimbStatus.None:
+					//return 0;
+				//case ReefscapeEnums.EndgameClimbStatus.Park:
+					//return 0.33;
+				//case ReefscapeEnums.EndgameClimbStatus.High:
+					//return 0.66;
+				//case ReefscapeEnums.EndgameClimbStatus.Low:
+					//return 1;
 			switch (data) {
-				case ReefscapeEnums.EndgameClimbStatus.None:
+				case RebuiltEnums.EndgameClimbStatus.None:
 					return 0;
-				case ReefscapeEnums.EndgameClimbStatus.Park:
+				case RebuiltEnums.EndgameClimbStatus.FirstLevel:
 					return 0.33;
-				case ReefscapeEnums.EndgameClimbStatus.High:
+				case RebuiltEnums.EndgameClimbStatus.SecondLevel:
 					return 0.66;
-				case ReefscapeEnums.EndgameClimbStatus.Low:
-					return 1;
+				case RebuiltEnums.EndgameClimbStatus.ThirdLevel:
+					return 1;		
 			}
 		}
 		return data;

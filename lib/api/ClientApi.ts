@@ -42,7 +42,7 @@ import {
 	assignScoutersToCompetitionMatches,
 	generateReportsForMatch,
 } from "../CompetitionHandling";
-import { CenterStage, Crescendo, games, IntoTheDeep } from "../games";
+import { CenterStage, Crescendo, games, IntoTheDeep, Rebuilt } from "../games";
 import { Statbotics } from "../Statbotics";
 import { TheBlueAlliance } from "../TheBlueAlliance";
 import { SlackNotLinkedError } from "./Errors";

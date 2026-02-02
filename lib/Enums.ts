@@ -123,6 +123,12 @@ export namespace RebuiltEnums {
 		Fast="Fast",
 	}
 
+	export enum DriveUnderTrench{
+		No= "No",
+		Slow="Slow",
+		Fast="Fast",
+	}
+
 	export enum EndgameClimbStatus {
 		None = "None",
 		FirstLevel = "FirstLevel",

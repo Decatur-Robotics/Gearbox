@@ -1890,7 +1890,7 @@ namespace Reefscape {
 	);
 }
 
-namespace Rebuilt {
+export namespace Rebuilt {
 	export class QuantitativeData extends QuantData {
 		AutoScoredOnePoint: number = 0;
 		AutoScoredFivePoint: number = 0;
@@ -1901,7 +1901,7 @@ namespace Rebuilt {
 		TeleopScoredOnePoint: number = 0;
 		TeleopScoredFivePoint: number = 0;
 		TeleopScoredTenPoint: number = 0;
-		TeleopTotalScored: number=0
+		TeleopTotalScored: number = 0;
 		EngameDefenseStatus: Defense = Defense.None;
 		EndgameClimbStatus: RebuiltEnums.EndgameClimbStatus =
 			RebuiltEnums.EndgameClimbStatus.None;
@@ -1942,6 +1942,7 @@ namespace Rebuilt {
 			{ key: "TeleopScoredOnePoint", label: "1 Point Scored (Teleop)" },
 			{ key: "TeleopScoredFivePoint", label: "5 Point Scored (Teleop)" },
 			{ key: "TeleopScoredTenPoint", label: "10 Point Scored (Teleop)" },
+			{ key: "TeleopTotalScored", label:"Total Fuel Scored (Teleop)"}
 		],
 		"Post Match": ["EndgameClimbStatus", "Defense"],
 	};
@@ -2165,7 +2166,7 @@ namespace Rebuilt {
 				},
 			},
 		],
-		RobotCapabilites: [
+		robotCapabilities: [
 			{ key: "GroundIntake", label: "Has Ground Intake?" },
 			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
@@ -2173,8 +2174,10 @@ namespace Rebuilt {
 			{ key: "CanScoreFuel", label: "Can Score Fuel?" },
 			{ key: "Climbing", label: "Climbing?" },
 		],
-		GraphStat: [
-		]
+		graphStat: {
+			label: "Average Fuel Scored In Hopper",
+			key: "TeleopTotalPoints",
+		},
 	};
 	function getBadges(
 		pitReport: Pitreport<PitData> | undefined,
@@ -2185,23 +2188,65 @@ namespace Rebuilt {
 		if (pitReport?.data?.GroundIntake)
 			badges.push({ text: "Can Use Ground Intake", color: "primary" });
 		if (pitReport?.data?.CanDriveOverBump)
-			badges.push({ text: "Can Drive Over Bump", color: "accent"});
+			badges.push({ text: "Can Drive Over Bump", color: "accent" });
 		if (pitReport?.data?.CanDriveUnderTrench)
-			badges.push({ text: "Can Drive Under Trench", color: "accent"});
+			badges.push({ text: "Can Drive Under Trench", color: "accent" });
 		if (pitReport?.data?.CanDeClimb)
-			badges.push({ text: "Can Declimb", color:"accent"});
-		if (pitReport?.data?.CanScoreFuel)
-			badges.push({ text: "Can Score Fuel", color: "accent"});
+			badges.push({ text: "Can Declimb", color: "accent" });
+		if (!pitReport?.data?.CanScoreFuel)
+			badges.push({ text: "Can't Score Fuel", color: "warning" });
 
-		if ((pitReport?.data?.Climbing = RebuiltEnums.Climbing.FirstLevel))
+		if (pitReport?.data?.Climbing === RebuiltEnums.Climbing.FirstLevel)
 			badges.push({ text: "Can Climb First Level", color: "accent" });
-		else if ((pitReport?.data?.Climbing = RebuiltEnums.Climbing.SecondLevel))
+		else if (pitReport?.data?.Climbing === RebuiltEnums.Climbing.SecondLevel)
 			badges.push({ text: "Can Climb Second Level", color: "accent" });
-		else if ((pitReport?.data?.Climbing = RebuiltEnums.Climbing.ThirdLevel))
+		else if (pitReport?.data?.Climbing === RebuiltEnums.Climbing.ThirdLevel)
 			badges.push({ text: "Can Climb Third Level", color: "accent" });
-	};
-}
 
+		return badges;
+	}
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined){
+		if (!reports) return 0;
+
+		let totalPoints=0;
+
+		for (const report of reports.map((r) => r.data)) {
+			switch (report.EndgameClimbStatus) {
+				case RebuiltEnums.EndgameClimbStatus.None:
+					break;
+				case RebuiltEnums.EndgameClimbStatus.FirstLevel:
+					totalPoints+=10
+					break;
+				case RebuiltEnums.EndgameClimbStatus.SecondLevel:
+					totalPoints+=20
+					break;
+				case RebuiltEnums.EndgameClimbStatus.ThirdLevel:
+					totalPoints+=30
+					break;
+			}
+			totalPoints+= (report.AutoScoredOnePoint+report.TeleopScoredOnePoint);
+			totalPoints+= (report.AutoScoredFivePoint+report.TeleopScoredFivePoint)*5;
+			totalPoints+= (report.AutoScoredTenPoint+report.TeleopScoredTenPoint)*10;
+		}
+		return totalPoints/Math.max(reports.length,1);
+	}
+	export const game = new Game(
+		"Rebuilt",
+		2026,
+		League.FRC,
+		QuantitativeData,
+		PitData,
+		pitReportLayout,
+		quantitativeReportLayout,
+		statsLayout,
+		pitStatsLayout,
+		"Rebuilt",
+		"https://www.firstinspires.org/hs-fs/hubfs/image-library/web/frc_rebuilt_1240x860.webp?width=630", 
+		"invert", //Ask Colin
+		getBadges,
+		getAvgPoints,
+	);
+}
 
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
 	[GameId.Rebuilt]: Rebuilt.game,

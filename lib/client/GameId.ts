@@ -6,4 +6,4 @@ export enum GameId {
 	Rebuilt = "Rebuilt",
 }
 
-export const defaultGameId = GameId.Reefscape;
+export const defaultGameId = GameId.Rebuilt;
