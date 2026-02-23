@@ -218,11 +218,11 @@ export function keyToType(
 		ReefscapeEnums.Climbing,
 		ReefscapeEnums.DriveThroughDeepCage,
 		ReefscapeEnums.EndgameClimbStatus,
-		RebuiltEnums.AutoCapabilities,
-		RebuiltEnums.Climbing,
+		RebuiltEnums.AutoAbilities,
+		RebuiltEnums.ClimbingAbilities,
 		RebuiltEnums.DriveOverBump,
 		RebuiltEnums.DriveUnderTrench,
-		RebuiltEnums.EndgameClimbStatus
+		RebuiltEnums.LevelClimbed,
 	];
 
 	if (key === "Defense") return Defense;
@@ -237,11 +237,11 @@ export function keyToType(
 	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
 	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
 
-	if (key == "AutoCapabilities") return RebuiltEnums.AutoCapabilities;
-	if (key == "climbing") return RebuiltEnums.Climbing;
+	if (key == "AutoAbilities") return RebuiltEnums.AutoAbilities;
+	if (key == "ClimbingAbilities") return RebuiltEnums.ClimbingAbilities;
 	if (key == "DriveOverBump") return RebuiltEnums.DriveOverBump;
-	if (key == "DiveUnderTrench")return RebuiltEnums.DriveUnderTrench;
-	if (key == "EndgameClimbStatus") return RebuiltEnums.EndgameClimbStatus;
+	if (key == "DiveUnderTrench") return RebuiltEnums.DriveUnderTrench;
+	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;

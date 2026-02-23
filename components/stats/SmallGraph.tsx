@@ -86,25 +86,25 @@ export default function SmallGraph(props: {
 				case Defense.Full:
 					return 1;
 			}
-		} else if (key === "EndgameClimbStatus") {
+		} else if (key === "LevelClimbed") {
 			///switch (data) {
-				//case ReefscapeEnums.EndgameClimbStatus.None:
-					//return 0;
-				//case ReefscapeEnums.EndgameClimbStatus.Park:
-					//return 0.33;
-				//case ReefscapeEnums.EndgameClimbStatus.High:
-					//return 0.66;
-				//case ReefscapeEnums.EndgameClimbStatus.Low:
-					//return 1;
+			//case ReefscapeEnums.EndgameClimbStatus.None:
+			//return 0;
+			//case ReefscapeEnums.EndgameClimbStatus.Park:
+			//return 0.33;
+			//case ReefscapeEnums.EndgameClimbStatus.High:
+			//return 0.66;
+			//case ReefscapeEnums.EndgameClimbStatus.Low:
+			//return 1;
 			switch (data) {
-				case RebuiltEnums.EndgameClimbStatus.None:
+				case RebuiltEnums.LevelClimbed.No:
 					return 0;
-				case RebuiltEnums.EndgameClimbStatus.FirstLevel:
+				case RebuiltEnums.LevelClimbed.First:
 					return 0.33;
-				case RebuiltEnums.EndgameClimbStatus.SecondLevel:
+				case RebuiltEnums.LevelClimbed.Second:
 					return 0.66;
-				case RebuiltEnums.EndgameClimbStatus.ThirdLevel:
-					return 1;		
+				case RebuiltEnums.LevelClimbed.Third:
+					return 1;
 			}
 		}
 		return data;

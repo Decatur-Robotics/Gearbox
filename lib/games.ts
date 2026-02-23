@@ -34,6 +34,7 @@ import {
 import { report } from "process";
 import { GetMaximum } from "./client/StatsMath";
 import { getMaxListeners } from "events";
+//import { ClimbingCapabilities, ClimbingAbilities } from './Enums';
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1903,8 +1904,7 @@ export namespace Rebuilt {
 		TeleopScoredTenPoint: number = 0;
 		TeleopTotalScored: number = 0;
 		EngameDefenseStatus: Defense = Defense.None;
-		EndgameClimbStatus: RebuiltEnums.EndgameClimbStatus =
-			RebuiltEnums.EndgameClimbStatus.None;
+		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
 	}
 	export class PitData extends PitReportData {
 		GroundIntake: boolean = false;
@@ -1913,9 +1913,10 @@ export namespace Rebuilt {
 		CanDeClimb: boolean = false;
 		CanScoreFuel: boolean = false;
 		FuelScoredAuto: number = 0;
-		AutoCapabilities: RebuiltEnums.AutoCapabilities =
-			RebuiltEnums.AutoCapabilities.NoAuto;
-		Climbing: RebuiltEnums.Climbing = RebuiltEnums.Climbing.No;
+		AutoAbilities: RebuiltEnums.AutoAbilities =
+			RebuiltEnums.AutoAbilities.NoAuto;
+		ClimbingAbilities: RebuiltEnums.ClimbingAbilities =
+			RebuiltEnums.ClimbingAbilities.No;
 	}
 	const pitReportLayout: FormLayoutProps<PitData> = {
 		Capabilities: [
@@ -1924,28 +1925,49 @@ export namespace Rebuilt {
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
 			{ key: "CanScoreFuel", label: "Can Score Fuel?" },
-			{ key: "Climbing", label: "Climbing?" },
+			{ key: "ClimbingAbilites", label: "Climbing?" },
 		],
 		"Auto (Describe more in comments)": [
-			{ key: "AutoCapabilities", label: "Auto Capabilities?" },
+			{ key: "AutoAbilities", label: "Auto Capabilities?" },
 			{ key: "FuelScoredAuto", label: "Average Fuel Scored In Auto" },
 		],
 	};
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
-			{ key: "AutoScoredOnePoint", label: "1 Point Scored (Auto)" },
-			{ key: "AutoScoredFivePoint", label: "5 Point Scared (Auto)" },
-			{ key: "AutoScoredTenPoint", label: "10 Point Scored (Auto)" },
+			[
+				[
+					{ key: "AutoScoredOnePoint", label: "1 Point Scored (Auto)" },
+					{ key: "AutoScoredFivePoint", label: "5 Point Scared (Auto)" },
+					{ key: "AutoScoredTenPoint", label: "10 Point Scored (Auto)" },
+				],
+			],
 			{ key: "AutoClimbedLevelOne", label: "Climbed Level One (Auto)" },
 		],
 		Teleop: [
-			{ key: "TeleopScoredOnePoint", label: "1 Point Scored (Teleop)" },
-			{ key: "TeleopScoredFivePoint", label: "5 Point Scored (Teleop)" },
-			{ key: "TeleopScoredTenPoint", label: "10 Point Scored (Teleop)" },
-			{ key: "TeleopTotalScored", label:"Total Fuel Scored (Teleop)"}
+			[
+				[
+					{ key: "TeleopScoredOnePoint", label: "1 Point Scored (Teleop)" },
+					{ key: "TeleopScoredFivePoint", label: "5 Point Scored (Teleop)" },
+					{ key: "TeleopScoredTenPoint", label: "10 Point Scored (Teleop)" },
+				],
+			],
 		],
-		"Post Match": ["EndgameClimbStatus", "Defense"],
+		"Post Match": ["LevelClimbed", "Defense"],
 	};
+	function getTotalFuel(reports: Report<QuantitativeData>[] | undefined) {
+		if (!reports) return 0;
+
+		for (const report of reports.map((r) => r.data)) {
+			report.TeleopTotalScored += report.TeleopScoredOnePoint;
+			report.TeleopTotalScored += report.TeleopScoredFivePoint * 5;
+			report.TeleopTotalScored += report.TeleopScoredTenPoint * 10;
+
+			report.AutoTotalScored += report.AutoScoredOnePoint;
+			report.AutoTotalScored += report.AutoScoredFivePoint * 5;
+			report.AutoTotalScored += report.AutoScoredFivePoint * 10;
+		}
+	}
+	getTotalFuel
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {
 			Auto: [
@@ -2158,10 +2180,7 @@ export namespace Rebuilt {
 				) => {
 					if (!quantitativeReports) return 0;
 
-					const climb = NumericalTotal(
-						"EndGameClimbStatus",
-						quantitativeReports,
-					);
+					const climb = NumericalTotal("LevelClimbed", quantitativeReports);
 					return Round(climb) / quantitativeReports.length;
 				},
 			},
@@ -2172,7 +2191,7 @@ export namespace Rebuilt {
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
 			{ key: "CanScoreFuel", label: "Can Score Fuel?" },
-			{ key: "Climbing", label: "Climbing?" },
+			{ key: "ClimbingAbilities", label: "Climbing?" },
 		],
 		graphStat: {
 			label: "Average Fuel Scored In Hopper",
@@ -2196,39 +2215,50 @@ export namespace Rebuilt {
 		if (!pitReport?.data?.CanScoreFuel)
 			badges.push({ text: "Can't Score Fuel", color: "warning" });
 
-		if (pitReport?.data?.Climbing === RebuiltEnums.Climbing.FirstLevel)
+		if (
+			pitReport?.data?.ClimbingAbilities ===
+			RebuiltEnums.ClimbingAbilities.FirstLevel
+		)
 			badges.push({ text: "Can Climb First Level", color: "accent" });
-		else if (pitReport?.data?.Climbing === RebuiltEnums.Climbing.SecondLevel)
+		else if (
+			pitReport?.data?.ClimbingAbilities ===
+			RebuiltEnums.ClimbingAbilities.SecondLevel
+		)
 			badges.push({ text: "Can Climb Second Level", color: "accent" });
-		else if (pitReport?.data?.Climbing === RebuiltEnums.Climbing.ThirdLevel)
+		else if (
+			pitReport?.data?.ClimbingAbilities ===
+			RebuiltEnums.ClimbingAbilities.ThirdLevel
+		)
 			badges.push({ text: "Can Climb Third Level", color: "accent" });
 
 		return badges;
 	}
-	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined){
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
 		if (!reports) return 0;
 
-		let totalPoints=0;
+		let totalPoints = 0;
 
 		for (const report of reports.map((r) => r.data)) {
-			switch (report.EndgameClimbStatus) {
-				case RebuiltEnums.EndgameClimbStatus.None:
+			switch (report.LevelClimbed) {
+				case RebuiltEnums.LevelClimbed.No:
 					break;
-				case RebuiltEnums.EndgameClimbStatus.FirstLevel:
-					totalPoints+=10
+				case RebuiltEnums.LevelClimbed.First:
+					totalPoints += 10;
 					break;
-				case RebuiltEnums.EndgameClimbStatus.SecondLevel:
-					totalPoints+=20
+				case RebuiltEnums.LevelClimbed.Second:
+					totalPoints += 20;
 					break;
-				case RebuiltEnums.EndgameClimbStatus.ThirdLevel:
-					totalPoints+=30
+				case RebuiltEnums.LevelClimbed.Third:
+					totalPoints += 30;
 					break;
 			}
-			totalPoints+= (report.AutoScoredOnePoint+report.TeleopScoredOnePoint);
-			totalPoints+= (report.AutoScoredFivePoint+report.TeleopScoredFivePoint)*5;
-			totalPoints+= (report.AutoScoredTenPoint+report.TeleopScoredTenPoint)*10;
+			totalPoints += report.AutoScoredOnePoint + report.TeleopScoredOnePoint;
+			totalPoints +=
+				(report.AutoScoredFivePoint + report.TeleopScoredFivePoint) * 5;
+			totalPoints +=
+				(report.AutoScoredTenPoint + report.TeleopScoredTenPoint) * 10;
 		}
-		return totalPoints/Math.max(reports.length,1);
+		return totalPoints / Math.max(reports.length, 1);
 	}
 	export const game = new Game(
 		"Rebuilt",
@@ -2236,12 +2266,13 @@ export namespace Rebuilt {
 		League.FRC,
 		QuantitativeData,
 		PitData,
+		//getTotalFuel,
 		pitReportLayout,
 		quantitativeReportLayout,
 		statsLayout,
 		pitStatsLayout,
 		"Rebuilt",
-		"https://www.firstinspires.org/hs-fs/hubfs/image-library/web/frc_rebuilt_1240x860.webp?width=630", 
+		"https://www.firstinspires.org/hs-fs/hubfs/image-library/web/frc_rebuilt_1240x860.webp?width=630",
 		"invert", //Ask Colin
 		getBadges,
 		getAvgPoints,

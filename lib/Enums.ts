@@ -110,33 +110,33 @@ export namespace ReefscapeEnums {
 	}
 }
 export namespace RebuiltEnums {
-	export enum Climbing {
+	export enum ClimbingAbilities {
 		No = "No",
 		FirstLevel = "FirstLevel",
 		SecondLevel = "SecondLevel",
 		ThirdLevel = "ThirdLevel",
 	}
-	
-	export enum DriveOverBump{
+
+	export enum DriveOverBump {
 		No = "No",
-		Slow="Slow",
-		Fast="Fast",
+		Slow = "Slow",
+		Fast = "Fast",
 	}
 
-	export enum DriveUnderTrench{
-		No= "No",
-		Slow="Slow",
-		Fast="Fast",
+	export enum DriveUnderTrench {
+		No = "No",
+		Slow = "Slow",
+		Fast = "Fast",
 	}
 
-	export enum EndgameClimbStatus {
-		None = "None",
-		FirstLevel = "FirstLevel",
-		SecondLevel = "SecondLevel",
-		ThirdLevel = "ThirdLevel",
+	export enum LevelClimbed {
+		No = "No",
+		First = "First",
+		Second = "Second",
+		Third = "Third",
 	}
 
-	export enum AutoCapabilities {
+	export enum AutoAbilities {
 		NoAuto = "No Auto",
 		MovePastStart = "Move Past Start",
 		ClimbLevelOne = "Climb Level One",
