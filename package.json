@@ -42,6 +42,7 @@
 		"next": "^15.2.4",
 		"next-auth": "^4.24.11",
 		"next-seo": "^6.6.0",
+		"nodemailer": "^7.0.12",
 		"omit-call-signature": "^1.0.15",
 		"react": "18.3.1",
 		"react-beautiful-dnd": "^13.1.1",

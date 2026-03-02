@@ -86,31 +86,28 @@ export default function EditMatchModal(props: {
 					X
 				</button>
 				<h3 className="text-xl">Editing Match {props.match?.number}</h3>
-				<table className="w-full">
+				<table className="space-x-2">
 					<thead>
 						<tr>
-							<th className="px-4">Position</th>
-							<th className="px-4">Team</th>
-							<th className="px-4">Scouter</th>
-							<th className="px-4">Subjective Scouter</th>
+							<th>Position</th>
+							<th>Team</th>
+							<th>Scouter</th>
 						</tr>
 					</thead>
 					<tbody>
 						{teams.map((team, index) => (
 							<tr key={index}>
-								<td
-									className={`px-4 ${index < 3 ? "text-blue-500" : "text-red-500"}`}
-								>
+								<td className={index < 3 ? "text-blue-500" : "text-red-500"}>
 									{index < 3 ? "Blue" : "Red"} {(index % 3) + 1}
 								</td>
-								<td className="px-4">
+								<td>
 									<input
 										onChange={(e) => changeTeamNumber(e, index)}
 										type="number"
 										defaultValue={team}
 									/>
 								</td>
-								<td className="px-4">
+								<td>
 									<select onChange={(e) => changeScouter(e, reports[index])}>
 										{reports[index]?.user &&
 										usersById[reports[index].user ?? ""] ? (
@@ -133,35 +130,34 @@ export default function EditMatchModal(props: {
 											))}
 									</select>
 								</td>
-								<td className="px-4">
-									{index === 0 && (
-										<select onChange={changeSubjectiveScouter}>
-											{props.match?.subjectiveScouter &&
-											usersById[props.match.subjectiveScouter] ? (
-												<option value={props.match.subjectiveScouter}>
-													{usersById[props.match.subjectiveScouter].name}
-												</option>
-											) : (
-												<></>
-											)}
-											<option value={undefined}>None</option>
-											{Object.keys(usersById)
-												.filter((id) => id !== props.match?.subjectiveScouter)
-												.map((userId) => (
-													<option
-														key={userId}
-														value={userId}
-													>
-														{usersById[userId]?.name ?? "Unknown"}
-													</option>
-												))}
-										</select>
-									)}
-								</td>
 							</tr>
 						))}
 					</tbody>
 				</table>
+				<div className="flex flex-row space-x-2">
+					<label>Subjective Scouter:</label>
+					<select onChange={changeSubjectiveScouter}>
+						{props.match?.subjectiveScouter &&
+						usersById[props.match.subjectiveScouter] ? (
+							<option value={props.match.subjectiveScouter}>
+								{usersById[props.match.subjectiveScouter].name}
+							</option>
+						) : (
+							<></>
+						)}
+						<option value={undefined}>None</option>
+						{Object.keys(usersById)
+							.filter((id) => id !== props.match?.subjectiveScouter)
+							.map((userId) => (
+								<option
+									key={userId}
+									value={userId}
+								>
+									{usersById[userId]?.name ?? "Unknown"}
+								</option>
+							))}
+					</select>
+				</div>
 			</div>
 		</dialog>
 	);
