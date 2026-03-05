@@ -1941,12 +1941,13 @@ export namespace Rebuilt {
 				[
 					{
 						key: "TotalAllianceFuelPoints",
-						label: "Fuel Scored By Allience(Must Be Just A Whole Number)",
+						label: "Fuel Scored By Allience",
+						type: "number",
 					},
 					{
 						key: "PercentagePointsScored",
-						label:
-							"Estimated Percentage Of Points(Must Be Just A Whole Number)",
+						label: "Estimated Percentage Of Points",
+						type: "number",
 					},
 				],
 			],
