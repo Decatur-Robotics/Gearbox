@@ -153,9 +153,9 @@ export function GetMinimum(
 	stat: string,
 ) {
 	if (!quantitativeReports) return 0;
-	let minimum = quantitativeReports[0].data[stat];
+	let minimum = Number(quantitativeReports[0].data[stat]);
 	for (let repo of quantitativeReports) {
-		if (repo.data[stat] < minimum) {
+		if (Number(repo.data[stat]) < minimum) {
 			minimum = repo.data[stat];
 		}
 	}
@@ -170,7 +170,7 @@ export function GetMaximum(
 	if (!quantitativeReports) return 0;
 	let maximum = 0;
 	for (let repo of quantitativeReports) {
-		if (repo.data[stat] > maximum) {
+		if (Number(repo.data[stat]) > maximum) {
 			maximum = repo.data[stat];
 		}
 	}

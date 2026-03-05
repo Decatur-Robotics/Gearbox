@@ -143,4 +143,18 @@ export namespace RebuiltEnums {
 		ScoreOneOrMoreFuel = "Score One Or More Fuel",
 		ScoreFuelAndClimb = "Score Fuel And Climb",
 	}
+	export enum OffenceDriverSkill{
+		LevelOne = "One",
+		LevelTwo = "Two",
+		LevelThree = "Three",
+		LevelFour = "Four",
+		LevelFive = "Five",
+	}
+	export enum DefenceDriverSkill {
+		LevelOne = "One",
+		LevelTwo = "Two",
+		LevelThree = "Three",
+		LevelFour = "Four",
+		LevelFive = "Five",
+	}
 }
