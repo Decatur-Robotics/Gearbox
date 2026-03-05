@@ -10,6 +10,7 @@ import {
 	IntoTheDeepEnums,
 	FtcDrivetrain,
 	ReefscapeEnums,
+	RebuiltEnums,
 	DecodeEnums,
 } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report, League } from "./Types";
@@ -218,6 +219,11 @@ export function keyToType(
 		ReefscapeEnums.Climbing,
 		ReefscapeEnums.DriveThroughDeepCage,
 		ReefscapeEnums.EndgameClimbStatus,
+		RebuiltEnums.AutoAbilities,
+		RebuiltEnums.ClimbingAbilities,
+		RebuiltEnums.DriveOverBump,
+		RebuiltEnums.DriveUnderTrench,
+		RebuiltEnums.LevelClimbed,
 		DecodeEnums.AutoCapabilities,
 		DecodeEnums.EndgameParkStatus,
 	];
@@ -234,6 +240,12 @@ export function keyToType(
 	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
 	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
 
+	if (key == "AutoAbilities") return RebuiltEnums.AutoAbilities;
+	if (key == "ClimbingAbilities") return RebuiltEnums.ClimbingAbilities;
+	if (key == "DriveOverBump") return RebuiltEnums.DriveOverBump;
+	if (key == "DiveUnderTrench") return RebuiltEnums.DriveUnderTrench;
+	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
+  
 	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
 	if (key == "AutoAbilities") return DecodeEnums.AutoCapabilities;
 
