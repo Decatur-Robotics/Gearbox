@@ -1893,11 +1893,9 @@ namespace Reefscape {
 
 export namespace Rebuilt {
 	export class QuantitativeData extends QuantData {
-		TotalAllianceFuelPoints: number = 0;
-		PercentagePointsScored: number = 0;
+		TotalAllianceFuelPoints: Number = 0;
+		PercentagePointsScored: Number = 0;
 
-		AutoCycles: number = 0;
-		AutoTotalScored: number = 0;
 		AutoClimbedLevelOne: boolean = false;
 
 		EngameDefenseStatus: Defense = Defense.None;
@@ -1947,7 +1945,8 @@ export namespace Rebuilt {
 					},
 					{
 						key: "PercentagePointsScored",
-						label: "Estimated Percentage Of Points(Must Be Just A Whole Number)",
+						label:
+							"Estimated Percentage Of Points(Must Be Just A Whole Number)",
 					},
 				],
 			],
@@ -1957,26 +1956,22 @@ export namespace Rebuilt {
 			"Defense",
 			"OffenceDriverSkill",
 			"DefenceDriverSkill",
-			{
-				key: "EstimatedHopperVolume",
-				label: "Estamate Of Fuel The Hopper Can Hold?",
-			},
-			{
-				key: "EstimatedFuelMissed",
-				label: "Estamate Of Fuel Missed Per Cycle",
-			},
 		],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {
-			Auto: [
-			],
+			Auto: [],
 
 			Teleop: [
 				{
-					key: "TotalAllianceFuelPoints",
 					label: "Total Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return NumericalTotal(
+							"TotalAllianceFuelPoints",
+							quantitativeReports!,
+						);
+					},
 				},
 				{
 					label: "< Min Fuel Points Scored By Alliance",
@@ -1991,8 +1986,13 @@ export namespace Rebuilt {
 					},
 				},
 				{
-					key: "PercentagePointsScored",
 					label: "Estamated Percentage Points Scored By Team",
+					get(pitData, quantitativeReports) {
+						return NumericalTotal(
+							"PercentagePointsScored",
+							quantitativeReports!,
+						);
+					},
 				},
 				{
 					label: "< Min Estamated Percentage Points Scored By Team",
@@ -2016,8 +2016,7 @@ export namespace Rebuilt {
 		},
 	};
 	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
-		overallSlideStats: [
-		],
+		overallSlideStats: [],
 		individualSlideStats: [
 			{
 				label: "Average Points",
@@ -2035,10 +2034,7 @@ export namespace Rebuilt {
 						"PercentagePointsScored",
 						quantitativeReports,
 					);
-					return (
-						(TotalAllianceFuelPoints) /
-						quantitativeReports.length
-					);
+					return TotalAllianceFuelPoints / quantitativeReports.length;
 				},
 			},
 			{
@@ -2123,7 +2119,7 @@ export namespace Rebuilt {
 			}
 			totalPoints +=
 				Number(report.TotalAllianceFuelPoints) *
-				(Number(report.PercentagePointsScored)/10);
+				(Number(report.PercentagePointsScored) / 10);
 		}
 		return totalPoints / Math.max(reports.length, 1);
 	}

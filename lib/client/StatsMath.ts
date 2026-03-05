@@ -44,7 +44,7 @@ export function NumericalTotal<T extends QuantData>(
 	reports: Report<T>[],
 ) {
 	let sum = 0;
-	reports?.forEach((report) => (sum += getSelection(selector, report)));
+	reports?.forEach((report) => (sum += Number(getSelection(selector, report) || 0)));
 	return Round(sum);
 }
 
@@ -156,8 +156,10 @@ export function GetMinimum(
 	let minimum = Number(quantitativeReports[0].data[stat]);
 	for (let repo of quantitativeReports) {
 		if (Number(repo.data[stat]) < minimum) {
-			minimum = repo.data[stat];
+			minimum = Number(repo.data[stat]);
+			
 		}
+
 	}
 	return minimum;
 }
@@ -171,7 +173,7 @@ export function GetMaximum(
 	let maximum = 0;
 	for (let repo of quantitativeReports) {
 		if (Number(repo.data[stat]) > maximum) {
-			maximum = repo.data[stat];
+			maximum = Number(repo.data[stat]);
 		}
 	}
 	return maximum;
