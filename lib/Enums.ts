@@ -109,6 +109,7 @@ export namespace ReefscapeEnums {
 		Shallow = "Shallow",
 	}
 }
+
 export namespace RebuiltEnums {
 	export enum ClimbingAbilities {
 		No = "No",
@@ -156,5 +157,19 @@ export namespace RebuiltEnums {
 		LevelThree = "Three",
 		LevelFour = "Four",
 		LevelFive = "Five",
+
+export namespace DecodeEnums {
+	export enum EndgameParkStatus {
+		No = "No",
+		Partial = "Partial",
+		Full = "Full",
+		TwoBotPark = "Two Bot Park",
+	}
+
+	export enum AutoCapabilities {
+		NoAuto = "No Auto",
+		MovePastStart = "Move Past Start",
+		ScoreOneArtifact = "Score One Artifact",
+		ScoreMultipleArtifacts = "Score Multiple Artifacts",
 	}
 }
