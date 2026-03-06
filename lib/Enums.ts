@@ -161,4 +161,3 @@ export namespace DecodeEnums {
 		ScoreMultipleArtifacts = "Score Multiple Artifacts",
 	}
 }
-	

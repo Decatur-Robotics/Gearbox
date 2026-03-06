@@ -1929,9 +1929,7 @@ export namespace Rebuilt {
 			{ key: "ClimbingAbilites", label: "Climbing?" },
 			{ key: "HopperVolume", label: "Hopper Volume?" },
 		],
-		Auto: [
-			{ key: "AutoAbilities", label: "Auto Capabilities?" },
-		],
+		Auto: [{ key: "AutoAbilities", label: "Auto Capabilities?" }],
 	};
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
@@ -2178,8 +2176,7 @@ export namespace Decode {
 
 		ArtifactsScoredAuto: number = 0;
 		AutoAccountsForMotif: boolean = false;
-		AutoAbilities: DecodeEnums.AutoStatus =
-			DecodeEnums.AutoStatus.NoAuto;
+		AutoAbilities: DecodeEnums.AutoStatus = DecodeEnums.AutoStatus.NoAuto;
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
