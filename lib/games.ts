@@ -1898,17 +1898,14 @@ namespace Reefscape {
 
 export namespace Rebuilt {
 	export class QuantitativeData extends QuantData {
-		TotalAllianceFuelPoints: Number = 0;
-		PercentagePointsScored: Number = 0;
+		FuelPointsOne: number = 0;
+		FuelPointsFive: number = 0;
+		FuelPointsTen: number = 0;
 
 		AutoClimbedLevelOne: boolean = false;
 
 		EngameDefenseStatus: Defense = Defense.None;
 		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
-		OffenceDriverSkill: RebuiltEnums.OffenceDriverSkill =
-			RebuiltEnums.OffenceDriverSkill.LevelOne;
-		DefenceDriverSkill: RebuiltEnums.DefenceDriverSkill =
-			RebuiltEnums.DefenceDriverSkill.LevelOne;
 	}
 	export class PitData extends PitReportData {
 		GroundIntake: boolean = false;
@@ -1932,84 +1929,92 @@ export namespace Rebuilt {
 			{ key: "ClimbingAbilites", label: "Climbing?" },
 			{ key: "HopperVolume", label: "Hopper Volume?" },
 		],
-		"Auto (Describe more in comments)": [
+		Auto: [
 			{ key: "AutoAbilities", label: "Auto Capabilities?" },
 		],
 	};
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
-			/*[[{ key: "AutoCycles", label: "Number Of Cycles In Auto" }]],*/
 			{ key: "AutoClimbedLevelOne", label: "Climbed Level One (Auto)" },
-      ],
-		Teleop: [
 			[
 				[
 					{
-            key: "TotalAllianceFuelPoints",
-						label: "Fuel Scored By Allience",
-						type: "number",
+						key: "FuelPointsOne",
+						label: "One point",
 					},
+				],
+				[
 					{
-						key: "PercentagePointsScored",
-						label: "Estimated Percentage Of Points",
-						type: "number",
+						key: "FuelPointsFive",
+						label: "Five points",
+					},
+				],
+				[
+					{
+						key: "FuelPointsTen",
+						label: "Ten points",
 					},
 				],
 			],
 		],
-		"Post Match": [
-			"LevelClimbed",
-			"Defense",
-			"OffenceDriverSkill",
-			"DefenceDriverSkill",
+		Teleop: [
+			[
+				[
+					{
+						key: "FuelPointsOne",
+						label: "One point",
+					},
+				],
+				[
+					{
+						key: "FuelPointsFive",
+						label: "Five points",
+					},
+				],
+				[
+					{
+						key: "FuelPointsTen",
+						label: "Ten points",
+					},
+				],
+			],
 		],
-  };
+		"Post Match": ["LevelClimbed", "Defense"],
+	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {
-      Auto: [],
+			Auto: [],
 			Teleop: [
 				{
 					label: "Total Fuel Points Scored By Alliance",
 					get(pitData, quantitativeReports) {
-						return NumericalTotal(
-							"TotalAllianceFuelPoints",
-							quantitativeReports!,
+						return (
+							NumericalTotal("FuelPointsOne", quantitativeReports!) +
+							NumericalTotal("FuelPointsFive", quantitativeReports!) * 5 +
+							NumericalTotal("FuelPointsTen", quantitativeReports!) * 10
 						);
 					},
 				},
 				{
 					label: "< Min Fuel Points Scored By Alliance",
 					get(pitData, quantitativeReports) {
-						return GetMinimum(quantitativeReports!, "TotalAllianceFuelPoints");
+						return (
+							GetMinimum(quantitativeReports!, "FuelPointsOne") +
+							GetMinimum(quantitativeReports!, "FuelPointsFive") * 5 +
+							GetMinimum(quantitativeReports!, "FuelPointsTen") * 10
+						);
 					},
 				},
 				{
 					label: "< Max Fuel Points Scored By Alliance",
 					get(pitData, quantitativeReports) {
-						return GetMaximum(quantitativeReports!, "TotalAllianceFuelPoints");
-					},
-				},
-				{
-					label: "Estamated Percentage Points Scored By Team",
-					get(pitData, quantitativeReports) {
-						return NumericalTotal(
-							"PercentagePointsScored",
-							quantitativeReports!,
+						return (
+							GetMaximum(quantitativeReports!, "FuelPointsOne") +
+							GetMaximum(quantitativeReports!, "FuelPointsFive") * 5 +
+							GetMaximum(quantitativeReports!, "FuelPointsTen") * 10
 						);
 					},
-				},
-				{
-					label: "< Min Estamated Percentage Points Scored By Team",
-					get(pitData, quantitativeReports) {
-						return GetMinimum(quantitativeReports!, "PercentagePointsScored");
-					},
-				},
-				{
-					label: "< Max Estamated Percentage Points Scored By Team",
-					get(pitData, quantitativeReports) {
-						return GetMaximum(quantitativeReports!, "PercentagePointsScored");
-           },
 				},
 			],
 		},
@@ -2020,44 +2025,40 @@ export namespace Rebuilt {
 			return [];
 		},
 	};
-  
-  const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
 		overallSlideStats: [],
 		individualSlideStats: [
 			{
 				label: "Average Points",
-        get: (
+				get: (
 					pitReport: Pitreport<PitData> | undefined,
 					quantitativeReports: Report<QuantitativeData>[] | undefined,
 				) => {
-        if (!quantitativeReports) return 0;
+					if (!quantitativeReports) return 0;
 
-					const TotalAllianceFuelPoints = NumericalTotal(
-						"TotalAllianceFuelPoints",
-						quantitativeReports,
-					);
-					const PercentagePointsScored = NumericalTotal(
-						"PercentagePointsScored",
-						quantitativeReports,
-					);
+					const TotalAllianceFuelPoints =
+						NumericalTotal("FuelPointsOne", quantitativeReports) +
+						NumericalTotal("FuelPointsFive", quantitativeReports) * 5 +
+						NumericalTotal("FuelPointsTen", quantitativeReports) * 10;
 					return TotalAllianceFuelPoints / quantitativeReports.length;
 				},
 			},
 			{
 				label: "Ave Endgame Stats",
-        get: (
+				get: (
 					pitReport: Pitreport<PitData> | undefined,
 					quantitativeReports: Report<QuantitativeData>[] | undefined,
 				) => {
-          if (!quantitativeReports) return 0;
+					if (!quantitativeReports) return 0;
 
 					const climb = NumericalTotal("LevelClimbed", quantitativeReports);
 					return Round(climb) / quantitativeReports.length;
-        },
+				},
 			},
 		],
 		robotCapabilities: [
-      { key: "GroundIntake", label: "Has Ground Intake?" },
+			{ key: "GroundIntake", label: "Has Ground Intake?" },
 			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
@@ -2070,14 +2071,14 @@ export namespace Rebuilt {
 		},
 	};
 
-  function getBadges(
+	function getBadges(
 		pitReport: Pitreport<PitData> | undefined,
 		quantitativeReports: Report<QuantitativeData>[] | undefined,
 		card: boolean,
 	) {
 		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
-    
-    if (pitReport?.data?.GroundIntake)
+
+		if (pitReport?.data?.GroundIntake)
 			badges.push({ text: "Can Use Ground Intake", color: "primary" });
 		if (pitReport?.data?.CanDriveOverBump)
 			badges.push({ text: "Can Drive Over Bump", color: "accent" });
@@ -2106,15 +2107,14 @@ export namespace Rebuilt {
 
 		return badges;
 	}
-  
-  function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
 		if (!reports) return 0;
 
 		let totalPoints = 0;
 
 		for (const report of reports.map((r) => r.data)) {
-    
-      switch (report.LevelClimbed) {
+			switch (report.LevelClimbed) {
 				case RebuiltEnums.LevelClimbed.No:
 					break;
 				case RebuiltEnums.LevelClimbed.First:
@@ -2128,8 +2128,9 @@ export namespace Rebuilt {
 					break;
 			}
 			totalPoints +=
-				Number(report.TotalAllianceFuelPoints) *
-				(Number(report.PercentagePointsScored) / 10);
+				Number(report.FuelPointsOne) +
+				Number(report.FuelPointsFive) * 5 +
+				Number(report.FuelPointsTen) * 10;
 		}
 		return totalPoints / Math.max(reports.length, 1);
 	}
@@ -2137,21 +2138,20 @@ export namespace Rebuilt {
 		"Rebuilt",
 		2026,
 		League.FRC,
-    QuantitativeData,
+		QuantitativeData,
 		PitData,
 		pitReportLayout,
 		quantitativeReportLayout,
 		statsLayout,
 		pitStatsLayout,
-    "Rebuilt",
+		"Rebuilt",
 		"https://www.firstinspires.org/hs-fs/hubfs/image-library/web/frc_rebuilt_1240x860.webp?width=630",
-		"invert", //Ask Colin
-    getBadges,
+		"invert",
+		getBadges,
 		getAvgPoints,
 	);
 }
 
-    
 export namespace Decode {
 	export class QuantitativeData extends QuantData {
 		AutoMovedPastStartingLine: boolean = false;
@@ -2178,8 +2178,8 @@ export namespace Decode {
 
 		ArtifactsScoredAuto: number = 0;
 		AutoAccountsForMotif: boolean = false;
-		AutoAbilities: DecodeEnums.AutoCapabilities =
-			DecodeEnums.AutoCapabilities.NoAuto;
+		AutoAbilities: DecodeEnums.AutoStatus =
+			DecodeEnums.AutoStatus.NoAuto;
 	}
 
 	const pitReportLayout: FormLayoutProps<PitData> = {

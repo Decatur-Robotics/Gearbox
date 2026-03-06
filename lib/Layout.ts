@@ -224,7 +224,7 @@ export function keyToType(
 		RebuiltEnums.DriveOverBump,
 		RebuiltEnums.DriveUnderTrench,
 		RebuiltEnums.LevelClimbed,
-		DecodeEnums.AutoCapabilities,
+		DecodeEnums.AutoStatus,
 		DecodeEnums.EndgameParkStatus,
 	];
 
@@ -247,7 +247,7 @@ export function keyToType(
 	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
   
 	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
-	if (key == "AutoAbilities") return DecodeEnums.AutoCapabilities;
+	if (key == "AutoStatus") return DecodeEnums.AutoStatus;
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;
