@@ -2,8 +2,8 @@
 	"folders": [
 		{
 			"name": "Gearbox",
-			"path": ".."
-		}
+			"path": "..",
+		},
 	],
-	"settings": {}
+	"settings": {},
 }

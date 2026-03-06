@@ -196,7 +196,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	return {
 		props: {
 			...resolved,
-			
+
 			season: serializeDatabaseObject(resolved.season),
 		},
 	};
