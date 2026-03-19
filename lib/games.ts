@@ -1919,17 +1919,16 @@ export namespace Rebuilt {
 		RobotWeight: number = 0;
 		RobotWidth: number = 0;
 		RobotLength: number = 0;
-		AutoAbilities: RebuiltEnums.AutoAbilities =
-			RebuiltEnums.AutoAbilities.NoAuto;
-		ClimbingAbilities: RebuiltEnums.ClimbingAbilities =
-			RebuiltEnums.ClimbingAbilities.No;
+		AutoAbilities: string = "";
+		ClimbingCapabilities: RebuiltEnums.ClimbingCapabilities =
+			RebuiltEnums.ClimbingCapabilities.No;
 	}
 	const pitReportLayout: FormLayoutProps<PitData> = {
 		Capabilities: [
 			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
-			{ key: "ClimbingAbilities", label: "Climbing?" },
+			{ key: "ClimbingCapabilities", label: "Climbing?" },
 			{ key: "HopperVolume", label: "Hopper Volume?" },
 		],
 		Auto: [{ key: "AutoAbilities", label: "Auto Capabilities?" }],
@@ -2059,11 +2058,7 @@ export namespace Rebuilt {
 	};
 
 	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
-		overallSlideStats: [
-			/*HopperVolume: number = 0;
-		RobotWeight: number = 0;
-		RobotWidth: number = 0;*/
-			{
+		overallSlideStats: [			{
 				label: "Estamate Hopper Volume",
 				key: "HopperVolume",
 			},
@@ -2128,7 +2123,7 @@ export namespace Rebuilt {
 			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
 			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
-			{ key: "ClimbingAbilities", label: "Climbing?" },
+			{ key: "ClimbingCapabilities", label: "Climbing?" },
 		],
 		graphStat: {
 			label: "Average Fuel Scored In Hopper",
@@ -2151,18 +2146,18 @@ export namespace Rebuilt {
 			badges.push({ text: "Can Declimb", color: "accent" });
 
 		if (
-			pitReport?.data?.ClimbingAbilities ===
-			RebuiltEnums.ClimbingAbilities.FirstLevel
+			pitReport?.data?.ClimbingCapabilities ===
+			RebuiltEnums.ClimbingCapabilities.FirstLevel
 		)
 			badges.push({ text: "Can Climb First Level", color: "accent" });
 		else if (
-			pitReport?.data?.ClimbingAbilities ===
-			RebuiltEnums.ClimbingAbilities.SecondLevel
+			pitReport?.data?.ClimbingCapabilities ===
+			RebuiltEnums.ClimbingCapabilities.SecondLevel
 		)
 			badges.push({ text: "Can Climb Second Level", color: "accent" });
 		else if (
-			pitReport?.data?.ClimbingAbilities ===
-			RebuiltEnums.ClimbingAbilities.ThirdLevel
+			pitReport?.data?.ClimbingCapabilities ===
+			RebuiltEnums.ClimbingCapabilities.ThirdLevel
 		)
 			badges.push({ text: "Can Climb Third Level", color: "accent" });
 
