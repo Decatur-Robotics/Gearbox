@@ -1898,10 +1898,10 @@ namespace Reefscape {
 
 export namespace Rebuilt {
 	export class QuantitativeData extends QuantData {
-		AutoFuelPointsOne: number =0;
+		AutoFuelPointsOne: number = 0;
 		AutoFuelPointsFive: number = 0;
 		AutoFuelPointsTen: number = 0;
-		
+
 		FuelPointsOne: number = 0;
 		FuelPointsFive: number = 0;
 		FuelPointsTen: number = 0;
@@ -2058,7 +2058,8 @@ export namespace Rebuilt {
 	};
 
 	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
-		overallSlideStats: [			{
+		overallSlideStats: [
+			{
 				label: "Estamate Hopper Volume",
 				key: "HopperVolume",
 			},
