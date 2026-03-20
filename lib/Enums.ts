@@ -111,7 +111,7 @@ export namespace ReefscapeEnums {
 }
 
 export namespace RebuiltEnums {
-	export enum ClimbingAbilities {
+	export enum ClimbingCapabilities {
 		No = "No",
 		FirstLevel = "FirstLevel",
 		SecondLevel = "SecondLevel",
@@ -135,14 +135,6 @@ export namespace RebuiltEnums {
 		First = "First",
 		Second = "Second",
 		Third = "Third",
-	}
-
-	export enum AutoAbilities {
-		NoAuto = "No Auto",
-		MovePastStart = "Move Past Start",
-		ClimbLevelOne = "Climb Level One",
-		ScoreOneOrMoreFuel = "Score One Or More Fuel",
-		ScoreFuelAndClimb = "Score Fuel And Climb",
 	}
 }
 

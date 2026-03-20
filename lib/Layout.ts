@@ -219,8 +219,8 @@ export function keyToType(
 		ReefscapeEnums.Climbing,
 		ReefscapeEnums.DriveThroughDeepCage,
 		ReefscapeEnums.EndgameClimbStatus,
-		RebuiltEnums.AutoAbilities,
-		RebuiltEnums.ClimbingAbilities,
+		//RebuiltEnums.AutoAbilities,
+		RebuiltEnums.ClimbingCapabilities,
 		RebuiltEnums.DriveOverBump,
 		RebuiltEnums.DriveUnderTrench,
 		RebuiltEnums.LevelClimbed,
@@ -240,8 +240,8 @@ export function keyToType(
 	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
 	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
 
-	if (key == "AutoAbilities") return RebuiltEnums.AutoAbilities;
-	if (key == "ClimbingAbilities") return RebuiltEnums.ClimbingAbilities;
+	//if (key == "AutoAbilities") return RebuiltEnums.AutoAbilities;
+	if (key == "ClimbingCapabilities") return RebuiltEnums.ClimbingCapabilities;
 	if (key == "DriveOverBump") return RebuiltEnums.DriveOverBump;
 	if (key == "DiveUnderTrench") return RebuiltEnums.DriveUnderTrench;
 	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
