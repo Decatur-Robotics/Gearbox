@@ -383,7 +383,7 @@ export abstract class PitReportData {
 
 	image: string = "/robot.jpg";
 	drivetrain: FrcDrivetrain = FrcDrivetrain.Tank;
-	motorType: Motors = Motors.Talons;
+	motorType: Motors = Motors.Krakens;
 	swerveLevel: SwerveLevel = SwerveLevel.None;
 	comments: string = "";
 }

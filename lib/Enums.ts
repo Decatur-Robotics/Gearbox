@@ -34,7 +34,6 @@ export enum Motors {
 	CIMs = "CIM",
 	Krakens = "Krakens",
 	Falcons = "Falcons",
-	Talons = "Talons",
 	Neos = "Neos",
 }
 
@@ -135,6 +134,13 @@ export namespace RebuiltEnums {
 		First = "First",
 		Second = "Second",
 		Third = "Third",
+	}
+	export enum DriverSkill {
+		One = "1",
+		Two = "2",
+		Three = "3",
+		Four = "4",
+		Five = "5"
 	}
 }
 
