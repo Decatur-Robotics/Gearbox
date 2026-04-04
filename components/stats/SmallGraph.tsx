@@ -87,15 +87,6 @@ export default function SmallGraph(props: {
 					return 1;
 			}
 		} else if (key === "LevelClimbed") {
-			///switch (data) {
-			//case ReefscapeEnums.EndgameClimbStatus.None:
-			//return 0;
-			//case ReefscapeEnums.EndgameClimbStatus.Park:
-			//return 0.33;
-			//case ReefscapeEnums.EndgameClimbStatus.High:
-			//return 0.66;
-			//case ReefscapeEnums.EndgameClimbStatus.Low:
-			//return 1;
 			switch (data) {
 				case RebuiltEnums.LevelClimbed.No:
 					return 0;
@@ -117,15 +108,6 @@ export default function SmallGraph(props: {
 					);
 			}
 		} else if (key === "DriverSkill") {
-			///switch (data) {
-			//case ReefscapeEnums.EndgameClimbStatus.None:
-			//return 0;
-			//case ReefscapeEnums.EndgameClimbStatus.Park:
-			//return 0.33;
-			//case ReefscapeEnums.EndgameClimbStatus.High:
-			//return 0.66;
-			//case ReefscapeEnums.EndgameClimbStatus.Low:
-			//return 1;
 			switch (data) {
 				case RebuiltEnums.DriverSkill.One:
 					return 1;

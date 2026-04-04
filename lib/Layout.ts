@@ -229,7 +229,7 @@ export function keyToType(
 		DecodeEnums.EndgameParkStatus,
 	];
 
-	if (key === "Defense") return Defense;
+	if (key === "EndgameDefenseStatus") return Defense;
 	if (key === "swerveLevel") return SwerveLevel;
 
 	if (key === "StartedWith") return IntoTheDeepEnums.StartedWith;
