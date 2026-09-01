@@ -246,7 +246,7 @@ export function keyToType(
 	if (key == "DriveOverBump") return RebuiltEnums.DriveOverBump;
 	if (key == "DiveUnderTrench") return RebuiltEnums.DriveUnderTrench;
 	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
-	if (key == "DriverSkill") return RebuiltEnums.DriverSkill
+	if (key == "DriverSkill") return RebuiltEnums.DriverSkill;
 
 	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
 	if (key == "AutoStatus") return DecodeEnums.AutoStatus;

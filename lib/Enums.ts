@@ -4,13 +4,13 @@ export enum Defense {
 	Full = "Full",
 }
 
-export enum FTCEndgame {
+/*export enum FTCEndgame {
 	None = "None",
 	Parked = "Parked",
 	TouchingTheLowerBar = "Touching the Lower Bar",
 	LowClimb = "Low Climb",
 	HighClimb = "High Climb",
-}
+}*/
 
 export enum IntakeTypes {
 	None = "None",
@@ -140,7 +140,7 @@ export namespace RebuiltEnums {
 		Two = "2",
 		Three = "3",
 		Four = "4",
-		Five = "5"
+		Five = "5",
 	}
 }
 

@@ -1912,7 +1912,7 @@ export namespace Rebuilt {
 
 		EndgameDefenseStatus: Defense = Defense.None;
 		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
-		DriverSkill: RebuiltEnums.DriverSkill= RebuiltEnums.DriverSkill.One
+		DriverSkill: RebuiltEnums.DriverSkill = RebuiltEnums.DriverSkill.One;
 	}
 	export class PitData extends PitReportData {
 		CanDriveOverBump: boolean = false;
@@ -1984,7 +1984,7 @@ export namespace Rebuilt {
 				],
 			],
 		],
-		"Post Match": ["LevelClimbed", "EndgameDefenseStatus","DriverSkill"],
+		"Post Match": ["LevelClimbed", "EndgameDefenseStatus", "DriverSkill"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
