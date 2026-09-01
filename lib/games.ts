@@ -1906,10 +1906,13 @@ export namespace Rebuilt {
 		FuelPointsFive: number = 0;
 		FuelPointsTen: number = 0;
 
+		TotalFuelScored: number = 0;
+
 		AutoClimbedLevelOne: boolean = false;
 
-		EngameDefenseStatus: Defense = Defense.None;
+		EndgameDefenseStatus: Defense = Defense.None;
 		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
+		DriverSkill: RebuiltEnums.DriverSkill = RebuiltEnums.DriverSkill.One;
 	}
 	export class PitData extends PitReportData {
 		CanDriveOverBump: boolean = false;
@@ -1919,7 +1922,6 @@ export namespace Rebuilt {
 		RobotWeight: number = 0;
 		RobotWidth: number = 0;
 		RobotLength: number = 0;
-		AutoAbilities: string = "";
 		ClimbingCapabilities: RebuiltEnums.ClimbingCapabilities =
 			RebuiltEnums.ClimbingCapabilities.No;
 	}
@@ -1930,8 +1932,11 @@ export namespace Rebuilt {
 			{ key: "CanDeClimb", label: "Can De-Climb?" },
 			{ key: "ClimbingCapabilities", label: "Climbing?" },
 			{ key: "HopperVolume", label: "Hopper Volume?" },
+			{ key: "RobotWeight", label: "Robot Weight?" },
+			{ key: "RobotWidth", label: "Robot Width?" },
+			{ key: "RobotLength", label: "Robot Length?" },
 		],
-		Auto: [{ key: "AutoAbilities", label: "Auto Capabilities?" }],
+		//Auto: [{ key: "AutoAbilities", label: "Auto Capabilities?" }],
 	};
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
@@ -1979,7 +1984,7 @@ export namespace Rebuilt {
 				],
 			],
 		],
-		"Post Match": ["LevelClimbed", "EngameDefenseStatus"],
+		"Post Match": ["LevelClimbed", "EndgameDefenseStatus", "DriverSkill"],
 	};
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {

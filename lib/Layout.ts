@@ -224,11 +224,12 @@ export function keyToType(
 		RebuiltEnums.DriveOverBump,
 		RebuiltEnums.DriveUnderTrench,
 		RebuiltEnums.LevelClimbed,
+		RebuiltEnums.DriverSkill,
 		DecodeEnums.AutoStatus,
 		DecodeEnums.EndgameParkStatus,
 	];
 
-	if (key === "Defense") return Defense;
+	if (key === "EndgameDefenseStatus") return Defense;
 	if (key === "swerveLevel") return SwerveLevel;
 
 	if (key === "StartedWith") return IntoTheDeepEnums.StartedWith;
@@ -245,6 +246,7 @@ export function keyToType(
 	if (key == "DriveOverBump") return RebuiltEnums.DriveOverBump;
 	if (key == "DiveUnderTrench") return RebuiltEnums.DriveUnderTrench;
 	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
+	if (key == "DriverSkill") return RebuiltEnums.DriverSkill;
 
 	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
 	if (key == "AutoStatus") return DecodeEnums.AutoStatus;
