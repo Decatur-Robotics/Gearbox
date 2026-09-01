@@ -12,6 +12,10 @@ import {
 	ReefscapeEnums,
 	RebuiltEnums,
 	DecodeEnums,
+
+// This imports DecodeEnums from the Enums module. It's used in the keyToType function to
+// identify string fields that should render as enum dropdowns for Decode game properties.
+
 } from "./Enums";
 import { PitReportData, QuantData, Pitreport, Report, League } from "./Types";
 
@@ -228,6 +232,9 @@ export function keyToType(
 		DecodeEnums.EndgameParkStatus,
 	];
 
+// These are enum options in the lookup array. The function checks if a form field's
+// value matches any of these enums to determine if it should render as a dropdown.
+
 	if (key === "Defense") return Defense;
 	if (key === "swerveLevel") return SwerveLevel;
 
@@ -248,6 +255,9 @@ export function keyToType(
 
 	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
 	if (key == "AutoStatus") return DecodeEnums.AutoStatus;
+
+// Special case mappings. If the field name is exactly "EndgameParkStatusDecode" or "AutoStatus",
+// return the corresponding Decode enum directly instead of searching through the array.
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;
