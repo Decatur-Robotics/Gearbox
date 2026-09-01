@@ -3,6 +3,8 @@ export enum GameId {
 	CenterStage = "CenterStage",
 	IntoTheDeep = "IntoTheDeep",
 	Reefscape = "Reefscape",
+	Rebuilt = "Rebuilt",
+	Decode = "Decode",
 }
 
-export const defaultGameId = GameId.Reefscape;
+export const defaultGameId = GameId.Rebuilt;

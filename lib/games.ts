@@ -1,10 +1,12 @@
 import { Dot } from "@/components/stats/Heatmap";
 import {
 	CenterStageEnums,
+	DecodeEnums,
 	Defense,
 	FrcDrivetrain,
 	IntakeTypes,
 	IntoTheDeepEnums,
+	RebuiltEnums,
 	ReefscapeEnums,
 } from "./Enums";
 import { Badge, FormLayoutProps, PitStatsLayout, StatsLayout } from "./Layout";
@@ -21,10 +23,14 @@ import { GameId } from "./client/GameId";
 import {
 	AmpAutoPoints,
 	AmpTeleopPoints,
+	ArtifactPoints,
 	BooleanAverage,
+	DepotArtifactPoints,
 	GetMinimum,
 	MostCommonValue,
+	MotifArtifactPoints,
 	NumericalTotal,
+	OverflowArtifactPoints,
 	Round,
 	SpeakerAutoPoints,
 	SpeakerTeleopPoints,
@@ -32,6 +38,8 @@ import {
 } from "./client/StatsMath";
 import { report } from "process";
 import { GetMaximum } from "./client/StatsMath";
+import { getMaxListeners } from "events";
+//import { ClimbingCapabilities, ClimbingAbilities, DriverSkillLevel } from './Enums';
 
 function getBaseBadges(
 	pitReport: Pitreport<PitReportData> | undefined,
@@ -1888,9 +1896,696 @@ namespace Reefscape {
 	);
 }
 
+export namespace Rebuilt {
+	export class QuantitativeData extends QuantData {
+		AutoFuelPointsOne: number = 0;
+		AutoFuelPointsFive: number = 0;
+		AutoFuelPointsTen: number = 0;
+
+		FuelPointsOne: number = 0;
+		FuelPointsFive: number = 0;
+		FuelPointsTen: number = 0;
+
+		AutoClimbedLevelOne: boolean = false;
+
+		EngameDefenseStatus: Defense = Defense.None;
+		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
+	}
+	export class PitData extends PitReportData {
+		CanDriveOverBump: boolean = false;
+		CanDriveUnderTrench: boolean = false;
+		CanDeClimb: boolean = false;
+		HopperVolume: number = 0;
+		RobotWeight: number = 0;
+		RobotWidth: number = 0;
+		RobotLength: number = 0;
+		AutoAbilities: string = "";
+		ClimbingCapabilities: RebuiltEnums.ClimbingCapabilities =
+			RebuiltEnums.ClimbingCapabilities.No;
+	}
+	const pitReportLayout: FormLayoutProps<PitData> = {
+		Capabilities: [
+			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
+			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
+			{ key: "CanDeClimb", label: "Can De-Climb?" },
+			{ key: "ClimbingCapabilities", label: "Climbing?" },
+			{ key: "HopperVolume", label: "Hopper Volume?" },
+		],
+		Auto: [{ key: "AutoAbilities", label: "Auto Capabilities?" }],
+	};
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+		Auto: [
+			{ key: "AutoClimbedLevelOne", label: "Climbed Level One (Auto)" },
+			[
+				[
+					{
+						key: "AutoFuelPointsOne",
+						label: "Auto One point",
+					},
+				],
+				[
+					{
+						key: "AutoFuelPointsFive",
+						label: "Auto Five points",
+					},
+				],
+				[
+					{
+						key: "AutoFuelPointsTen",
+						label: "Auto Ten points",
+					},
+				],
+			],
+		],
+		Teleop: [
+			[
+				[
+					{
+						key: "FuelPointsOne",
+						label: "Teleop One point",
+					},
+				],
+				[
+					{
+						key: "FuelPointsFive",
+						label: "Teleop Five points",
+					},
+				],
+				[
+					{
+						key: "FuelPointsTen",
+						label: "TeleopTen points",
+					},
+				],
+			],
+		],
+		"Post Match": ["LevelClimbed", "EngameDefenseStatus"],
+	};
+
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+		sections: {
+			Auto: [
+				{
+					label: "Total Auto Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return (
+							NumericalTotal("AutoFuelPointsOne", quantitativeReports!) +
+							NumericalTotal("AutoFuelPointsFive", quantitativeReports!) * 5 +
+							NumericalTotal("AutoFuelPointsTen", quantitativeReports!) * 10
+						);
+					},
+				},
+				{
+					label: "< Min Auto Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return (
+							GetMinimum(quantitativeReports!, "AutoFuelPointsOne") +
+							GetMinimum(quantitativeReports!, "AutoFuelPointsFive") * 5 +
+							GetMinimum(quantitativeReports!, "AutoFuelPointsTen") * 10
+						);
+					},
+				},
+				{
+					label: "< Max Auto Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return (
+							GetMaximum(quantitativeReports!, "AutoFuelPointsOne") +
+							GetMaximum(quantitativeReports!, "AutoFuelPointsFive") * 5 +
+							GetMaximum(quantitativeReports!, "AutoFuelPointsTen") * 10
+						);
+					},
+				},
+			],
+			Teleop: [
+				{
+					label: "Total Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return (
+							NumericalTotal("FuelPointsOne", quantitativeReports!) +
+							NumericalTotal("FuelPointsFive", quantitativeReports!) * 5 +
+							NumericalTotal("FuelPointsTen", quantitativeReports!) * 10
+						);
+					},
+				},
+				{
+					label: "< Min Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return (
+							GetMinimum(quantitativeReports!, "FuelPointsOne") +
+							GetMinimum(quantitativeReports!, "FuelPointsFive") * 5 +
+							GetMinimum(quantitativeReports!, "FuelPointsTen") * 10
+						);
+					},
+				},
+				{
+					label: "< Max Fuel Points Scored By Alliance",
+					get(pitData, quantitativeReports) {
+						return (
+							GetMaximum(quantitativeReports!, "FuelPointsOne") +
+							GetMaximum(quantitativeReports!, "FuelPointsFive") * 5 +
+							GetMaximum(quantitativeReports!, "FuelPointsTen") * 10
+						);
+					},
+				},
+			],
+		},
+		getGraphDots: function (
+			quantitativeReports: Report<QuantitativeData>[],
+			pitReport?: Pitreport<PitData> | undefined,
+		): Dot[] {
+			return [];
+		},
+	};
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [
+			{
+				label: "Estamate Hopper Volume",
+				key: "HopperVolume",
+			},
+			{
+				label: "RobotWeight",
+				key: "RobotWeight",
+			},
+			{
+				label: "Robot Width",
+				key: "RobotWidth",
+			},
+			{
+				label: "Robot Length",
+				key: "RobotLength",
+			},
+		],
+		individualSlideStats: [
+			{
+				label: "Average Auto  Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const TotalAutoAllianceFuelPoints =
+						NumericalTotal("AutoFuelPointsOne", quantitativeReports) +
+						NumericalTotal("AutoFuelPointsFive", quantitativeReports) * 5 +
+						NumericalTotal("AutoFuelPointsTen", quantitativeReports) * 10;
+					return TotalAutoAllianceFuelPoints / quantitativeReports.length;
+				},
+			},
+			{
+				label: "Average Teleop Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const TotalTeleopAllianceFuelPoints =
+						NumericalTotal("FuelPointsOne", quantitativeReports) +
+						NumericalTotal("FuelPointsFive", quantitativeReports) * 5 +
+						NumericalTotal("FuelPointsTen", quantitativeReports) * 10;
+					return TotalTeleopAllianceFuelPoints / quantitativeReports.length;
+				},
+			},
+			{
+				label: "Ave Endgame Stats",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) return 0;
+
+					const climb = NumericalTotal("LevelClimbed", quantitativeReports);
+					return Round(climb) / quantitativeReports.length;
+				},
+			},
+		],
+		robotCapabilities: [
+			{ key: "CanDriveOverBump", label: "Can Drive Over Bump?" },
+			{ key: "CanDriveUnderTrench", label: "Can Drive Under Trench?" },
+			{ key: "CanDeClimb", label: "Can De-Climb?" },
+			{ key: "ClimbingCapabilities", label: "Climbing?" },
+		],
+		graphStat: {
+			label: "Average Fuel Scored In Hopper",
+			key: "TeleopTotalPoints",
+		},
+	};
+
+	function getBadges(
+		pitReport: Pitreport<PitData> | undefined,
+		quantitativeReports: Report<QuantitativeData>[] | undefined,
+		card: boolean,
+	) {
+		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+		if (pitReport?.data?.CanDriveOverBump)
+			badges.push({ text: "Can Drive Over Bump", color: "accent" });
+		if (pitReport?.data?.CanDriveUnderTrench)
+			badges.push({ text: "Can Drive Under Trench", color: "accent" });
+		if (pitReport?.data?.CanDeClimb)
+			badges.push({ text: "Can Declimb", color: "accent" });
+
+		if (
+			pitReport?.data?.ClimbingCapabilities ===
+			RebuiltEnums.ClimbingCapabilities.FirstLevel
+		)
+			badges.push({ text: "Can Climb First Level", color: "accent" });
+		else if (
+			pitReport?.data?.ClimbingCapabilities ===
+			RebuiltEnums.ClimbingCapabilities.SecondLevel
+		)
+			badges.push({ text: "Can Climb Second Level", color: "accent" });
+		else if (
+			pitReport?.data?.ClimbingCapabilities ===
+			RebuiltEnums.ClimbingCapabilities.ThirdLevel
+		)
+			badges.push({ text: "Can Climb Third Level", color: "accent" });
+
+		return badges;
+	}
+
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+		if (!reports) return 0;
+
+		let totalPoints = 0;
+
+		for (const report of reports.map((r) => r.data)) {
+			switch (report.LevelClimbed) {
+				case RebuiltEnums.LevelClimbed.No:
+					break;
+				case RebuiltEnums.LevelClimbed.First:
+					totalPoints += 10;
+					break;
+				case RebuiltEnums.LevelClimbed.Second:
+					totalPoints += 20;
+					break;
+				case RebuiltEnums.LevelClimbed.Third:
+					totalPoints += 30;
+					break;
+			}
+			totalPoints +=
+				Number(report.FuelPointsOne + report.AutoFuelPointsOne) +
+				Number(report.FuelPointsFive + report.AutoFuelPointsOne) * 5 +
+				Number(report.FuelPointsTen + report.AutoFuelPointsOne) * 10;
+		}
+		return totalPoints / Math.max(reports.length, 1);
+	}
+	export const game = new Game(
+		"Rebuilt",
+		2026,
+		League.FRC,
+		QuantitativeData,
+		PitData,
+		pitReportLayout,
+		quantitativeReportLayout,
+		statsLayout,
+		pitStatsLayout,
+		"Rebuilt",
+		"https://www.firstinspires.org/hs-fs/hubfs/image-library/web/frc_rebuilt_1240x860.webp?width=630",
+		"invert",
+		getBadges,
+		getAvgPoints,
+	);
+}
+
+export namespace Decode {
+	export class QuantitativeData extends QuantData {
+		AutoMovedPastStartingLine: boolean = false;
+
+		AutoArtifactsClassified: number = 0;
+		AutoOverflowArtifacts: number = 0;
+		AutoMotifArtifacts: number = 0;
+
+		TeleopArtifactsClassified: number = 0;
+		TeleopOverflowArtifacts: number = 0;
+		TeleopMotifArtifacts: number = 0;
+		TeleopDepotArtifacts: number = 0;
+
+		EndgameParkStatusDecode: DecodeEnums.EndgameParkStatus =
+			DecodeEnums.EndgameParkStatus.No;
+		EndgameDefense: Defense = Defense.None;
+	}
+
+	export class PitData extends PitReportData {
+		CanScoreClassifier: boolean = false;
+		CanScoreDepot: boolean = false;
+		CanOpenGate: boolean = false;
+		CanParkWithOtherBots: boolean = false;
+
+		ArtifactsScoredAuto: number = 0;
+		AutoAccountsForMotif: boolean = false;
+		AutoAbilities: DecodeEnums.AutoStatus = DecodeEnums.AutoStatus.NoAuto;
+	}
+
+	const pitReportLayout: FormLayoutProps<PitData> = {
+		Capabilities: [
+			{ key: "CanScoreClassifier", label: "Can Score Classifier?" },
+			{ key: "CanScoreDepot", label: "Can Score Depot?" },
+			{ key: "CanOpenGate", label: "Can Score Gate?" },
+			{ key: "CanParkWithOtherBots", label: "Can Park With Other Bots?" },
+		],
+		Auto: [
+			{ key: "ArtifactsScoredAuto", label: "Average Auto Artifacts" },
+			{ key: "AutoAccountsForMotif", label: "Auto Accounts For Motif?" },
+			{ key: "AutoAbilities", label: "Other Auto Scoring Capabilities" },
+		],
+	};
+
+	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
+		Auto: [
+			{ key: "AutoMovedPastStartingLine", label: "Moved Past Starting line" },
+			[
+				[
+					{
+						key: "AutoArtifactsClassified",
+						label: "Artifacts Classified (Auto)",
+					},
+				],
+				[{ key: "AutoOverflowArtifacts", label: "Overflow Artifacts (Auto)" }],
+				[{ key: "AutoMotifArtifacts", label: "Motif Artifacts (Auto)" }],
+			],
+		],
+		Teleop: [
+			[
+				[
+					{
+						key: "TeleopArtifactsClassified",
+						label: "Artifacts Classified (Teleop)",
+					},
+					{
+						key: "TeleopOverflowArtifacts",
+						label: "Overflow Artifacts (Teleop)",
+					},
+				],
+				[
+					{
+						key: "TeleopMotifArtifacts",
+						label: "Motif Artifacts (Teleop)",
+					},
+					{
+						key: "TeleopDepotArtifacts",
+						label: "Depot Artifacts (Teleop)",
+					},
+				],
+			],
+		],
+		Endgame: ["Defense", "EndgameParkStatusDecode"],
+	};
+
+	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
+		sections: {
+			Auto: [
+				{
+					key: "AutoArtifactsClassified",
+					label: "Average Amt Of Artifacts Classified Auto",
+				},
+				{
+					label: "> Min Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoArtifactsClassified");
+					},
+				},
+				{
+					label: "> Max Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoArtifactsClassified");
+					},
+				},
+				{
+					key: "AutoOverflowArtifacts",
+					label: "Average Amt Of Overflow Artifacts Classified Auto",
+				},
+				{
+					label: "> Min Overflow Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoOverflowArtifacts");
+					},
+				},
+				{
+					label: "> Max Overflow Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoOverflowArtifacts");
+					},
+				},
+				{
+					key: "AutoMotifArtifacts",
+					label: "Average Amt Of Motif Artifacts Classified Auto",
+				},
+				{
+					label: "> Min Motif Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "AutoMotifArtifacts");
+					},
+				},
+				{
+					label: "> Max Motif Artifacts Classified Auto",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "AutoMotifArtifacts");
+					},
+				},
+			],
+			Teleop: [
+				{
+					key: "TeleopArtifactsClassified",
+					label: "Average Amt Of Artifacts Classified Teleop",
+				},
+				{
+					label: "> Min Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(
+							quantitativeReports!,
+							"TeleopArtifactsClassified",
+						);
+					},
+				},
+				{
+					label: "> Max Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(
+							quantitativeReports!,
+							"TeleopArtifactsClassified",
+						);
+					},
+				},
+				{
+					key: "TeleopOverflowArtifacts",
+					label: "Average Amt Of Overflow Artifacts Classified Teleop",
+				},
+				{
+					label: "> Min Overflow Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopOverflowArtifacts");
+					},
+				},
+				{
+					label: "> Max Overflow Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopOverflowArtifacts");
+					},
+				},
+				{
+					key: "TeleopMotifArtifacts",
+					label: "Average Amt Of Motif Artifacts Classified Teleop",
+				},
+				{
+					label: "> Min Motif Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopMotifArtifacts");
+					},
+				},
+				{
+					label: "> Max Motif Artifacts Classified Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopMotifArtifacts");
+					},
+				},
+				{
+					key: "TeleopDepotArtifacts",
+					label: "Average Amt of Artifacts In Depot Teleop",
+				},
+				{
+					label: "> Min Depot Artifacts Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMinimum(quantitativeReports!, "TeleopDepotArtifacts");
+					},
+				},
+				{
+					label: "> Max Depot Artifacts Teleop",
+					get(pitData, quantitativeReports) {
+						return GetMaximum(quantitativeReports!, "TeleopDepotArtifacts");
+					},
+				},
+			],
+		},
+		getGraphDots: function (
+			quantitativeReports: Report<QuantitativeData>[],
+			pitReport?: Pitreport<PitData> | undefined,
+		): Dot[] {
+			return [];
+		},
+	};
+
+	const pitStatsLayout: PitStatsLayout<PitData, QuantitativeData> = {
+		overallSlideStats: [
+			{ label: "Artifacts Scored Auto", key: "ArtifactsScoredAuto" },
+		],
+		individualSlideStats: [
+			{
+				label: "Average Auto Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) {
+						return 0;
+					}
+
+					const Artifacts =
+						NumericalTotal("AutoArtifactsClassified", quantitativeReports) *
+						ArtifactPoints;
+
+					const MotifArtifacts =
+						NumericalTotal("AutoMotifArtifacts", quantitativeReports) *
+						MotifArtifactPoints;
+
+					const OverflowArtifacts =
+						NumericalTotal("AutoOverflowArtifacts", quantitativeReports) *
+						OverflowArtifactPoints;
+
+					return (
+						(Artifacts + MotifArtifacts + OverflowArtifacts) /
+						quantitativeReports.length
+					);
+				},
+			},
+			{
+				label: "Average Teleop Points",
+				get: (
+					pitReport: Pitreport<PitData> | undefined,
+					quantitativeReports: Report<QuantitativeData>[] | undefined,
+				) => {
+					if (!quantitativeReports) {
+						return 0;
+					}
+
+					const Artifacts =
+						NumericalTotal("TeleopArtifactsClassified", quantitativeReports) *
+						ArtifactPoints;
+
+					const MotifArtifacts =
+						NumericalTotal("TeleopMotifArtifacts", quantitativeReports) *
+						MotifArtifactPoints;
+
+					const OverflowArtifacts =
+						NumericalTotal("TeleopOverflowArtifacts", quantitativeReports) *
+						OverflowArtifactPoints;
+
+					const DepotArtifacts =
+						NumericalTotal("TeleopDepotArtifacts", quantitativeReports) *
+						DepotArtifactPoints;
+
+					return (
+						(Artifacts + MotifArtifacts + OverflowArtifacts + DepotArtifacts) /
+						quantitativeReports.length
+					);
+				},
+			},
+		],
+		robotCapabilities: [
+			{ key: "CanScoreClassifier", label: "Can Score Classifier?" },
+			{ key: "CanScoreDepot", label: "Can Score Depot?" },
+			{ key: "CanOpenGate", label: "Can Open Gate?" },
+			{ key: "CanParkWithOtherBots", label: "Can Park With Other Bots" },
+		],
+		graphStat: {
+			label: "TeleopArtifactsClassified",
+			key: "TeleopArtifactsClassified",
+		},
+	};
+
+	function getBadges(
+		pitReport: Pitreport<PitData> | undefined,
+		quantitativeReports: Report<QuantitativeData>[] | undefined,
+		card: boolean,
+	) {
+		const badges: Badge[] = getBaseBadges(pitReport, quantitativeReports);
+
+		if (pitReport?.data?.CanOpenGate)
+			badges.push({ text: "Can Open Gate", color: "info" });
+		if (pitReport?.data?.CanScoreDepot)
+			badges.push({ text: "Can Score Depot", color: "secondary" });
+		if (pitReport?.data?.CanScoreClassifier)
+			badges.push({ text: "Can Score Classifier", color: "primary" });
+		if (pitReport?.data?.CanParkWithOtherBots)
+			badges.push({ text: "Can Double Park", color: "success" });
+
+		if (
+			!(pitReport?.data?.CanScoreDepot || pitReport?.data?.CanScoreClassifier)
+		)
+			badges.push({ text: "Cannot Score", color: "warning" });
+
+		return badges;
+	}
+
+	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
+		if (!reports) return 0;
+
+		let totalPoints = 0;
+
+		for (const report of reports.map((r) => r.data)) {
+			switch (report.EndgameParkStatus) {
+				case DecodeEnums.EndgameParkStatus.No:
+					break;
+				case DecodeEnums.EndgameParkStatus.Partial:
+					totalPoints += 5;
+					break;
+				case DecodeEnums.EndgameParkStatus.Full:
+					totalPoints += 10;
+					break;
+				case DecodeEnums.EndgameParkStatus.TwoBotPark:
+					totalPoints += 20;
+					break;
+			}
+
+			totalPoints +=
+				(report.AutoArtifactsClassified + report.TeleopArtifactsClassified) *
+				ArtifactPoints;
+			totalPoints +=
+				(report.AutoMotifArtifacts + report.TeleopMotifArtifacts) *
+				MotifArtifactPoints;
+			totalPoints +=
+				(report.AutoOverflowArtifacts + report.TeleopOverflowArtifacts) *
+				OverflowArtifactPoints;
+			totalPoints += report.TeleopDepotArtifacts * DepotArtifactPoints;
+		}
+
+		return totalPoints / Math.max(reports.length, 1);
+	}
+
+	export const game = new Game(
+		"Decode",
+		2026,
+		League.FTC,
+		QuantitativeData,
+		PitData,
+		pitReportLayout,
+		quantitativeReportLayout,
+		statsLayout,
+		pitStatsLayout,
+		"Decode",
+		"https://info.firstinspires.org/hs-fs/hubfs/2026%20Season/Season%20Assets/first_age_ftc_decode_logo_vertical_rgb_fullcolor.png?width=237&height=348&name=first_age_ftc_decode_logo_vertical_rgb_fullcolor.png",
+		"invert",
+		getBadges,
+		getAvgPoints,
+	);
+}
+
 export const games: { [id in GameId]: Game<any, any> } = Object.freeze({
+	[GameId.Rebuilt]: Rebuilt.game,
 	[GameId.Reefscape]: Reefscape.game,
 	[GameId.IntoTheDeep]: IntoTheDeep.game,
 	[GameId.Crescendo]: Crescendo.game,
 	[GameId.CenterStage]: CenterStage.game,
+	[GameId.Decode]: Decode.game,
 });

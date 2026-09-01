@@ -6,6 +6,11 @@ export const AmpAutoPoints = 2;
 export const AmpTeleopPoints = 1;
 export const TrapPoints = 5;
 
+export const ArtifactPoints = 3;
+export const MotifArtifactPoints = 5;
+export const OverflowArtifactPoints = 1;
+export const DepotArtifactPoints = 1;
+
 type Selector<T extends QuantData> = ((r: T) => number) | (keyof T & string);
 
 function getSelection<T extends QuantData>(
@@ -44,7 +49,9 @@ export function NumericalTotal<T extends QuantData>(
 	reports: Report<T>[],
 ) {
 	let sum = 0;
-	reports?.forEach((report) => (sum += getSelection(selector, report)));
+	reports?.forEach(
+		(report) => (sum += Number(getSelection(selector, report) || 0)),
+	);
 	return Round(sum);
 }
 
@@ -153,10 +160,10 @@ export function GetMinimum(
 	stat: string,
 ) {
 	if (!quantitativeReports) return 0;
-	let minimum = quantitativeReports[0].data[stat];
+	let minimum = Number(quantitativeReports[0].data[stat]);
 	for (let repo of quantitativeReports) {
-		if (repo.data[stat] < minimum) {
-			minimum = repo.data[stat];
+		if (Number(repo.data[stat]) < minimum) {
+			minimum = Number(repo.data[stat]);
 		}
 	}
 	return minimum;
@@ -170,8 +177,8 @@ export function GetMaximum(
 	if (!quantitativeReports) return 0;
 	let maximum = 0;
 	for (let repo of quantitativeReports) {
-		if (repo.data[stat] > maximum) {
-			maximum = repo.data[stat];
+		if (Number(repo.data[stat]) > maximum) {
+			maximum = Number(repo.data[stat]);
 		}
 	}
 	return maximum;
