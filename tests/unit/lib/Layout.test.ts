@@ -35,6 +35,17 @@ test(`${keyToType.name}: Chooses FrcDrivetrain or FtcDrivetrain correctly`, () =
 	).toBe(FtcDrivetrain);
 });
 
+test(`${keyToType.name}: Uses field names before ambiguous enum values`, () => {
+	expect(keyToType(League.FRC, "Defense", { Defense: Defense.None })).toBe(
+		Defense,
+	);
+	expect(
+		keyToType(League.FRC, "EndgameDefenseStatus", {
+			EndgameDefenseStatus: Defense.None,
+		}),
+	).toBe(Defense);
+});
+
 test(`${FormElement.name}.${FormElement.fromProps.name}: From key`, () => {
 	const exampleData = {
 		text: "string",

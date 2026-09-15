@@ -1910,7 +1910,7 @@ export namespace Rebuilt {
 
 		AutoClimbedLevelOne: boolean = false;
 
-		EndgameDefenseStatus: Defense = Defense.None;
+		Defense: Defense = Defense.None;
 		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
 		DriverSkill: RebuiltEnums.DriverSkill = RebuiltEnums.DriverSkill.One;
 	}
