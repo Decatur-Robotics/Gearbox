@@ -146,6 +146,9 @@ export namespace DecodeEnums {
 		TwoBotPark = "Two Bot Park",
 	}
 
+	// This defines scouting option enums, grouped by game using namespaces. Namespaces
+	// like DecodeEnums group related enums so they can be referenced clearly.
+
 	export enum AutoStatus {
 		NoAuto = "No Auto",
 		MovePastStart = "Move Past Start",

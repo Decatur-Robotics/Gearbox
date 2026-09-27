@@ -135,13 +135,13 @@ export default function MatchScheduleCard(props: {
 												id={`//match${index}`}
 												className="md:relative md:-translate-y-80"
 											/>
-											<div className="items-middle flex flex-row items-center pt-4">
+											<div className="items-middle flex flex-row justify-center items-center pt-4 relative">
 												<h1 className="text-2xl font-bold">
 													Match {match.number}
 												</h1>
 												{isManager && (
 													<button
-														className="btn btn-link"
+														className="btn btn-link absolute right-4"
 														onClick={() => openEditMatchModal(match)}
 													>
 														Edit
