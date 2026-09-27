@@ -3,9 +3,8 @@ import {
 	CenterStageEnums,
 	DecodeEnums,
 
-// DecodeEnums provides the allowed Decode game options, such as parking status.
-// getAvgPoints uses it to convert each parking status into the correct endgame points.
-
+	// DecodeEnums provides the allowed Decode game options, such as parking status.
+	// getAvgPoints uses it to convert each parking status into the correct endgame points.
 	Defense,
 	FrcDrivetrain,
 	IntakeTypes,
@@ -1916,8 +1915,8 @@ export namespace Rebuilt {
 		LevelClimbed: RebuiltEnums.LevelClimbed = RebuiltEnums.LevelClimbed.No;
 	}
 
-// Tracks fuel scored in 1/5/10 point categories during Auto and
-// Teleop. It also records climb level and defense type as enums.
+	// Tracks fuel scored in 1/5/10 point categories during Auto and
+	// Teleop. It also records climb level and defense type as enums.
 
 	export class PitData extends PitReportData {
 		CanDriveOverBump: boolean = false;
@@ -1932,11 +1931,11 @@ export namespace Rebuilt {
 			RebuiltEnums.ClimbingCapabilities.No;
 	}
 
-// Pre-match Data: Robot abilities (bump/trench crossing, de-climb).
-// Stores climbing capability level and hopper volume.
+	// Pre-match Data: Robot abilities (bump/trench crossing, de-climb).
+	// Stores climbing capability level and hopper volume.
 
-// Pit questions group into "Capabilities" and "Auto"
-// sections. This is collected before matches for scouting.
+	// Pit questions group into "Capabilities" and "Auto"
+	// sections. This is collected before matches for scouting.
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
 		Capabilities: [
@@ -1949,8 +1948,8 @@ export namespace Rebuilt {
 		Auto: [{ key: "AutoAbilities", label: "Auto Capabilities?" }],
 	};
 
-// Match entry organized into "Auto", "Teleop", and "Post Match"
-// phases. Block layout [[],[]] displays fields side-by-side.
+	// Match entry organized into "Auto", "Teleop", and "Post Match"
+	// phases. Block layout [[],[]] displays fields side-by-side.
 
 	const quantitativeReportLayout: FormLayoutProps<QuantitativeData> = {
 		Auto: [
@@ -2001,8 +2000,8 @@ export namespace Rebuilt {
 		"Post Match": ["LevelClimbed", "EngameDefenseStatus"],
 	};
 
-// Calculates auto/teleop fuel points with multipliers (1x, 5x,
-// 10x). Min/max stats track alliance performance range.
+	// Calculates auto/teleop fuel points with multipliers (1x, 5x,
+	// 10x). Min/max stats track alliance performance range.
 
 	const statsLayout: StatsLayout<PitData, QuantitativeData> = {
 		sections: {
@@ -2154,7 +2153,7 @@ export namespace Rebuilt {
 		},
 	};
 
-// Creates visual tags for robot capabilities (bump drive, trench, climb levels).
+	// Creates visual tags for robot capabilities (bump drive, trench, climb levels).
 
 	function getBadges(
 		pitReport: Pitreport<PitData> | undefined,
@@ -2189,8 +2188,8 @@ export namespace Rebuilt {
 		return badges;
 	}
 
-// Loops through reports calculating endgame points by climb level.
-// Multiplies fuel counts by point values, divides by number of reports.
+	// Loops through reports calculating endgame points by climb level.
+	// Multiplies fuel counts by point values, divides by number of reports.
 
 	function getAvgPoints(reports: Report<QuantitativeData>[] | undefined) {
 		if (!reports) return 0;
@@ -2219,8 +2218,8 @@ export namespace Rebuilt {
 		return totalPoints / Math.max(reports.length, 1);
 	}
 
-// Bundles all Rebuilt configuration: data classes, forms, stats,
-// and functions. Registered in games registry for app access.
+	// Bundles all Rebuilt configuration: data classes, forms, stats,
+	// and functions. Registered in games registry for app access.
 
 	export const game = new Game(
 		"Rebuilt",
@@ -2241,9 +2240,8 @@ export namespace Rebuilt {
 }
 
 export namespace Decode {
-
-// Groups all configuration and logic for the FTC Decode game, including data classes, form layouts,
-// statistics, badges, and scoring. export lets other files access it, such as Decode.game.
+	// Groups all configuration and logic for the FTC Decode game, including data classes, form layouts,
+	// statistics, badges, and scoring. export lets other files access it, such as Decode.game.
 
 	export class QuantitativeData extends QuantData {
 		AutoMovedPastStartingLine: boolean = false;
@@ -2262,8 +2260,8 @@ export namespace Decode {
 		EndgameDefense: Defense = Defense.None;
 	}
 
-// It stores the robot's Decode endgame parking status, defaulting to No, and its
-// defense level, defaulting to None. getAvgPoints checks EndgameParkStatus.
+	// It stores the robot's Decode endgame parking status, defaulting to No, and its
+	// defense level, defaulting to None. getAvgPoints checks EndgameParkStatus.
 
 	export class PitData extends PitReportData {
 		CanScoreClassifier: boolean = false;
@@ -2276,8 +2274,8 @@ export namespace Decode {
 		AutoAbilities: DecodeEnums.AutoStatus = DecodeEnums.AutoStatus.NoAuto;
 	}
 
-// PitData stores information collected before matches about a Decode robot's abilities and autonomous
-// performance. Boolean fields default to false, numbers to 0, and AutoAbilities to NoAuto.
+	// PitData stores information collected before matches about a Decode robot's abilities and autonomous
+	// performance. Boolean fields default to false, numbers to 0, and AutoAbilities to NoAuto.
 
 	const pitReportLayout: FormLayoutProps<PitData> = {
 		Capabilities: [
@@ -2592,8 +2590,8 @@ export namespace Decode {
 					break;
 			}
 
-// This loops through each report and adds endgame points based on the
-// robot's parking status: No adds 0, Partial 5, Full 10, and TwoBotPark 20.
+			// This loops through each report and adds endgame points based on the
+			// robot's parking status: No adds 0, Partial 5, Full 10, and TwoBotPark 20.
 
 			totalPoints +=
 				(report.AutoArtifactsClassified + report.TeleopArtifactsClassified) *
