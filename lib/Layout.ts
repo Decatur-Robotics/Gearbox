@@ -224,30 +224,39 @@ export function keyToType(
 		RebuiltEnums.DriveOverBump,
 		RebuiltEnums.DriveUnderTrench,
 		RebuiltEnums.LevelClimbed,
+		RebuiltEnums.DriverSkill,
 		DecodeEnums.AutoStatus,
 		DecodeEnums.EndgameParkStatus,
 	];
 
-	if (key === "Defense") return Defense;
-	if (key === "swerveLevel") return SwerveLevel;
+	// Resolve by field name first. Values such as "None" occur in several enums.
+	const enumByKey: Record<string, object> = {
+		Defense,
+		EndgameDefenseStatus: Defense,
+		EndgameDefense: Defense,
+		intakeType: IntakeTypes,
+		swerveLevel: SwerveLevel,
+		StartedWith: IntoTheDeepEnums.StartedWith,
+		EndgameLevelClimbed: IntoTheDeepEnums.EndgameLevelClimbed,
+		AutoCapabilities: ReefscapeEnums.AutoCapabilities,
+		Climbing: ReefscapeEnums.Climbing,
+		DriveThroughDeepCage: ReefscapeEnums.DriveThroughDeepCage,
+		EndgameClimbStatus: ReefscapeEnums.EndgameClimbStatus,
+		ClimbingCapabilities: RebuiltEnums.ClimbingCapabilities,
+		DriveOverBump: RebuiltEnums.DriveOverBump,
+		DriveUnderTrench: RebuiltEnums.DriveUnderTrench,
+		LevelClimbed: RebuiltEnums.LevelClimbed,
+		DriverSkill: RebuiltEnums.DriverSkill,
+		EndgameParkStatusDecode: DecodeEnums.EndgameParkStatus,
+		AutoStatus: DecodeEnums.AutoStatus,
+		Motors,
+	};
 
-	if (key === "StartedWith") return IntoTheDeepEnums.StartedWith;
-	if (key === "EndgameLevelClimbed")
-		return IntoTheDeepEnums.EndgameLevelClimbed;
-
-	if (key == "AutoCapabilities") return ReefscapeEnums.AutoCapabilities;
-	if (key == "Climbing") return ReefscapeEnums.Climbing;
-	if (key == "DriveThroughDeepCage") return ReefscapeEnums.DriveThroughDeepCage;
-	if (key == "EndgameClimbStatus") return ReefscapeEnums.EndgameClimbStatus;
-
-	//if (key == "AutoAbilities") return RebuiltEnums.AutoAbilities;
-	if (key == "ClimbingCapabilities") return RebuiltEnums.ClimbingCapabilities;
-	if (key == "DriveOverBump") return RebuiltEnums.DriveOverBump;
-	if (key == "DiveUnderTrench") return RebuiltEnums.DriveUnderTrench;
-	if (key == "LevelClimbed") return RebuiltEnums.LevelClimbed;
-
-	if (key == "EndgameParkStatusDecode") return DecodeEnums.EndgameParkStatus;
-	if (key == "AutoStatus") return DecodeEnums.AutoStatus;
+	if (key === "drivetrain")
+		return league === League.FRC ? FrcDrivetrain : FtcDrivetrain;
+	if (key === "FrcDrivetrain") return FrcDrivetrain;
+	if (key === "FtcDrivetrain") return FtcDrivetrain;
+	if (enumByKey[key]) return enumByKey[key];
 
 	for (const e of enums) {
 		if (Object.values(e).includes(exampleData[key])) return e;

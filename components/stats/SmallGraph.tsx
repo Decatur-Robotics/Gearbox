@@ -87,15 +87,6 @@ export default function SmallGraph(props: {
 					return 1;
 			}
 		} else if (key === "LevelClimbed") {
-			///switch (data) {
-			//case ReefscapeEnums.EndgameClimbStatus.None:
-			//return 0;
-			//case ReefscapeEnums.EndgameClimbStatus.Park:
-			//return 0.33;
-			//case ReefscapeEnums.EndgameClimbStatus.High:
-			//return 0.66;
-			//case ReefscapeEnums.EndgameClimbStatus.Low:
-			//return 1;
 			switch (data) {
 				case RebuiltEnums.LevelClimbed.No:
 					return 0;
@@ -105,6 +96,29 @@ export default function SmallGraph(props: {
 					return 0.66;
 				case RebuiltEnums.LevelClimbed.Third:
 					return 1;
+			}
+		} else if (key === "TotalFuelPoints") {
+			switch (data) {
+				default:
+					return (
+						data["AutoFuelPointsOne"] +
+						data["FuelPointsOne"] +
+						(data["AutoFuelPointsFive"] + data["FuelPointsFive"]) * 5 +
+						(data["AutoFuelPointsTen"] + data["FuelPointsTen"]) * 10
+					);
+			}
+		} else if (key === "DriverSkill") {
+			switch (data) {
+				case RebuiltEnums.DriverSkill.One:
+					return 1;
+				case RebuiltEnums.DriverSkill.Two:
+					return 2;
+				case RebuiltEnums.DriverSkill.Three:
+					return 3;
+				case RebuiltEnums.DriverSkill.Four:
+					return 4;
+				case RebuiltEnums.DriverSkill.Five:
+					return 5;
 			}
 		}
 		return data;
